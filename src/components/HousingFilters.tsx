@@ -185,20 +185,25 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 {/* Max Depth */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Minimum Depth Rating (meters)
+                                        Maximum Depth Rating
                                     </label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        max="200"
-                                        value={filters.maxDepth || ''}
-                                        onChange={(e) => setFilters({ ...filters, maxDepth: Number(e.target.value) || 0 })}
-                                        placeholder="Enter minimum depth in meters"
+                                    <select
+                                        value={filters.maxDepth}
+                                        onChange={(e) => setFilters({ ...filters, maxDepth: Number(e.target.value) })}
                                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Leave empty for any depth, or enter minimum depth requirement
-                                    </p>
+                                    >
+                                        <option value={0}>Any depth</option>
+                                        <option value={10}>10m / 33ft or deeper</option>
+                                        <option value={20}>20m / 66ft or deeper</option>
+                                        <option value={30}>30m / 98ft or deeper</option>
+                                        <option value={40}>40m / 131ft or deeper</option>
+                                        <option value={50}>50m / 164ft or deeper</option>
+                                        <option value={60}>60m / 197ft or deeper</option>
+                                        <option value={70}>70m / 230ft or deeper</option>
+                                        <option value={80}>80m / 262ft or deeper</option>
+                                        <option value={90}>90m / 295ft or deeper</option>
+                                        <option value={100}>100m / 328ft or deeper</option>
+                                    </select>
                                 </div>
 
                                 {/* Price Range */}
