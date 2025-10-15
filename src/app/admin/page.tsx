@@ -33,7 +33,10 @@ async function getAdminData() {
             housingManufacturers,
             cameraManufacturers,
             cameras,
-            housings
+            housings: housings.map(housing => ({
+                ...housing,
+                priceAmount: housing.priceAmount ? Number(housing.priceAmount) : null
+            }))
         }
     } catch (error) {
         console.error('Error fetching admin data:', error)

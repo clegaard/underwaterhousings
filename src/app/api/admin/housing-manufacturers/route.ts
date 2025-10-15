@@ -72,6 +72,65 @@ export async function POST(request: NextRequest) {
     }
 }
 
+// PUT - Update housing manufacturer
+export async function PUT(request: NextRequest) {
+    try {
+        const { searchParams } = new URL(request.url)
+        const id = searchParams.get('id')
+
+        if (!id) {
+            return NextResponse.json(
+                { error: 'Manufacturer ID is required' },
+                { status: 400 }
+            )
+        }
+
+        const body = await request.json()
+        const { name, description } = body
+
+        if (!name) {
+            return NextResponse.json(
+                { error: 'Name is required' },
+                { status: 400 }
+            )
+        }
+
+        const slug = createSlug(name)
+
+        // Check if manufacturer with this slug already exists (excluding current manufacturer)
+        const existingManufacturer = await prisma.housingManufacturer.findFirst({
+            where: {
+                slug,
+                NOT: { id }
+            }
+        })
+
+        if (existingManufacturer) {
+            return NextResponse.json(
+                { error: 'A manufacturer with this name already exists' },
+                { status: 409 }
+            )
+        }
+
+        const manufacturer = await prisma.housingManufacturer.update({
+            where: { id },
+            data: {
+                name,
+                slug,
+                description: description || null
+            }
+        })
+
+        return NextResponse.json(manufacturer)
+    } catch (error) {
+        console.error('Error updating housing manufacturer:', error)
+        return NextResponse.json(
+            { error: 'Failed to update housing manufacturer' },
+            { status: 500 }
+        )
+    }
+}
+
 // DELETE - Delete housing manufacturer
 export async function DELETE(request: NextRequest) {
     try {

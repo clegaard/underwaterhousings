@@ -72,6 +72,65 @@ export async function POST(request: NextRequest) {
     }
 }
 
+// PUT - Update camera manufacturer
+export async function PUT(request: NextRequest) {
+    try {
+        const { searchParams } = new URL(request.url)
+        const id = searchParams.get('id')
+
+        if (!id) {
+            return NextResponse.json(
+                { error: 'Manufacturer ID is required' },
+                { status: 400 }
+            )
+        }
+
+        const body = await request.json()
+        const { name, isActive = true } = body
+
+        if (!name) {
+            return NextResponse.json(
+                { error: 'Name is required' },
+                { status: 400 }
+            )
+        }
+
+        const slug = createSlug(name)
+
+        // Check if manufacturer with this slug already exists (excluding current manufacturer)
+        const existingManufacturer = await prisma.cameraManufacturer.findFirst({
+            where: {
+                slug,
+                NOT: { id }
+            }
+        })
+
+        if (existingManufacturer) {
+            return NextResponse.json(
+                { error: 'A manufacturer with this name already exists' },
+                { status: 409 }
+            )
+        }
+
+        const manufacturer = await prisma.cameraManufacturer.update({
+            where: { id },
+            data: {
+                name,
+                slug,
+                isActive
+            }
+        })
+
+        return NextResponse.json(manufacturer)
+    } catch (error) {
+        console.error('Error updating camera manufacturer:', error)
+        return NextResponse.json(
+            { error: 'Failed to update camera manufacturer' },
+            { status: 500 }
+        )
+    }
+}
+
 // DELETE - Delete camera manufacturer
 export async function DELETE(request: NextRequest) {
     try {

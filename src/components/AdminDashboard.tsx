@@ -90,25 +90,53 @@ function HousingManufacturersManagement({ manufacturers, onDataUpdate }: {
     onDataUpdate: (data: any[]) => void
 }) {
     const [isAdding, setIsAdding] = useState(false)
+    const [editingId, setEditingId] = useState<string | null>(null)
     const [formData, setFormData] = useState({ name: '', description: '' })
+
+    const resetForm = () => {
+        setFormData({ name: '', description: '' })
+    }
+
+    const startEdit = (manufacturer: any) => {
+        setFormData({
+            name: manufacturer.name || '',
+            description: manufacturer.description || ''
+        })
+        setEditingId(manufacturer.id)
+        setIsAdding(false)
+    }
+
+    const cancelEdit = () => {
+        setEditingId(null)
+        resetForm()
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
-            const response = await fetch('/api/admin/housing-manufacturers', {
-                method: 'POST',
+            const isEditing = editingId !== null
+            const url = isEditing ? `/api/admin/housing-manufacturers?id=${editingId}` : '/api/admin/housing-manufacturers'
+            const method = isEditing ? 'PUT' : 'POST'
+
+            const response = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             })
 
             if (response.ok) {
-                const newManufacturer = await response.json()
-                onDataUpdate([...manufacturers, newManufacturer])
-                setFormData({ name: '', description: '' })
+                const updatedManufacturer = await response.json()
+                if (isEditing) {
+                    onDataUpdate(manufacturers.map(m => m.id === editingId ? updatedManufacturer : m))
+                } else {
+                    onDataUpdate([...manufacturers, updatedManufacturer])
+                }
+                resetForm()
                 setIsAdding(false)
+                setEditingId(null)
             }
         } catch (error) {
-            console.error('Error adding manufacturer:', error)
+            console.error('Error saving manufacturer:', error)
         }
     }
 
@@ -139,16 +167,22 @@ function HousingManufacturersManagement({ manufacturers, onDataUpdate }: {
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">Housing Manufacturers</h2>
                 <button
-                    onClick={() => setIsAdding(true)}
+                    onClick={() => {
+                        setIsAdding(true)
+                        setEditingId(null)
+                        resetForm()
+                    }}
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                     Add Manufacturer
                 </button>
             </div>
 
-            {isAdding && (
+            {(isAdding || editingId) && (
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                    <h3 className="text-lg font-medium mb-4">Add New Housing Manufacturer</h3>
+                    <h3 className="text-lg font-medium mb-4">
+                        {editingId ? 'Edit Housing Manufacturer' : 'Add New Housing Manufacturer'}
+                    </h3>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -174,11 +208,14 @@ function HousingManufacturersManagement({ manufacturers, onDataUpdate }: {
                                 type="submit"
                                 className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
                             >
-                                Save
+                                {editingId ? 'Update' : 'Save'}
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setIsAdding(false)}
+                                onClick={() => {
+                                    setIsAdding(false)
+                                    cancelEdit()
+                                }}
                                 className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
                             >
                                 Cancel
@@ -197,12 +234,20 @@ function HousingManufacturersManagement({ manufacturers, onDataUpdate }: {
                                 <p className="text-sm text-gray-600 mt-1">{manufacturer.description}</p>
                                 <p className="text-xs text-gray-500 mt-2">Slug: {manufacturer.slug}</p>
                             </div>
-                            <button
-                                onClick={() => handleDelete(manufacturer.id, manufacturer.name)}
-                                className="ml-4 bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition-colors text-sm"
-                            >
-                                Delete
-                            </button>
+                            <div className="flex items-start space-x-3">
+                                <button
+                                    onClick={() => startEdit(manufacturer)}
+                                    className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors text-sm"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(manufacturer.id, manufacturer.name)}
+                                    className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition-colors text-sm"
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}
@@ -217,25 +262,53 @@ function CameraManufacturersManagement({ manufacturers, onDataUpdate }: {
     onDataUpdate: (data: any[]) => void
 }) {
     const [isAdding, setIsAdding] = useState(false)
+    const [editingId, setEditingId] = useState<string | null>(null)
     const [formData, setFormData] = useState({ name: '', isActive: true })
+
+    const resetForm = () => {
+        setFormData({ name: '', isActive: true })
+    }
+
+    const startEdit = (manufacturer: any) => {
+        setFormData({
+            name: manufacturer.name || '',
+            isActive: manufacturer.isActive !== undefined ? manufacturer.isActive : true
+        })
+        setEditingId(manufacturer.id)
+        setIsAdding(false)
+    }
+
+    const cancelEdit = () => {
+        setEditingId(null)
+        resetForm()
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
-            const response = await fetch('/api/admin/camera-manufacturers', {
-                method: 'POST',
+            const isEditing = editingId !== null
+            const url = isEditing ? `/api/admin/camera-manufacturers?id=${editingId}` : '/api/admin/camera-manufacturers'
+            const method = isEditing ? 'PUT' : 'POST'
+
+            const response = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             })
 
             if (response.ok) {
-                const newManufacturer = await response.json()
-                onDataUpdate([...manufacturers, newManufacturer])
-                setFormData({ name: '', isActive: true })
+                const updatedManufacturer = await response.json()
+                if (isEditing) {
+                    onDataUpdate(manufacturers.map(m => m.id === editingId ? updatedManufacturer : m))
+                } else {
+                    onDataUpdate([...manufacturers, updatedManufacturer])
+                }
+                resetForm()
                 setIsAdding(false)
+                setEditingId(null)
             }
         } catch (error) {
-            console.error('Error adding manufacturer:', error)
+            console.error('Error saving manufacturer:', error)
         }
     }
 
@@ -266,16 +339,22 @@ function CameraManufacturersManagement({ manufacturers, onDataUpdate }: {
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">Camera Manufacturers</h2>
                 <button
-                    onClick={() => setIsAdding(true)}
+                    onClick={() => {
+                        setIsAdding(true)
+                        setEditingId(null)
+                        resetForm()
+                    }}
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                     Add Manufacturer
                 </button>
             </div>
 
-            {isAdding && (
+            {(isAdding || editingId) && (
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                    <h3 className="text-lg font-medium mb-4">Add New Camera Manufacturer</h3>
+                    <h3 className="text-lg font-medium mb-4">
+                        {editingId ? 'Edit Camera Manufacturer' : 'Add New Camera Manufacturer'}
+                    </h3>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -304,11 +383,14 @@ function CameraManufacturersManagement({ manufacturers, onDataUpdate }: {
                                 type="submit"
                                 className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
                             >
-                                Save
+                                {editingId ? 'Update' : 'Save'}
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setIsAdding(false)}
+                                onClick={() => {
+                                    setIsAdding(false)
+                                    cancelEdit()
+                                }}
                                 className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
                             >
                                 Cancel
@@ -334,12 +416,20 @@ function CameraManufacturersManagement({ manufacturers, onDataUpdate }: {
                                 </div>
                                 <p className="text-xs text-gray-500 mt-2">Slug: {manufacturer.slug}</p>
                             </div>
-                            <button
-                                onClick={() => handleDelete(manufacturer.id, manufacturer.name)}
-                                className="ml-4 bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition-colors text-sm"
-                            >
-                                Delete
-                            </button>
+                            <div className="flex items-start space-x-3">
+                                <button
+                                    onClick={() => startEdit(manufacturer)}
+                                    className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors text-sm"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(manufacturer.id, manufacturer.name)}
+                                    className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition-colors text-sm"
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}
@@ -355,25 +445,53 @@ function CamerasManagement({ cameras, cameraManufacturers, onDataUpdate }: {
     onDataUpdate: (data: any[]) => void
 }) {
     const [isAdding, setIsAdding] = useState(false)
+    const [editingId, setEditingId] = useState<string | null>(null)
     const [formData, setFormData] = useState({ name: '', cameraManufacturerId: '' })
+
+    const resetForm = () => {
+        setFormData({ name: '', cameraManufacturerId: '' })
+    }
+
+    const startEdit = (camera: any) => {
+        setFormData({
+            name: camera.name || '',
+            cameraManufacturerId: camera.cameraManufacturerId || ''
+        })
+        setEditingId(camera.id)
+        setIsAdding(false)
+    }
+
+    const cancelEdit = () => {
+        setEditingId(null)
+        resetForm()
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
-            const response = await fetch('/api/admin/cameras', {
-                method: 'POST',
+            const isEditing = editingId !== null
+            const url = isEditing ? `/api/admin/cameras?id=${editingId}` : '/api/admin/cameras'
+            const method = isEditing ? 'PUT' : 'POST'
+
+            const response = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             })
 
             if (response.ok) {
-                const newCamera = await response.json()
-                onDataUpdate([...cameras, newCamera])
-                setFormData({ name: '', cameraManufacturerId: '' })
+                const updatedCamera = await response.json()
+                if (isEditing) {
+                    onDataUpdate(cameras.map(c => c.id === editingId ? updatedCamera : c))
+                } else {
+                    onDataUpdate([...cameras, updatedCamera])
+                }
+                resetForm()
                 setIsAdding(false)
+                setEditingId(null)
             }
         } catch (error) {
-            console.error('Error adding camera:', error)
+            console.error('Error saving camera:', error)
         }
     }
 
@@ -404,16 +522,22 @@ function CamerasManagement({ cameras, cameraManufacturers, onDataUpdate }: {
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">Cameras</h2>
                 <button
-                    onClick={() => setIsAdding(true)}
+                    onClick={() => {
+                        setIsAdding(true)
+                        setEditingId(null)
+                        resetForm()
+                    }}
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                     Add Camera
                 </button>
             </div>
 
-            {isAdding && (
+            {(isAdding || editingId) && (
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                    <h3 className="text-lg font-medium mb-4">Add New Camera</h3>
+                    <h3 className="text-lg font-medium mb-4">
+                        {editingId ? 'Edit Camera' : 'Add New Camera'}
+                    </h3>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -446,11 +570,14 @@ function CamerasManagement({ cameras, cameraManufacturers, onDataUpdate }: {
                                 type="submit"
                                 className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
                             >
-                                Save
+                                {editingId ? 'Update' : 'Save'}
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setIsAdding(false)}
+                                onClick={() => {
+                                    setIsAdding(false)
+                                    cancelEdit()
+                                }}
                                 className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
                             >
                                 Cancel
@@ -473,12 +600,20 @@ function CamerasManagement({ cameras, cameraManufacturers, onDataUpdate }: {
                                 </div>
                                 <p className="text-xs text-gray-500 mt-2">Slug: {camera.slug}</p>
                             </div>
-                            <button
-                                onClick={() => handleDelete(camera.id, camera.name)}
-                                className="ml-4 bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition-colors text-sm"
-                            >
-                                Delete
-                            </button>
+                            <div className="flex items-start space-x-3">
+                                <button
+                                    onClick={() => startEdit(camera)}
+                                    className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors text-sm"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(camera.id, camera.name)}
+                                    className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition-colors text-sm"
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}
@@ -495,6 +630,7 @@ function HousingsManagement({ housings, housingManufacturers, cameras, onDataUpd
     onDataUpdate: (data: any[]) => void
 }) {
     const [isAdding, setIsAdding] = useState(false)
+    const [editingId, setEditingId] = useState<string | null>(null)
     const [formData, setFormData] = useState({
         model: '',
         name: '',
@@ -507,36 +643,71 @@ function HousingsManagement({ housings, housingManufacturers, cameras, onDataUpd
         cameraId: ''
     })
 
+    const resetForm = () => {
+        setFormData({
+            model: '',
+            name: '',
+            description: '',
+            priceAmount: '',
+            priceCurrency: 'USD',
+            depthRating: '',
+            material: '',
+            housingManufacturerId: '',
+            cameraId: ''
+        })
+    }
+
+    const startEdit = (housing: any) => {
+        setFormData({
+            model: housing.model || '',
+            name: housing.name || '',
+            description: housing.description || '',
+            priceAmount: housing.priceAmount?.toString() || '',
+            priceCurrency: housing.priceCurrency || 'USD',
+            depthRating: housing.depthRating?.toString() || '',
+            material: housing.material || '',
+            housingManufacturerId: housing.housingManufacturerId || '',
+            cameraId: housing.cameraId || ''
+        })
+        setEditingId(housing.id)
+        setIsAdding(false)
+    }
+
+    const cancelEdit = () => {
+        setEditingId(null)
+        resetForm()
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
-            const response = await fetch('/api/admin/housings', {
-                method: 'POST',
+            const isEditing = editingId !== null
+            const url = isEditing ? `/api/admin/housings?id=${editingId}` : '/api/admin/housings'
+            const method = isEditing ? 'PUT' : 'POST'
+
+            const response = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
-                    priceAmount: formData.priceAmount ? parseFloat(formData.priceAmount) : null
+                    priceAmount: formData.priceAmount ? parseFloat(formData.priceAmount) : null,
+                    depthRating: formData.depthRating ? parseInt(formData.depthRating) : null
                 })
             })
 
             if (response.ok) {
-                const newHousing = await response.json()
-                onDataUpdate([...housings, newHousing])
-                setFormData({
-                    model: '',
-                    name: '',
-                    description: '',
-                    priceAmount: '',
-                    priceCurrency: 'USD',
-                    depthRating: '',
-                    material: '',
-                    housingManufacturerId: '',
-                    cameraId: ''
-                })
+                const updatedHousing = await response.json()
+                if (isEditing) {
+                    onDataUpdate(housings.map(h => h.id === editingId ? updatedHousing : h))
+                } else {
+                    onDataUpdate([...housings, updatedHousing])
+                }
+                resetForm()
                 setIsAdding(false)
+                setEditingId(null)
             }
         } catch (error) {
-            console.error('Error adding housing:', error)
+            console.error('Error saving housing:', error)
         }
     }
 
@@ -567,16 +738,22 @@ function HousingsManagement({ housings, housingManufacturers, cameras, onDataUpd
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">Housings</h2>
                 <button
-                    onClick={() => setIsAdding(true)}
+                    onClick={() => {
+                        setIsAdding(true)
+                        setEditingId(null)
+                        resetForm()
+                    }}
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                     Add Housing
                 </button>
             </div>
 
-            {isAdding && (
+            {(isAdding || editingId) && (
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                    <h3 className="text-lg font-medium mb-4">Add New Housing</h3>
+                    <h3 className="text-lg font-medium mb-4">
+                        {editingId ? 'Edit Housing' : 'Add New Housing'}
+                    </h3>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -698,11 +875,14 @@ function HousingsManagement({ housings, housingManufacturers, cameras, onDataUpd
                                 type="submit"
                                 className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
                             >
-                                Save
+                                {editingId ? 'Update' : 'Save'}
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setIsAdding(false)}
+                                onClick={() => {
+                                    setIsAdding(false)
+                                    cancelEdit()
+                                }}
                                 className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
                             >
                                 Cancel
@@ -734,6 +914,12 @@ function HousingsManagement({ housings, housingManufacturers, cameras, onDataUpd
                                         {housing.depthRating}m
                                     </span>
                                 )}
+                                <button
+                                    onClick={() => startEdit(housing)}
+                                    className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors text-sm"
+                                >
+                                    Edit
+                                </button>
                                 <button
                                     onClick={() => handleDelete(housing.id, housing.name)}
                                     className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition-colors text-sm"

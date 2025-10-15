@@ -91,6 +91,81 @@ export async function POST(request: NextRequest) {
     }
 }
 
+// PUT - Update camera
+export async function PUT(request: NextRequest) {
+    try {
+        const { searchParams } = new URL(request.url)
+        const id = searchParams.get('id')
+
+        if (!id) {
+            return NextResponse.json(
+                { error: 'Camera ID is required' },
+                { status: 400 }
+            )
+        }
+
+        const body = await request.json()
+        const { name, cameraManufacturerId } = body
+
+        if (!name || !cameraManufacturerId) {
+            return NextResponse.json(
+                { error: 'Name and camera manufacturer are required' },
+                { status: 400 }
+            )
+        }
+
+        // Verify the manufacturer exists
+        const manufacturer = await prisma.cameraManufacturer.findUnique({
+            where: { id: cameraManufacturerId }
+        })
+
+        if (!manufacturer) {
+            return NextResponse.json(
+                { error: 'Camera manufacturer not found' },
+                { status: 404 }
+            )
+        }
+
+        const slug = createSlug(name)
+
+        // Check if camera with this slug already exists for this manufacturer (excluding current camera)
+        const existingCamera = await prisma.camera.findFirst({
+            where: {
+                slug,
+                cameraManufacturerId: cameraManufacturerId,
+                NOT: { id }
+            }
+        })
+
+        if (existingCamera) {
+            return NextResponse.json(
+                { error: 'A camera with this name already exists for this manufacturer' },
+                { status: 409 }
+            )
+        }
+
+        const camera = await prisma.camera.update({
+            where: { id },
+            data: {
+                name,
+                slug,
+                cameraManufacturerId: cameraManufacturerId
+            },
+            include: {
+                brand: true
+            }
+        })
+
+        return NextResponse.json(camera)
+    } catch (error) {
+        console.error('Error updating camera:', error)
+        return NextResponse.json(
+            { error: 'Failed to update camera' },
+            { status: 500 }
+        )
+    }
+}
+
 // DELETE - Delete camera
 export async function DELETE(request: NextRequest) {
     try {

@@ -168,7 +168,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 {/* Max Depth */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Maximum Depth Rating
+                                        Maximum Depth Rating [m]
                                     </label>
                                     <select
                                         value={filters.maxDepth}
@@ -176,16 +176,16 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     >
                                         <option value={0}>Any depth</option>
-                                        <option value={10}>10m / 33ft or deeper</option>
-                                        <option value={20}>20m / 66ft or deeper</option>
-                                        <option value={30}>30m / 98ft or deeper</option>
-                                        <option value={40}>40m / 131ft or deeper</option>
-                                        <option value={50}>50m / 164ft or deeper</option>
-                                        <option value={60}>60m / 197ft or deeper</option>
-                                        <option value={70}>70m / 230ft or deeper</option>
-                                        <option value={80}>80m / 262ft or deeper</option>
-                                        <option value={90}>90m / 295ft or deeper</option>
-                                        <option value={100}>100m / 328ft or deeper</option>
+                                        <option value={10}>10</option>
+                                        <option value={20}>20</option>
+                                        <option value={30}>30</option>
+                                        <option value={40}>40</option>
+                                        <option value={50}>50</option>
+                                        <option value={60}>60</option>
+                                        <option value={70}>70</option>
+                                        <option value={80}>80</option>
+                                        <option value={90}>90</option>
+                                        <option value={100}>100</option>
                                     </select>
                                 </div>
 

@@ -133,6 +133,116 @@ export async function POST(request: NextRequest) {
     }
 }
 
+// PUT - Update housing
+export async function PUT(request: NextRequest) {
+    try {
+        const { searchParams } = new URL(request.url)
+        const id = searchParams.get('id')
+
+        if (!id) {
+            return NextResponse.json(
+                { error: 'Housing ID is required' },
+                { status: 400 }
+            )
+        }
+
+        const body = await request.json()
+        const {
+            model,
+            name,
+            description,
+            priceAmount,
+            priceCurrency = 'USD',
+            depthRating,
+            material,
+            housingManufacturerId,
+            cameraId
+        } = body
+
+        // Validate required fields
+        if (!model || !name || !housingManufacturerId || !cameraId) {
+            return NextResponse.json(
+                { error: 'Model, name, housing manufacturer, and camera are required' },
+                { status: 400 }
+            )
+        }
+
+        // Check if manufacturer exists
+        const manufacturer = await prisma.housingManufacturer.findUnique({
+            where: { id: housingManufacturerId }
+        })
+
+        if (!manufacturer) {
+            return NextResponse.json(
+                { error: 'Housing manufacturer not found' },
+                { status: 404 }
+            )
+        }
+
+        // Check if camera exists
+        const camera = await prisma.camera.findUnique({
+            where: { id: cameraId }
+        })
+
+        if (!camera) {
+            return NextResponse.json(
+                { error: 'Camera not found' },
+                { status: 404 }
+            )
+        }
+
+        const slug = createSlug(name)
+
+        // Check if housing with this slug already exists for this manufacturer (excluding current housing)
+        const existingHousing = await prisma.housing.findFirst({
+            where: {
+                slug,
+                housingManufacturerId,
+                NOT: { id }
+            }
+        })
+
+        if (existingHousing) {
+            return NextResponse.json(
+                { error: 'A housing with this name already exists for this manufacturer' },
+                { status: 409 }
+            )
+        }
+
+        const housing = await prisma.housing.update({
+            where: { id },
+            data: {
+                model,
+                name,
+                slug,
+                description: description || null,
+                priceAmount: priceAmount ? parseFloat(priceAmount) : null,
+                priceCurrency,
+                depthRating: depthRating ? parseInt(depthRating) : 0,
+                material: material || null,
+                housingManufacturerId,
+                cameraId
+            },
+            include: {
+                manufacturer: true,
+                Camera: {
+                    include: {
+                        brand: true
+                    }
+                }
+            }
+        })
+
+        return NextResponse.json(housing)
+    } catch (error) {
+        console.error('Error updating housing:', error)
+        return NextResponse.json(
+            { error: 'Failed to update housing' },
+            { status: 500 }
+        )
+    }
+}
+
 // DELETE - Delete housing
 export async function DELETE(request: NextRequest) {
     try {
