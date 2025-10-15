@@ -48,7 +48,7 @@ model Housing {
     description           String?
     priceAmount           Decimal?            @db.Decimal(10, 2)
     priceCurrency         String?             @default("USD")
-    depthRating           String?
+    depthRating           Int
     material              String?
     manufacturer          HousingManufacturer @relation(fields: [housingManufacturerId], references: [id])
     Camera                Camera?             @relation(fields: [cameraId], references: [id])

@@ -156,7 +156,7 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                                     {housing.depthRating && (
                                         <div>
                                             <h4 className="font-semibold text-gray-900 mb-1">Depth Rating</h4>
-                                            <p className="text-gray-700">{housing.depthRating}</p>
+                                            <p className="text-gray-700">{housing.depthRating}m</p>
                                         </div>
                                     )}
                                     {housing.material && (

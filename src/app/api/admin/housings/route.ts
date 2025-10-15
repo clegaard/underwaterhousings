@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
                 description: description || null,
                 priceAmount: priceAmount ? parseFloat(priceAmount) : null,
                 priceCurrency,
-                depthRating: depthRating || null,
+                depthRating: depthRating ? parseInt(depthRating) : 0,
                 material: material || null,
                 housingManufacturerId,
                 cameraId

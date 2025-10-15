@@ -133,7 +133,7 @@ export default async function ManufacturerPage({ params }: ManufacturerPageProps
                                                 {housing.depthRating && (
                                                     <div className="flex justify-between">
                                                         <span className="text-gray-600">Depth Rating:</span>
-                                                        <span className="font-medium text-green-700">{housing.depthRating}</span>
+                                                        <span className="font-medium text-green-700">{housing.depthRating}m</span>
                                                     </div>
                                                 )}
 

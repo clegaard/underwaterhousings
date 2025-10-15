@@ -635,13 +635,15 @@ function HousingsManagement({ housings, housingManufacturers, cameras, onDataUpd
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Depth Rating</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Depth Rating (meters)</label>
                                 <input
-                                    type="text"
+                                    type="number"
                                     value={formData.depthRating}
                                     onChange={(e) => setFormData({ ...formData, depthRating: e.target.value })}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="e.g. 40m/130ft"
+                                    placeholder="e.g. 40"
+                                    min="0"
+                                    max="1000"
                                 />
                             </div>
                         </div>
@@ -729,7 +731,7 @@ function HousingsManagement({ housings, housingManufacturers, cameras, onDataUpd
                             <div className="flex items-start space-x-3">
                                 {housing.depthRating && (
                                     <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                        {housing.depthRating}
+                                        {housing.depthRating}m
                                     </span>
                                 )}
                                 <button

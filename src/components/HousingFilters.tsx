@@ -36,14 +36,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
     // Get unique values for filter options
     const uniqueMaterials = Array.from(new Set(initialHousings.map(h => h.material).filter(Boolean)))
-    const uniqueDepthRatings = Array.from(new Set(initialHousings.map(h => h.depthRating).filter(Boolean)))
-
-    // Parse depth rating to get numeric value for comparison
-    const parseDepthRating = (depthRating: string): number => {
-        if (!depthRating) return 0
-        const match = depthRating.match(/(\d+)m/)
-        return match ? parseInt(match[1]) : 0
-    }
+    const uniqueDepthRatings = Array.from(new Set(initialHousings.map(h => h.depthRating).filter(Boolean))).sort((a, b) => a - b)
 
     // Apply filters
     useEffect(() => {
@@ -58,9 +51,9 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                 }
             }
 
-            // Max depth filter
+            // Max depth filter - now works with integer depth ratings
             if (filters.maxDepth > 0) {
-                const housingDepth = parseDepthRating(housing.depthRating)
+                const housingDepth = housing.depthRating || 0
                 if (housingDepth < filters.maxDepth) {
                     return false
                 }
@@ -344,7 +337,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                         {housing.depthRating && (
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-600">Depth Rating:</span>
-                                                                <span className="font-medium text-green-700">{housing.depthRating}</span>
+                                                                <span className="font-medium text-green-700">{housing.depthRating}m</span>
                                                             </div>
                                                         )}
 
