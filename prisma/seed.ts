@@ -33,7 +33,7 @@ async function main() {
     const seafrogs = await prisma.housingManufacturer.create({
         data: {
             name: 'Sea Frogs',
-            slug: createSlug('Sea Frogs'),
+            slug: createSlug('seafrogs'),
             description: 'Affordable underwater housings for mirrorless and compact cameras'
         }
     })
@@ -107,7 +107,7 @@ async function main() {
     const canonR6MarkII = await prisma.camera.create({
         data: {
             name: 'EOS R6 Mark II',
-            slug: createSlug('Canon EOS R6 Mark II'),
+            slug: createSlug('r6-mark-ii'),
             cameraManufacturerId: canon.id
         }
     })
@@ -139,108 +139,37 @@ async function main() {
     const omOM5II = await prisma.camera.create({
         data: {
             name: 'OM-5 II',
-            slug: createSlug('OM System OM-5 II'),
+            slug: createSlug('om5-ii'),
             cameraManufacturerId: omSystem.id
         }
     })
 
     // Create housings based on scraped data from Nauticam
-    await prisma.housing.create({
-        data: {
-            model: 'NA-Z8',
-            name: 'NA-Z8 Housing for Nikon Z8 Camera',
-            slug: createSlug('NA-Z8 Housing for Nikon Z8 Camera'),
-            description: 'Professional underwater housing for the Nikon Z8 camera',
-            priceAmount: 5500,
-            priceCurrency: 'USD',
-            depthRating: '100m/330ft',
-            material: 'Aluminum',
-            housingManufacturerId: nauticam.id,
-            cameraId: nikonZ8.id
-        }
-    })
 
-    await prisma.housing.create({
-        data: {
-            model: 'NA-Z5II',
-            name: 'NA-Z5II Housing for Nikon Z5II Camera',
-            slug: createSlug('NA-Z5II Housing for Nikon Z5II Camera'),
-            description: 'Professional underwater housing for the Nikon Z5II camera',
-            priceAmount: 3400,
-            priceCurrency: 'USD',
-            depthRating: '100m/330ft',
-            material: 'Aluminum',
-            housingManufacturerId: nauticam.id,
-            cameraId: nikonZ5II.id
-        }
-    })
 
     await prisma.housing.create({
         data: {
             model: 'NA-OM5II',
             name: 'NA-OM5II Housing for OM SYSTEM OM-5II Camera',
-            slug: createSlug('NA-OM5II Housing for OM SYSTEM OM-5II Camera'),
+            slug: createSlug('na-om-5-ii'),
             description: 'Professional underwater housing for the OM SYSTEM OM-5II camera',
             priceAmount: 1800,
             priceCurrency: 'USD',
             depthRating: '100m/330ft',
             material: 'Aluminum',
             housingManufacturerId: nauticam.id,
-            cameraId: omOM5II.id
+            cameraId: omOM5II.id,
+
         }
     })
 
-    // Create housings based on scraped data from Sea Frogs
-    await prisma.housing.create({
-        data: {
-            model: 'SF-ZV-E1',
-            name: 'Sony ZV-E1 40M/130FT Underwater Camera Housing',
-            slug: createSlug('Sony ZV-E1 40M/130FT Underwater Camera Housing'),
-            description: 'Affordable underwater housing for Sony ZV-E1 camera',
-            priceAmount: 455,
-            priceCurrency: 'USD',
-            depthRating: '40m/130ft',
-            material: 'Aluminum',
-            housingManufacturerId: seafrogs.id,
-            cameraId: sonyZVE1.id
-        }
-    })
 
-    await prisma.housing.create({
-        data: {
-            model: 'SF-FX3-FX30',
-            name: 'Sea Frogs Salted Line Underwater Camera Housing for Sony FX3/FX30',
-            slug: createSlug('Sea Frogs Salted Line Underwater Camera Housing for Sony FX3/FX30'),
-            description: 'Professional underwater housing for Sony FX3/FX30 with HDMI 2.0 support',
-            priceAmount: 636,
-            priceCurrency: 'USD',
-            depthRating: '40m/130ft',
-            material: 'Aluminum',
-            housingManufacturerId: seafrogs.id,
-            cameraId: sonyFX3.id
-        }
-    })
-
-    await prisma.housing.create({
-        data: {
-            model: 'SF-R50',
-            name: 'Sea Frogs Canon EOS R50 40m/130ft Underwater Camera Housing',
-            slug: createSlug('Sea Frogs Canon EOS R50 40m/130ft Underwater Camera Housing'),
-            description: 'Affordable underwater housing for Canon EOS R50 camera',
-            priceAmount: 424,
-            priceCurrency: 'USD',
-            depthRating: '40m/130ft',
-            material: 'Aluminum',
-            housingManufacturerId: seafrogs.id,
-            cameraId: canonR50.id
-        }
-    })
 
     await prisma.housing.create({
         data: {
             model: 'SF-R6-MarkII',
             name: 'Sea Frogs 40m/130ft Underwater Camera Housing for Canon EOS R6 Mark II',
-            slug: createSlug('Sea Frogs 40m/130ft Underwater Camera Housing for Canon EOS R6 Mark II'),
+            slug: createSlug('r6-mark-ii'),
             description: 'Professional underwater housing for Canon EOS R6 Mark II camera',
             priceAmount: 980,
             priceCurrency: 'USD',
@@ -251,20 +180,7 @@ async function main() {
         }
     })
 
-    await prisma.housing.create({
-        data: {
-            model: 'SF-R5',
-            name: 'SeaFrogs 40m/130ft Underwater Camera Housing for Canon EOS R5',
-            slug: createSlug('SeaFrogs 40m/130ft Underwater Camera Housing for Canon EOS R5'),
-            description: 'Professional underwater housing for Canon EOS R5 camera',
-            priceAmount: 980,
-            priceCurrency: 'USD',
-            depthRating: '40m/130ft',
-            material: 'Aluminum',
-            housingManufacturerId: seafrogs.id,
-            cameraId: canonR5.id
-        }
-    })
+
 
     console.log('✅ Database seeded successfully!')
     console.log('📊 Created:')
