@@ -1,7 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import Image from 'next/image'
 import { notFound } from 'next/navigation'
+import { getHousingImagePathWithFallback } from '@/lib/images'
+import { HousingImage } from '@/components/HousingImage'
 
 interface HousingDetailPageProps {
     params: {
@@ -110,12 +111,17 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                         {/* Housing Image */}
                         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                             <div className="relative w-full h-96 bg-gray-100 rounded-lg overflow-hidden">
-                                <Image
-                                    src="/housings/nauticam/na-om5ii/front.webp"
-                                    alt={housing.name}
-                                    fill
-                                    className="object-cover"
-                                />
+                                {(() => {
+                                    const imageInfo = getHousingImagePathWithFallback(housing.manufacturer.slug, housing.slug)
+                                    return (
+                                        <HousingImage
+                                            src={imageInfo.src}
+                                            fallback={imageInfo.fallback}
+                                            alt={housing.name}
+                                            className="object-cover"
+                                        />
+                                    )
+                                })()}
                             </div>
                         </div>
 

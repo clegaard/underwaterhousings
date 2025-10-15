@@ -1,7 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import Image from 'next/image'
 import { notFound } from 'next/navigation'
+import { getHousingImagePathWithFallback } from '@/lib/images'
+import { HousingImage } from '@/components/HousingImage'
 
 interface ManufacturerPageProps {
     params: {
@@ -86,85 +87,87 @@ export default async function ManufacturerPage({ params }: ManufacturerPageProps
                 </div>
 
                 {housingsData.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {housingsData.map((housing) => {
-                            // Use database slugs for SEO-friendly URLs with new structure
-                            const detailUrl = `/housings/${manufacturer.slug}/${housing.slug}`
+                    <div className="flex justify-center">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl">
+                            {housingsData.map((housing) => {
+                                // Use database slugs for SEO-friendly URLs with new structure
+                                const detailUrl = `/housings/${manufacturer.slug}/${housing.slug}`
 
-                            // For now, use the hardcoded Nauticam image for all housings as requested
-                            const imagePath = '/housings/nauticam/na-om5ii/front.webp'
+                                // Get the proper image path with fallback
+                                const imageInfo = getHousingImagePathWithFallback(manufacturer.slug, housing.slug)
 
-                            return (
-                                <Link
-                                    key={housing.id}
-                                    href={detailUrl}
-                                    className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group overflow-hidden"
-                                >
-                                    {/* Housing Image */}
-                                    <div className="relative w-full h-48 bg-gray-100">
-                                        <Image
-                                            src={imagePath}
-                                            alt={housing.name}
-                                            fill
-                                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                    </div>
-
-                                    <div className="p-6">
-                                        <div className="flex justify-between items-start mb-3">
-                                            <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
-                                                {housing.model}
-                                            </h3>
-                                            {housing.Camera && (
-                                                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                                                    {housing.Camera.brand.name} {housing.Camera.name}
-                                                </span>
-                                            )}
+                                return (
+                                    <Link
+                                        key={housing.id}
+                                        href={detailUrl}
+                                        className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group overflow-hidden"
+                                    >
+                                        {/* Housing Image */}
+                                        <div className="relative w-full h-48 bg-gray-100">
+                                            <HousingImage
+                                                src={imageInfo.src}
+                                                fallback={imageInfo.fallback}
+                                                alt={housing.name}
+                                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                            />
                                         </div>
 
-                                        <h4 className="text-sm font-medium text-gray-800 mb-2">{housing.name}</h4>
-                                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                                            {housing.description || `Professional underwater housing for ${housing.Camera?.brand.name} ${housing.Camera?.name}`}
-                                        </p>
-
-                                        <div className="space-y-2 text-sm">
-                                            {housing.depthRating && (
-                                                <div className="flex justify-between">
-                                                    <span className="text-gray-600">Depth Rating:</span>
-                                                    <span className="font-medium text-green-700">{housing.depthRating}</span>
-                                                </div>
-                                            )}
-
-                                            {housing.material && (
-                                                <div className="flex justify-between">
-                                                    <span className="text-gray-600">Material:</span>
-                                                    <span className="font-medium">{housing.material}</span>
-                                                </div>
-                                            )}
-
-                                            {housing.priceAmount && (
-                                                <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                                                    <span className="text-gray-600">Price:</span>
-                                                    <span className="font-bold text-green-600 text-lg">
-                                                        ${Number(housing.priceAmount).toLocaleString()} {housing.priceCurrency}
+                                        <div className="p-6">
+                                            <div className="flex justify-between items-start mb-3">
+                                                <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
+                                                    {housing.model}
+                                                </h3>
+                                                {housing.Camera && (
+                                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                                                        {housing.Camera.brand.name} {housing.Camera.name}
                                                     </span>
-                                                </div>
-                                            )}
-                                        </div>
+                                                )}
+                                            </div>
 
-                                        {/* Click indicator */}
-                                        <div className="mt-4 pt-3 border-t border-gray-100">
-                                            <div className="flex items-center justify-between text-xs text-gray-500 group-hover:text-blue-600 transition-colors">
-                                                <span>View details</span>
-                                                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                                </svg>
+                                            <h4 className="text-sm font-medium text-gray-800 mb-2">{housing.name}</h4>
+                                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                                                {housing.description || `Professional underwater housing for ${housing.Camera?.brand.name} ${housing.Camera?.name}`}
+                                            </p>
+
+                                            <div className="space-y-2 text-sm">
+                                                {housing.depthRating && (
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-600">Depth Rating:</span>
+                                                        <span className="font-medium text-green-700">{housing.depthRating}</span>
+                                                    </div>
+                                                )}
+
+                                                {housing.material && (
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-600">Material:</span>
+                                                        <span className="font-medium">{housing.material}</span>
+                                                    </div>
+                                                )}
+
+                                                {housing.priceAmount && (
+                                                    <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                                                        <span className="text-gray-600">Price:</span>
+                                                        <span className="font-bold text-green-600 text-lg">
+                                                            ${Number(housing.priceAmount).toLocaleString()} {housing.priceCurrency}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Click indicator */}
+                                            <div className="mt-4 pt-3 border-t border-gray-100">
+                                                <div className="flex items-center justify-between text-xs text-gray-500 group-hover:text-blue-600 transition-colors">
+                                                    <span>View details</span>
+                                                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </Link>
-                            )
-                        })}
+                                    </Link>
+                                )
+                            })}
+                        </div>
                     </div>
                 ) : (
                     <div className="text-center py-12 bg-white rounded-lg shadow-sm">
