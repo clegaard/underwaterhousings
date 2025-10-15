@@ -1,0 +1,11 @@
+Scrape the following websites 
+
+https://www.nauticam.com/collections/housings#
+https://www.aquatica.ca/housings/#
+https://www.isotecnic.it/en/products-eng/housings-en.html
+https://www.divevolkdiving.com/collections/housing
+https://www.aoi-uw.com/products/housings.html
+https://www.seafrogs.com.hk/
+
+
+Create a json file housings.json and a json schema schema.json that defines common fields

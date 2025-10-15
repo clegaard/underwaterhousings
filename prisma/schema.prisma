@@ -1,0 +1,231 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Manufacturer {
+    id          String             @id @default(cuid())
+    name        String             @unique
+    slug        String             @unique
+    website     String?
+    description String?
+    country     String?
+    founded     Int?
+    logoUrl     String?
+    isActive    Boolean            @default(true)
+    createdAt   DateTime           @default(now())
+    updatedAt   DateTime           @updatedAt
+    accessories HousingAccessory[]
+    housings    Housing[]
+
+    @@map("manufacturers")
+}
+
+model CameraBrand {
+    id           String        @id @default(cuid())
+    name         String        @unique
+    slug         String        @unique
+    logoUrl      String?
+    website      String?
+    isActive     Boolean       @default(true)
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @updatedAt
+    cameraModels CameraModel[]
+
+    @@map("camera_brands")
+}
+
+model CameraModel {
+    id             String                 @id @default(cuid())
+    name           String
+    fullName       String
+    slug           String                 @unique
+    type           CameraType
+    releaseYear    Int?
+    discontinued   Boolean                @default(false)
+    specifications Json?
+    createdAt      DateTime               @default(now())
+    updatedAt      DateTime               @updatedAt
+    brandId        String
+    brand          CameraBrand            @relation(fields: [brandId], references: [id], onDelete: Cascade)
+    housings       HousingCompatibility[]
+
+    @@unique([brandId, name])
+    @@map("camera_models")
+}
+
+model Housing {
+    id                     String                          @id @default(cuid())
+    model                  String
+    name                   String
+    slug                   String                          @unique
+    sku                    String?
+    category               HousingCategory
+    description            String?
+    keyFeatures            String[]
+    priceAmount            Decimal?                        @db.Decimal(10, 2)
+    priceCurrency          String?                         @default("USD")
+    originalPrice          String?
+    depthRating            String?
+    material               String?
+    portSystem             String?
+    weightGrams            Int?
+    dimensions             Json?
+    isActive               Boolean                         @default(true)
+    inStock                Boolean                         @default(true)
+    isDiscontinued         Boolean                         @default(false)
+    imageUrls              String[]
+    productUrl             String?
+    manualUrl              String?
+    portChartUrl           String?
+    scrapedAt              DateTime?
+    sourceUrl              String?
+    createdAt              DateTime                        @default(now())
+    updatedAt              DateTime                        @updatedAt
+    manufacturerId         String
+    accessoryCompatibility HousingAccessoryCompatibility[]
+    compatibility          HousingCompatibility[]
+    manufacturer           Manufacturer                    @relation(fields: [manufacturerId], references: [id], onDelete: Cascade)
+    reviews                Review[]
+
+    @@unique([manufacturerId, model])
+    @@map("housings")
+}
+
+model HousingCompatibility {
+    id            String      @id @default(cuid())
+    notes         String?
+    isRecommended Boolean     @default(true)
+    createdAt     DateTime    @default(now())
+    updatedAt     DateTime    @updatedAt
+    housingId     String
+    cameraModelId String
+    cameraModel   CameraModel @relation(fields: [cameraModelId], references: [id], onDelete: Cascade)
+    housing       Housing     @relation(fields: [housingId], references: [id], onDelete: Cascade)
+
+    @@unique([housingId, cameraModelId])
+    @@map("housing_compatibility")
+}
+
+model AccessoryCategory {
+    id          String              @id @default(cuid())
+    name        String              @unique
+    slug        String              @unique
+    description String?
+    parentId    String?
+    createdAt   DateTime            @default(now())
+    updatedAt   DateTime            @updatedAt
+    parent      AccessoryCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+    children    AccessoryCategory[] @relation("CategoryHierarchy")
+    accessories HousingAccessory[]
+
+    @@map("accessory_categories")
+}
+
+model HousingAccessory {
+    id                 String                          @id @default(cuid())
+    name               String
+    slug               String                          @unique
+    sku                String?
+    description        String?
+    priceAmount        Decimal?                        @db.Decimal(10, 2)
+    priceCurrency      String?                         @default("USD")
+    isRequired         Boolean                         @default(false)
+    isOptional         Boolean                         @default(true)
+    productUrl         String?
+    imageUrls          String[]
+    specifications     Json?
+    createdAt          DateTime                        @default(now())
+    updatedAt          DateTime                        @updatedAt
+    categoryId         String
+    manufacturerId     String
+    category           AccessoryCategory               @relation(fields: [categoryId], references: [id])
+    manufacturer       Manufacturer                    @relation(fields: [manufacturerId], references: [id])
+    compatibleHousings HousingAccessoryCompatibility[]
+
+    @@map("housing_accessories")
+}
+
+model HousingAccessoryCompatibility {
+    id          String           @id @default(cuid())
+    notes       String?
+    createdAt   DateTime         @default(now())
+    updatedAt   DateTime         @updatedAt
+    housingId   String
+    accessoryId String
+    accessory   HousingAccessory @relation(fields: [accessoryId], references: [id], onDelete: Cascade)
+    housing     Housing          @relation(fields: [housingId], references: [id], onDelete: Cascade)
+
+    @@unique([housingId, accessoryId])
+    @@map("housing_accessory_compatibility")
+}
+
+model Review {
+    id          String   @id @default(cuid())
+    title       String?
+    content     String
+    rating      Int      @db.SmallInt
+    authorName  String
+    authorEmail String?
+    isVerified  Boolean  @default(false)
+    isApproved  Boolean  @default(false)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    housingId   String
+    housing     Housing  @relation(fields: [housingId], references: [id], onDelete: Cascade)
+
+    @@map("reviews")
+}
+
+model ScrapingLog {
+    id           String         @id @default(cuid())
+    source       String
+    sourceUrl    String
+    status       ScrapingStatus
+    itemsFound   Int            @default(0)
+    itemsCreated Int            @default(0)
+    itemsUpdated Int            @default(0)
+    errorMessage String?
+    startedAt    DateTime       @default(now())
+    completedAt  DateTime?
+    duration     Int?
+
+    @@map("scraping_logs")
+}
+
+enum CameraType {
+    DSLR
+    MIRRORLESS
+    COMPACT
+    ACTION_CAM
+    CINEMA
+    SMARTPHONE
+    MONITOR
+
+    @@map("camera_type")
+}
+
+enum HousingCategory {
+    CAMERA_HOUSING
+    COMPACT_HOUSING
+    CINEMA_HOUSING
+    MONITOR_HOUSING
+    SMARTPHONE_HOUSING
+    ACTION_CAM_HOUSING
+    ACCESSORY
+
+    @@map("housing_category")
+}
+
+enum ScrapingStatus {
+    PENDING
+    RUNNING
+    COMPLETED
+    FAILED
+
+    @@map("scraping_status")
+}
