@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 // Types for our filters
 type FilterState = {
@@ -306,55 +307,74 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
                         {!isFiltering && filteredHousings.length > 0 && (
                             <div key={`${filteredHousings.length}-${JSON.stringify(filters)}`} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                {filteredHousings.map((housing: any) => (
-                                    <div key={housing.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200">
-                                        <div className="p-6">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <h3 className="text-lg font-semibold text-blue-900">{housing.model}</h3>
-                                                <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                                                    {housing.manufacturer.name}
-                                                </span>
+                                {filteredHousings.map((housing: any) => {
+                                    // Use database slugs for SEO-friendly URLs
+                                    const detailUrl = `/${housing.manufacturer.slug}/${housing.slug}`
+
+                                    return (
+                                        <Link
+                                            key={housing.id}
+                                            href={detailUrl}
+                                            className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group cursor-pointer"
+                                        >
+                                            <div className="p-6">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">{housing.model}</h3>
+                                                    <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                                                        {housing.manufacturer.name}
+                                                    </span>
+                                                </div>
+
+                                                <h4 className="text-sm font-medium text-gray-800 mb-2">{housing.name}</h4>
+                                                <p className="text-sm text-gray-600 mb-4 line-clamp-2">{housing.description}</p>
+
+                                                <div className="space-y-2 text-sm">
+                                                    {housing.Camera && (
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="text-gray-600">Compatible with:</span>
+                                                            <span className="font-medium bg-blue-50 text-blue-800 px-2 py-1 rounded text-xs">
+                                                                {housing.Camera.brand.name} {housing.Camera.name}
+                                                            </span>
+                                                        </div>
+                                                    )}
+
+                                                    {housing.depthRating && (
+                                                        <div className="flex justify-between">
+                                                            <span className="text-gray-600">Depth Rating:</span>
+                                                            <span className="font-medium text-green-700">{housing.depthRating}</span>
+                                                        </div>
+                                                    )}
+
+                                                    {housing.material && (
+                                                        <div className="flex justify-between">
+                                                            <span className="text-gray-600">Material:</span>
+                                                            <span className="font-medium">{housing.material}</span>
+                                                        </div>
+                                                    )}
+
+                                                    {housing.priceAmount && (
+                                                        <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                                                            <span className="text-gray-600">Price:</span>
+                                                            <span className="font-bold text-green-600 text-lg">
+                                                                ${Number(housing.priceAmount).toLocaleString()} {housing.priceCurrency}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Click indicator */}
+                                                <div className="mt-4 pt-3 border-t border-gray-100">
+                                                    <div className="flex items-center justify-between text-xs text-gray-500 group-hover:text-blue-600 transition-colors">
+                                                        <span>Click for details</span>
+                                                        <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
                                             </div>
-
-                                            <h4 className="text-sm font-medium text-gray-800 mb-2">{housing.name}</h4>
-                                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">{housing.description}</p>
-
-                                            <div className="space-y-2 text-sm">
-                                                {housing.Camera && (
-                                                    <div className="flex justify-between items-center">
-                                                        <span className="text-gray-600">Compatible with:</span>
-                                                        <span className="font-medium bg-blue-50 text-blue-800 px-2 py-1 rounded text-xs">
-                                                            {housing.Camera.brand.name} {housing.Camera.name}
-                                                        </span>
-                                                    </div>
-                                                )}
-
-                                                {housing.depthRating && (
-                                                    <div className="flex justify-between">
-                                                        <span className="text-gray-600">Depth Rating:</span>
-                                                        <span className="font-medium text-green-700">{housing.depthRating}</span>
-                                                    </div>
-                                                )}
-
-                                                {housing.material && (
-                                                    <div className="flex justify-between">
-                                                        <span className="text-gray-600">Material:</span>
-                                                        <span className="font-medium">{housing.material}</span>
-                                                    </div>
-                                                )}
-
-                                                {housing.priceAmount && (
-                                                    <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                                                        <span className="text-gray-600">Price:</span>
-                                                        <span className="font-bold text-green-600 text-lg">
-                                                            ${Number(housing.priceAmount).toLocaleString()} {housing.priceCurrency}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                                        </Link>
+                                    )
+                                })}
                             </div>
                         )}
                     </div>

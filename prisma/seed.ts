@@ -2,6 +2,16 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+// Function to create URL-friendly slugs
+function createSlug(text: string): string {
+    return text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+        .trim()
+}
+
 async function main() {
     console.log('🌱 Seeding database...')
 
@@ -15,6 +25,7 @@ async function main() {
     const nauticam = await prisma.housingManufacturer.create({
         data: {
             name: 'Nauticam',
+            slug: createSlug('Nauticam'),
             description: 'Premium underwater housings for professional photography'
         }
     })
@@ -22,6 +33,7 @@ async function main() {
     const seafrogs = await prisma.housingManufacturer.create({
         data: {
             name: 'Sea Frogs',
+            slug: createSlug('Sea Frogs'),
             description: 'Affordable underwater housings for mirrorless and compact cameras'
         }
     })
@@ -30,6 +42,7 @@ async function main() {
     const sony = await prisma.cameraManufacturer.create({
         data: {
             name: 'Sony',
+            slug: createSlug('Sony'),
             isActive: true
         }
     })
@@ -37,6 +50,7 @@ async function main() {
     const canon = await prisma.cameraManufacturer.create({
         data: {
             name: 'Canon',
+            slug: createSlug('Canon'),
             isActive: true
         }
     })
@@ -44,6 +58,7 @@ async function main() {
     const nikon = await prisma.cameraManufacturer.create({
         data: {
             name: 'Nikon',
+            slug: createSlug('Nikon'),
             isActive: true
         }
     })
@@ -51,6 +66,7 @@ async function main() {
     const omSystem = await prisma.cameraManufacturer.create({
         data: {
             name: 'OM System',
+            slug: createSlug('OM System'),
             isActive: true
         }
     })
@@ -59,6 +75,7 @@ async function main() {
     const sonyZVE1 = await prisma.camera.create({
         data: {
             name: 'ZV-E1',
+            slug: createSlug('Sony ZV-E1'),
             cameraManufacturerId: sony.id
         }
     })
@@ -66,6 +83,7 @@ async function main() {
     const sonyFX3 = await prisma.camera.create({
         data: {
             name: 'FX3',
+            slug: createSlug('Sony FX3'),
             cameraManufacturerId: sony.id
         }
     })
@@ -73,6 +91,7 @@ async function main() {
     const sonyFX30 = await prisma.camera.create({
         data: {
             name: 'FX30',
+            slug: createSlug('Sony FX30'),
             cameraManufacturerId: sony.id
         }
     })
@@ -80,6 +99,7 @@ async function main() {
     const canonR50 = await prisma.camera.create({
         data: {
             name: 'EOS R50',
+            slug: createSlug('Canon EOS R50'),
             cameraManufacturerId: canon.id
         }
     })
@@ -87,6 +107,7 @@ async function main() {
     const canonR6MarkII = await prisma.camera.create({
         data: {
             name: 'EOS R6 Mark II',
+            slug: createSlug('Canon EOS R6 Mark II'),
             cameraManufacturerId: canon.id
         }
     })
@@ -94,6 +115,7 @@ async function main() {
     const canonR5 = await prisma.camera.create({
         data: {
             name: 'EOS R5',
+            slug: createSlug('Canon EOS R5'),
             cameraManufacturerId: canon.id
         }
     })
@@ -101,6 +123,7 @@ async function main() {
     const nikonZ8 = await prisma.camera.create({
         data: {
             name: 'Z8',
+            slug: createSlug('Nikon Z8'),
             cameraManufacturerId: nikon.id
         }
     })
@@ -108,6 +131,7 @@ async function main() {
     const nikonZ5II = await prisma.camera.create({
         data: {
             name: 'Z5 II',
+            slug: createSlug('Nikon Z5 II'),
             cameraManufacturerId: nikon.id
         }
     })
@@ -115,6 +139,7 @@ async function main() {
     const omOM5II = await prisma.camera.create({
         data: {
             name: 'OM-5 II',
+            slug: createSlug('OM System OM-5 II'),
             cameraManufacturerId: omSystem.id
         }
     })
@@ -124,6 +149,7 @@ async function main() {
         data: {
             model: 'NA-Z8',
             name: 'NA-Z8 Housing for Nikon Z8 Camera',
+            slug: createSlug('NA-Z8 Housing for Nikon Z8 Camera'),
             description: 'Professional underwater housing for the Nikon Z8 camera',
             priceAmount: 5500,
             priceCurrency: 'USD',
@@ -138,6 +164,7 @@ async function main() {
         data: {
             model: 'NA-Z5II',
             name: 'NA-Z5II Housing for Nikon Z5II Camera',
+            slug: createSlug('NA-Z5II Housing for Nikon Z5II Camera'),
             description: 'Professional underwater housing for the Nikon Z5II camera',
             priceAmount: 3400,
             priceCurrency: 'USD',
@@ -152,6 +179,7 @@ async function main() {
         data: {
             model: 'NA-OM5II',
             name: 'NA-OM5II Housing for OM SYSTEM OM-5II Camera',
+            slug: createSlug('NA-OM5II Housing for OM SYSTEM OM-5II Camera'),
             description: 'Professional underwater housing for the OM SYSTEM OM-5II camera',
             priceAmount: 1800,
             priceCurrency: 'USD',
@@ -167,6 +195,7 @@ async function main() {
         data: {
             model: 'SF-ZV-E1',
             name: 'Sony ZV-E1 40M/130FT Underwater Camera Housing',
+            slug: createSlug('Sony ZV-E1 40M/130FT Underwater Camera Housing'),
             description: 'Affordable underwater housing for Sony ZV-E1 camera',
             priceAmount: 455,
             priceCurrency: 'USD',
@@ -181,6 +210,7 @@ async function main() {
         data: {
             model: 'SF-FX3-FX30',
             name: 'Sea Frogs Salted Line Underwater Camera Housing for Sony FX3/FX30',
+            slug: createSlug('Sea Frogs Salted Line Underwater Camera Housing for Sony FX3/FX30'),
             description: 'Professional underwater housing for Sony FX3/FX30 with HDMI 2.0 support',
             priceAmount: 636,
             priceCurrency: 'USD',
@@ -195,6 +225,7 @@ async function main() {
         data: {
             model: 'SF-R50',
             name: 'Sea Frogs Canon EOS R50 40m/130ft Underwater Camera Housing',
+            slug: createSlug('Sea Frogs Canon EOS R50 40m/130ft Underwater Camera Housing'),
             description: 'Affordable underwater housing for Canon EOS R50 camera',
             priceAmount: 424,
             priceCurrency: 'USD',
@@ -209,6 +240,7 @@ async function main() {
         data: {
             model: 'SF-R6-MarkII',
             name: 'Sea Frogs 40m/130ft Underwater Camera Housing for Canon EOS R6 Mark II',
+            slug: createSlug('Sea Frogs 40m/130ft Underwater Camera Housing for Canon EOS R6 Mark II'),
             description: 'Professional underwater housing for Canon EOS R6 Mark II camera',
             priceAmount: 980,
             priceCurrency: 'USD',
@@ -223,6 +255,7 @@ async function main() {
         data: {
             model: 'SF-R5',
             name: 'SeaFrogs 40m/130ft Underwater Camera Housing for Canon EOS R5',
+            slug: createSlug('SeaFrogs 40m/130ft Underwater Camera Housing for Canon EOS R5'),
             description: 'Professional underwater housing for Canon EOS R5 camera',
             priceAmount: 980,
             priceCurrency: 'USD',

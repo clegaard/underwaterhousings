@@ -10,6 +10,7 @@ datasource db {
 model HousingManufacturer {
     id          String    @id @default(cuid())
     name        String    @unique
+    slug        String    @unique
     description String?
     housings    Housing[]
 
@@ -19,6 +20,7 @@ model HousingManufacturer {
 model CameraManufacturer {
     id        String   @id @default(cuid())
     name      String   @unique
+    slug      String   @unique
     isActive  Boolean  @default(true)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -30,6 +32,7 @@ model CameraManufacturer {
 model Camera {
     id                   String             @id @default(cuid())
     name                 String
+    slug                 String             @unique
     brand                CameraManufacturer @relation(fields: [cameraManufacturerId], references: [id])
     housings             Housing[]
     cameraManufacturerId String
@@ -41,6 +44,7 @@ model Housing {
     id                    String              @id @default(cuid())
     model                 String
     name                  String
+    slug                  String              @unique
     description           String?
     priceAmount           Decimal?            @db.Decimal(10, 2)
     priceCurrency         String?             @default("USD")

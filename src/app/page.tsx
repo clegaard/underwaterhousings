@@ -7,7 +7,13 @@ async function getHousingsData() {
         const [housings, cameras, manufacturers] = await Promise.all([
             prisma.housing.findMany({
                 include: {
-                    manufacturer: true,
+                    manufacturer: {
+                        select: {
+                            id: true,
+                            name: true,
+                            slug: true
+                        }
+                    },
                     Camera: {
                         include: {
                             brand: true
