@@ -1,0 +1,141 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Underwater Camera Housings",
+    "description": "Schema for underwater camera housing data scraped from manufacturer websites",
+    "type": "object",
+    "properties": {
+        "housings": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "manufacturer": {
+                        "type": "string",
+                        "description": "Name of the housing manufacturer",
+                        "examples": [
+                            "Nauticam",
+                            "Sea Frogs",
+                            "Aquatica",
+                            "Isotta",
+                            "AOI",
+                            "DiveVolk"
+                        ]
+                    },
+                    "model": {
+                        "type": "string",
+                        "description": "Housing model number or identifier"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Full product name of the housing"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Product description with key features"
+                    },
+                    "priceAmount": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Price in decimal format"
+                    },
+                    "priceCurrency": {
+                        "type": "string",
+                        "pattern": "^[A-Z]{3}$",
+                        "description": "ISO 4217 currency code",
+                        "default": "USD"
+                    },
+                    "depthRating": {
+                        "type": "string",
+                        "description": "Maximum depth rating (e.g., '100m/330ft', '40m/130ft')"
+                    },
+                    "material": {
+                        "type": "string",
+                        "description": "Primary construction material",
+                        "examples": [
+                            "Aluminum",
+                            "Polycarbonate",
+                            "Acrylic"
+                        ]
+                    },
+                    "compatibleCamera": {
+                        "type": "string",
+                        "description": "Compatible camera model(s)"
+                    },
+                    "sourceUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Source website URL where data was scraped"
+                    }
+                },
+                "required": [
+                    "manufacturer",
+                    "model",
+                    "name",
+                    "compatibleCamera",
+                    "sourceUrl"
+                ],
+                "additionalProperties": false
+            }
+        },
+        "metadata": {
+            "type": "object",
+            "properties": {
+                "scrapedOn": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Date when data was scraped"
+                },
+                "totalHousings": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Total number of housings in the dataset"
+                },
+                "manufacturers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "List of unique manufacturers in the dataset"
+                },
+                "cameraBrands": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "List of unique camera brands supported"
+                },
+                "priceRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "max": {
+                            "type": "number",
+                            "minimum": 0
+                        },
+                        "currency": {
+                            "type": "string",
+                            "pattern": "^[A-Z]{3}$"
+                        }
+                    },
+                    "required": [
+                        "min",
+                        "max",
+                        "currency"
+                    ]
+                }
+            },
+            "required": [
+                "scrapedOn",
+                "totalHousings"
+            ]
+        }
+    },
+    "required": [
+        "housings",
+        "metadata"
+    ],
+    "additionalProperties": false
+}

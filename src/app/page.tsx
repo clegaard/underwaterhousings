@@ -67,12 +67,22 @@ type ManufacturerData = {
     website: string | null
     keyFeatures?: string[]
     _count: { housings: number }
+    housings?: any[] // Include housing data when available
 }
 
 async function getManufacturers(): Promise<{ manufacturers: ManufacturerData[], source: string }> {
     try {
-        const manufacturers = await prisma.manufacturer.findMany({
+        const manufacturers = await prisma.housingManufacturer.findMany({
             include: {
+                housings: {
+                    include: {
+                        Camera: {
+                            include: {
+                                brand: true
+                            }
+                        }
+                    }
+                },
                 _count: {
                     select: {
                         housings: true
@@ -89,10 +99,11 @@ async function getManufacturers(): Promise<{ manufacturers: ManufacturerData[], 
             id: m.id,
             name: m.name,
             description: m.description,
-            country: m.country,
-            website: m.website,
-            keyFeatures: [], // Database doesn't have keyFeatures field, so we'll use empty array
-            _count: m._count
+            country: null, // Not in current schema
+            website: null, // Not in current schema
+            keyFeatures: [], // Not in current schema
+            _count: m._count,
+            housings: m.housings // Include housing data
         }))
 
         return { manufacturers: transformedManufacturers, source: 'database' }
@@ -102,8 +113,32 @@ async function getManufacturers(): Promise<{ manufacturers: ManufacturerData[], 
     }
 }
 
+async function getRecentHousings() {
+    try {
+        const housings = await prisma.housing.findMany({
+            take: 6, // Limit to 6 recent housings
+            include: {
+                manufacturer: true,
+                Camera: {
+                    include: {
+                        brand: true
+                    }
+                }
+            },
+            orderBy: {
+                name: 'asc'
+            }
+        })
+        return { housings, source: 'database' }
+    } catch (error) {
+        console.log('Could not fetch housings:', error instanceof Error ? error.message : error)
+        return { housings: [], source: 'fallback' }
+    }
+}
+
 export default async function Home() {
     const { manufacturers, source } = await getManufacturers()
+    const { housings } = await getRecentHousings()
 
     return (
         <main className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 p-8">
@@ -168,7 +203,103 @@ export default async function Home() {
                     ))}
                 </div>
 
-                <div className="bg-white p-8 rounded-lg shadow-lg">
+                {/* Housing Showcase Section */}
+                {/* <div className="mb-12">
+                    <h2 className="text-3xl font-bold text-center mb-8 text-blue-900">Featured Housings</h2>
+                    {source === 'database' && housings.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {housings.map((housing: any) => (
+                                <div key={housing.id} className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow border-l-4 border-blue-500">
+                                    <div className="flex justify-between items-start mb-3">
+                                        <h3 className="text-lg font-semibold text-blue-900">{housing.model}</h3>
+                                        <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                                            {housing.manufacturer.name}
+                                        </span>
+                                    </div>
+                                    <h4 className="text-sm font-medium text-gray-800 mb-2">{housing.name}</h4>
+                                    <p className="text-sm text-gray-600 mb-3">{housing.description}</p>
+
+                                    <div className="space-y-2 text-xs text-gray-700">
+                                        {housing.priceAmount && (
+                                            <div className="flex justify-between">
+                                                <span>Price:</span>
+                                                <span className="font-semibold text-green-600">
+                                                    ${housing.priceAmount.toLocaleString()} {housing.priceCurrency}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {housing.depthRating && (
+                                            <div className="flex justify-between">
+                                                <span>Depth Rating:</span>
+                                                <span className="font-medium">{housing.depthRating}</span>
+                                            </div>
+                                        )}
+                                        {housing.material && (
+                                            <div className="flex justify-between">
+                                                <span>Material:</span>
+                                                <span className="font-medium">{housing.material}</span>
+                                            </div>
+                                        )}
+                                        {housing.Camera && (
+                                            <div className="flex justify-between">
+                                                <span>Compatible:</span>
+                                                <span className="font-medium">
+                                                    {housing.Camera.brand.name} {housing.Camera.name}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center p-8 bg-gray-50 rounded-lg">
+                            <p className="text-gray-600">
+                                {source === 'fallback' ?
+                                    'Connect to database to see featured housing products' :
+                                    'No housing data available yet'
+                                }
+                            </p>
+                        </div>
+                    )}
+                </div> */}
+
+                {/* Statistics Section */}
+                {source === 'database' && (
+                    <div className="mb-12 bg-gradient-to-r from-blue-600 to-blue-800 text-white p-8 rounded-lg">
+                        <h2 className="text-2xl font-bold text-center mb-6">Database Statistics</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                            <div>
+                                <div className="text-3xl font-bold">{manufacturers.length}</div>
+                                <div className="text-sm opacity-90">Manufacturers</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl font-bold">{housings.length}</div>
+                                <div className="text-sm opacity-90">Housing Products</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl font-bold">
+                                    ${housings.filter(h => h.priceAmount).length > 0
+                                        ? Math.min(...housings.filter(h => h.priceAmount).map(h => Number(h.priceAmount))).toLocaleString()
+                                        : '0'
+                                    }
+                                </div>
+                                <div className="text-sm opacity-90">Starting Price</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl font-bold">
+                                    ${housings.filter(h => h.priceAmount).length > 0
+                                        ? Math.max(...housings.filter(h => h.priceAmount).map(h => Number(h.priceAmount))).toLocaleString()
+                                        : '0'
+                                    }
+                                </div>
+                                <div className="text-sm opacity-90">Max Price</div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* <div className="bg-white p-8 rounded-lg shadow-lg">
                     <h2 className="text-3xl font-bold text-center mb-8 text-blue-900">Project Features</h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -217,7 +348,7 @@ export default async function Home() {
                             Click the buttons above to test the API endpoints with sample data
                         </p>
                     </div>
-                </div>
+                </div> */}
 
                 <footer className="mt-12 text-center text-gray-600">
                     <p>🌊 Comprehensive underwater housing database with scraped data from leading manufacturers</p>

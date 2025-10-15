@@ -3,17 +3,13 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET() {
     try {
-        const manufacturers = await prisma.manufacturer.findMany({
+        const manufacturers = await prisma.housingManufacturer.findMany({
             include: {
                 housings: {
                     include: {
-                        compatibility: {
+                        Camera: {
                             include: {
-                                cameraModel: {
-                                    include: {
-                                        brand: true
-                                    }
-                                }
+                                brand: true
                             }
                         }
                     }

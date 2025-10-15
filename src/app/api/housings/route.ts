@@ -5,26 +5,14 @@ export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url)
         const manufacturer = searchParams.get('manufacturer')
-        const category = searchParams.get('category')
-        const inStock = searchParams.get('inStock')
         const maxPrice = searchParams.get('maxPrice')
 
-        const where: any = {
-            isActive: true
-        }
+        const where: any = {}
 
         if (manufacturer) {
             where.manufacturer = {
-                slug: manufacturer
+                name: manufacturer
             }
-        }
-
-        if (category) {
-            where.category = category
-        }
-
-        if (inStock === 'true') {
-            where.inStock = true
         }
 
         if (maxPrice) {
@@ -37,18 +25,9 @@ export async function GET(request: Request) {
             where,
             include: {
                 manufacturer: true,
-                compatibility: {
+                Camera: {
                     include: {
-                        cameraModel: {
-                            include: {
-                                brand: true
-                            }
-                        }
-                    }
-                },
-                reviews: {
-                    select: {
-                        rating: true
+                        brand: true
                     }
                 }
             },
@@ -58,28 +37,12 @@ export async function GET(request: Request) {
             ]
         })
 
-        // Calculate average ratings
-        const housingsWithRatings = housings.map((housing: any) => {
-            const ratings = housing.reviews.map((r: any) => r.rating)
-            const averageRating = ratings.length > 0
-                ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / ratings.length
-                : null
-
-            return {
-                ...housing,
-                averageRating,
-                reviewCount: ratings.length
-            }
-        })
-
         return NextResponse.json({
             success: true,
-            data: housingsWithRatings,
-            count: housingsWithRatings.length,
+            data: housings,
+            count: housings.length,
             filters: {
                 manufacturer,
-                category,
-                inStock,
                 maxPrice
             }
         })

@@ -5,256 +5,240 @@ const prisma = new PrismaClient()
 async function main() {
     console.log('🌱 Seeding database...')
 
-    // Create manufacturers
-    const nauticam = await prisma.manufacturer.upsert({
-        where: { name: 'Nauticam' },
-        update: {},
-        create: {
+    // Clear existing data
+    await prisma.housing.deleteMany()
+    await prisma.camera.deleteMany()
+    await prisma.cameraManufacturer.deleteMany()
+    await prisma.housingManufacturer.deleteMany()
+
+    // Create housing manufacturers
+    const nauticam = await prisma.housingManufacturer.create({
+        data: {
             name: 'Nauticam',
-            slug: 'nauticam',
-            website: 'https://www.nauticam.com',
-            description: 'Premium underwater housings for professional photography',
-            country: 'Hong Kong',
-            founded: 2009,
-            isActive: true
+            description: 'Premium underwater housings for professional photography'
         }
     })
 
-    const aquatica = await prisma.manufacturer.upsert({
-        where: { name: 'Aquatica' },
-        update: {},
-        create: {
-            name: 'Aquatica',
-            slug: 'aquatica',
-            website: 'https://www.aquatica.ca',
-            description: 'High-quality housings for Canon and Nikon cameras',
-            country: 'Canada',
-            founded: 1982,
-            isActive: true
-        }
-    })
-
-    const isotta = await prisma.manufacturer.upsert({
-        where: { name: 'Isotta' },
-        update: {},
-        create: {
-            name: 'Isotta',
-            slug: 'isotta',
-            website: 'https://www.isotecnic.it',
-            description: 'Italian-made underwater housings with precision engineering',
-            country: 'Italy',
-            founded: 1980,
-            isActive: true
-        }
-    })
-
-    const aoi = await prisma.manufacturer.upsert({
-        where: { name: 'AOI' },
-        update: {},
-        create: {
-            name: 'AOI',
-            slug: 'aoi',
-            website: 'https://www.aoi-uw.com',
-            description: 'Underwater housings and accessories from Taiwan',
-            country: 'Taiwan',
-            isActive: true
-        }
-    })
-
-    const seafrogs = await prisma.manufacturer.upsert({
-        where: { name: 'Sea Frogs' },
-        update: {},
-        create: {
+    const seafrogs = await prisma.housingManufacturer.create({
+        data: {
             name: 'Sea Frogs',
-            slug: 'seafrogs',
-            website: 'https://www.seafrogs.com.hk',
-            description: 'Affordable underwater housings for mirrorless and compact cameras',
-            country: 'Hong Kong',
-            isActive: true
+            description: 'Affordable underwater housings for mirrorless and compact cameras'
         }
     })
 
-    const divevolk = await prisma.manufacturer.upsert({
-        where: { name: 'DiveVolk' },
-        update: {},
-        create: {
-            name: 'DiveVolk',
-            slug: 'divevolk',
-            website: 'https://www.divevolkdiving.com',
-            description: 'Innovative underwater smartphone housings with touchscreen technology',
-            country: 'China',
-            isActive: true
-        }
-    })
-
-    // Create camera brands
-    const canon = await prisma.cameraBrand.upsert({
-        where: { name: 'Canon' },
-        update: {},
-        create: {
-            name: 'Canon',
-            slug: 'canon',
-            website: 'https://www.canon.com',
-            isActive: true
-        }
-    })
-
-    const nikon = await prisma.cameraBrand.upsert({
-        where: { name: 'Nikon' },
-        update: {},
-        create: {
-            name: 'Nikon',
-            slug: 'nikon',
-            website: 'https://www.nikon.com',
-            isActive: true
-        }
-    })
-
-    const sony = await prisma.cameraBrand.upsert({
-        where: { name: 'Sony' },
-        update: {},
-        create: {
+    // Create camera manufacturers
+    const sony = await prisma.cameraManufacturer.create({
+        data: {
             name: 'Sony',
-            slug: 'sony',
-            website: 'https://www.sony.com',
             isActive: true
         }
     })
 
-    const omSystem = await prisma.cameraBrand.upsert({
-        where: { name: 'OM System' },
-        update: {},
-        create: {
+    const canon = await prisma.cameraManufacturer.create({
+        data: {
+            name: 'Canon',
+            isActive: true
+        }
+    })
+
+    const nikon = await prisma.cameraManufacturer.create({
+        data: {
+            name: 'Nikon',
+            isActive: true
+        }
+    })
+
+    const omSystem = await prisma.cameraManufacturer.create({
+        data: {
             name: 'OM System',
-            slug: 'om-system',
-            website: 'https://www.olympus-imaging.com',
             isActive: true
         }
     })
 
-    // Create camera models
-    const nikonZ8 = await prisma.cameraModel.upsert({
-        where: { slug: 'nikon-z8' },
-        update: {},
-        create: {
+    // Create camera models based on scraped data
+    const sonyZVE1 = await prisma.camera.create({
+        data: {
+            name: 'ZV-E1',
+            cameraManufacturerId: sony.id
+        }
+    })
+
+    const sonyFX3 = await prisma.camera.create({
+        data: {
+            name: 'FX3',
+            cameraManufacturerId: sony.id
+        }
+    })
+
+    const sonyFX30 = await prisma.camera.create({
+        data: {
+            name: 'FX30',
+            cameraManufacturerId: sony.id
+        }
+    })
+
+    const canonR50 = await prisma.camera.create({
+        data: {
+            name: 'EOS R50',
+            cameraManufacturerId: canon.id
+        }
+    })
+
+    const canonR6MarkII = await prisma.camera.create({
+        data: {
+            name: 'EOS R6 Mark II',
+            cameraManufacturerId: canon.id
+        }
+    })
+
+    const canonR5 = await prisma.camera.create({
+        data: {
+            name: 'EOS R5',
+            cameraManufacturerId: canon.id
+        }
+    })
+
+    const nikonZ8 = await prisma.camera.create({
+        data: {
             name: 'Z8',
-            fullName: 'Nikon Z8',
-            slug: 'nikon-z8',
-            type: 'MIRRORLESS',
-            releaseYear: 2023,
-            brandId: nikon.id,
-            specifications: {
-                sensor: 'Full Frame',
-                megapixels: 45.7,
-                videoCapabilities: '8K, 4K'
-            }
+            cameraManufacturerId: nikon.id
         }
     })
 
-    const sonyA7RV = await prisma.cameraModel.upsert({
-        where: { slug: 'sony-a7r-v' },
-        update: {},
-        create: {
-            name: 'A7R V',
-            fullName: 'Sony A7R V',
-            slug: 'sony-a7r-v',
-            type: 'MIRRORLESS',
-            releaseYear: 2022,
-            brandId: sony.id,
-            specifications: {
-                sensor: 'Full Frame',
-                megapixels: 61,
-                videoCapabilities: '8K, 4K'
-            }
+    const nikonZ5II = await prisma.camera.create({
+        data: {
+            name: 'Z5 II',
+            cameraManufacturerId: nikon.id
         }
     })
 
-    const canonR5II = await prisma.cameraModel.upsert({
-        where: { slug: 'canon-eos-r5-mark-ii' },
-        update: {},
-        create: {
-            name: 'EOS R5 Mark II',
-            fullName: 'Canon EOS R5 Mark II',
-            slug: 'canon-eos-r5-mark-ii',
-            type: 'MIRRORLESS',
-            releaseYear: 2024,
-            brandId: canon.id,
-            specifications: {
-                sensor: 'Full Frame',
-                megapixels: 45,
-                videoCapabilities: '8K, 4K'
-            }
+    const omOM5II = await prisma.camera.create({
+        data: {
+            name: 'OM-5 II',
+            cameraManufacturerId: omSystem.id
         }
     })
 
-    // Create sample housings
-    const nauticamZ8 = await prisma.housing.upsert({
-        where: { slug: 'nauticam-na-z8' },
-        update: {},
-        create: {
+    // Create housings based on scraped data from Nauticam
+    await prisma.housing.create({
+        data: {
             model: 'NA-Z8',
             name: 'NA-Z8 Housing for Nikon Z8 Camera',
-            slug: 'nauticam-na-z8',
-            sku: '17229',
-            category: 'CAMERA_HOUSING',
             description: 'Professional underwater housing for the Nikon Z8 camera',
-            keyFeatures: [
-                'Depth rated to 100m/330ft',
-                'Full camera control access',
-                'Nauticam N100 port system',
-                'Precision CNC machined aluminum'
-            ],
             priceAmount: 5500,
             priceCurrency: 'USD',
             depthRating: '100m/330ft',
             material: 'Aluminum',
-            portSystem: 'N100',
-            isActive: true,
-            inStock: true,
-            manufacturerId: nauticam.id,
-            productUrl: 'https://www.nauticam.com/collections/housings/products/na-z8-underwater-housing-for-the-nikon-z8-camera'
+            housingManufacturerId: nauticam.id,
+            cameraId: nikonZ8.id
         }
     })
 
-    // Create housing compatibility
-    await prisma.housingCompatibility.upsert({
-        where: {
-            housingId_cameraModelId: {
-                housingId: nauticamZ8.id,
-                cameraModelId: nikonZ8.id
-            }
-        },
-        update: {},
-        create: {
-            housingId: nauticamZ8.id,
-            cameraModelId: nikonZ8.id,
-            isRecommended: true,
-            notes: 'Perfect fit with full functionality'
+    await prisma.housing.create({
+        data: {
+            model: 'NA-Z5II',
+            name: 'NA-Z5II Housing for Nikon Z5II Camera',
+            description: 'Professional underwater housing for the Nikon Z5II camera',
+            priceAmount: 3400,
+            priceCurrency: 'USD',
+            depthRating: '100m/330ft',
+            material: 'Aluminum',
+            housingManufacturerId: nauticam.id,
+            cameraId: nikonZ5II.id
         }
     })
 
-    // Create accessory categories
-    const portCategory = await prisma.accessoryCategory.upsert({
-        where: { name: 'Ports' },
-        update: {},
-        create: {
-            name: 'Ports',
-            slug: 'ports',
-            description: 'Lens ports for underwater housings'
+    await prisma.housing.create({
+        data: {
+            model: 'NA-OM5II',
+            name: 'NA-OM5II Housing for OM SYSTEM OM-5II Camera',
+            description: 'Professional underwater housing for the OM SYSTEM OM-5II camera',
+            priceAmount: 1800,
+            priceCurrency: 'USD',
+            depthRating: '100m/330ft',
+            material: 'Aluminum',
+            housingManufacturerId: nauticam.id,
+            cameraId: omOM5II.id
         }
     })
 
-    const armCategory = await prisma.accessoryCategory.upsert({
-        where: { name: 'Arms & Clamps' },
-        update: {},
-        create: {
-            name: 'Arms & Clamps',
-            slug: 'arms-clamps',
-            description: 'Strobe arms and mounting clamps'
+    // Create housings based on scraped data from Sea Frogs
+    await prisma.housing.create({
+        data: {
+            model: 'SF-ZV-E1',
+            name: 'Sony ZV-E1 40M/130FT Underwater Camera Housing',
+            description: 'Affordable underwater housing for Sony ZV-E1 camera',
+            priceAmount: 455,
+            priceCurrency: 'USD',
+            depthRating: '40m/130ft',
+            material: 'Aluminum',
+            housingManufacturerId: seafrogs.id,
+            cameraId: sonyZVE1.id
+        }
+    })
+
+    await prisma.housing.create({
+        data: {
+            model: 'SF-FX3-FX30',
+            name: 'Sea Frogs Salted Line Underwater Camera Housing for Sony FX3/FX30',
+            description: 'Professional underwater housing for Sony FX3/FX30 with HDMI 2.0 support',
+            priceAmount: 636,
+            priceCurrency: 'USD',
+            depthRating: '40m/130ft',
+            material: 'Aluminum',
+            housingManufacturerId: seafrogs.id,
+            cameraId: sonyFX3.id
+        }
+    })
+
+    await prisma.housing.create({
+        data: {
+            model: 'SF-R50',
+            name: 'Sea Frogs Canon EOS R50 40m/130ft Underwater Camera Housing',
+            description: 'Affordable underwater housing for Canon EOS R50 camera',
+            priceAmount: 424,
+            priceCurrency: 'USD',
+            depthRating: '40m/130ft',
+            material: 'Aluminum',
+            housingManufacturerId: seafrogs.id,
+            cameraId: canonR50.id
+        }
+    })
+
+    await prisma.housing.create({
+        data: {
+            model: 'SF-R6-MarkII',
+            name: 'Sea Frogs 40m/130ft Underwater Camera Housing for Canon EOS R6 Mark II',
+            description: 'Professional underwater housing for Canon EOS R6 Mark II camera',
+            priceAmount: 980,
+            priceCurrency: 'USD',
+            depthRating: '40m/130ft',
+            material: 'Aluminum',
+            housingManufacturerId: seafrogs.id,
+            cameraId: canonR6MarkII.id
+        }
+    })
+
+    await prisma.housing.create({
+        data: {
+            model: 'SF-R5',
+            name: 'SeaFrogs 40m/130ft Underwater Camera Housing for Canon EOS R5',
+            description: 'Professional underwater housing for Canon EOS R5 camera',
+            priceAmount: 980,
+            priceCurrency: 'USD',
+            depthRating: '40m/130ft',
+            material: 'Aluminum',
+            housingManufacturerId: seafrogs.id,
+            cameraId: canonR5.id
         }
     })
 
     console.log('✅ Database seeded successfully!')
+    console.log('📊 Created:')
+    console.log('  - 2 housing manufacturers (Nauticam, Sea Frogs)')
+    console.log('  - 4 camera manufacturers (Sony, Canon, Nikon, OM System)')
+    console.log('  - 9 camera models')
+    console.log('  - 8 housing products')
 }
 
 main()

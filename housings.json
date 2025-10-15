@@ -1,0 +1,119 @@
+{
+    "housings": [
+        {
+            "manufacturer": "Nauticam",
+            "model": "NA-Z8",
+            "name": "NA-Z8 Housing for Nikon Z8 Camera",
+            "description": "Professional underwater housing for the Nikon Z8 camera",
+            "priceAmount": 5500,
+            "priceCurrency": "USD",
+            "depthRating": "100m/330ft",
+            "material": "Aluminum",
+            "compatibleCamera": "Nikon Z8",
+            "sourceUrl": "https://www.nauticam.com/collections/housings"
+        },
+        {
+            "manufacturer": "Nauticam",
+            "model": "NA-Z5II",
+            "name": "NA-Z5II Housing for Nikon Z5II Camera",
+            "description": "Professional underwater housing for the Nikon Z5II camera",
+            "priceAmount": 3400,
+            "priceCurrency": "USD",
+            "depthRating": "100m/330ft",
+            "material": "Aluminum",
+            "compatibleCamera": "Nikon Z5 II",
+            "sourceUrl": "https://www.nauticam.com/collections/housings"
+        },
+        {
+            "manufacturer": "Nauticam",
+            "model": "NA-OM5II",
+            "name": "NA-OM5II Housing for OM SYSTEM OM-5II Camera",
+            "description": "Professional underwater housing for the OM SYSTEM OM-5II camera",
+            "priceAmount": 1800,
+            "priceCurrency": "USD",
+            "depthRating": "100m/330ft",
+            "material": "Aluminum",
+            "compatibleCamera": "OM System OM-5 II",
+            "sourceUrl": "https://www.nauticam.com/collections/housings"
+        },
+        {
+            "manufacturer": "Sea Frogs",
+            "model": "SF-ZV-E1",
+            "name": "Sony ZV-E1 40M/130FT Underwater Camera Housing",
+            "description": "Affordable underwater housing for Sony ZV-E1 camera",
+            "priceAmount": 455,
+            "priceCurrency": "USD",
+            "depthRating": "40m/130ft",
+            "material": "Aluminum",
+            "compatibleCamera": "Sony ZV-E1",
+            "sourceUrl": "https://www.seafrogs.com.hk/"
+        },
+        {
+            "manufacturer": "Sea Frogs",
+            "model": "SF-FX3-FX30",
+            "name": "Sea Frogs Salted Line Underwater Camera Housing for Sony FX3/FX30",
+            "description": "Professional underwater housing for Sony FX3/FX30 with HDMI 2.0 support",
+            "priceAmount": 636,
+            "priceCurrency": "USD",
+            "depthRating": "40m/130ft",
+            "material": "Aluminum",
+            "compatibleCamera": "Sony FX3/FX30",
+            "sourceUrl": "https://www.seafrogs.com.hk/"
+        },
+        {
+            "manufacturer": "Sea Frogs",
+            "model": "SF-R50",
+            "name": "Sea Frogs Canon EOS R50 40m/130ft Underwater Camera Housing",
+            "description": "Affordable underwater housing for Canon EOS R50 camera",
+            "priceAmount": 424,
+            "priceCurrency": "USD",
+            "depthRating": "40m/130ft",
+            "material": "Aluminum",
+            "compatibleCamera": "Canon EOS R50",
+            "sourceUrl": "https://www.seafrogs.com.hk/"
+        },
+        {
+            "manufacturer": "Sea Frogs",
+            "model": "SF-R6-MarkII",
+            "name": "Sea Frogs 40m/130ft Underwater Camera Housing for Canon EOS R6 Mark II",
+            "description": "Professional underwater housing for Canon EOS R6 Mark II camera",
+            "priceAmount": 980,
+            "priceCurrency": "USD",
+            "depthRating": "40m/130ft",
+            "material": "Aluminum",
+            "compatibleCamera": "Canon EOS R6 Mark II",
+            "sourceUrl": "https://www.seafrogs.com.hk/"
+        },
+        {
+            "manufacturer": "Sea Frogs",
+            "model": "SF-R5",
+            "name": "SeaFrogs 40m/130ft Underwater Camera Housing for Canon EOS R5",
+            "description": "Professional underwater housing for Canon EOS R5 camera",
+            "priceAmount": 980,
+            "priceCurrency": "USD",
+            "depthRating": "40m/130ft",
+            "material": "Aluminum",
+            "compatibleCamera": "Canon EOS R5",
+            "sourceUrl": "https://www.seafrogs.com.hk/"
+        }
+    ],
+    "metadata": {
+        "scrapedOn": "2025-10-15",
+        "totalHousings": 8,
+        "manufacturers": [
+            "Nauticam",
+            "Sea Frogs"
+        ],
+        "cameraBrands": [
+            "Sony",
+            "Canon",
+            "Nikon",
+            "OM System"
+        ],
+        "priceRange": {
+            "min": 424,
+            "max": 5500,
+            "currency": "USD"
+        }
+    }
+}
