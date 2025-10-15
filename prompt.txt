@@ -8,4 +8,10 @@ https://www.aoi-uw.com/products/housings.html
 https://www.seafrogs.com.hk/
 
 
+Can you modify the navigation banner to add a link called 'housings' that drops down to allow the user to select from the list of manufacturers.
+For instance if he clicks housings->nauticam it should take him to the url housings
+
 Create a json file housings.json and a json schema schema.json that defines common fields
+
+Can you modify the navigation banner to add a link called 'housings' that drops down to allow the user to select from the list of manufacturers.
+For instance if he clicks housings->nauticam it should take him to the url /housings/nauticam

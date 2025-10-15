@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
 interface ManufacturerPageProps {
@@ -52,17 +53,9 @@ export default async function ManufacturerPage({ params }: ManufacturerPageProps
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
-            {/* Header */}
-            <div className="bg-white shadow-sm border-b">
+            {/* Page Header */}
+            <div className="bg-white shadow-sm">
                 <div className="max-w-6xl mx-auto px-4 py-6">
-                    <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-                        <Link href="/" className="hover:text-blue-600 transition-colors">
-                            Home
-                        </Link>
-                        <span>→</span>
-                        <span className="text-gray-900 font-medium">{manufacturer.name}</span>
-                    </nav>
-
                     <div className="flex justify-between items-center">
                         <div>
                             <h1 className="text-4xl font-bold text-blue-900 mb-2">{manufacturer.name}</h1>
@@ -95,15 +88,28 @@ export default async function ManufacturerPage({ params }: ManufacturerPageProps
                 {housingsData.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {housingsData.map((housing) => {
-                            // Use database slugs for SEO-friendly URLs
-                            const detailUrl = `/${manufacturer.slug}/${housing.slug}`
+                            // Use database slugs for SEO-friendly URLs with new structure
+                            const detailUrl = `/housings/${manufacturer.slug}/${housing.slug}`
+
+                            // For now, use the hardcoded Nauticam image for all housings as requested
+                            const imagePath = '/housings/nauticam/na-om5ii/front.webp'
 
                             return (
                                 <Link
                                     key={housing.id}
                                     href={detailUrl}
-                                    className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group"
+                                    className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group overflow-hidden"
                                 >
+                                    {/* Housing Image */}
+                                    <div className="relative w-full h-48 bg-gray-100">
+                                        <Image
+                                            src={imagePath}
+                                            alt={housing.name}
+                                            fill
+                                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                        />
+                                    </div>
+
                                     <div className="p-6">
                                         <div className="flex justify-between items-start mb-3">
                                             <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">

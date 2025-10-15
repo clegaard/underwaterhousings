@@ -1,5 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import NavigationWrapper from '@/components/NavigationWrapper'
 
 export const metadata: Metadata = {
     title: 'Underwater Camera Housings',
@@ -14,6 +15,7 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className="antialiased">
+                <NavigationWrapper />
                 {children}
             </body>
         </html>

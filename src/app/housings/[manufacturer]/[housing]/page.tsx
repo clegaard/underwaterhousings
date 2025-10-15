@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
 interface HousingDetailPageProps {
@@ -65,7 +66,7 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                         </Link>
                         <span>→</span>
                         <Link
-                            href={`/${params.manufacturer}`}
+                            href={`/housings/${params.manufacturer}`}
                             className="hover:text-blue-600 transition-colors capitalize"
                         >
                             {housing.manufacturer.name}
@@ -106,6 +107,18 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Main Content */}
                     <div className="lg:col-span-2">
+                        {/* Housing Image */}
+                        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                            <div className="relative w-full h-96 bg-gray-100 rounded-lg overflow-hidden">
+                                <Image
+                                    src="/housings/nauticam/na-om5ii/front.webp"
+                                    alt={housing.name}
+                                    fill
+                                    className="object-cover"
+                                />
+                            </div>
+                        </div>
+
                         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                             <h3 className="text-2xl font-bold text-gray-900 mb-4">Description</h3>
                             <p className="text-gray-700 leading-relaxed">

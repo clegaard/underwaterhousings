@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 // Types for our filters
 type FilterState = {
@@ -112,20 +113,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
-            {/* Header */}
-            <div className="bg-white shadow-sm border-b">
-                <div className="max-w-7xl mx-auto px-4 py-6">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h1 className="text-3xl font-bold text-blue-900">Underwater Housing Finder</h1>
-                            <p className="text-gray-600 mt-1">Find the perfect housing for your camera</p>
-                        </div>
-                        <div className="text-sm text-gray-500">
-                            {filteredHousings.length} of {initialHousings.length} housings
-                        </div>
-                    </div>
-                </div>
-            </div>
+
 
             <div className="max-w-7xl mx-auto px-4 py-6">
                 <div className="flex flex-col lg:flex-row gap-6">
@@ -308,15 +296,28 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                         {!isFiltering && filteredHousings.length > 0 && (
                             <div key={`${filteredHousings.length}-${JSON.stringify(filters)}`} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                                 {filteredHousings.map((housing: any) => {
-                                    // Use database slugs for SEO-friendly URLs
-                                    const detailUrl = `/${housing.manufacturer.slug}/${housing.slug}`
+                                    // Use database slugs for SEO-friendly URLs with new structure
+                                    const detailUrl = `/housings/${housing.manufacturer.slug}/${housing.slug}`
+
+                                    // For now, use the hardcoded Nauticam image for all housings as requested
+                                    const imagePath = '/housings/nauticam/na-om5ii/front.webp'
 
                                     return (
                                         <Link
                                             key={housing.id}
                                             href={detailUrl}
-                                            className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group cursor-pointer"
+                                            className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group cursor-pointer overflow-hidden"
                                         >
+                                            {/* Housing Image */}
+                                            <div className="relative w-full h-48 bg-gray-100">
+                                                <Image
+                                                    src={imagePath}
+                                                    alt={housing.name}
+                                                    fill
+                                                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                                />
+                                            </div>
+
                                             <div className="p-6">
                                                 <div className="flex justify-between items-start mb-3">
                                                     <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">{housing.model}</h3>
