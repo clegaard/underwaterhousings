@@ -11,15 +11,25 @@ interface Manufacturer {
 
 export default function NavigationWrapper() {
     const [manufacturers, setManufacturers] = useState<Manufacturer[]>([])
+    const [cameraManufacturers, setCameraManufacturers] = useState<Manufacturer[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        async function fetchManufacturers() {
+        async function fetchData() {
             try {
-                const response = await fetch('/api/manufacturers?simple=true')
-                if (response.ok) {
-                    const data = await response.json()
-                    setManufacturers(data)
+                const [manufacturersResponse, cameraManufacturersResponse] = await Promise.all([
+                    fetch('/api/manufacturers?simple=true'),
+                    fetch('/api/camera-manufacturers?simple=true')
+                ])
+
+                if (manufacturersResponse.ok) {
+                    const manufacturersData = await manufacturersResponse.json()
+                    setManufacturers(manufacturersData)
+                }
+
+                if (cameraManufacturersResponse.ok) {
+                    const cameraManufacturersData = await cameraManufacturersResponse.json()
+                    setCameraManufacturers(cameraManufacturersData)
                 }
             } catch (error) {
                 console.error('Failed to fetch manufacturers:', error)
@@ -28,7 +38,7 @@ export default function NavigationWrapper() {
             }
         }
 
-        fetchManufacturers()
+        fetchData()
     }, [])
 
     if (loading) {
@@ -48,5 +58,5 @@ export default function NavigationWrapper() {
         )
     }
 
-    return <Navigation manufacturers={manufacturers} />
+    return <Navigation manufacturers={manufacturers} cameraManufacturers={cameraManufacturers} />
 }
