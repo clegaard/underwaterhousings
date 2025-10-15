@@ -38,6 +38,14 @@ async function main() {
         }
     })
 
+    const divevolk = await prisma.housingManufacturer.create({
+        data: {
+            name: 'DiveVolk',
+            slug: 'divevolk',
+            description: 'touch enabled smartphone cases'
+        }
+    })
+
     // Create camera manufacturers
     const sony = await prisma.cameraManufacturer.create({
         data: {
@@ -71,9 +79,15 @@ async function main() {
         }
     })
 
+    const apple = await prisma.cameraManufacturer.create({
+        data: {
+            name: 'Apple',
+            slug: 'apple',
+            isActive: true
+        }
+    })
+
     // Create camera models based on scraped data
-
-
 
 
     const canonR6MarkII = await prisma.camera.create({
@@ -92,6 +106,16 @@ async function main() {
             cameraManufacturerId: omSystem.id
         }
     })
+
+
+    const iphone14Pro = await prisma.camera.create({
+        data: {
+            name: 'Iphone 14 Pro',
+            slug: 'iphone-14-pro',
+            cameraManufacturerId: apple.id
+        }
+    })
+
 
     // Create housings based on scraped data from Nauticam
 
@@ -112,6 +136,21 @@ async function main() {
         }
     })
 
+    await prisma.housing.create({
+        data: {
+            model: 'SeaTouch 4',
+            name: 'SeaTouch Pro',
+            slug: 'seatouch-4',
+            description: 'some case',
+            priceAmount: 300,
+            priceCurrency: 'USD',
+            depthRating: 60,
+            material: 'ABS plastic',
+            housingManufacturerId: divevolk.id,
+            cameraId: iphone14Pro.id,
+
+        }
+    })
 
 
     await prisma.housing.create({
