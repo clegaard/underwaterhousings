@@ -190,7 +190,7 @@ async function main() {
             priceAmount: 300,
             priceCurrency: 'USD',
             depthRating: 60,
-            material: 'ABS plastic',
+            material: 'ABS Plastic',
             housingManufacturerId: divevolk.id,
             cameraId: iphone14Pro.id,
 

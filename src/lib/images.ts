@@ -38,3 +38,32 @@ export function getHousingImagePathWithFallback(
         fallback: '/housings/fallback.png'
     }
 }
+
+/**
+ * Get all potential images for a specific housing 
+ * Returns array of common image paths with their types and fallbacks
+ * This is a client-safe version that doesn't require filesystem access
+ */
+export function getAllHousingImages(
+    manufacturerSlug: string,
+    housingSlug: string
+): Array<{ src: string; fallback: string; type: string; alt: string }> {
+    const commonImageTypes = ['front', 'back', 'side', 'top', 'bottom', 'detail', 'controls', 'ports']
+    const supportedExtensions = ['.webp', '.jpg', '.jpeg', '.png']
+    const images: Array<{ src: string; fallback: string; type: string; alt: string }> = []
+
+    // Generate potential image paths for common image types
+    for (const imageType of commonImageTypes) {
+        for (const ext of supportedExtensions) {
+            const imagePath = `/housings/${manufacturerSlug}/${housingSlug}/${imageType}${ext}`
+            images.push({
+                src: imagePath,
+                fallback: '/housings/fallback.png',
+                type: imageType,
+                alt: `${manufacturerSlug} ${housingSlug} ${imageType} view`
+            })
+        }
+    }
+
+    return images
+}

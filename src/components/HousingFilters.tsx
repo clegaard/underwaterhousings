@@ -7,7 +7,8 @@ import { HousingImage } from '@/components/HousingImage'
 
 // Types for our filters
 type FilterState = {
-    compatibleCamera: string
+    cameraManufacturer: string
+    cameraModel: string
     maxDepth: number
     priceMin: number
     priceMax: number
@@ -22,7 +23,8 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
     manufacturers: any[]
 }) {
     const [filters, setFilters] = useState<FilterState>({
-        compatibleCamera: '',
+        cameraManufacturer: '',
+        cameraModel: '',
         maxDepth: 0,
         priceMin: 0,
         priceMax: 10000,
@@ -38,15 +40,37 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
     const uniqueMaterials = Array.from(new Set(initialHousings.map(h => h.material).filter(Boolean)))
     const uniqueDepthRatings = Array.from(new Set(initialHousings.map(h => h.depthRating).filter(Boolean))).sort((a, b) => a - b)
 
+    // Get unique camera manufacturers and models
+    const uniqueCameraBrands = Array.from(new Set(cameras.map(c => c.brand.name))).sort()
+    const availableCameraModels = filters.cameraManufacturer
+        ? cameras.filter(c => c.brand.name === filters.cameraManufacturer).sort((a, b) => a.name.localeCompare(b.name))
+        : []
+
+    // Clear camera model when manufacturer changes
+    useEffect(() => {
+        if (filters.cameraModel && filters.cameraManufacturer) {
+            const selectedCamera = cameras.find(c => c.name === filters.cameraModel)
+            if (!selectedCamera || selectedCamera.brand.name !== filters.cameraManufacturer) {
+                setFilters(prev => ({ ...prev, cameraModel: '' }))
+            }
+        }
+    }, [filters.cameraManufacturer, filters.cameraModel, cameras])
+
     // Apply filters
     useEffect(() => {
         setIsFiltering(true)
 
         let filtered = initialHousings.filter(housing => {
-            // Camera compatibility filter
-            if (filters.compatibleCamera && housing.Camera) {
-                const cameraFullName = `${housing.Camera.brand.name} ${housing.Camera.name}`
-                if (!cameraFullName.toLowerCase().includes(filters.compatibleCamera.toLowerCase())) {
+            // Camera manufacturer filter
+            if (filters.cameraManufacturer && housing.Camera) {
+                if (housing.Camera.brand.name !== filters.cameraManufacturer) {
+                    return false
+                }
+            }
+
+            // Camera model filter
+            if (filters.cameraModel && housing.Camera) {
+                if (housing.Camera.name !== filters.cameraModel) {
                     return false
                 }
             }
@@ -89,7 +113,8 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
     const clearFilters = () => {
         setFilters({
-            compatibleCamera: '',
+            cameraManufacturer: '',
+            cameraModel: '',
             maxDepth: 0,
             priceMin: 0,
             priceMax: 10000,
@@ -98,7 +123,8 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         })
     }
 
-    const hasActiveFilters = filters.compatibleCamera !== '' ||
+    const hasActiveFilters = filters.cameraManufacturer !== '' ||
+        filters.cameraModel !== '' ||
         filters.maxDepth > 0 ||
         filters.priceMin > 0 ||
         filters.priceMax < 10000 ||
@@ -127,20 +153,43 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                             </div>
 
                             <div className="space-y-6">
-                                {/* Camera Compatibility */}
+                                {/* Camera Manufacturer */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Compatible Camera
+                                        Camera Manufacturer
                                     </label>
                                     <select
-                                        value={filters.compatibleCamera}
-                                        onChange={(e) => setFilters({ ...filters, compatibleCamera: e.target.value })}
+                                        value={filters.cameraManufacturer}
+                                        onChange={(e) => setFilters({ ...filters, cameraManufacturer: e.target.value, cameraModel: '' })}
                                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     >
-                                        <option value="">All cameras</option>
-                                        {cameras.map(camera => (
-                                            <option key={camera.id} value={`${camera.brand.name} ${camera.name}`}>
-                                                {camera.brand.name} {camera.name}
+                                        <option value="">All camera manufacturers</option>
+                                        {uniqueCameraBrands.map(brand => (
+                                            <option key={brand} value={brand}>
+                                                {brand}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Camera Model */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Camera Model
+                                    </label>
+                                    <select
+                                        value={filters.cameraModel}
+                                        onChange={(e) => setFilters({ ...filters, cameraModel: e.target.value })}
+                                        disabled={!filters.cameraManufacturer}
+                                        className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraManufacturer ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+                                            }`}
+                                    >
+                                        <option value="">
+                                            {!filters.cameraManufacturer ? 'Select manufacturer first' : 'All camera models'}
+                                        </option>
+                                        {availableCameraModels.map(camera => (
+                                            <option key={camera.id} value={camera.name}>
+                                                {camera.name}
                                             </option>
                                         ))}
                                     </select>
@@ -149,14 +198,14 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 {/* Manufacturer */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Manufacturer
+                                        Housings
                                     </label>
                                     <select
                                         value={filters.manufacturer}
                                         onChange={(e) => setFilters({ ...filters, manufacturer: e.target.value })}
                                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     >
-                                        <option value="">All manufacturers</option>
+                                        <option value="">All housings</option>
                                         {manufacturers.map(manufacturer => (
                                             <option key={manufacturer.id} value={manufacturer.name}>
                                                 {manufacturer.name}
@@ -247,8 +296,9 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 <div className="mt-6 pt-6 border-t border-gray-200">
                                     <h3 className="text-sm font-medium text-gray-700 mb-2">Active Filters:</h3>
                                     <div className="space-y-1 text-xs text-gray-600">
-                                        {filters.compatibleCamera && <div>Camera: {filters.compatibleCamera}</div>}
-                                        {filters.manufacturer && <div>Brand: {filters.manufacturer}</div>}
+                                        {filters.cameraManufacturer && <div>Camera Manufacturer: {filters.cameraManufacturer}</div>}
+                                        {filters.cameraModel && <div>Camera Model: {filters.cameraModel}</div>}
+                                        {filters.manufacturer && <div>Housings: {filters.manufacturer}</div>}
                                         {filters.maxDepth > 0 && <div>Min Depth: {filters.maxDepth}m</div>}
                                         {(filters.priceMin > 0 || filters.priceMax < 10000) &&
                                             <div>Price: ${filters.priceMin} - ${filters.priceMax}</div>}
