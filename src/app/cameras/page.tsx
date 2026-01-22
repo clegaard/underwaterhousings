@@ -22,9 +22,6 @@ async function getCameraManufacturers() {
                     }
                 }
             },
-            where: {
-                isActive: true
-            },
             orderBy: {
                 name: 'asc'
             }

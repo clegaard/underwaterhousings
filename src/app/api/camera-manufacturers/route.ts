@@ -15,9 +15,6 @@ export async function GET(request: NextRequest) {
                     name: true,
                     slug: true
                 },
-                where: {
-                    isActive: true
-                },
                 orderBy: {
                     name: 'asc'
                 }
@@ -39,9 +36,6 @@ export async function GET(request: NextRequest) {
                         cameras: true
                     }
                 }
-            },
-            where: {
-                isActive: true
             },
             orderBy: {
                 name: 'asc'

@@ -263,16 +263,15 @@ function CameraManufacturersManagement({ manufacturers, onDataUpdate }: {
 }) {
     const [isAdding, setIsAdding] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
-    const [formData, setFormData] = useState({ name: '', isActive: true })
+    const [formData, setFormData] = useState({ name: '' })
 
     const resetForm = () => {
-        setFormData({ name: '', isActive: true })
+        setFormData({ name: '' })
     }
 
     const startEdit = (manufacturer: any) => {
         setFormData({
-            name: manufacturer.name || '',
-            isActive: manufacturer.isActive !== undefined ? manufacturer.isActive : true
+            name: manufacturer.name || ''
         })
         setEditingId(manufacturer.id)
         setIsAdding(false)
@@ -366,18 +365,6 @@ function CameraManufacturersManagement({ manufacturers, onDataUpdate }: {
                                 required
                             />
                         </div>
-                        <div className="flex items-center">
-                            <input
-                                type="checkbox"
-                                id="isActive"
-                                checked={formData.isActive}
-                                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">
-                                Active
-                            </label>
-                        </div>
                         <div className="flex space-x-3">
                             <button
                                 type="submit"
@@ -405,15 +392,7 @@ function CameraManufacturersManagement({ manufacturers, onDataUpdate }: {
                     <div key={manufacturer.id} className="p-4 border border-gray-200 rounded-lg">
                         <div className="flex justify-between items-start">
                             <div className="flex-1">
-                                <div className="flex justify-between items-center">
-                                    <h3 className="font-medium text-gray-900">{manufacturer.name}</h3>
-                                    <span className={`px-2 py-1 text-xs rounded-full ${manufacturer.isActive
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-red-100 text-red-800'
-                                        }`}>
-                                        {manufacturer.isActive ? 'Active' : 'Inactive'}
-                                    </span>
-                                </div>
+                                <h3 className="font-medium text-gray-900">{manufacturer.name}</h3>
                                 <p className="text-xs text-gray-500 mt-2">Slug: {manufacturer.slug}</p>
                             </div>
                             <div className="flex items-start space-x-3">

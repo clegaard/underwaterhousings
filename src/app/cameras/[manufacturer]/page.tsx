@@ -13,8 +13,7 @@ async function getCameraManufacturerCameras(manufacturerSlug: string) {
     try {
         const manufacturer = await prisma.cameraManufacturer.findUnique({
             where: {
-                slug: manufacturerSlug,
-                isActive: true
+                slug: manufacturerSlug
             },
             include: {
                 cameras: {

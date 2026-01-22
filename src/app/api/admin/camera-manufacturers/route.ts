@@ -31,7 +31,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
-        const { name, isActive = true } = body
+        const { name } = body
 
         if (!name) {
             return NextResponse.json(
@@ -57,8 +57,7 @@ export async function POST(request: NextRequest) {
         const manufacturer = await prisma.cameraManufacturer.create({
             data: {
                 name,
-                slug,
-                isActive
+                slug
             }
         })
 
@@ -86,7 +85,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { name, isActive = true } = body
+        const { name } = body
 
         if (!name) {
             return NextResponse.json(
@@ -116,8 +115,7 @@ export async function PUT(request: NextRequest) {
             where: { id },
             data: {
                 name,
-                slug,
-                isActive
+                slug
             }
         })
 
