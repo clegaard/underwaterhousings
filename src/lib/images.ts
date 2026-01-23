@@ -27,15 +27,22 @@ export function getHousingImagePath(
 /**
  * Get housing image path with error fallback
  * This version can be used with Next.js Image component's onError prop
+ * Returns multiple possible paths to try different image formats
  */
 export function getHousingImagePathWithFallback(
     manufacturerSlug: string,
     housingSlug: string,
     imageType: 'front' | 'back' = 'front'
-): { src: string; fallback: string } {
+): { src: string; fallback: string; alternates: string[] } {
+    const supportedExtensions = ['.webp', '.jpg', '.jpeg', '.png']
+    const alternates = supportedExtensions.map(ext =>
+        `/housings/${manufacturerSlug}/${housingSlug}/${imageType}${ext}`
+    )
+
     return {
-        src: `/housings/${manufacturerSlug}/${housingSlug}/${imageType}.webp`,
-        fallback: '/housings/fallback.png'
+        src: alternates[0], // Try webp first
+        fallback: '/housings/fallback.png',
+        alternates: alternates.slice(1) // Other formats to try
     }
 }
 

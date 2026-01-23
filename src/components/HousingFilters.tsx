@@ -358,6 +358,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                     <HousingImage
                                                         src={imageInfo.src}
                                                         fallback={imageInfo.fallback}
+                                                        alternates={imageInfo.alternates}
                                                         alt={housing.name}
                                                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                                                     />
