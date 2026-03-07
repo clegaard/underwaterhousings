@@ -28,13 +28,25 @@ model CameraManufacturer {
     @@map("camera_manufacturers")
 }
 
+model CameraMount {
+    id      String   @id @default(cuid())
+    name    String
+    slug    String   @unique
+    cameras Camera[]
+
+    @@map("camera_mounts")
+}
+
 model Camera {
     id                   String             @id @default(cuid())
     name                 String
     slug                 String             @unique
     brand                CameraManufacturer @relation(fields: [cameraManufacturerId], references: [id])
-    housings             Housing[]
     cameraManufacturerId String
+    cameraMountId        String?
+    cameraMount          CameraMount?       @relation(fields: [cameraMountId], references: [id])
+    housings             Housing[]
+    lens                 Lens[]
 
     @@map("cameras")
 }
@@ -55,4 +67,13 @@ model Housing {
     housingManufacturerId String
 
     @@map("housings")
+}
+
+model Lens {
+    id     String @id @default(cuid())
+    name   String
+    slug   String @unique
+    camera Camera @relation(fields: [id], references: [id])
+
+    @@map("lenses")
 }

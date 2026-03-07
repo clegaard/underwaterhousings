@@ -18,6 +18,8 @@ async function main() {
     // Clear existing data
     await prisma.housing.deleteMany()
     await prisma.camera.deleteMany()
+    await prisma.lens.deleteMany()
+    await prisma.cameraMount.deleteMany()
     await prisma.cameraManufacturer.deleteMany()
     await prisma.housingManufacturer.deleteMany()
 
@@ -82,6 +84,22 @@ async function main() {
         }
     })
 
+    // Create camera mounts based on common mount types
+    const sonyE = await prisma.cameraMount.create({
+        data: {
+            name: 'Sony E-mount',
+            slug: 'sony-e-mount'
+        }
+
+    })
+
+    const canonRF = await prisma.cameraMount.create({
+        data: {
+            name: 'Canon RF mount',
+            slug: 'canon-rf-mount'
+        }
+    })
+
     // Create camera models based on scraped data
 
     // Sony cameras
@@ -89,7 +107,8 @@ async function main() {
         data: {
             name: 'ZV-E1',
             slug: 'zv-e1',
-            cameraManufacturerId: sony.id
+            cameraManufacturerId: sony.id,
+            cameraMountId: sonyE.id
         }
     })
 
@@ -97,7 +116,17 @@ async function main() {
         data: {
             name: 'A7 III',
             slug: 'a7-iii',
-            cameraManufacturerId: sony.id
+            cameraManufacturerId: sony.id,
+            cameraMountId: sonyE.id
+        }
+    })
+
+    // Create lenses
+    await prisma.lens.create({
+        data: {
+            cameraId: sonyA7III.id,
+            name: 'Sony FE 24-70mm f/2.8 GM II',
+            slug: 'sony-fe-24-70mm-f28-gm-ii'
         }
     })
 
@@ -105,7 +134,8 @@ async function main() {
         data: {
             name: 'A7R V',
             slug: 'a7r-v',
-            cameraManufacturerId: sony.id
+            cameraManufacturerId: sony.id,
+            cameraMountId: sonyE.id
         }
     })
 
@@ -113,7 +143,8 @@ async function main() {
         data: {
             name: 'A6700',
             slug: 'a6700',
-            cameraManufacturerId: sony.id
+            cameraManufacturerId: sony.id,
+            cameraMountId: sonyE.id
         }
     })
 
@@ -121,7 +152,8 @@ async function main() {
         data: {
             name: 'FX3',
             slug: 'fx3',
-            cameraManufacturerId: sony.id
+            cameraManufacturerId: sony.id,
+            cameraMountId: sonyE.id
         }
     })
 
@@ -130,7 +162,8 @@ async function main() {
         data: {
             name: 'EOS R6 Mark II',
             slug: 'r6-ii',
-            cameraManufacturerId: canon.id
+            cameraManufacturerId: canon.id,
+            cameraMountId: canonRF.id
         }
     })
 
@@ -138,7 +171,8 @@ async function main() {
         data: {
             name: 'EOS R5',
             slug: 'r5',
-            cameraManufacturerId: canon.id
+            cameraManufacturerId: canon.id,
+            cameraMountId: canonRF.id
         }
     })
 
