@@ -9,7 +9,7 @@ import { HousingImage } from '@/components/HousingImage'
 type FilterState = {
     cameraManufacturer: string
     cameraModel: string
-    maxDepth: number
+    maxDepth: string
     priceMin: number
     priceMax: number
     material: string
@@ -25,7 +25,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
     const [filters, setFilters] = useState<FilterState>({
         cameraManufacturer: '',
         cameraModel: '',
-        maxDepth: 0,
+        maxDepth: '0',
         priceMin: 0,
         priceMax: 10000,
         material: '',
@@ -76,9 +76,10 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
             }
 
             // Max depth filter - now works with integer depth ratings
-            if (filters.maxDepth > 0) {
+            if (filters.maxDepth !== '0') {
+                const requiredDepth = Number(filters.maxDepth)
                 const housingDepth = housing.depthRating || 0
-                if (housingDepth < filters.maxDepth) {
+                if (housingDepth < requiredDepth) {
                     return false
                 }
             }
@@ -115,7 +116,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         setFilters({
             cameraManufacturer: '',
             cameraModel: '',
-            maxDepth: 0,
+            maxDepth: '0',
             priceMin: 0,
             priceMax: 10000,
             material: '',
@@ -125,7 +126,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
     const hasActiveFilters = filters.cameraManufacturer !== '' ||
         filters.cameraModel !== '' ||
-        filters.maxDepth > 0 ||
+        filters.maxDepth !== '0' ||
         filters.priceMin > 0 ||
         filters.priceMax < 10000 ||
         filters.material !== '' ||
@@ -161,7 +162,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                     <select
                                         value={filters.cameraManufacturer}
                                         onChange={(e) => setFilters({ ...filters, cameraManufacturer: e.target.value, cameraModel: '' })}
-                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                                     >
                                         <option value="">All camera manufacturers</option>
                                         {uniqueCameraBrands.map(brand => (
@@ -181,7 +182,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                         value={filters.cameraModel}
                                         onChange={(e) => setFilters({ ...filters, cameraModel: e.target.value })}
                                         disabled={!filters.cameraManufacturer}
-                                        className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraManufacturer ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+                                        className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraManufacturer ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-900'
                                             }`}
                                     >
                                         <option value="">
@@ -203,7 +204,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                     <select
                                         value={filters.manufacturer}
                                         onChange={(e) => setFilters({ ...filters, manufacturer: e.target.value })}
-                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                                     >
                                         <option value="">All housings</option>
                                         {manufacturers.map(manufacturer => (
@@ -221,20 +222,20 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                     </label>
                                     <select
                                         value={filters.maxDepth}
-                                        onChange={(e) => setFilters({ ...filters, maxDepth: Number(e.target.value) })}
-                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        onChange={(e) => setFilters({ ...filters, maxDepth: e.target.value })}
+                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                                     >
-                                        <option value={0}>Any depth</option>
-                                        <option value={10}>10</option>
-                                        <option value={20}>20</option>
-                                        <option value={30}>30</option>
-                                        <option value={40}>40</option>
-                                        <option value={50}>50</option>
-                                        <option value={60}>60</option>
-                                        <option value={70}>70</option>
-                                        <option value={80}>80</option>
-                                        <option value={90}>90</option>
-                                        <option value={100}>100</option>
+                                        <option value="0">Any depth</option>
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                        <option value="30">30</option>
+                                        <option value="40">40</option>
+                                        <option value="50">50</option>
+                                        <option value="60">60</option>
+                                        <option value="70">70</option>
+                                        <option value="80">80</option>
+                                        <option value="90">90</option>
+                                        <option value="100">100</option>
                                     </select>
                                 </div>
 
@@ -279,7 +280,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                     <select
                                         value={filters.material}
                                         onChange={(e) => setFilters({ ...filters, material: e.target.value })}
-                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                                     >
                                         <option value="">All materials</option>
                                         {uniqueMaterials.map(material => (
@@ -299,7 +300,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                         {filters.cameraManufacturer && <div>Camera Manufacturer: {filters.cameraManufacturer}</div>}
                                         {filters.cameraModel && <div>Camera Model: {filters.cameraModel}</div>}
                                         {filters.manufacturer && <div>Housings: {filters.manufacturer}</div>}
-                                        {filters.maxDepth > 0 && <div>Min Depth: {filters.maxDepth}m</div>}
+                                        {filters.maxDepth !== '0' && <div>Min Depth: {filters.maxDepth}m</div>}
                                         {(filters.priceMin > 0 || filters.priceMax < 10000) &&
                                             <div>Price: ${filters.priceMin} - ${filters.priceMax}</div>}
                                         {filters.material && <div>Material: {filters.material}</div>}
