@@ -18,7 +18,7 @@ async function main() {
     // Clear existing data
     await prisma.housing.deleteMany()
     await prisma.camera.deleteMany()
-    await prisma.lens.deleteMany() // Commented out - lens schema needs fixing
+    await prisma.lens.deleteMany()
     await prisma.cameraMount.deleteMany()
     await prisma.cameraManufacturer.deleteMany()
     await prisma.housingManufacturer.deleteMany()
@@ -122,12 +122,59 @@ async function main() {
     })
 
     // Create lenses
+    await prisma.lens.create({
+        data: {
+            name: 'Sony FE 16-35mm f/2.8 GM',
+            slug: 'sony-fe-16-35mm-f28-gm',
+            cameraMountId: sonyE.id
+        }
+    })
 
     await prisma.lens.create({
         data: {
             name: 'Sony FE 24-70mm f/2.8 GM II',
             slug: 'sony-fe-24-70mm-f28-gm-ii',
             cameraMountId: sonyE.id
+        }
+    })
+
+    await prisma.lens.create({
+        data: {
+            name: 'Sony FE 70-200mm f/2.8 GM OSS II',
+            slug: 'sony-fe-70-200mm-f28-gm-oss-ii',
+            cameraMountId: sonyE.id
+        }
+    })
+
+    await prisma.lens.create({
+        data: {
+            name: 'Sony FE 90mm f/2.8 Macro G OSS',
+            slug: 'sony-fe-90mm-f28-macro-g-oss',
+            cameraMountId: sonyE.id
+        }
+    })
+
+    await prisma.lens.create({
+        data: {
+            name: 'Canon RF 15-35mm f/2.8L IS USM',
+            slug: 'canon-rf-15-35mm-f28l-is-usm',
+            cameraMountId: canonRF.id
+        }
+    })
+
+    await prisma.lens.create({
+        data: {
+            name: 'Canon RF 24-70mm f/2.8L IS USM',
+            slug: 'canon-rf-24-70mm-f28l-is-usm',
+            cameraMountId: canonRF.id
+        }
+    })
+
+    await prisma.lens.create({
+        data: {
+            name: 'Canon RF 100mm f/2.8L Macro IS USM',
+            slug: 'canon-rf-100mm-f28l-macro-is-usm',
+            cameraMountId: canonRF.id
         }
     })
 

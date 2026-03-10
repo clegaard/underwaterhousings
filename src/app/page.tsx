@@ -4,7 +4,7 @@ import HousingFilters from '@/components/HousingFilters'
 // Server-side data fetching functions
 async function getHousingsData() {
     try {
-        const [housings, cameras, manufacturers] = await Promise.all([
+        const [housings, cameras, manufacturers, lenses] = await Promise.all([
             prisma.housing.findMany({
                 include: {
                     manufacturer: {
@@ -16,7 +16,8 @@ async function getHousingsData() {
                     },
                     Camera: {
                         include: {
-                            brand: true
+                            brand: true,
+                            cameraMount: true
                         }
                     }
                 },
@@ -26,7 +27,8 @@ async function getHousingsData() {
             }),
             prisma.camera.findMany({
                 include: {
-                    brand: true
+                    brand: true,
+                    cameraMount: true
                 },
                 orderBy: [
                     { brand: { name: 'asc' } },
@@ -34,6 +36,14 @@ async function getHousingsData() {
                 ]
             }),
             prisma.housingManufacturer.findMany({
+                orderBy: {
+                    name: 'asc'
+                }
+            }),
+            prisma.lens.findMany({
+                include: {
+                    cameraMount: true
+                },
                 orderBy: {
                     name: 'asc'
                 }
@@ -47,16 +57,17 @@ async function getHousingsData() {
             })),
             cameras,
             manufacturers,
+            lenses,
             source: 'database'
         }
     } catch (error) {
         console.log('Database not available:', error instanceof Error ? error.message : error)
-        return { housings: [], cameras: [], manufacturers: [], source: 'fallback' }
+        return { housings: [], cameras: [], manufacturers: [], lenses: [], source: 'fallback' }
     }
 }
 
 export default async function Home() {
-    const { housings, cameras, manufacturers, source } = await getHousingsData()
+    const { housings, cameras, manufacturers, lenses, source } = await getHousingsData()
 
     if (source === 'fallback') {
         return (
@@ -73,5 +84,5 @@ export default async function Home() {
         )
     }
 
-    return <HousingFilters initialHousings={housings} cameras={cameras} manufacturers={manufacturers} />
+    return <HousingFilters initialHousings={housings} cameras={cameras} manufacturers={manufacturers} lenses={lenses} />
 }

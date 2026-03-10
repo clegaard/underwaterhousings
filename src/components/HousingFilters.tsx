@@ -9,6 +9,7 @@ import { HousingImage } from '@/components/HousingImage'
 type FilterState = {
     cameraManufacturer: string
     cameraModel: string
+    lens: string
     maxDepth: string
     priceMin: number
     priceMax: number
@@ -17,14 +18,16 @@ type FilterState = {
 }
 
 // Client-side component for advanced filtering
-export default function HousingFilters({ initialHousings, cameras, manufacturers }: {
+export default function HousingFilters({ initialHousings, cameras, manufacturers, lenses }: {
     initialHousings: any[],
     cameras: any[],
-    manufacturers: any[]
+    manufacturers: any[],
+    lenses: any[]
 }) {
     const [filters, setFilters] = useState<FilterState>({
         cameraManufacturer: '',
         cameraModel: '',
+        lens: '',
         maxDepth: '0',
         priceMin: 0,
         priceMax: 10000,
@@ -46,15 +49,32 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         ? cameras.filter(c => c.brand.name === filters.cameraManufacturer).sort((a, b) => a.name.localeCompare(b.name))
         : []
 
-    // Clear camera model when manufacturer changes
+    // Get lenses based on selected camera's mount
+    const selectedCamera = filters.cameraModel ? cameras.find(c => c.name === filters.cameraModel) : null
+    const availableLenses = selectedCamera?.cameraMount
+        ? lenses.filter(l => l.cameraMountId === selectedCamera.cameraMount.id).sort((a, b) => a.name.localeCompare(b.name))
+        : []
+
+    // Clear camera model and lens when manufacturer changes
     useEffect(() => {
         if (filters.cameraModel && filters.cameraManufacturer) {
             const selectedCamera = cameras.find(c => c.name === filters.cameraModel)
             if (!selectedCamera || selectedCamera.brand.name !== filters.cameraManufacturer) {
-                setFilters(prev => ({ ...prev, cameraModel: '' }))
+                setFilters(prev => ({ ...prev, cameraModel: '', lens: '' }))
             }
         }
     }, [filters.cameraManufacturer, filters.cameraModel, cameras])
+
+    // Clear lens when camera model changes
+    useEffect(() => {
+        if (filters.lens && filters.cameraModel) {
+            const selectedCamera = cameras.find(c => c.name === filters.cameraModel)
+            const selectedLens = lenses.find(l => l.name === filters.lens)
+            if (!selectedCamera?.cameraMount || !selectedLens || selectedLens.cameraMountId !== selectedCamera.cameraMount.id) {
+                setFilters(prev => ({ ...prev, lens: '' }))
+            }
+        }
+    }, [filters.cameraModel, filters.lens, cameras, lenses])
 
     // Apply filters
     useEffect(() => {
@@ -116,6 +136,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         setFilters({
             cameraManufacturer: '',
             cameraModel: '',
+            lens: '',
             maxDepth: '0',
             priceMin: 0,
             priceMax: 10000,
@@ -126,6 +147,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
     const hasActiveFilters = filters.cameraManufacturer !== '' ||
         filters.cameraModel !== '' ||
+        filters.lens !== '' ||
         filters.maxDepth !== '0' ||
         filters.priceMin > 0 ||
         filters.priceMax < 10000 ||
@@ -180,7 +202,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                     </label>
                                     <select
                                         value={filters.cameraModel}
-                                        onChange={(e) => setFilters({ ...filters, cameraModel: e.target.value })}
+                                        onChange={(e) => setFilters({ ...filters, cameraModel: e.target.value, lens: '' })}
                                         disabled={!filters.cameraManufacturer}
                                         className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraManufacturer ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-900'
                                             }`}
@@ -194,6 +216,40 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                             </option>
                                         ))}
                                     </select>
+                                </div>
+
+                                {/* Lens */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Lens
+                                    </label>
+                                    <select
+                                        value={filters.lens}
+                                        onChange={(e) => setFilters({ ...filters, lens: e.target.value })}
+                                        disabled={!filters.cameraModel || availableLenses.length === 0}
+                                        className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraModel || availableLenses.length === 0
+                                                ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                                                : 'bg-white text-gray-900'
+                                            }`}
+                                    >
+                                        <option value="">
+                                            {!filters.cameraModel
+                                                ? 'Select camera model first'
+                                                : availableLenses.length === 0
+                                                    ? 'No compatible lenses'
+                                                    : 'All lenses'}
+                                        </option>
+                                        {availableLenses.map(lens => (
+                                            <option key={lens.id} value={lens.name}>
+                                                {lens.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {selectedCamera?.cameraMount && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Compatible with {selectedCamera.cameraMount.name}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Manufacturer */}
@@ -299,6 +355,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                     <div className="space-y-1 text-xs text-gray-600">
                                         {filters.cameraManufacturer && <div>Camera Manufacturer: {filters.cameraManufacturer}</div>}
                                         {filters.cameraModel && <div>Camera Model: {filters.cameraModel}</div>}
+                                        {filters.lens && <div>Lens: {filters.lens}</div>}
                                         {filters.manufacturer && <div>Housings: {filters.manufacturer}</div>}
                                         {filters.maxDepth !== '0' && <div>Min Depth: {filters.maxDepth}m</div>}
                                         {(filters.priceMin > 0 || filters.priceMax < 10000) &&
