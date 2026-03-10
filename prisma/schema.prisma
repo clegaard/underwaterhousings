@@ -30,9 +30,10 @@ model CameraManufacturer {
 
 model CameraMount {
     id      String   @id @default(cuid())
-    name    String
     slug    String   @unique
+    name    String
     cameras Camera[]
+    lens    Lens[]
 
     @@map("camera_mounts")
 }
@@ -43,8 +44,8 @@ model Camera {
     slug                 String             @unique
     brand                CameraManufacturer @relation(fields: [cameraManufacturerId], references: [id])
     cameraManufacturerId String
-    cameraMountId        String?
     cameraMount          CameraMount?       @relation(fields: [cameraMountId], references: [id])
+    cameraMountId        String?
     housings             Housing[]
     lens                 Lens[]
 
@@ -70,10 +71,13 @@ model Housing {
 }
 
 model Lens {
-    id     String @id @default(cuid())
-    name   String
-    slug   String @unique
-    camera Camera @relation(fields: [id], references: [id])
+    id            String       @id @default(cuid())
+    name          String
+    slug          String       @unique
+    cameraMount   CameraMount? @relation(fields: [cameraMountId], references: [id])
+    cameraMountId String?
+    camera        Camera?      @relation(fields: [cameraId], references: [id])
+    cameraId      String?
 
     @@map("lenses")
 }

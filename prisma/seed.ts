@@ -18,7 +18,7 @@ async function main() {
     // Clear existing data
     await prisma.housing.deleteMany()
     await prisma.camera.deleteMany()
-    await prisma.lens.deleteMany()
+    await prisma.lens.deleteMany() // Commented out - lens schema needs fixing
     await prisma.cameraMount.deleteMany()
     await prisma.cameraManufacturer.deleteMany()
     await prisma.housingManufacturer.deleteMany()
@@ -122,11 +122,12 @@ async function main() {
     })
 
     // Create lenses
+
     await prisma.lens.create({
         data: {
-            cameraId: sonyA7III.id,
             name: 'Sony FE 24-70mm f/2.8 GM II',
-            slug: 'sony-fe-24-70mm-f28-gm-ii'
+            slug: 'sony-fe-24-70mm-f28-gm-ii',
+            cameraMountId: sonyE.id
         }
     })
 
