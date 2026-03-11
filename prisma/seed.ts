@@ -16,6 +16,10 @@ async function main() {
     console.log('🌱 Seeding database...')
 
     // Clear existing data
+    await prisma.portExtensionCombo.deleteMany()
+    await prisma.port.deleteMany()
+    await prisma.extension.deleteMany()
+    await prisma.housingMount.deleteMany()
     await prisma.housing.deleteMany()
     await prisma.camera.deleteMany()
     await prisma.lens.deleteMany()
@@ -122,7 +126,23 @@ async function main() {
     })
 
     // Create lenses
-    await prisma.lens.create({
+    const lensFE90MacroGOSS = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 90mm f/2.8 Macro G OSS',
+            slug: 'sony-fe-90mm-f28-macro-g-oss',
+            cameraMountId: sonyE.id
+        }
+    })
+
+    const lensFE2470GMII = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 24-70mm f/2.8 GM II',
+            slug: 'sony-fe-24-70mm-f28-gm-ii',
+            cameraMountId: sonyE.id
+        }
+    })
+
+    const lensFE1635GM = await prisma.lens.create({
         data: {
             name: 'Sony FE 16-35mm f/2.8 GM',
             slug: 'sony-fe-16-35mm-f28-gm',
@@ -130,10 +150,10 @@ async function main() {
         }
     })
 
-    await prisma.lens.create({
+    const lensFE1635GMII = await prisma.lens.create({
         data: {
-            name: 'Sony FE 24-70mm f/2.8 GM II',
-            slug: 'sony-fe-24-70mm-f28-gm-ii',
+            name: 'Sony FE 16-35mm f/2.8 GM II',
+            slug: 'sony-fe-16-35mm-f28-gm-ii',
             cameraMountId: sonyE.id
         }
     })
@@ -146,10 +166,67 @@ async function main() {
         }
     })
 
-    await prisma.lens.create({
+    // Additional lenses from A7R V port chart
+    const lensFE24105F4GOSS = await prisma.lens.create({
         data: {
-            name: 'Sony FE 90mm f/2.8 Macro G OSS',
-            slug: 'sony-fe-90mm-f28-macro-g-oss',
+            name: 'Sony FE 24-105mm f/4 G OSS',
+            slug: 'sony-fe-24-105mm-f4-g-oss',
+            cameraMountId: sonyE.id
+        }
+    })
+
+    const lensFE2870OSS = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 28-70mm f/3.5-5.6 OSS',
+            slug: 'sony-fe-28-70mm-f35-56-oss',
+            cameraMountId: sonyE.id
+        }
+    })
+
+    const lensFE1635F4 = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 16-35mm f/4 ZA OSS',
+            slug: 'sony-fe-16-35mm-f4-za-oss',
+            cameraMountId: sonyE.id
+        }
+    })
+
+    const lensFE2470F4ZAOSS = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 24-70mm f/4 ZA OSS',
+            slug: 'sony-fe-24-70mm-f4-za-oss',
+            cameraMountId: sonyE.id
+        }
+    })
+
+    const lensFE1224F4G = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 12-24mm f/4 G',
+            slug: 'sony-fe-12-24mm-f4-g',
+            cameraMountId: sonyE.id
+        }
+    })
+
+    const lensFE2470GM = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 24-70mm f/2.8 GM',
+            slug: 'sony-fe-24-70mm-f28-gm',
+            cameraMountId: sonyE.id
+        }
+    })
+
+    const lensFEPZ1635F4G = await prisma.lens.create({
+        data: {
+            name: 'Sony FE PZ 16-35mm f/4 G',
+            slug: 'sony-fe-pz-16-35mm-f4-g',
+            cameraMountId: sonyE.id
+        }
+    })
+
+    const lensEPZ18105F4GOSS = await prisma.lens.create({
+        data: {
+            name: 'Sony E PZ 18-105mm f/4 G OSS',
+            slug: 'sony-e-pz-18-105mm-f4-g-oss',
             cameraMountId: sonyE.id
         }
     })
@@ -325,7 +402,7 @@ async function main() {
         }
     })
 
-    await prisma.housing.create({
+    const housingA7RV = await prisma.housing.create({
         data: {
             model: 'SF-A7RV',
             name: 'Sony A7R V 40M/130FT Underwater Camera Housing',
@@ -337,6 +414,177 @@ async function main() {
             material: 'ABS Plastic',
             housingManufacturerId: seafrogs.id,
             cameraId: sonyA7RV.id
+        }
+    })
+    // Create housing mount types for different housings
+    const mountTypeSeaFrogsPolycarbonate = await prisma.housingMount.create({
+        data: {
+            name: 'SeaFrogs Polycarbonate',
+            description: 'Standard mount type for polycarbonate SeaFrogs ports',
+            housingManufacturerId: seafrogs.id
+        }
+    })
+
+    // Create SeaFrogs ports for A7R V housing
+    const portFL100 = await prisma.port.create({
+        data: {
+            name: 'FL100',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id
+        }
+    })
+
+    const portWA000SA = await prisma.port.create({
+        data: {
+            name: 'WA000S-A',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id
+        }
+    })
+
+    const portFL2870 = await prisma.port.create({
+        data: {
+            name: 'FL2870',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id
+        }
+    })
+
+    const portFL1655 = await prisma.port.create({
+        data: {
+            name: 'FL1655',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id
+
+        }
+    })
+
+    const portFL1545 = await prisma.port.create({
+        data: {
+            name: 'FL1545',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id
+
+        }
+    })
+
+    const portWA005B = await prisma.port.create({
+        data: {
+            name: 'WA005-B',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id
+        }
+    })
+
+    const portWA005F = await prisma.port.create({
+        data: {
+            name: 'WA005-F',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id
+        }
+    })
+
+    // Create port-extension-lens combinations for A7R V housing
+    // FL100 port combinations
+    await prisma.portExtensionCombo.create({
+        data: {
+            housingId: housingA7RV.id,
+            portId: portFL100.id,
+            lensId: lensFE90MacroGOSS.id
+        }
+    })
+
+    // WA000S-A port combinations
+    await prisma.portExtensionCombo.create({
+        data: {
+            housingId: housingA7RV.id,
+            portId: portWA000SA.id,
+            lensId: lensFE24105F4GOSS.id
+        }
+    })
+
+    await prisma.portExtensionCombo.create({
+        data: {
+            housingId: housingA7RV.id,
+            portId: portWA000SA.id,
+            lensId: lensFE2470GM.id
+        }
+    })
+
+    await prisma.portExtensionCombo.create({
+        data: {
+            housingId: housingA7RV.id,
+            portId: portWA000SA.id,
+            lensId: lensFE2470GMII.id
+        }
+    })
+
+    // FL2870 port combinations
+    await prisma.portExtensionCombo.create({
+        data: {
+            housingId: housingA7RV.id,
+            portId: portFL2870.id,
+            lensId: lensFE2870OSS.id
+        }
+    })
+
+    // FL1655 port combinations
+    await prisma.portExtensionCombo.create({
+        data: {
+            housingId: housingA7RV.id,
+            portId: portFL1655.id,
+            lensId: lensFE2470F4ZAOSS.id
+        }
+    })
+
+    // FL1545 port combinations
+    await prisma.portExtensionCombo.create({
+        data: {
+            housingId: housingA7RV.id,
+            portId: portFL1545.id,
+            lensId: lensFE1635F4.id
+        }
+    })
+
+    // WA005-B port combinations
+    await prisma.portExtensionCombo.create({
+        data: {
+            housingId: housingA7RV.id,
+            portId: portWA005B.id,
+            lensId: lensFE1635GM.id
+        }
+    })
+
+    await prisma.portExtensionCombo.create({
+        data: {
+            housingId: housingA7RV.id,
+            portId: portWA005B.id,
+            lensId: lensFE1635GMII.id
+        }
+    })
+
+    // WA005-F port combinations
+    await prisma.portExtensionCombo.create({
+        data: {
+            housingId: housingA7RV.id,
+            portId: portWA005F.id,
+            lensId: lensFE1224F4G.id
+        }
+    })
+
+    await prisma.portExtensionCombo.create({
+        data: {
+            housingId: housingA7RV.id,
+            portId: portWA005F.id,
+            lensId: lensFEPZ1635F4G.id
+        }
+    })
+
+    await prisma.portExtensionCombo.create({
+        data: {
+            housingId: housingA7RV.id,
+            portId: portWA005F.id,
+            lensId: lensEPZ18105F4GOSS.id
         }
     })
 
