@@ -14,7 +14,6 @@ model HousingManufacturer {
     description   String?
     housings      Housing[]
     ports         Port[]
-    extensions    Extension[]
     housingMounts HousingMount[]
 
     @@map("housing_manufacturers")
@@ -46,6 +45,7 @@ model HousingMount {
     name                  String
     description           String?
     ports                 Port[]
+    housings              Housing[]
     manufacturer          HousingManufacturer @relation(fields: [housingManufacturerId], references: [id])
     housingManufacturerId String
 }
@@ -58,79 +58,57 @@ model Camera {
     cameraManufacturerId String
     cameraMount          CameraMount?       @relation(fields: [cameraMountId], references: [id])
     cameraMountId        String?
-    housings             Housing[]
     lens                 Lens[]
+    housings             Housing[]
 
     @@map("cameras")
 }
 
 model Housing {
-    id                    String               @id @default(cuid())
+    id                    String              @id @default(cuid())
     model                 String
     name                  String
-    slug                  String               @unique
+    slug                  String              @unique
     description           String?
-    priceAmount           Decimal?             @db.Decimal(10, 2)
-    priceCurrency         String?              @default("USD")
+    priceAmount           Decimal?            @db.Decimal(10, 2)
+    priceCurrency         String?             @default("USD")
     depthRating           Int
     material              String?
-    manufacturer          HousingManufacturer  @relation(fields: [housingManufacturerId], references: [id])
-    Camera                Camera?              @relation(fields: [cameraId], references: [id])
+    manufacturer          HousingManufacturer @relation(fields: [housingManufacturerId], references: [id])
+    Camera                Camera?             @relation(fields: [cameraId], references: [id])
     cameraId              String?
     housingManufacturerId String
-    portExtensionCombos   PortExtensionCombo[]
+    housingMount          HousingMount?       @relation(fields: [housingMountId], references: [id])
+    housingMountId        String?
+    ports                 Port[]
 
     @@map("housings")
 }
 
 model Port {
-    id                    String               @id @default(cuid())
-    manufacturer          HousingManufacturer  @relation(fields: [housingManufacturerId], references: [id])
+    id                    String              @id @default(cuid())
+    manufacturer          HousingManufacturer @relation(fields: [housingManufacturerId], references: [id])
     housingManufacturerId String
     name                  String
-    lens                  Lens?                @relation(fields: [lensId], references: [id])
+    housing               Housing?            @relation(fields: [housingId], references: [id])
+    housingId             String?
+    lens                  Lens?               @relation(fields: [lensId], references: [id])
     lensId                String?
-    portExtensionCombos   PortExtensionCombo[]
-    housingMount          HousingMount?        @relation(fields: [housingMountId], references: [id])
+    housingMount          HousingMount?       @relation(fields: [housingMountId], references: [id])
     housingMountId        String?
 
     @@map("ports")
 }
 
-model Extension {
-    id                    String               @id @default(cuid())
-    manufacturer          HousingManufacturer  @relation(fields: [housingManufacturerId], references: [id])
-    housingManufacturerId String
-    name                  String
-    portExtensionCombos   PortExtensionCombo[]
-
-    @@map("extensions")
-}
-
-model PortExtensionCombo {
-    id                String     @id @default(cuid())
-    housing           Housing    @relation(fields: [housingId], references: [id])
-    housingId         String
-    port              Port       @relation(fields: [portId], references: [id])
-    portId            String
-    extensionRelation Extension? @relation(fields: [extensionId], references: [id])
-    extensionId       String?
-    lens              Lens?      @relation(fields: [lensId], references: [id])
-    lensId            String?
-
-    @@map("port_extension_combos")
-}
-
 model Lens {
-    id                            String               @id @default(cuid())
-    name                          String
-    slug                          String               @unique
-    cameraMount                   CameraMount?         @relation(fields: [cameraMountId], references: [id])
-    cameraMountId                 String?
-    camera                        Camera?              @relation(fields: [cameraId], references: [id])
-    cameraId                      String?
-    compatiblePortExtensionCombos PortExtensionCombo[]
-    ports                         Port[]
+    id            String       @id @default(cuid())
+    name          String
+    slug          String       @unique
+    cameraMount   CameraMount? @relation(fields: [cameraMountId], references: [id])
+    cameraMountId String?
+    camera        Camera?      @relation(fields: [cameraId], references: [id])
+    cameraId      String?
+    ports         Port[]
 
     @@map("lenses")
 }

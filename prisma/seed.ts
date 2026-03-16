@@ -16,9 +16,7 @@ async function main() {
     console.log('🌱 Seeding database...')
 
     // Clear existing data
-    await prisma.portExtensionCombo.deleteMany()
     await prisma.port.deleteMany()
-    await prisma.extension.deleteMany()
     await prisma.housingMount.deleteMany()
     await prisma.housing.deleteMany()
     await prisma.camera.deleteMany()
@@ -320,6 +318,15 @@ async function main() {
     })
 
 
+    // Create housing mount types for different housings
+    const mountTypeSeaFrogsPolycarbonate = await prisma.housingMount.create({
+        data: {
+            name: 'SeaFrogs Polycarbonate',
+            description: 'Standard mount type for polycarbonate SeaFrogs ports',
+            housingManufacturerId: seafrogs.id
+        }
+    })
+
     // Create housings based on scraped data from manufacturers
 
     // Nauticam housings
@@ -368,7 +375,8 @@ async function main() {
             depthRating: 40,
             material: 'ABS Plastic',
             housingManufacturerId: seafrogs.id,
-            cameraId: canonR6MarkII.id
+            cameraId: canonR6MarkII.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id
         }
     })
 
@@ -383,7 +391,8 @@ async function main() {
             depthRating: 40,
             material: 'ABS Plastic',
             housingManufacturerId: seafrogs.id,
-            cameraId: sonyZVE1.id
+            cameraId: sonyZVE1.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id
         }
     })
 
@@ -398,7 +407,8 @@ async function main() {
             depthRating: 40,
             material: 'ABS Plastic',
             housingManufacturerId: seafrogs.id,
-            cameraId: sonyA7III.id
+            cameraId: sonyA7III.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id
         }
     })
 
@@ -413,177 +423,135 @@ async function main() {
             depthRating: 40,
             material: 'ABS Plastic',
             housingManufacturerId: seafrogs.id,
-            cameraId: sonyA7RV.id
-        }
-    })
-    // Create housing mount types for different housings
-    const mountTypeSeaFrogsPolycarbonate = await prisma.housingMount.create({
-        data: {
-            name: 'SeaFrogs Polycarbonate',
-            description: 'Standard mount type for polycarbonate SeaFrogs ports',
-            housingManufacturerId: seafrogs.id
+            cameraId: sonyA7RV.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id
         }
     })
 
-    // Create SeaFrogs ports for A7R V housing
-    const portFL100 = await prisma.port.create({
+    // Create SeaFrogs ports for A7R V housing with lens compatibility
+    // FL100 port combinations
+    await prisma.port.create({
         data: {
             name: 'FL100',
             housingManufacturerId: seafrogs.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id
-        }
-    })
-
-    const portWA000SA = await prisma.port.create({
-        data: {
-            name: 'WA000S-A',
-            housingManufacturerId: seafrogs.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id
-        }
-    })
-
-    const portFL2870 = await prisma.port.create({
-        data: {
-            name: 'FL2870',
-            housingManufacturerId: seafrogs.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id
-        }
-    })
-
-    const portFL1655 = await prisma.port.create({
-        data: {
-            name: 'FL1655',
-            housingManufacturerId: seafrogs.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id
-
-        }
-    })
-
-    const portFL1545 = await prisma.port.create({
-        data: {
-            name: 'FL1545',
-            housingManufacturerId: seafrogs.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id
-
-        }
-    })
-
-    const portWA005B = await prisma.port.create({
-        data: {
-            name: 'WA005-B',
-            housingManufacturerId: seafrogs.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id
-        }
-    })
-
-    const portWA005F = await prisma.port.create({
-        data: {
-            name: 'WA005-F',
-            housingManufacturerId: seafrogs.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id
-        }
-    })
-
-    // Create port-extension-lens combinations for A7R V housing
-    // FL100 port combinations
-    await prisma.portExtensionCombo.create({
-        data: {
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            portId: portFL100.id,
             lensId: lensFE90MacroGOSS.id
         }
     })
 
     // WA000S-A port combinations
-    await prisma.portExtensionCombo.create({
+    await prisma.port.create({
         data: {
+            name: 'WA000S-A',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            portId: portWA000SA.id,
             lensId: lensFE24105F4GOSS.id
         }
     })
 
-    await prisma.portExtensionCombo.create({
+    await prisma.port.create({
         data: {
+            name: 'WA000S-A',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            portId: portWA000SA.id,
             lensId: lensFE2470GM.id
         }
     })
 
-    await prisma.portExtensionCombo.create({
+    await prisma.port.create({
         data: {
+            name: 'WA000S-A',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            portId: portWA000SA.id,
             lensId: lensFE2470GMII.id
         }
     })
 
     // FL2870 port combinations
-    await prisma.portExtensionCombo.create({
+    await prisma.port.create({
         data: {
+            name: 'FL2870',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            portId: portFL2870.id,
             lensId: lensFE2870OSS.id
         }
     })
 
     // FL1655 port combinations
-    await prisma.portExtensionCombo.create({
+    await prisma.port.create({
         data: {
+            name: 'FL1655',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            portId: portFL1655.id,
             lensId: lensFE2470F4ZAOSS.id
         }
     })
 
     // FL1545 port combinations
-    await prisma.portExtensionCombo.create({
+    await prisma.port.create({
         data: {
+            name: 'FL1545',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            portId: portFL1545.id,
             lensId: lensFE1635F4.id
         }
     })
 
     // WA005-B port combinations
-    await prisma.portExtensionCombo.create({
+    await prisma.port.create({
         data: {
+            name: 'WA005-B',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            portId: portWA005B.id,
             lensId: lensFE1635GM.id
         }
     })
 
-    await prisma.portExtensionCombo.create({
+    await prisma.port.create({
         data: {
+            name: 'WA005-B',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            portId: portWA005B.id,
             lensId: lensFE1635GMII.id
         }
     })
 
     // WA005-F port combinations
-    await prisma.portExtensionCombo.create({
+    await prisma.port.create({
         data: {
+            name: 'WA005-F',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            portId: portWA005F.id,
             lensId: lensFE1224F4G.id
         }
     })
 
-    await prisma.portExtensionCombo.create({
+    await prisma.port.create({
         data: {
+            name: 'WA005-F',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            portId: portWA005F.id,
             lensId: lensFEPZ1635F4G.id
         }
     })
 
-    await prisma.portExtensionCombo.create({
+    await prisma.port.create({
         data: {
+            name: 'WA005-F',
+            housingManufacturerId: seafrogs.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            portId: portWA005F.id,
             lensId: lensEPZ18105F4GOSS.id
         }
     })
@@ -599,7 +567,8 @@ async function main() {
             depthRating: 40,
             material: 'ABS Plastic',
             housingManufacturerId: seafrogs.id,
-            cameraId: sonyA6700.id
+            cameraId: sonyA6700.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id
         }
     })
 
@@ -614,7 +583,8 @@ async function main() {
             depthRating: 40,
             material: 'ABS Plastic',
             housingManufacturerId: seafrogs.id,
-            cameraId: sonyFX3.id
+            cameraId: sonyFX3.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id
         }
     })
 
@@ -629,7 +599,8 @@ async function main() {
             depthRating: 40,
             material: 'ABS Plastic',
             housingManufacturerId: seafrogs.id,
-            cameraId: canonR5.id
+            cameraId: canonR5.id,
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id
         }
     })
 
