@@ -5,7 +5,8 @@ import HousingFilters from '@/components/HousingFilters'
 // Server-side data fetching functions
 async function getHousingsData() {
     try {
-        const [housings, cameras, manufacturers, lenses, ports] = await Promise.all([
+        // Optimized: Reduced from 5 queries to 3 queries
+        const [housings, cameras, lenses] = await Promise.all([
             prisma.housing.findMany({
                 include: {
                     manufacturer: {
@@ -43,11 +44,6 @@ async function getHousingsData() {
                     { name: 'asc' }
                 ]
             }),
-            prisma.housingManufacturer.findMany({
-                orderBy: {
-                    name: 'asc'
-                }
-            }),
             prisma.lens.findMany({
                 include: {
                     cameraMount: true
@@ -55,19 +51,32 @@ async function getHousingsData() {
                 orderBy: {
                     name: 'asc'
                 }
-            }),
-            prisma.port.findMany({
-                include: {
-                    manufacturer: true,
-                    housingMount: true,
-                    housing: true,
-                    lens: true
-                },
-                orderBy: {
-                    name: 'asc'
-                }
             })
         ])
+
+        // Derive manufacturers from housings (no separate query needed)
+        const manufacturersMap = new Map()
+        housings.forEach(housing => {
+            if (!manufacturersMap.has(housing.manufacturer.id)) {
+                manufacturersMap.set(housing.manufacturer.id, housing.manufacturer)
+            }
+        })
+        const manufacturers = Array.from(manufacturersMap.values()).sort((a, b) =>
+            a.name.localeCompare(b.name)
+        )
+
+        // Derive ports from housings (no separate query needed)
+        const portsMap = new Map()
+        housings.forEach(housing => {
+            housing.ports.forEach(port => {
+                if (!portsMap.has(port.id)) {
+                    portsMap.set(port.id, port)
+                }
+            })
+        })
+        const ports = Array.from(portsMap.values()).sort((a, b) =>
+            a.name.localeCompare(b.name)
+        )
 
         return {
             housings: housings.map(housing => {

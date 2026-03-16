@@ -102,6 +102,15 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         }
     }, [filters.cameraModel, filters.lens, cameras, lenses])
 
+    // Clear manufacturer and port when camera model or lens changes
+    useEffect(() => {
+        if (!filters.cameraModel || !filters.lens) {
+            if (filters.manufacturer || filters.port) {
+                setFilters(prev => ({ ...prev, manufacturer: '', port: '' }))
+            }
+        }
+    }, [filters.cameraModel, filters.lens, filters.manufacturer, filters.port])
+
     // Clear port when housing or lens changes
     useEffect(() => {
         if (filters.port && (filters.manufacturer || filters.lens)) {
@@ -254,7 +263,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                     </label>
                                     <select
                                         value={filters.cameraModel}
-                                        onChange={(e) => setFilters({ ...filters, cameraModel: e.target.value, lens: '' })}
+                                        onChange={(e) => setFilters({ ...filters, cameraModel: e.target.value })}
                                         disabled={!filters.cameraManufacturer}
                                         className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraManufacturer ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-900'
                                             }`}
@@ -312,9 +321,19 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                     <select
                                         value={filters.manufacturer}
                                         onChange={(e) => setFilters({ ...filters, manufacturer: e.target.value, port: '' })}
-                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                                        disabled={!filters.cameraModel || !filters.lens}
+                                        className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraModel || !filters.lens
+                                                ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                                                : 'bg-white text-gray-900'
+                                            }`}
                                     >
-                                        <option value="">All housings</option>
+                                        <option value="">
+                                            {!filters.cameraModel
+                                                ? 'Select camera model first'
+                                                : !filters.lens
+                                                    ? 'Select lens first'
+                                                    : 'All housings'}
+                                        </option>
                                         {manufacturers.map(manufacturer => (
                                             <option key={manufacturer.id} value={manufacturer.name}>
                                                 {manufacturer.name}
