@@ -126,6 +126,7 @@ async function main() {
     // Create lenses
     const lensFE90MacroGOSS = await prisma.lens.create({
         data: {
+            id: 'sel90m28g',
             name: 'Sony FE 90mm f/2.8 Macro G OSS',
             slug: 'sony-fe-90mm-f28-macro-g-oss',
             cameraMountId: sonyE.id
@@ -134,6 +135,7 @@ async function main() {
 
     const lensFE2470GMII = await prisma.lens.create({
         data: {
+            id: 'sel2470gmii',
             name: 'Sony FE 24-70mm f/2.8 GM II',
             slug: 'sony-fe-24-70mm-f28-gm-ii',
             cameraMountId: sonyE.id

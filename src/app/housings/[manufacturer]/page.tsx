@@ -46,11 +46,15 @@ export default async function ManufacturerPage({ params }: ManufacturerPageProps
         notFound()
     }
 
-    // Convert Decimal fields to numbers
-    const housingsData = manufacturer.housings.map(housing => ({
-        ...housing,
-        priceAmount: housing.priceAmount ? Number(housing.priceAmount) : null
-    }))
+    // Convert Decimal fields to numbers and pre-resolve image paths
+    const housingsData = manufacturer.housings.map(housing => {
+        const imageInfo = getHousingImagePathWithFallback(manufacturer.slug, housing.slug)
+        return {
+            ...housing,
+            priceAmount: housing.priceAmount ? Number(housing.priceAmount) : null,
+            imageInfo
+        }
+    })
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
@@ -93,8 +97,8 @@ export default async function ManufacturerPage({ params }: ManufacturerPageProps
                                 // Use database slugs for SEO-friendly URLs with new structure
                                 const detailUrl = `/housings/${manufacturer.slug}/${housing.slug}`
 
-                                // Get the proper image path with fallback
-                                const imageInfo = getHousingImagePathWithFallback(manufacturer.slug, housing.slug)
+                                // Use pre-resolved image paths
+                                const imageInfo = housing.imageInfo
 
                                 return (
                                     <Link

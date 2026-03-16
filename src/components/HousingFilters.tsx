@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { getHousingImagePathWithFallback } from '@/lib/images'
 import { HousingImage } from '@/components/HousingImage'
 
 // Types for our filters
@@ -492,8 +491,11 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                         // Use database slugs for SEO-friendly URLs with new structure
                                         const detailUrl = `/housings/${housing.manufacturer.slug}/${housing.slug}`
 
-                                        // Get the proper image path with fallback
-                                        const imageInfo = getHousingImagePathWithFallback(housing.manufacturer.slug, housing.slug)
+                                        // Use pre-resolved image paths from server-side
+                                        const imageInfo = housing.imageInfo || {
+                                            src: '/housings/fallback.png',
+                                            fallback: '/housings/fallback.png'
+                                        }
 
                                         return (
                                             <Link
@@ -506,7 +508,6 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                     <HousingImage
                                                         src={imageInfo.src}
                                                         fallback={imageInfo.fallback}
-                                                        alternates={imageInfo.alternates}
                                                         alt={housing.name}
                                                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                                                     />

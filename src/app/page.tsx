@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { getHousingImagePathWithFallback } from '@/lib/images'
 import HousingFilters from '@/components/HousingFilters'
 
 // Server-side data fetching functions
@@ -69,10 +70,18 @@ async function getHousingsData() {
         ])
 
         return {
-            housings: housings.map(housing => ({
-                ...housing,
-                priceAmount: housing.priceAmount ? Number(housing.priceAmount) : null
-            })),
+            housings: housings.map(housing => {
+                // Resolve image paths server-side
+                const imageInfo = getHousingImagePathWithFallback(
+                    housing.manufacturer.slug,
+                    housing.slug
+                )
+                return {
+                    ...housing,
+                    priceAmount: housing.priceAmount ? Number(housing.priceAmount) : null,
+                    imageInfo // Add pre-resolved image paths
+                }
+            }),
             cameras,
             manufacturers,
             lenses,

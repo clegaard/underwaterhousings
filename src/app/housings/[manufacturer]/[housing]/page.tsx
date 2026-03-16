@@ -3,8 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { HousingImage } from '@/components/HousingImage'
 import ImageGallery from '@/components/ImageGallery'
-import { promises as fs } from 'fs'
-import path from 'path'
+import { getAllHousingImages } from '@/lib/images'
 
 interface HousingDetailPageProps {
     params: {
@@ -45,59 +44,6 @@ async function getHousingDetail(manufacturerSlug: string, housingSlug: string) {
     }
 }
 
-async function getHousingImages(manufacturerSlug: string, housingSlug: string) {
-    const housingDir = path.join(process.cwd(), 'public', 'housings', manufacturerSlug, housingSlug)
-    const supportedExtensions = ['.webp', '.jpg', '.jpeg', '.png']
-    const images: Array<{ src: string; fallback: string; type: string; alt: string }> = []
-
-    try {
-        const files = await fs.readdir(housingDir)
-
-        for (const file of files) {
-            const ext = path.extname(file).toLowerCase()
-            if (supportedExtensions.includes(ext)) {
-                const fileName = path.basename(file, ext)
-                const imagePath = `/housings/${manufacturerSlug}/${housingSlug}/${file}`
-
-                images.push({
-                    src: imagePath,
-                    fallback: '/housings/fallback.png',
-                    type: fileName,
-                    alt: `${manufacturerSlug} ${housingSlug} ${fileName} view`
-                })
-            }
-        }
-
-        // Sort images to show front first, then back, then others
-        images.sort((a, b) => {
-            const order = ['front', 'back']
-            const aIndex = order.indexOf(a.type)
-            const bIndex = order.indexOf(b.type)
-
-            if (aIndex !== -1 && bIndex !== -1) {
-                return aIndex - bIndex
-            } else if (aIndex !== -1) {
-                return -1
-            } else if (bIndex !== -1) {
-                return 1
-            } else {
-                return a.type.localeCompare(b.type)
-            }
-        })
-    } catch (error) {
-        console.error(`Error reading housing images from ${housingDir}:`, error)
-        // Return at least the default front image as fallback
-        images.push({
-            src: `/housings/${manufacturerSlug}/${housingSlug}/front.webp`,
-            fallback: '/housings/fallback.png',
-            type: 'front',
-            alt: `${manufacturerSlug} ${housingSlug} front view`
-        })
-    }
-
-    return images
-}
-
 export default async function HousingDetailPage({ params }: HousingDetailPageProps) {
     const housing = await getHousingDetail(params.manufacturer, params.housing)
 
@@ -105,8 +51,8 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
         notFound()
     }
 
-    // Get all images for this housing from API
-    const housingImages = await getHousingImages(params.manufacturer, params.housing)
+    // Get all images for this housing using shared utility
+    const housingImages = getAllHousingImages(params.manufacturer, params.housing)
 
     // Convert Decimal to number for client rendering
     const housingData = {

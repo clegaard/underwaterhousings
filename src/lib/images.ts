@@ -1,74 +1,118 @@
 /**
- * Utility function to get the housing image path with fallback
- * @param manufacturerSlug - The manufacturer slug (e.g., 'nauticam', 'seafrogs')
- * @param housingSlug - The housing slug (e.g., 'na-om5ii')
- * @param imageType - The image type ('front' or 'back'), defaults to 'front'
- * @returns The image path to use, with fallback to /housings/fallback.png
- */
-export function getHousingImagePath(
-    manufacturerSlug: string,
-    housingSlug: string,
-    imageType: 'front' | 'back' = 'front'
-): string {
-    // Try the specific housing image first
-    const primaryPath = `/housings/${manufacturerSlug}/${housingSlug}/${imageType}.webp`
-
-    // For now, we'll assume the image exists if we have the slugs
-    // In a production app, you might want to check if the file exists
-    // or handle this through a dynamic API that verifies file existence
-    if (manufacturerSlug && housingSlug) {
-        return primaryPath
-    }
-
-    // Fallback to the default image
-    return '/housings/fallback.png'
-}
-
-/**
- * Get housing image path with error fallback
- * This version can be used with Next.js Image component's onError prop
- * Returns multiple possible paths to try different image formats
+ * Get housing image path with error fallback (Server-side)
+ * This checks file existence on the server to avoid multiple client requests
+ * Finds any image file in the housing folder with supported extensions
  */
 export function getHousingImagePathWithFallback(
     manufacturerSlug: string,
-    housingSlug: string,
-    imageType: 'front' | 'back' = 'front'
-): { src: string; fallback: string; alternates: string[] } {
-    const supportedExtensions = ['.webp', '.jpg', '.jpeg', '.png']
-    const alternates = supportedExtensions.map(ext =>
-        `/housings/${manufacturerSlug}/${housingSlug}/${imageType}${ext}`
-    )
+    housingSlug: string
+): { src: string; fallback: string } {
+    // Only run on server side
+    if (typeof window === 'undefined') {
+        try {
+            // Use dynamic import to avoid bundling fs in client
+            const { existsSync, readdirSync } = require('fs')
+            const { join, extname } = require('path')
 
+            const supportedExtensions = ['.webp', '.jpg', '.jpeg', '.png', '.gif', '.svg']
+            const basePath = join(process.cwd(), 'public', 'housings', manufacturerSlug, housingSlug)
+
+            // Find any image in the folder
+            if (existsSync(basePath)) {
+                const files = readdirSync(basePath)
+                const imageFiles = files.filter((file: string) => {
+                    const ext = extname(file).toLowerCase()
+                    return supportedExtensions.includes(ext)
+                })
+
+                // Use the first image found (alphabetically)
+                if (imageFiles.length > 0) {
+                    // Sort alphabetically to ensure consistent results
+                    imageFiles.sort()
+                    return {
+                        src: `/housings/${manufacturerSlug}/${housingSlug}/${imageFiles[0]}`,
+                        fallback: '/housings/fallback.png'
+                    }
+                }
+            }
+
+            // No image found - return fallback as src
+            return {
+                src: '/housings/fallback.png',
+                fallback: '/housings/fallback.png'
+            }
+        } catch (error) {
+            // If fs operations fail, fall through to default
+            console.warn('Failed to check image existence:', error)
+        }
+    }
+
+    // Client-side - can't check filesystem, return fallback
+    // This ensures we don't try to load non-existent hardcoded paths
     return {
-        src: alternates[0], // Try webp first
-        fallback: '/housings/fallback.png',
-        alternates: alternates.slice(1) // Other formats to try
+        src: '/housings/fallback.png',
+        fallback: '/housings/fallback.png'
     }
 }
 
 /**
- * Get all potential images for a specific housing 
- * Returns array of common image paths with their types and fallbacks
- * This is a client-safe version that doesn't require filesystem access
+ * Get all actual images for a specific housing 
+ * Returns array of actual image paths found in the housing directory
+ * Server-side only - reads the filesystem to find real images
+ * Sorts images with 'front' and 'back' prioritized, then alphabetically
  */
 export function getAllHousingImages(
     manufacturerSlug: string,
     housingSlug: string
 ): Array<{ src: string; fallback: string; type: string; alt: string }> {
-    const commonImageTypes = ['front', 'back', 'side', 'top', 'bottom', 'detail', 'controls', 'ports']
-    const supportedExtensions = ['.webp', '.jpg', '.jpeg', '.png']
     const images: Array<{ src: string; fallback: string; type: string; alt: string }> = []
 
-    // Generate potential image paths for common image types
-    for (const imageType of commonImageTypes) {
-        for (const ext of supportedExtensions) {
-            const imagePath = `/housings/${manufacturerSlug}/${housingSlug}/${imageType}${ext}`
-            images.push({
-                src: imagePath,
-                fallback: '/housings/fallback.png',
-                type: imageType,
-                alt: `${manufacturerSlug} ${housingSlug} ${imageType} view`
-            })
+    // Only run on server side
+    if (typeof window === 'undefined') {
+        try {
+            const { existsSync, readdirSync } = require('fs')
+            const { join, extname, basename } = require('path')
+
+            const supportedExtensions = ['.webp', '.jpg', '.jpeg', '.png', '.gif', '.svg']
+            const basePath = join(process.cwd(), 'public', 'housings', manufacturerSlug, housingSlug)
+
+            if (existsSync(basePath)) {
+                const files = readdirSync(basePath)
+                const imageFiles = files.filter((file: string) => {
+                    const ext = extname(file).toLowerCase()
+                    return supportedExtensions.includes(ext)
+                })
+
+                // Create entries for each image found
+                for (const imageFile of imageFiles) {
+                    const fileNameWithoutExt = basename(imageFile, extname(imageFile))
+                    images.push({
+                        src: `/housings/${manufacturerSlug}/${housingSlug}/${imageFile}`,
+                        fallback: '/housings/fallback.png',
+                        type: fileNameWithoutExt,
+                        alt: `${manufacturerSlug} ${housingSlug} ${fileNameWithoutExt} view`
+                    })
+                }
+
+                // Sort images to show front first, then back, then others alphabetically
+                images.sort((a, b) => {
+                    const order = ['front', 'back']
+                    const aIndex = order.indexOf(a.type)
+                    const bIndex = order.indexOf(b.type)
+
+                    if (aIndex !== -1 && bIndex !== -1) {
+                        return aIndex - bIndex
+                    } else if (aIndex !== -1) {
+                        return -1
+                    } else if (bIndex !== -1) {
+                        return 1
+                    } else {
+                        return a.type.localeCompare(b.type)
+                    }
+                })
+            }
+        } catch (error) {
+            console.warn('Failed to read housing images:', error)
         }
     }
 

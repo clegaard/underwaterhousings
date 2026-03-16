@@ -1,13 +1,32 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        domains: [
-            'www.nauticam.com',
-            'www.aquatica.ca',
-            'www.isotecnic.it',
-            'www.divevolkdiving.com',
-            'www.aoi-uw.com',
-            'www.seafrogs.com.hk'
+        formats: ['image/webp'],
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'www.nauticam.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'www.aquatica.ca',
+            },
+            {
+                protocol: 'https',
+                hostname: 'www.isotecnic.it',
+            },
+            {
+                protocol: 'https',
+                hostname: 'www.divevolkdiving.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'www.aoi-uw.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'www.seafrogs.com.hk',
+            },
         ],
     },
 }
