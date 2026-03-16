@@ -118,3 +118,178 @@ export function getAllHousingImages(
 
     return images
 }
+
+/**
+ * Get camera image path with error fallback (Server-side)
+ * Looks in /public/cameras/{brandSlug}/{cameraSlug}/ for images
+ */
+export function getCameraImagePathWithFallback(
+    brandSlug: string,
+    cameraSlug: string
+): { src: string; fallback: string } {
+    // Only run on server side
+    if (typeof window === 'undefined') {
+        try {
+            const { existsSync, readdirSync } = require('fs')
+            const { join, extname } = require('path')
+
+            const supportedExtensions = ['.webp', '.jpg', '.jpeg', '.png', '.gif', '.svg']
+            const basePath = join(process.cwd(), 'public', 'cameras', brandSlug, cameraSlug)
+
+            if (existsSync(basePath)) {
+                const files = readdirSync(basePath)
+                const imageFiles = files.filter((file: string) => {
+                    const ext = extname(file).toLowerCase()
+                    return supportedExtensions.includes(ext)
+                })
+
+                if (imageFiles.length > 0) {
+                    imageFiles.sort()
+                    return {
+                        src: `/cameras/${brandSlug}/${cameraSlug}/${imageFiles[0]}`,
+                        fallback: '/cameras/fallback.png'
+                    }
+                }
+            }
+
+            return {
+                src: '/cameras/fallback.png',
+                fallback: '/cameras/fallback.png'
+            }
+        } catch (error) {
+            console.warn('Failed to check camera image existence:', error)
+        }
+    }
+
+    return {
+        src: '/cameras/fallback.png',
+        fallback: '/cameras/fallback.png'
+    }
+}
+
+/**
+ * Get lens image path with error fallback (Server-side)
+ * Looks in /public/lenses/{brandSlug}/ for lens images
+ * Lens images are typically named by lens slug or model
+ */
+export function getLensImagePathWithFallback(
+    lensSlug: string,
+    cameraMountName?: string
+): { src: string; fallback: string } {
+    // Only run on server side
+    if (typeof window === 'undefined') {
+        try {
+            const { existsSync, readdirSync } = require('fs')
+            const { join, extname, basename } = require('path')
+
+            const supportedExtensions = ['.webp', '.jpg', '.jpeg', '.png', '.gif', '.svg', '.avif']
+
+            // Try to find lens image in lenses directory
+            // Check multiple possible locations based on mount type
+            const possiblePaths = [
+                join(process.cwd(), 'public', 'lenses', 'sony'),
+                join(process.cwd(), 'public', 'lenses', 'canon'),
+                join(process.cwd(), 'public', 'lenses', 'nikon'),
+            ]
+
+            for (const basePath of possiblePaths) {
+                if (existsSync(basePath)) {
+                    const files = readdirSync(basePath)
+
+                    // Look for files matching the lens slug
+                    const matchingFiles = files.filter((file: string) => {
+                        const ext = extname(file).toLowerCase()
+                        const fileName = basename(file, ext)
+                        return supportedExtensions.includes(ext) && fileName.includes(lensSlug)
+                    })
+
+                    if (matchingFiles.length > 0) {
+                        const brandName = basename(basePath)
+                        return {
+                            src: `/lenses/${brandName}/${matchingFiles[0]}`,
+                            fallback: '/lenses/fallback.png'
+                        }
+                    }
+                }
+            }
+
+            return {
+                src: '/lenses/fallback.png',
+                fallback: '/lenses/fallback.png'
+            }
+        } catch (error) {
+            console.warn('Failed to check lens image existence:', error)
+        }
+    }
+
+    return {
+        src: '/lenses/fallback.png',
+        fallback: '/lenses/fallback.png'
+    }
+}
+
+/**
+ * Get port image path with error fallback (Server-side)
+ * Looks in /public/ports/{manufacturerSlug}/ for port images
+ * Port images are typically named by port name or model
+ */
+export function getPortImagePathWithFallback(
+    portName: string,
+    manufacturerSlug?: string
+): { src: string; fallback: string } {
+    // Only run on server side
+    if (typeof window === 'undefined') {
+        try {
+            const { existsSync, readdirSync } = require('fs')
+            const { join, extname, basename } = require('path')
+
+            const supportedExtensions = ['.webp', '.jpg', '.jpeg', '.png', '.gif', '.svg', '.avif']
+
+            // Normalize port name for file matching
+            const normalizedPortName = portName.toLowerCase().replace(/\s+/g, '-')
+
+            // Try to find port image in ports directory
+            const possiblePaths = manufacturerSlug
+                ? [join(process.cwd(), 'public', 'ports', manufacturerSlug)]
+                : [
+                    join(process.cwd(), 'public', 'ports', 'seafrogs'),
+                    join(process.cwd(), 'public', 'ports', 'nauticam'),
+                    join(process.cwd(), 'public', 'ports'),
+                ]
+
+            for (const basePath of possiblePaths) {
+                if (existsSync(basePath)) {
+                    const files = readdirSync(basePath)
+
+                    // Look for files matching the port name
+                    const matchingFiles = files.filter((file: string) => {
+                        const ext = extname(file).toLowerCase()
+                        const fileName = basename(file, ext).toLowerCase()
+                        return supportedExtensions.includes(ext) &&
+                            (fileName.includes(normalizedPortName) || fileName === normalizedPortName)
+                    })
+
+                    if (matchingFiles.length > 0) {
+                        const relativePath = basePath.replace(join(process.cwd(), 'public'), '')
+                        return {
+                            src: `${relativePath}/${matchingFiles[0]}`,
+                            fallback: '/ports/fallback.png'
+                        }
+                    }
+                }
+            }
+
+            return {
+                src: '/ports/fallback.png',
+                fallback: '/ports/fallback.png'
+            }
+        } catch (error) {
+            console.warn('Failed to check port image existence:', error)
+        }
+    }
+
+    return {
+        src: '/ports/fallback.png',
+        fallback: '/ports/fallback.png'
+    }
+}

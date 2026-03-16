@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { getHousingImagePathWithFallback } from '@/lib/images'
+import { getHousingImagePathWithFallback, getCameraImagePathWithFallback, getLensImagePathWithFallback, getPortImagePathWithFallback } from '@/lib/images'
 import HousingFilters from '@/components/HousingFilters'
 
 // Server-side data fetching functions
@@ -74,9 +74,17 @@ async function getHousingsData() {
                 }
             })
         })
-        const ports = Array.from(portsMap.values()).sort((a, b) =>
-            a.name.localeCompare(b.name)
-        )
+        const ports = Array.from(portsMap.values()).map(port => {
+            // Resolve port image paths server-side
+            const imageInfo = getPortImagePathWithFallback(
+                port.name,
+                port.manufacturer?.slug
+            )
+            return {
+                ...port,
+                imageInfo
+            }
+        }).sort((a, b) => a.name.localeCompare(b.name))
 
         return {
             housings: housings.map(housing => {
@@ -91,9 +99,26 @@ async function getHousingsData() {
                     imageInfo // Add pre-resolved image paths
                 }
             }),
-            cameras,
+            cameras: cameras.map(camera => {
+                // Resolve camera image paths server-side
+                const imageInfo = getCameraImagePathWithFallback(
+                    camera.brand.slug,
+                    camera.slug
+                )
+                return {
+                    ...camera,
+                    imageInfo
+                }
+            }),
+            lenses: lenses.map(lens => {
+                // Resolve lens image paths server-side
+                const imageInfo = getLensImagePathWithFallback(lens.slug)
+                return {
+                    ...lens,
+                    imageInfo
+                }
+            }),
             manufacturers,
-            lenses,
             ports,
             source: 'database'
         }

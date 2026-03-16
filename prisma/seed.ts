@@ -128,7 +128,7 @@ async function main() {
         data: {
             id: 'sel90m28g',
             name: 'Sony FE 90mm f/2.8 Macro G OSS',
-            slug: 'sony-fe-90mm-f28-macro-g-oss',
+            slug: 'sel90m28g',
             cameraMountId: sonyE.id
         }
     })
@@ -137,7 +137,7 @@ async function main() {
         data: {
             id: 'sel2470gmii',
             name: 'Sony FE 24-70mm f/2.8 GM II',
-            slug: 'sony-fe-24-70mm-f28-gm-ii',
+            slug: 'sel2470gmii',
             cameraMountId: sonyE.id
         }
     })
@@ -153,7 +153,7 @@ async function main() {
     const lensFE1635GMII = await prisma.lens.create({
         data: {
             name: 'Sony FE 16-35mm f/2.8 GM II',
-            slug: 'sony-fe-16-35mm-f28-gm-ii',
+            slug: 'sel1635gmii',
             cameraMountId: sonyE.id
         }
     })
@@ -161,7 +161,7 @@ async function main() {
     await prisma.lens.create({
         data: {
             name: 'Sony FE 70-200mm f/2.8 GM OSS II',
-            slug: 'sony-fe-70-200mm-f28-gm-oss-ii',
+            slug: 'sel70200gmii',
             cameraMountId: sonyE.id
         }
     })
@@ -258,7 +258,7 @@ async function main() {
     const sonyA7RV = await prisma.camera.create({
         data: {
             name: 'A7R V',
-            slug: 'a7r-v',
+            slug: 'ilce-7rm5',
             cameraManufacturerId: sony.id,
             cameraMountId: sonyE.id
         }

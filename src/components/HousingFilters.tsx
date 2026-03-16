@@ -37,7 +37,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         manufacturer: ''
     })
 
-    const [filteredHousings, setFilteredHousings] = useState(initialHousings)
+    const [filteredCombinations, setFilteredCombinations] = useState<any[]>([])
     const [isFiltering, setIsFiltering] = useState(false)
     const [showFilters, setShowFilters] = useState(false)
 
@@ -135,61 +135,122 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         }
     }, [filters.manufacturer, filters.lens, filters.port, initialHousings, lenses, ports])
 
-    // Apply filters
+    // Apply filters and generate combinations
     useEffect(() => {
         setIsFiltering(true)
 
-        let filtered = initialHousings.filter(housing => {
+        // Generate all valid combinations based on filters
+        const combinations: any[] = []
+
+        initialHousings.forEach(housing => {
             // Camera manufacturer filter
             if (filters.cameraManufacturer && housing.Camera) {
                 if (housing.Camera.brand.name !== filters.cameraManufacturer) {
-                    return false
+                    return
                 }
             }
 
             // Camera model filter
             if (filters.cameraModel && housing.Camera) {
                 if (housing.Camera.name !== filters.cameraModel) {
-                    return false
+                    return
                 }
             }
 
-            // Max depth filter - now works with integer depth ratings
+            // Max depth filter
             if (filters.maxDepth !== '0') {
                 const requiredDepth = Number(filters.maxDepth)
                 const housingDepth = housing.depthRating || 0
                 if (housingDepth < requiredDepth) {
-                    return false
-                }
-            }
-
-            // Price range filter
-            if (housing.priceAmount) {
-                const price = Number(housing.priceAmount)
-                // Only apply price filter if user has changed from defaults
-                if (filters.priceMin > 0 || filters.priceMax < 10000) {
-                    if (price < filters.priceMin || price > filters.priceMax) {
-                        return false
-                    }
+                    return
                 }
             }
 
             // Material filter
             if (filters.material && housing.material !== filters.material) {
-                return false
+                return
             }
 
             // Manufacturer filter
             if (filters.manufacturer && housing.manufacturer.name !== filters.manufacturer) {
-                return false
+                return
             }
 
-            return true
+            // For each housing, find compatible lenses and ports
+            const camera = housing.Camera
+
+            if (!camera) return
+
+            // Look up the full camera data with imageInfo from the cameras prop
+            const cameraWithImageInfo = cameras.find(c => c.id === camera.id) || camera
+
+            // Find lenses compatible with this camera's mount
+            const compatibleLenses = lenses.filter(lens =>
+                lens.cameraMountId === camera.cameraMount?.id &&
+                (!filters.lens || lens.name === filters.lens)
+            )
+
+            compatibleLenses.forEach(lens => {
+                // Find ports compatible with this lens and housing
+                const compatiblePorts = housing.ports.filter((port: any) =>
+                    port.lensId === lens.id &&
+                    (!filters.port || port.name === filters.port)
+                )
+
+                if (compatiblePorts.length > 0) {
+                    compatiblePorts.forEach((port: any) => {
+                        // Look up the full port data with imageInfo from the ports prop
+                        const portWithImageInfo = ports.find(p => p.id === port.id) || port
+
+                        // Calculate combined price
+                        const housingPrice = housing.priceAmount ? Number(housing.priceAmount) : 0
+                        const totalPrice = housingPrice // Can add camera, lens, port prices if available
+
+                        // Price range filter on combined price
+                        if (filters.priceMin > 0 || filters.priceMax < 10000) {
+                            if (totalPrice < filters.priceMin || totalPrice > filters.priceMax) {
+                                return
+                            }
+                        }
+
+                        combinations.push({
+                            id: `${camera.id}-${lens.id}-${housing.id}-${port.id}`,
+                            camera: cameraWithImageInfo,
+                            lens,
+                            housing,
+                            port: portWithImageInfo,
+                            totalPrice,
+                            currency: housing.priceCurrency || 'USD'
+                        })
+                    })
+                } else if (!filters.port) {
+                    // If no specific port filter and no ports available, still show the combination
+                    const housingPrice = housing.priceAmount ? Number(housing.priceAmount) : 0
+                    const totalPrice = housingPrice
+
+                    // Price range filter
+                    if (filters.priceMin > 0 || filters.priceMax < 10000) {
+                        if (totalPrice < filters.priceMin || totalPrice > filters.priceMax) {
+                            return
+                        }
+                    }
+
+                    combinations.push({
+                        id: `${camera.id}-${lens.id}-${housing.id}-no-port`,
+                        camera: cameraWithImageInfo,
+                        lens,
+                        housing,
+                        port: null,
+                        totalPrice,
+                        currency: housing.priceCurrency || 'USD'
+                    })
+                }
+            })
         })
 
-        setFilteredHousings(filtered)
+        setFilteredCombinations(combinations)
         setIsFiltering(false)
-    }, [filters, initialHousings])
+    }, [filters, initialHousings, lenses])
 
     const clearFilters = () => {
         setFilters({
@@ -323,8 +384,8 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                         onChange={(e) => setFilters({ ...filters, manufacturer: e.target.value, port: '' })}
                                         disabled={!filters.cameraModel || !filters.lens}
                                         className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraModel || !filters.lens
-                                                ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                                                : 'bg-white text-gray-900'
+                                            ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                                            : 'bg-white text-gray-900'
                                             }`}
                                     >
                                         <option value="">
@@ -484,15 +545,15 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
-                                    Filtering housings...
+                                    Filtering combinations...
                                 </div>
                             </div>
                         )}
 
-                        {!isFiltering && filteredHousings.length === 0 && (
+                        {!isFiltering && filteredCombinations.length === 0 && (
                             <div className="text-center py-12 bg-white rounded-lg shadow-sm">
                                 <div className="text-6xl mb-4">🔍</div>
-                                <h3 className="text-lg font-medium text-gray-900 mb-2">No housings found</h3>
+                                <h3 className="text-lg font-medium text-gray-900 mb-2">No combinations found</h3>
                                 <p className="text-gray-600 mb-4">Try adjusting your filters to see more results</p>
                                 <button
                                     onClick={clearFilters}
@@ -503,56 +564,144 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                             </div>
                         )}
 
-                        {!isFiltering && filteredHousings.length > 0 && (
+                        {!isFiltering && filteredCombinations.length > 0 && (
                             <div className="flex justify-center">
-                                <div key={`${filteredHousings.length}-${JSON.stringify(filters)}`} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-7xl w-full">
-                                    {filteredHousings.map((housing: any) => {
-                                        // Use database slugs for SEO-friendly URLs with new structure
-                                        const detailUrl = `/housings/${housing.manufacturer.slug}/${housing.slug}`
+                                <div key={`${filteredCombinations.length}-${JSON.stringify(filters)}`} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-7xl w-full">
+                                    {filteredCombinations.map((combo: any) => {
+                                        const { camera, lens, housing, port, totalPrice, currency } = combo
+
+                                        // Create detail URL for combination
+                                        const detailUrl = `/combinations/${camera.slug}/${lens.slug}/${housing.slug}${port ? '/' + port.id : ''}`
 
                                         // Use pre-resolved image paths from server-side
-                                        const imageInfo = housing.imageInfo || {
+                                        const housingImageInfo = housing.imageInfo || {
                                             src: '/housings/fallback.png',
                                             fallback: '/housings/fallback.png'
+                                        }
+                                        const cameraImageInfo = camera.imageInfo || {
+                                            src: '/cameras/fallback.png',
+                                            fallback: '/cameras/fallback.png'
+                                        }
+                                        const lensImageInfo = lens.imageInfo || {
+                                            src: '/lenses/fallback.png',
+                                            fallback: '/lenses/fallback.png'
+                                        }
+                                        const portImageInfo = port?.imageInfo || {
+                                            src: '/ports/fallback.png',
+                                            fallback: '/ports/fallback.png'
                                         }
 
                                         return (
                                             <Link
-                                                key={housing.id}
+                                                key={combo.id}
                                                 href={detailUrl}
                                                 className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group cursor-pointer overflow-hidden"
                                             >
-                                                {/* Housing Image */}
-                                                <div className="relative w-full h-48 bg-gray-100">
-                                                    <HousingImage
-                                                        src={imageInfo.src}
-                                                        fallback={imageInfo.fallback}
-                                                        alt={housing.name}
-                                                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                                    />
+                                                {/* Four Images Grid */}
+                                                <div className="relative w-full grid grid-cols-4 gap-1 bg-gray-100 p-2">
+                                                    {/* Camera Image */}
+                                                    <div className="relative aspect-square bg-gray-200 rounded overflow-hidden">
+                                                        <HousingImage
+                                                            src={cameraImageInfo.src}
+                                                            fallback={cameraImageInfo.fallback}
+                                                            alt={`${camera.brand.name} ${camera.name}`}
+                                                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                                        />
+                                                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1 py-0.5">
+                                                            <span className="text-white text-[10px] font-medium">📷</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Lens Image */}
+                                                    <div className="relative aspect-square bg-gray-200 rounded overflow-hidden">
+                                                        <HousingImage
+                                                            src={lensImageInfo.src}
+                                                            fallback={lensImageInfo.fallback}
+                                                            alt={lens.name}
+                                                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                                        />
+                                                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1 py-0.5">
+                                                            <span className="text-white text-[10px] font-medium">🔍</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Housing Image */}
+                                                    <div className="relative aspect-square bg-gray-200 rounded overflow-hidden">
+                                                        <HousingImage
+                                                            src={housingImageInfo.src}
+                                                            fallback={housingImageInfo.fallback}
+                                                            alt={housing.name}
+                                                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                                        />
+                                                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1 py-0.5">
+                                                            <span className="text-white text-[10px] font-medium">🏠</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Port Image */}
+                                                    <div className="relative aspect-square bg-gray-200 rounded overflow-hidden">
+                                                        <HousingImage
+                                                            src={portImageInfo.src}
+                                                            fallback={portImageInfo.fallback}
+                                                            alt={port?.name || 'No port'}
+                                                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                                        />
+                                                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1 py-0.5">
+                                                            <span className="text-white text-[10px] font-medium">🔌</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Complete Setup Badge */}
+                                                    <div className="absolute top-3 right-3 bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-medium shadow-lg">
+                                                        Complete Setup
+                                                    </div>
                                                 </div>
 
                                                 <div className="p-6">
-                                                    <div className="flex justify-between items-start mb-3">
-                                                        <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">{housing.model}</h3>
-                                                        <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                                                            {housing.manufacturer.name}
-                                                        </span>
-                                                    </div>
+                                                    {/* Combination Title */}
+                                                    <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors mb-4">
+                                                        Complete Underwater Setup
+                                                    </h3>
 
-                                                    <h4 className="text-sm font-medium text-gray-800 mb-2">{housing.name}</h4>
-                                                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{housing.description}</p>
+                                                    {/* Components Grid */}
+                                                    <div className="space-y-3 mb-4">
+                                                        {/* Camera */}
+                                                        <div className="flex items-start space-x-2">
+                                                            <span className="text-xs font-medium text-gray-500 w-16 flex-shrink-0 pt-0.5">📷 Camera:</span>
+                                                            <span className="text-sm font-medium text-gray-900">
+                                                                {camera.brand.name} {camera.name}
+                                                            </span>
+                                                        </div>
 
-                                                    <div className="space-y-2 text-sm">
-                                                        {housing.Camera && (
-                                                            <div className="flex justify-between items-center">
-                                                                <span className="text-gray-600">Compatible with:</span>
-                                                                <span className="font-medium bg-blue-50 text-blue-800 px-2 py-1 rounded text-xs">
-                                                                    {housing.Camera.brand.name} {housing.Camera.name}
+                                                        {/* Lens */}
+                                                        <div className="flex items-start space-x-2">
+                                                            <span className="text-xs font-medium text-gray-500 w-16 flex-shrink-0 pt-0.5">🔍 Lens:</span>
+                                                            <span className="text-sm font-medium text-gray-900">
+                                                                {lens.name}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Housing */}
+                                                        <div className="flex items-start space-x-2">
+                                                            <span className="text-xs font-medium text-gray-500 w-16 flex-shrink-0 pt-0.5">🏠 Housing:</span>
+                                                            <span className="text-sm font-medium text-gray-900">
+                                                                {housing.manufacturer.name} {housing.model}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Port */}
+                                                        {port && (
+                                                            <div className="flex items-start space-x-2">
+                                                                <span className="text-xs font-medium text-gray-500 w-16 flex-shrink-0 pt-0.5">🔌 Port:</span>
+                                                                <span className="text-sm font-medium text-gray-900">
+                                                                    {port.name}
                                                                 </span>
                                                             </div>
                                                         )}
+                                                    </div>
 
+                                                    {/* Specs */}
+                                                    <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
                                                         {housing.depthRating && (
                                                             <div className="flex justify-between">
                                                                 <span className="text-gray-600">Depth Rating:</span>
@@ -567,11 +716,11 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                             </div>
                                                         )}
 
-                                                        {housing.priceAmount && (
+                                                        {totalPrice > 0 && (
                                                             <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                                                                <span className="text-gray-600">Price:</span>
+                                                                <span className="text-gray-600">Total Price:</span>
                                                                 <span className="font-bold text-green-600 text-lg">
-                                                                    ${Number(housing.priceAmount).toLocaleString()} {housing.priceCurrency}
+                                                                    ${totalPrice.toLocaleString()} {currency}
                                                                 </span>
                                                             </div>
                                                         )}
@@ -580,7 +729,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                     {/* Click indicator */}
                                                     <div className="mt-4 pt-3 border-t border-gray-100">
                                                         <div className="flex items-center justify-between text-xs text-gray-500 group-hover:text-blue-600 transition-colors">
-                                                            <span>Click for details</span>
+                                                            <span>View full setup & gallery</span>
                                                             <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                                             </svg>
