@@ -72,7 +72,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         ? ports
             .filter(port =>
                 port.housingMountId === selectedHousing.housingMount.id &&
-                port.lensId === selectedLens.id
+                port.lens?.some((l: any) => l.id === selectedLens.id)
             )
             .filter((port, index, self) =>
                 // Remove duplicates by port name
@@ -125,7 +125,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                 // Check if the port is still valid for the current housing mount/lens combo
                 const isValidCombo = ports.some(port =>
                     port.housingMountId === selectedHousing.housingMount.id &&
-                    port.lensId === selectedLens.id &&
+                    port.lens?.some((l: any) => l.id === selectedLens.id) &&
                     port.name === filters.port
                 )
                 if (!isValidCombo) {
@@ -193,7 +193,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
             compatibleLenses.forEach(lens => {
                 // Find ports compatible with this lens and housing
                 const compatiblePorts = housing.ports.filter((port: any) =>
-                    port.lensId === lens.id &&
+                    port.lens?.some((l: any) => l.id === lens.id) &&
                     (!filters.port || port.name === filters.port)
                 )
 
