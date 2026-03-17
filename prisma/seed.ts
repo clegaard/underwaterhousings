@@ -447,11 +447,8 @@ async function main() {
             housingId: housingA7RV.id,
             lens: { connect: [{ id: lensFE24105F4GOSS.id }] },
             slug: 'wa000s-a'
-
         }
     })
-
-
 
     // FL1655 port combinations
     await prisma.port.create({
@@ -472,7 +469,7 @@ async function main() {
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            lens: { connect: [{ id: lensFE1635F4.id }] },
+            lens: { connect: [{ id: lensFE1635F4.id }, { id: lensFE2870OSS.id }] },
             slug: 'fl1545'
         }
     })
@@ -489,7 +486,6 @@ async function main() {
         }
     })
 
-
     // WA005-F port combinations
     await prisma.port.create({
         data: {
@@ -497,19 +493,20 @@ async function main() {
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            lens: { connect: [{ id: lensFE1224F4G.id }] },
+            lens: { connect: [{ id: lensFE1224F4G.id }, { id: lensFEPZ1635F4G.id }] },
             slug: 'wa005-f'
         }
     })
 
+    // FL2870 port combinations
     await prisma.port.create({
         data: {
-            name: 'WA005-F',
+            name: 'FL2870',
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            lens: { connect: [{ id: lensFEPZ1635F4G.id }] },
-            slug: 'wa005-f-fepz1635f4g'
+            lens: { connect: [{ id: lensEPZ18105F4GOSS.id }] },
+            slug: 'fl2870'
         }
     })
 

@@ -223,28 +223,8 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                             currency: housing.priceCurrency || 'USD'
                         })
                     })
-                } else if (!filters.port) {
-                    // If no specific port filter and no ports available, still show the combination
-                    const housingPrice = housing.priceAmount ? Number(housing.priceAmount) : 0
-                    const totalPrice = housingPrice
-
-                    // Price range filter
-                    if (filters.priceMin > 0 || filters.priceMax < 10000) {
-                        if (totalPrice < filters.priceMin || totalPrice > filters.priceMax) {
-                            return
-                        }
-                    }
-
-                    combinations.push({
-                        id: `${camera.id}-${lens.id}-${housing.id}-no-port`,
-                        camera: cameraWithImageInfo,
-                        lens,
-                        housing,
-                        port: null,
-                        totalPrice,
-                        currency: housing.priceCurrency || 'USD'
-                    })
                 }
+                // Only show combinations where all four components (camera, lens, housing, port) are compatible
             })
         })
 
@@ -595,124 +575,103 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                             <Link
                                                 key={combo.id}
                                                 href={detailUrl}
-                                                className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group cursor-pointer overflow-hidden"
+                                                className="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 border-2 border-gray-200 hover:border-blue-400 block group cursor-pointer overflow-hidden"
                                             >
                                                 <div className="p-6">
-                                                    {/* Header */}
-                                                    <div className="flex items-center justify-between mb-6">
-                                                        <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
-                                                            Complete Underwater Setup
-                                                        </h3>
-                                                        <div className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium shadow-sm">
-                                                            Complete
-                                                        </div>
-                                                    </div>
+                                                    {/* Components Grid with Large Images */}
+                                                    <div className="mb-6">
+                                                        {/* 2x2 Image Grid */}
+                                                        <div className="grid grid-cols-2 gap-3 mb-4">
+                                                            {/* Camera */}
+                                                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-3 border-2 border-blue-200 group-hover:border-blue-400 transition-all">
+                                                                <div className="relative aspect-square bg-white rounded-lg overflow-hidden shadow-md mb-2">
+                                                                    <HousingImage
+                                                                        src={cameraImageInfo.src}
+                                                                        fallback={cameraImageInfo.fallback}
+                                                                        alt={`${camera.brand.name} ${camera.name}`}
+                                                                        className="object-contain w-full h-full p-2 group-hover:scale-110 transition-transform duration-300"
+                                                                    />
+                                                                </div>
+                                                                <div className="text-center">
+                                                                    <div className="text-xs font-semibold text-gray-900 line-clamp-2">
+                                                                        {camera.brand.name} {camera.name}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
 
-                                                    {/* Components with Inline Images */}
-                                                    <div className="space-y-4 mb-5">
-                                                        {/* Camera */}
-                                                        <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg border border-gray-200 group-hover:bg-blue-50 transition-colors">
-                                                            <div className="relative w-20 h-20 flex-shrink-0 bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
-                                                                <HousingImage
-                                                                    src={cameraImageInfo.src}
-                                                                    fallback={cameraImageInfo.fallback}
-                                                                    alt={`${camera.brand.name} ${camera.name}`}
-                                                                    className="object-contain w-full h-full p-1 group-hover:scale-110 transition-transform duration-300"
-                                                                />
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                                                                    📷 Camera
+                                                            {/* Lens */}
+                                                            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-3 border-2 border-green-200 group-hover:border-green-400 transition-all">
+                                                                <div className="relative aspect-square bg-white rounded-lg overflow-hidden shadow-md mb-2">
+                                                                    <HousingImage
+                                                                        src={lensImageInfo.src}
+                                                                        fallback={lensImageInfo.fallback}
+                                                                        alt={lens.name}
+                                                                        className="object-contain w-full h-full p-2 group-hover:scale-110 transition-transform duration-300"
+                                                                    />
                                                                 </div>
-                                                                <div className="text-sm font-semibold text-gray-900">
-                                                                    {camera.brand.name} {camera.name}
+                                                                <div className="text-center">
+                                                                    <div className="text-xs font-semibold text-gray-900 line-clamp-2">
+                                                                        {lens.name}
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
 
-                                                        {/* Lens */}
-                                                        <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg border border-gray-200 group-hover:bg-blue-50 transition-colors">
-                                                            <div className="relative w-20 h-20 flex-shrink-0 bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
-                                                                <HousingImage
-                                                                    src={lensImageInfo.src}
-                                                                    fallback={lensImageInfo.fallback}
-                                                                    alt={lens.name}
-                                                                    className="object-contain w-full h-full p-1 group-hover:scale-110 transition-transform duration-300"
-                                                                />
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                                                                    🔍 Lens
+                                                            {/* Housing */}
+                                                            <div className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-3 border-2 border-purple-200 group-hover:border-purple-400 transition-all">
+                                                                <div className="relative aspect-square bg-white rounded-lg overflow-hidden shadow-md mb-2">
+                                                                    <HousingImage
+                                                                        src={housingImageInfo.src}
+                                                                        fallback={housingImageInfo.fallback}
+                                                                        alt={housing.name}
+                                                                        className="object-contain w-full h-full p-2 group-hover:scale-110 transition-transform duration-300"
+                                                                    />
                                                                 </div>
-                                                                <div className="text-sm font-semibold text-gray-900 truncate">
-                                                                    {lens.name}
+                                                                <div className="text-center">
+                                                                    <div className="text-xs font-semibold text-gray-900 line-clamp-2">
+                                                                        {housing.name}
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
 
-                                                        {/* Housing */}
-                                                        <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg border border-gray-200 group-hover:bg-blue-50 transition-colors">
-                                                            <div className="relative w-20 h-20 flex-shrink-0 bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
-                                                                <HousingImage
-                                                                    src={housingImageInfo.src}
-                                                                    fallback={housingImageInfo.fallback}
-                                                                    alt={housing.name}
-                                                                    className="object-contain w-full h-full p-1 group-hover:scale-110 transition-transform duration-300"
-                                                                />
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                                                                    🏠 Housing
-                                                                </div>
-                                                                <div className="text-sm font-semibold text-gray-900">
-                                                                    {housing.manufacturer.name} {housing.model}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Port */}
-                                                        {port && (
-                                                            <div className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg border border-gray-200 group-hover:bg-blue-50 transition-colors">
-                                                                <div className="relative w-20 h-20 flex-shrink-0 bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
+                                                            {/* Port */}
+                                                            <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-3 border-2 border-orange-200 group-hover:border-orange-400 transition-all">
+                                                                <div className="relative aspect-square bg-white rounded-lg overflow-hidden shadow-md mb-2">
                                                                     <HousingImage
                                                                         src={portImageInfo.src}
                                                                         fallback={portImageInfo.fallback}
                                                                         alt={port.name}
-                                                                        className="object-contain w-full h-full p-1 group-hover:scale-110 transition-transform duration-300"
+                                                                        className="object-contain w-full h-full p-2 group-hover:scale-110 transition-transform duration-300"
                                                                     />
                                                                 </div>
-                                                                <div className="flex-1 min-w-0">
-                                                                    <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                                                                        🔌 Port
-                                                                    </div>
-                                                                    <div className="text-sm font-semibold text-gray-900">
+                                                                <div className="text-center">
+                                                                    <div className="text-xs font-semibold text-gray-900 line-clamp-2">
                                                                         {port.name}
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        )}
+                                                        </div>
                                                     </div>
 
                                                     {/* Specs */}
-                                                    <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
+                                                    <div className="space-y-3 text-sm bg-gradient-to-br from-gray-50 to-slate-50 rounded-lg p-4 border border-gray-200">
                                                         {housing.depthRating && (
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-600">Depth Rating:</span>
-                                                                <span className="font-medium text-green-700">{housing.depthRating}m</span>
+                                                            <div className="flex justify-between items-center">
+                                                                <span className="text-gray-700 font-medium">💧 Depth Rating:</span>
+                                                                <span className="font-bold text-blue-700 text-base">{housing.depthRating}m</span>
                                                             </div>
                                                         )}
 
                                                         {housing.material && (
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-600">Material:</span>
-                                                                <span className="font-medium">{housing.material}</span>
+                                                            <div className="flex justify-between items-center">
+                                                                <span className="text-gray-700 font-medium">🔧 Material:</span>
+                                                                <span className="font-semibold text-gray-900">{housing.material}</span>
                                                             </div>
                                                         )}
 
                                                         {totalPrice > 0 && (
-                                                            <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                                                                <span className="text-gray-600">Total Price:</span>
-                                                                <span className="font-bold text-green-600 text-lg">
+                                                            <div className="flex justify-between items-center pt-3 border-t-2 border-gray-200 mt-3">
+                                                                <span className="text-gray-700 font-semibold text-base">💰 Total Price:</span>
+                                                                <span className="font-black text-green-600 text-xl">
                                                                     ${totalPrice.toLocaleString()} {currency}
                                                                 </span>
                                                             </div>
@@ -720,11 +679,11 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                     </div>
 
                                                     {/* Click indicator */}
-                                                    <div className="mt-4 pt-3 border-t border-gray-100">
-                                                        <div className="flex items-center justify-between text-xs text-gray-500 group-hover:text-blue-600 transition-colors">
-                                                            <span>View full setup & gallery</span>
-                                                            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                    <div className="mt-5 pt-4 border-t-2 border-gray-100">
+                                                        <div className="flex items-center justify-center text-sm font-semibold text-blue-600 group-hover:text-blue-800 transition-colors">
+                                                            <span>View Full Details & Gallery</span>
+                                                            <svg className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                                             </svg>
                                                         </div>
                                                     </div>
