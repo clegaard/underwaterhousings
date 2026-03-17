@@ -8,7 +8,7 @@ datasource db {
 }
 
 model HousingManufacturer {
-    id            String         @id @default(cuid())
+    id            Int            @id @default(autoincrement())
     name          String         @unique
     slug          String         @unique
     description   String?
@@ -20,7 +20,7 @@ model HousingManufacturer {
 }
 
 model CameraManufacturer {
-    id        String   @id @default(cuid())
+    id        Int      @id @default(autoincrement())
     name      String   @unique
     slug      String   @unique
     createdAt DateTime @default(now())
@@ -31,7 +31,7 @@ model CameraManufacturer {
 }
 
 model CameraMount {
-    id      String   @id @default(cuid())
+    id      Int      @id @default(autoincrement())
     slug    String   @unique
     name    String
     cameras Camera[]
@@ -41,23 +41,24 @@ model CameraMount {
 }
 
 model HousingMount {
-    id                    String              @id @default(cuid())
+    id                    Int                 @id @default(autoincrement())
     name                  String
     description           String?
     ports                 Port[]
     housings              Housing[]
     manufacturer          HousingManufacturer @relation(fields: [housingManufacturerId], references: [id])
-    housingManufacturerId String
+    housingManufacturerId Int
+    slug                  String              @unique
 }
 
 model Camera {
-    id                   String             @id @default(cuid())
+    id                   Int                @id @default(autoincrement())
     name                 String
     slug                 String             @unique
     brand                CameraManufacturer @relation(fields: [cameraManufacturerId], references: [id])
-    cameraManufacturerId String
+    cameraManufacturerId Int
     cameraMount          CameraMount?       @relation(fields: [cameraMountId], references: [id])
-    cameraMountId        String?
+    cameraMountId        Int?
     lens                 Lens[]
     housings             Housing[]
 
@@ -65,8 +66,7 @@ model Camera {
 }
 
 model Housing {
-    id                    String              @id @default(cuid())
-    model                 String
+    id                    Int                 @id @default(autoincrement())
     name                  String
     slug                  String              @unique
     description           String?
@@ -75,40 +75,40 @@ model Housing {
     depthRating           Int
     material              String?
     manufacturer          HousingManufacturer @relation(fields: [housingManufacturerId], references: [id])
-    Camera                Camera?             @relation(fields: [cameraId], references: [id])
-    cameraId              String?
-    housingManufacturerId String
+    housingManufacturerId Int
+    Camera                Camera              @relation(fields: [cameraId], references: [id])
+    cameraId              Int
     housingMount          HousingMount?       @relation(fields: [housingMountId], references: [id])
-    housingMountId        String?
+    housingMountId        Int?
     ports                 Port[]
 
     @@map("housings")
 }
 
 model Port {
-    id                    String              @id @default(cuid())
+    id                    Int                 @id @default(autoincrement())
+    slug                  String              @unique
     manufacturer          HousingManufacturer @relation(fields: [housingManufacturerId], references: [id])
-    housingManufacturerId String
+    housingManufacturerId Int
     name                  String
     housing               Housing?            @relation(fields: [housingId], references: [id])
-    housingId             String?
-    lens                  Lens?               @relation(fields: [lensId], references: [id])
-    lensId                String?
+    housingId             Int?
+    lens                  Lens[]
     housingMount          HousingMount?       @relation(fields: [housingMountId], references: [id])
-    housingMountId        String?
+    housingMountId        Int?
 
     @@map("ports")
 }
 
 model Lens {
-    id            String       @id @default(cuid())
+    id            Int         @id @default(autoincrement())
     name          String
-    slug          String       @unique
-    cameraMount   CameraMount? @relation(fields: [cameraMountId], references: [id])
-    cameraMountId String?
-    camera        Camera?      @relation(fields: [cameraId], references: [id])
-    cameraId      String?
+    slug          String      @unique
+    cameraMount   CameraMount @relation(fields: [cameraMountId], references: [id])
+    cameraMountId Int
     ports         Port[]
+    camera        Camera?     @relation(fields: [cameraId], references: [id])
+    cameraId      Int?
 
     @@map("lenses")
 }

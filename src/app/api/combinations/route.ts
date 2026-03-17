@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
         // Find compatible port
         let port = null
         if (portId) {
-            port = housing.ports.find(p => p.id === portId)
+            port = housing.ports.find(p => p.id === parseInt(portId, 10))
         } else {
             // Find the first compatible port for this lens
             port = housing.ports.find(p => p.lensId === lens.id)

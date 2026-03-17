@@ -2,15 +2,6 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-// // Function to create URL-friendly slugs
-// function createSlug(text: string): string {
-//     return text
-//         .toLowerCase()
-//         .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
-//         .replace(/\s+/g, '-') // Replace spaces with hyphens
-//         .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-//         .trim()
-// }
 
 async function main() {
     console.log('🌱 Seeding database...')
@@ -126,7 +117,6 @@ async function main() {
     // Create lenses
     const lensFE90MacroGOSS = await prisma.lens.create({
         data: {
-            id: 'sel90m28g',
             name: 'Sony FE 90mm f/2.8 Macro G OSS',
             slug: 'sel90m28g',
             cameraMountId: sonyE.id
@@ -135,7 +125,6 @@ async function main() {
 
     const lensFE2470GMII = await prisma.lens.create({
         data: {
-            id: 'sel2470gmii',
             name: 'Sony FE 24-70mm f/2.8 GM II',
             slug: 'sel2470gmii',
             cameraMountId: sonyE.id
@@ -306,7 +295,7 @@ async function main() {
         data: {
             name: 'OM-5 II',
             slug: 'om5-ii',
-            cameraManufacturerId: omSystem.id
+            cameraManufacturerId: omSystem.id,
         }
     })
 
@@ -319,23 +308,33 @@ async function main() {
         }
     })
 
+    // Create housing mount types for different housings
+    const mountTypeNauticamN120 = await prisma.housingMount.create({
+        data: {
+            name: 'Nauticam N120',
+            slug: 'nauticam-n120',
+            description: 'Standard mount type for Nauticam N120 ports',
+            housingManufacturerId: nauticam.id
+        }
+    })
 
     // Create housing mount types for different housings
     const mountTypeSeaFrogsPolycarbonate = await prisma.housingMount.create({
         data: {
             name: 'SeaFrogs Polycarbonate',
+            slug: 'seafrogs-polycarbonate',
             description: 'Standard mount type for polycarbonate SeaFrogs ports',
             housingManufacturerId: seafrogs.id
         }
     })
+
 
     // Create housings based on scraped data from manufacturers
 
     // Nauticam housings
     await prisma.housing.create({
         data: {
-            model: 'NA-OM5II',
-            name: 'NA-OM5II Housing for OM SYSTEM OM-5II Camera',
+            name: 'NA-OM5II',
             slug: 'na-om-5-ii',
             description: 'Professional underwater housing for the OM SYSTEM OM-5II camera',
             priceAmount: 1800,
@@ -344,6 +343,7 @@ async function main() {
             material: 'Aluminum',
             housingManufacturerId: nauticam.id,
             cameraId: omOM5II.id,
+            housingMountId: mountTypeNauticamN120.id
 
         }
     })
@@ -351,8 +351,7 @@ async function main() {
     // DiveVolk housings
     await prisma.housing.create({
         data: {
-            model: 'SeaTouch 4',
-            name: 'SeaTouch Pro',
+            name: 'SeaTouch 4 Pro',
             slug: 'seatouch-4',
             description: 'Touch-enabled smartphone underwater housing',
             priceAmount: 300,
@@ -368,8 +367,7 @@ async function main() {
     // SeaFrogs housings - based on website data
     await prisma.housing.create({
         data: {
-            model: 'SF-R6-MarkII',
-            name: 'Sea Frogs 40m/130ft Underwater Camera Housing for Canon EOS R6 Mark II',
+            name: 'SF-R6-MarkII',
             slug: 'canon-r6-ii',
             description: 'Professional underwater housing for Canon EOS R6 Mark II camera',
             priceAmount: 980,
@@ -384,8 +382,7 @@ async function main() {
 
     await prisma.housing.create({
         data: {
-            model: 'SF-ZV-E1',
-            name: 'Sony ZV-E1 40M/130FT Underwater Camera Housing',
+            name: 'Sony ZV-E1',
             slug: 'sony-zv-e1',
             description: 'Professional underwater housing for Sony ZV-E1 camera with full control access',
             priceAmount: 455,
@@ -400,8 +397,7 @@ async function main() {
 
     await prisma.housing.create({
         data: {
-            model: 'SF-A7III-SL',
-            name: 'Sea Frogs Salted Line Underwater Camera Housing for Sony A7 III',
+            name: 'SF-A7III-SL',
             slug: 'sony-a7-iii-salted',
             description: 'Enhanced Salted Line underwater housing for Sony A7 III with improved ergonomics',
             priceAmount: 520,
@@ -416,8 +412,7 @@ async function main() {
 
     const housingA7RV = await prisma.housing.create({
         data: {
-            model: 'SF-A7RV',
-            name: 'Sony A7R V 40M/130FT Underwater Camera Housing',
+            name: 'SF-A7RV',
             slug: 'sony-a7r-v',
             description: 'Professional underwater housing for Sony A7R V high-resolution camera',
             priceAmount: 630,
@@ -438,7 +433,8 @@ async function main() {
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            lensId: lensFE90MacroGOSS.id
+            lens: { connect: [{ id: lensFE90MacroGOSS.id }, { id: lensFE2470GMII.id }, { id: lensFE24105F4GOSS.id }] },
+            slug: 'fl100',
         }
     })
 
@@ -449,40 +445,13 @@ async function main() {
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            lensId: lensFE24105F4GOSS.id
+            lens: { connect: [{ id: lensFE24105F4GOSS.id }] },
+            slug: 'wa000s-a'
+
         }
     })
 
-    await prisma.port.create({
-        data: {
-            name: 'WA000S-A',
-            housingManufacturerId: seafrogs.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
-            housingId: housingA7RV.id,
-            lensId: lensFE2470GM.id
-        }
-    })
 
-    await prisma.port.create({
-        data: {
-            name: 'WA000S-A',
-            housingManufacturerId: seafrogs.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
-            housingId: housingA7RV.id,
-            lensId: lensFE2470GMII.id
-        }
-    })
-
-    // FL2870 port combinations
-    await prisma.port.create({
-        data: {
-            name: 'FL2870',
-            housingManufacturerId: seafrogs.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
-            housingId: housingA7RV.id,
-            lensId: lensFE2870OSS.id
-        }
-    })
 
     // FL1655 port combinations
     await prisma.port.create({
@@ -491,7 +460,8 @@ async function main() {
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            lensId: lensFE2470F4ZAOSS.id
+            lens: { connect: [{ id: lensFE2470F4ZAOSS.id }] },
+            slug: 'fl1655'
         }
     })
 
@@ -502,7 +472,8 @@ async function main() {
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            lensId: lensFE1635F4.id
+            lens: { connect: [{ id: lensFE1635F4.id }] },
+            slug: 'fl1545'
         }
     })
 
@@ -513,19 +484,11 @@ async function main() {
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            lensId: lensFE1635GM.id
+            lens: { connect: [{ id: lensFE1635GM.id }] },
+            slug: 'wa005-b'
         }
     })
 
-    await prisma.port.create({
-        data: {
-            name: 'WA005-B',
-            housingManufacturerId: seafrogs.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
-            housingId: housingA7RV.id,
-            lensId: lensFE1635GMII.id
-        }
-    })
 
     // WA005-F port combinations
     await prisma.port.create({
@@ -534,7 +497,8 @@ async function main() {
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            lensId: lensFE1224F4G.id
+            lens: { connect: [{ id: lensFE1224F4G.id }] },
+            slug: 'wa005-f'
         }
     })
 
@@ -544,24 +508,14 @@ async function main() {
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            lensId: lensFEPZ1635F4G.id
-        }
-    })
-
-    await prisma.port.create({
-        data: {
-            name: 'WA005-F',
-            housingManufacturerId: seafrogs.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
-            housingId: housingA7RV.id,
-            lensId: lensEPZ18105F4GOSS.id
+            lens: { connect: [{ id: lensFEPZ1635F4G.id }] },
+            slug: 'wa005-f-fepz1635f4g'
         }
     })
 
     await prisma.housing.create({
         data: {
-            model: 'SF-A6700',
-            name: 'Sony A6700 40M/130FT Underwater Camera Housing',
+            name: 'SF-A6700',
             slug: 'sony-a6700',
             description: 'Compact underwater housing for Sony A6700 APS-C camera',
             priceAmount: 485,
@@ -576,8 +530,7 @@ async function main() {
 
     await prisma.housing.create({
         data: {
-            model: 'SF-FX3-SL',
-            name: 'Sea Frogs Salted Line Underwater Camera Housing for Sony FX3',
+            name: 'SF-FX3-SL',
             slug: 'sony-fx3-salted',
             description: 'Professional cinema camera housing for Sony FX3 with HDMI 2.0 support',
             priceAmount: 636,
@@ -592,8 +545,7 @@ async function main() {
 
     await prisma.housing.create({
         data: {
-            model: 'SF-R5',
-            name: 'Canon EOS R5 40M/130FT Underwater Camera Housing',
+            name: 'SF-R5',
             slug: 'canon-r5',
             description: 'High-performance underwater housing for Canon EOS R5 professional camera',
             priceAmount: 720,
