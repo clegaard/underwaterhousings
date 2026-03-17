@@ -114,7 +114,17 @@ async function main() {
         }
     })
 
-    // Create lenses
+    // ============================= LENSES =============================
+
+    // ----------------------------- E-MOUNT LENSES -----------------------------
+    const lensSigma2470dgdnii = await prisma.lens.create({
+        data: {
+            name: 'Sigma 24-70mm f/2.8 DG DN Art II',
+            slug: 'a024-24-70-28-ii',
+            cameraMountId: sonyE.id
+        }
+    })
+
     const lensFE90MacroGOSS = await prisma.lens.create({
         data: {
             name: 'Sony FE 90mm f/2.8 Macro G OSS',
@@ -159,7 +169,7 @@ async function main() {
     const lensFE24105F4GOSS = await prisma.lens.create({
         data: {
             name: 'Sony FE 24-105mm f/4 G OSS',
-            slug: 'sony-fe-24-105mm-f4-g-oss',
+            slug: 'sel24105',
             cameraMountId: sonyE.id
         }
     })
@@ -167,7 +177,7 @@ async function main() {
     const lensFE2870OSS = await prisma.lens.create({
         data: {
             name: 'Sony FE 28-70mm f/3.5-5.6 OSS',
-            slug: 'sony-fe-28-70mm-f35-56-oss',
+            slug: 'sel28702',
             cameraMountId: sonyE.id
         }
     })
@@ -215,7 +225,7 @@ async function main() {
     const lensEPZ18105F4GOSS = await prisma.lens.create({
         data: {
             name: 'Sony E PZ 18-105mm f/4 G OSS',
-            slug: 'sony-e-pz-18-105mm-f4-g-oss',
+            slug: 'selp18105g',
             cameraMountId: sonyE.id
         }
     })
@@ -433,7 +443,7 @@ async function main() {
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            lens: { connect: [{ id: lensFE90MacroGOSS.id }, { id: lensFE2470GMII.id }, { id: lensFE24105F4GOSS.id }] },
+            lens: { connect: [{ id: lensFE90MacroGOSS.id }, { id: lensFE2470GMII.id }, { id: lensFE24105F4GOSS.id }, { id: lensSigma2470dgdnii.id }] },
             slug: 'fl100',
         }
     })
@@ -445,7 +455,7 @@ async function main() {
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
-            lens: { connect: [{ id: lensFE24105F4GOSS.id }] },
+            lens: { connect: [{ id: lensFE24105F4GOSS.id }, { id: lensFE2470GM.id }, { id: lensFE2470GMII.id }] },
             slug: 'wa000s-a'
         }
     })

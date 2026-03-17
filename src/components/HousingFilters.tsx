@@ -546,7 +546,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
                         {!isFiltering && filteredCombinations.length > 0 && (
                             <div className="flex justify-center">
-                                <div key={`${filteredCombinations.length}-${JSON.stringify(filters)}`} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-7xl w-full">
+                                <div key={`${filteredCombinations.length}-${JSON.stringify(filters)}`} className="grid grid-cols-1 gap-6 max-w-4xl w-full">
                                     {filteredCombinations.map((combo: any) => {
                                         const { camera, lens, housing, port, totalPrice, currency } = combo
 
@@ -575,117 +575,93 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                             <Link
                                                 key={combo.id}
                                                 href={detailUrl}
-                                                className="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 border-2 border-gray-200 hover:border-blue-400 block group cursor-pointer overflow-hidden"
+                                                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-200 hover:border-gray-300 block group"
                                             >
-                                                <div className="p-6">
-                                                    {/* Components Grid with Large Images */}
-                                                    <div className="mb-6">
-                                                        {/* 2x2 Image Grid */}
-                                                        <div className="grid grid-cols-2 gap-3 mb-4">
-                                                            {/* Camera */}
-                                                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-3 border-2 border-blue-200 group-hover:border-blue-400 transition-all">
-                                                                <div className="relative aspect-square bg-white rounded-lg overflow-hidden shadow-md mb-2">
-                                                                    <HousingImage
-                                                                        src={cameraImageInfo.src}
-                                                                        fallback={cameraImageInfo.fallback}
-                                                                        alt={`${camera.brand.name} ${camera.name}`}
-                                                                        className="object-contain w-full h-full p-2 group-hover:scale-110 transition-transform duration-300"
-                                                                    />
-                                                                </div>
-                                                                <div className="text-center">
-                                                                    <div className="text-xs font-semibold text-gray-900 line-clamp-2">
-                                                                        {camera.brand.name} {camera.name}
-                                                                    </div>
-                                                                </div>
+                                                <div className="p-5">
+                                                    {/* Components Grid */}
+                                                    <div className="grid grid-cols-4 gap-4 mb-4">
+                                                        {/* Camera */}
+                                                        <div className="flex flex-col">
+                                                            <div className="relative aspect-square bg-gray-50 rounded overflow-hidden mb-2">
+                                                                <HousingImage
+                                                                    src={cameraImageInfo.src}
+                                                                    fallback={cameraImageInfo.fallback}
+                                                                    alt={`${camera.brand.name} ${camera.name}`}
+                                                                    className="object-contain w-full h-full p-2"
+                                                                />
                                                             </div>
-
-                                                            {/* Lens */}
-                                                            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-3 border-2 border-green-200 group-hover:border-green-400 transition-all">
-                                                                <div className="relative aspect-square bg-white rounded-lg overflow-hidden shadow-md mb-2">
-                                                                    <HousingImage
-                                                                        src={lensImageInfo.src}
-                                                                        fallback={lensImageInfo.fallback}
-                                                                        alt={lens.name}
-                                                                        className="object-contain w-full h-full p-2 group-hover:scale-110 transition-transform duration-300"
-                                                                    />
-                                                                </div>
-                                                                <div className="text-center">
-                                                                    <div className="text-xs font-semibold text-gray-900 line-clamp-2">
-                                                                        {lens.name}
-                                                                    </div>
-                                                                </div>
+                                                            <div className="text-xs text-gray-500 mb-0.5">Camera</div>
+                                                            <div className="text-sm font-medium text-gray-900 line-clamp-2">
+                                                                {camera.brand.name} {camera.name}
                                                             </div>
+                                                        </div>
 
-                                                            {/* Housing */}
-                                                            <div className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-3 border-2 border-purple-200 group-hover:border-purple-400 transition-all">
-                                                                <div className="relative aspect-square bg-white rounded-lg overflow-hidden shadow-md mb-2">
-                                                                    <HousingImage
-                                                                        src={housingImageInfo.src}
-                                                                        fallback={housingImageInfo.fallback}
-                                                                        alt={housing.name}
-                                                                        className="object-contain w-full h-full p-2 group-hover:scale-110 transition-transform duration-300"
-                                                                    />
-                                                                </div>
-                                                                <div className="text-center">
-                                                                    <div className="text-xs font-semibold text-gray-900 line-clamp-2">
-                                                                        {housing.name}
-                                                                    </div>
-                                                                </div>
+                                                        {/* Lens */}
+                                                        <div className="flex flex-col">
+                                                            <div className="relative aspect-square bg-gray-50 rounded overflow-hidden mb-2">
+                                                                <HousingImage
+                                                                    src={lensImageInfo.src}
+                                                                    fallback={lensImageInfo.fallback}
+                                                                    alt={lens.name}
+                                                                    className="object-contain w-full h-full p-2"
+                                                                />
                                                             </div>
+                                                            <div className="text-xs text-gray-500 mb-0.5">Lens</div>
+                                                            <div className="text-sm font-medium text-gray-900 line-clamp-2">
+                                                                {lens.name}
+                                                            </div>
+                                                        </div>
 
-                                                            {/* Port */}
-                                                            <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-3 border-2 border-orange-200 group-hover:border-orange-400 transition-all">
-                                                                <div className="relative aspect-square bg-white rounded-lg overflow-hidden shadow-md mb-2">
-                                                                    <HousingImage
-                                                                        src={portImageInfo.src}
-                                                                        fallback={portImageInfo.fallback}
-                                                                        alt={port.name}
-                                                                        className="object-contain w-full h-full p-2 group-hover:scale-110 transition-transform duration-300"
-                                                                    />
-                                                                </div>
-                                                                <div className="text-center">
-                                                                    <div className="text-xs font-semibold text-gray-900 line-clamp-2">
-                                                                        {port.name}
-                                                                    </div>
-                                                                </div>
+                                                        {/* Housing */}
+                                                        <div className="flex flex-col">
+                                                            <div className="relative aspect-square bg-gray-50 rounded overflow-hidden mb-2">
+                                                                <HousingImage
+                                                                    src={housingImageInfo.src}
+                                                                    fallback={housingImageInfo.fallback}
+                                                                    alt={housing.name}
+                                                                    className="object-contain w-full h-full p-2"
+                                                                />
+                                                            </div>
+                                                            <div className="text-xs text-gray-500 mb-0.5">Housing</div>
+                                                            <div className="text-sm font-medium text-gray-900 line-clamp-2">
+                                                                {housing.name}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Port */}
+                                                        <div className="flex flex-col">
+                                                            <div className="relative aspect-square bg-gray-50 rounded overflow-hidden mb-2">
+                                                                <HousingImage
+                                                                    src={portImageInfo.src}
+                                                                    fallback={portImageInfo.fallback}
+                                                                    alt={port.name}
+                                                                    className="object-contain w-full h-full p-2"
+                                                                />
+                                                            </div>
+                                                            <div className="text-xs text-gray-500 mb-0.5">Port</div>
+                                                            <div className="text-sm font-medium text-gray-900 line-clamp-2">
+                                                                {port.name}
                                                             </div>
                                                         </div>
                                                     </div>
 
                                                     {/* Specs */}
-                                                    <div className="space-y-3 text-sm bg-gradient-to-br from-gray-50 to-slate-50 rounded-lg p-4 border border-gray-200">
+                                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100 text-sm text-gray-600">
                                                         {housing.depthRating && (
-                                                            <div className="flex justify-between items-center">
-                                                                <span className="text-gray-700 font-medium">💧 Depth Rating:</span>
-                                                                <span className="font-bold text-blue-700 text-base">{housing.depthRating}m</span>
+                                                            <div className="flex items-center gap-1">
+                                                                <span>{housing.depthRating}m</span>
                                                             </div>
                                                         )}
-
                                                         {housing.material && (
-                                                            <div className="flex justify-between items-center">
-                                                                <span className="text-gray-700 font-medium">🔧 Material:</span>
-                                                                <span className="font-semibold text-gray-900">{housing.material}</span>
+                                                            <div className="flex items-center gap-1">
+                                                                <span>{housing.material}</span>
                                                             </div>
                                                         )}
-
                                                         {totalPrice > 0 && (
-                                                            <div className="flex justify-between items-center pt-3 border-t-2 border-gray-200 mt-3">
-                                                                <span className="text-gray-700 font-semibold text-base">💰 Total Price:</span>
-                                                                <span className="font-black text-green-600 text-xl">
-                                                                    ${totalPrice.toLocaleString()} {currency}
-                                                                </span>
+                                                            <div className="font-semibold text-gray-900">
+                                                                ${totalPrice.toLocaleString()}
                                                             </div>
                                                         )}
-                                                    </div>
-
-                                                    {/* Click indicator */}
-                                                    <div className="mt-5 pt-4 border-t-2 border-gray-100">
-                                                        <div className="flex items-center justify-center text-sm font-semibold text-blue-600 group-hover:text-blue-800 transition-colors">
-                                                            <span>View Full Details & Gallery</span>
-                                                            <svg className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                                            </svg>
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </Link>

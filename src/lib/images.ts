@@ -169,7 +169,7 @@ export function getCameraImagePathWithFallback(
 
 /**
  * Get lens image path with error fallback (Server-side)
- * Looks in /public/lenses/{brandSlug}/ for lens images
+ * Looks in /public/lenses/ for lens images
  * Lens images are typically named by lens slug or model
  */
 export function getLensImagePathWithFallback(
@@ -184,31 +184,23 @@ export function getLensImagePathWithFallback(
 
             const supportedExtensions = ['.webp', '.jpg', '.jpeg', '.png', '.gif', '.svg', '.avif']
 
-            // Try to find lens image in lenses directory
-            // Check multiple possible locations based on mount type
-            const possiblePaths = [
-                join(process.cwd(), 'public', 'lenses', 'sony'),
-                join(process.cwd(), 'public', 'lenses', 'canon'),
-                join(process.cwd(), 'public', 'lenses', 'nikon'),
-            ]
+            // Try to find lens image in lenses directory (root level)
+            const basePath = join(process.cwd(), 'public', 'lenses')
 
-            for (const basePath of possiblePaths) {
-                if (existsSync(basePath)) {
-                    const files = readdirSync(basePath)
+            if (existsSync(basePath)) {
+                const files = readdirSync(basePath)
 
-                    // Look for files matching the lens slug
-                    const matchingFiles = files.filter((file: string) => {
-                        const ext = extname(file).toLowerCase()
-                        const fileName = basename(file, ext)
-                        return supportedExtensions.includes(ext) && fileName.includes(lensSlug)
-                    })
+                // Look for files matching the lens slug
+                const matchingFiles = files.filter((file: string) => {
+                    const ext = extname(file).toLowerCase()
+                    const fileName = basename(file, ext)
+                    return supportedExtensions.includes(ext) && fileName.includes(lensSlug)
+                })
 
-                    if (matchingFiles.length > 0) {
-                        const brandName = basename(basePath)
-                        return {
-                            src: `/lenses/${brandName}/${matchingFiles[0]}`,
-                            fallback: '/lenses/fallback.png'
-                        }
+                if (matchingFiles.length > 0) {
+                    return {
+                        src: `/lenses/${matchingFiles[0]}`,
+                        fallback: '/lenses/fallback.png'
                     }
                 }
             }
