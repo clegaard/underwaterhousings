@@ -322,7 +322,7 @@ async function main() {
     const mountTypeSeaFrogsPolycarbonate = await prisma.housingMount.create({
         data: {
             name: 'SeaFrogs Polycarbonate',
-            slug: 'seafrogs-polycarbonate',
+            slug: 'polycarbonate',
             description: 'Standard mount type for polycarbonate SeaFrogs ports',
             housingManufacturerId: seafrogs.id
         }
@@ -462,17 +462,6 @@ async function main() {
         }
     })
 
-    // FL1545 port combinations
-    await prisma.port.create({
-        data: {
-            name: 'FL1545',
-            housingManufacturerId: seafrogs.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
-            housingId: housingA7RV.id,
-            lens: { connect: [{ id: lensFE1635F4.id }, { id: lensFE2870OSS.id }] },
-            slug: 'fl1545'
-        }
-    })
 
     // WA005-B port combinations
     await prisma.port.create({
