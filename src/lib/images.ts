@@ -56,6 +56,46 @@ export function getHousingImagePathWithFallback(
 }
 
 /**
+ * Get camera image path with error fallback (Server-side)
+ * Mirrors getHousingImagePathWithFallback but for /public/cameras/
+ */
+export function getCameraImagePathWithFallback(
+    manufacturerSlug: string,
+    cameraSlug: string
+): { src: string; fallback: string } {
+    if (typeof window === 'undefined') {
+        try {
+            const { existsSync, readdirSync } = require('fs')
+            const { join, extname } = require('path')
+
+            const supportedExtensions = ['.webp', '.jpg', '.jpeg', '.png', '.gif', '.svg']
+            const basePath = join(process.cwd(), 'public', 'cameras', manufacturerSlug, cameraSlug)
+
+            if (existsSync(basePath)) {
+                const files = readdirSync(basePath)
+                const imageFiles = files.filter((file: string) =>
+                    supportedExtensions.includes(extname(file).toLowerCase())
+                )
+
+                if (imageFiles.length > 0) {
+                    imageFiles.sort()
+                    return {
+                        src: `/cameras/${manufacturerSlug}/${cameraSlug}/${imageFiles[0]}`,
+                        fallback: '/cameras/fallback.png'
+                    }
+                }
+            }
+
+            return { src: '/cameras/fallback.png', fallback: '/cameras/fallback.png' }
+        } catch (error) {
+            console.warn('Failed to check camera image existence:', error)
+        }
+    }
+
+    return { src: '/cameras/fallback.png', fallback: '/cameras/fallback.png' }
+}
+
+/**
  * Get all actual images for a specific housing 
  * Returns array of actual image paths found in the housing directory
  * Server-side only - reads the filesystem to find real images
@@ -117,54 +157,6 @@ export function getAllHousingImages(
     }
 
     return images
-}
-
-/**
- * Get camera image path with error fallback (Server-side)
- * Looks in /public/cameras/{brandSlug}/{cameraSlug}/ for images
- */
-export function getCameraImagePathWithFallback(
-    brandSlug: string,
-    cameraSlug: string
-): { src: string; fallback: string } {
-    // Only run on server side
-    if (typeof window === 'undefined') {
-        try {
-            const { existsSync, readdirSync } = require('fs')
-            const { join, extname } = require('path')
-
-            const supportedExtensions = ['.webp', '.jpg', '.jpeg', '.png', '.gif', '.svg']
-            const basePath = join(process.cwd(), 'public', 'cameras', brandSlug, cameraSlug)
-
-            if (existsSync(basePath)) {
-                const files = readdirSync(basePath)
-                const imageFiles = files.filter((file: string) => {
-                    const ext = extname(file).toLowerCase()
-                    return supportedExtensions.includes(ext)
-                })
-
-                if (imageFiles.length > 0) {
-                    imageFiles.sort()
-                    return {
-                        src: `/cameras/${brandSlug}/${cameraSlug}/${imageFiles[0]}`,
-                        fallback: '/cameras/fallback.png'
-                    }
-                }
-            }
-
-            return {
-                src: '/cameras/fallback.png',
-                fallback: '/cameras/fallback.png'
-            }
-        } catch (error) {
-            console.warn('Failed to check camera image existence:', error)
-        }
-    }
-
-    return {
-        src: '/cameras/fallback.png',
-        fallback: '/cameras/fallback.png'
-    }
 }
 
 /**
