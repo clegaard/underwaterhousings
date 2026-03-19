@@ -62,6 +62,8 @@ model Camera {
     lens                 Lens[]
     housings             Housing[]
     galleryPhotos        GalleryPhoto[]
+    // For simplicity, we can store product photos as an array of strings (URLs or file paths)
+    productPhotos        String[]
 
     @@map("cameras")
 }
@@ -83,6 +85,7 @@ model Housing {
     housingMountId        Int?
     ports                 Port[]
     galleryPhotos         GalleryPhoto[]
+    productPhotos         String[]
 
     @@map("housings")
 }
@@ -99,6 +102,7 @@ model Port {
     housingMount          HousingMount?       @relation(fields: [housingMountId], references: [id])
     housingMountId        Int?
     galleryPhotos         GalleryPhoto[]
+    productPhotos         String[]
 
     @@map("ports")
 }
@@ -113,6 +117,7 @@ model Lens {
     camera        Camera?        @relation(fields: [cameraId], references: [id])
     cameraId      Int?
     galleryPhotos GalleryPhoto[]
+    productPhotos String[]
 
     @@map("lenses")
 }

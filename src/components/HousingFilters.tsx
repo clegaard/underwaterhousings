@@ -398,8 +398,8 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                         </div>
                     </div>
 
-                    {/* Footer — shown when a valid combination is found */}
-                    {filteredCombinations.length > 0 && filteredCombinations[0] && (
+                    {/* Footer — shown only when all four components are explicitly selected and a valid combination exists */}
+                    {cameraModel && lensName && housingName && portName && filteredCombinations.length > 0 && filteredCombinations[0] && (
                         <div className="px-6 py-4 bg-blue-50 border-t border-blue-100 flex flex-wrap items-center justify-between gap-3">
                             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
                                 {filteredCombinations[0].housing.depthRating && (

@@ -75,11 +75,7 @@ async function getHousingsData() {
             })
         })
         const ports = Array.from(portsMap.values()).map(port => {
-            // Resolve port image paths server-side
-            const imageInfo = getPortImagePathWithFallback(
-                port.name,
-                port.manufacturer?.slug
-            )
+            const imageInfo = getPortImagePathWithFallback(port.productPhotos)
             return {
                 ...port,
                 imageInfo
@@ -88,31 +84,22 @@ async function getHousingsData() {
 
         return {
             housings: housings.map(housing => {
-                // Resolve image paths server-side
-                const imageInfo = getHousingImagePathWithFallback(
-                    housing.manufacturer.slug,
-                    housing.slug
-                )
+                const imageInfo = getHousingImagePathWithFallback(housing.productPhotos)
                 return {
                     ...housing,
                     priceAmount: housing.priceAmount ? Number(housing.priceAmount) : null,
-                    imageInfo // Add pre-resolved image paths
+                    imageInfo
                 }
             }),
             cameras: cameras.map(camera => {
-                // Resolve camera image paths server-side
-                const imageInfo = getCameraImagePathWithFallback(
-                    camera.brand.slug,
-                    camera.slug
-                )
+                const imageInfo = getCameraImagePathWithFallback(camera.productPhotos)
                 return {
                     ...camera,
                     imageInfo
                 }
             }),
             lenses: lenses.map(lens => {
-                // Resolve lens image paths server-side
-                const imageInfo = getLensImagePathWithFallback(lens.slug)
+                const imageInfo = getLensImagePathWithFallback(lens.productPhotos)
                 return {
                     ...lens,
                     imageInfo

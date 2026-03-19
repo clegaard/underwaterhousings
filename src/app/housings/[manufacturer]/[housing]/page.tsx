@@ -52,7 +52,7 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
     }
 
     // Get all images for this housing using shared utility
-    const housingImages = getAllHousingImages(params.manufacturer, params.housing)
+    const housingImages = getAllHousingImages(housing.productPhotos, housing.name)
 
     // Convert Decimal to number for client rendering
     const housingData = {

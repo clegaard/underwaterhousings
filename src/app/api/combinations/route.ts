@@ -110,13 +110,15 @@ export async function GET(request: NextRequest) {
                     slug: camera.slug,
                     brand: camera.brand.name,
                     brandSlug: camera.brand.slug,
-                    mount: camera.cameraMount?.name
+                    mount: camera.cameraMount?.name,
+                    productPhotos: camera.productPhotos
                 },
                 lens: {
                     id: lens.id,
                     name: lens.name,
                     slug: lens.slug,
-                    mount: lens.cameraMount?.name
+                    mount: lens.cameraMount?.name,
+                    productPhotos: lens.productPhotos
                 },
                 housing: {
                     id: housing.id,
@@ -127,11 +129,13 @@ export async function GET(request: NextRequest) {
                     depthRating: housing.depthRating,
                     material: housing.material,
                     description: housing.description,
-                    price: housingPrice
+                    price: housingPrice,
+                    productPhotos: housing.productPhotos
                 },
                 port: port ? {
                     id: port.id,
-                    name: port.name
+                    name: port.name,
+                    productPhotos: port.productPhotos
                 } : null,
                 pricing: {
                     housing: housingPrice,

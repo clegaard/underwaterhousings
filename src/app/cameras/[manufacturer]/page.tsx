@@ -49,7 +49,7 @@ export default async function CameraManufacturerPage({ params }: CameraManufactu
 
     const camerasData = manufacturer.cameras.map(camera => ({
         ...camera,
-        imageInfo: getCameraImagePathWithFallback(params.manufacturer, camera.slug)
+        imageInfo: getCameraImagePathWithFallback(camera.productPhotos)
     }))
 
     return (

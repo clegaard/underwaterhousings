@@ -43,20 +43,11 @@ export default async function CombinationPage({ params }: CombinationPageProps) 
         notFound()
     }
 
-    const housingImageInfo = getHousingImagePathWithFallback(
-        combination.housing.manufacturerSlug,
-        combination.housing.slug
-    )
-    const cameraImageInfo = getCameraImagePathWithFallback(
-        combination.camera.brandSlug,
-        combination.camera.slug
-    )
-    const lensImageInfo = getLensImagePathWithFallback(combination.lens.slug)
+    const housingImageInfo = getHousingImagePathWithFallback(combination.housing.productPhotos ?? [])
+    const cameraImageInfo = getCameraImagePathWithFallback(combination.camera.productPhotos ?? [])
+    const lensImageInfo = getLensImagePathWithFallback(combination.lens.productPhotos ?? [])
     const portImageInfo = combination.port
-        ? getPortImagePathWithFallback(
-            combination.port.name,
-            combination.housing.manufacturerSlug
-        )
+        ? getPortImagePathWithFallback(combination.port.productPhotos ?? [])
         : { src: '/ports/fallback.png', fallback: '/ports/fallback.png' }
 
     return (

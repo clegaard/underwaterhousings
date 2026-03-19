@@ -48,7 +48,7 @@ export default async function ManufacturerPage({ params }: ManufacturerPageProps
 
     // Convert Decimal fields to numbers and pre-resolve image paths
     const housingsData = manufacturer.housings.map(housing => {
-        const imageInfo = getHousingImagePathWithFallback(manufacturer.slug, housing.slug)
+        const imageInfo = getHousingImagePathWithFallback(housing.productPhotos)
         return {
             ...housing,
             priceAmount: housing.priceAmount ? Number(housing.priceAmount) : null,

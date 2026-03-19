@@ -122,7 +122,8 @@ async function main() {
         data: {
             name: 'Sigma 24-70mm f/2.8 DG DN Art II',
             slug: 'a024-24-70-28-ii',
-            cameraMountId: sonyE.id
+            cameraMountId: sonyE.id,
+            productPhotos: ['/lenses/a024-24-70-28-ii.png']
         }
     })
 
@@ -130,7 +131,8 @@ async function main() {
         data: {
             name: 'Sony FE 90mm f/2.8 Macro G OSS',
             slug: 'sel90m28g',
-            cameraMountId: sonyE.id
+            cameraMountId: sonyE.id,
+            productPhotos: ['/lenses/sel90m28g.avif']
         }
     })
 
@@ -138,7 +140,8 @@ async function main() {
         data: {
             name: 'Sony FE 24-70mm f/2.8 GM II',
             slug: 'sel2470gmii',
-            cameraMountId: sonyE.id
+            cameraMountId: sonyE.id,
+            productPhotos: ['/lenses/sel2470gmii.jpg']
         }
     })
 
@@ -171,7 +174,8 @@ async function main() {
         data: {
             name: 'Sony FE 24-105mm f/4 G OSS',
             slug: 'sel24105',
-            cameraMountId: sonyE.id
+            cameraMountId: sonyE.id,
+            productPhotos: ['/lenses/sel24105.avif']
         }
     })
 
@@ -179,7 +183,8 @@ async function main() {
         data: {
             name: 'Sony FE 28-70mm f/3.5-5.6 OSS',
             slug: 'sel28702',
-            cameraMountId: sonyE.id
+            cameraMountId: sonyE.id,
+            productPhotos: ['/lenses/sel28702.avif']
         }
     })
 
@@ -227,7 +232,8 @@ async function main() {
         data: {
             name: 'Sony E PZ 18-105mm f/4 G OSS',
             slug: 'selp18105g',
-            cameraMountId: sonyE.id
+            cameraMountId: sonyE.id,
+            productPhotos: ['/lenses/selp18105g.avif']
         }
     })
 
@@ -260,7 +266,8 @@ async function main() {
             name: 'A7R V',
             slug: 'ilce-7rm5',
             cameraManufacturerId: sony.id,
-            cameraMountId: sonyE.id
+            cameraMountId: sonyE.id,
+            productPhotos: ['/cameras/ilce-7m5-front.webp']
         }
     })
 
@@ -269,7 +276,8 @@ async function main() {
             name: 'A6700',
             slug: 'a6700',
             cameraManufacturerId: sony.id,
-            cameraMountId: sonyE.id
+            cameraMountId: sonyE.id,
+            productPhotos: ['/cameras/a6700.webp']
         }
     })
 
@@ -288,7 +296,8 @@ async function main() {
             name: 'EOS R6 Mark II',
             slug: 'r6-ii',
             cameraManufacturerId: canon.id,
-            cameraMountId: canonRF.id
+            cameraMountId: canonRF.id,
+            productPhotos: ['/cameras/r6-ii-front.webp']
         }
     })
 
@@ -354,8 +363,8 @@ async function main() {
             material: 'Aluminum',
             housingManufacturerId: nauticam.id,
             cameraId: omOM5II.id,
-            housingMountId: mountTypeNauticamN120.id
-
+            housingMountId: mountTypeNauticamN120.id,
+            productPhotos: ['/housings/na-om5ii-front.webp', '/housings/na-om5ii-back.webp']
         }
     })
 
@@ -371,7 +380,7 @@ async function main() {
             material: 'ABS Plastic',
             housingManufacturerId: divevolk.id,
             cameraId: iphone14Pro.id,
-
+            productPhotos: ['/housings/divevolk-seatouch-4-front.webp']
         }
     })
 
@@ -387,7 +396,8 @@ async function main() {
             material: 'ABS Plastic',
             housingManufacturerId: seafrogs.id,
             cameraId: canonR6MarkII.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
+            productPhotos: ['/housings/sf-s-r6-ii-front.webp', '/housings/sf-s-r6-ii-back.webp']
         }
     })
 
@@ -402,7 +412,8 @@ async function main() {
             material: 'ABS Plastic',
             housingManufacturerId: seafrogs.id,
             cameraId: sonyZVE1.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
+            productPhotos: ['/housings/sf-s-zv1-e1-front.webp']
         }
     })
 
@@ -417,7 +428,8 @@ async function main() {
             material: 'ABS Plastic',
             housingManufacturerId: seafrogs.id,
             cameraId: sonyA7III.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
+            productPhotos: []
         }
     })
 
@@ -432,7 +444,8 @@ async function main() {
             material: 'ABS Plastic',
             housingManufacturerId: seafrogs.id,
             cameraId: sonyA7RV.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
+            productPhotos: ['/housings/sf-s-a7rv-front.webp']
         }
     })
 
@@ -446,6 +459,7 @@ async function main() {
             housingId: housingA7RV.id,
             lens: { connect: [{ id: lensFE90MacroGOSS.id }, { id: lensFE2470GMII.id }, { id: lensFE24105F4GOSS.id }, { id: lensSigma2470dgdnii.id }] },
             slug: 'fl100',
+            productPhotos: ['/ports/fl100.png']
         }
     })
 
@@ -482,7 +496,8 @@ async function main() {
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
             lens: { connect: [{ id: lensFE1635GM.id }] },
-            slug: 'wa005-b'
+            slug: 'wa005-b',
+            productPhotos: ['/ports/wa005-b.png']
         }
     })
 
@@ -494,7 +509,8 @@ async function main() {
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
             lens: { connect: [{ id: lensFE1224F4G.id }, { id: lensFEPZ1635F4G.id }] },
-            slug: 'wa005-f'
+            slug: 'wa005-f',
+            productPhotos: ['/ports/wa005-f.png']
         }
     })
 
@@ -506,7 +522,8 @@ async function main() {
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             housingId: housingA7RV.id,
             lens: { connect: [{ id: lensEPZ18105F4GOSS.id }] },
-            slug: 'fl2870'
+            slug: 'fl2870',
+            productPhotos: ['/ports/fl2870.png']
         }
     })
 
@@ -521,7 +538,8 @@ async function main() {
             material: 'ABS Plastic',
             housingManufacturerId: seafrogs.id,
             cameraId: sonyA6700.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
+            productPhotos: ['/housings/sf-s-a6700-front.jpg', '/housings/sf-s-a6700-back.jpg']
         }
     })
 
@@ -536,7 +554,8 @@ async function main() {
             material: 'ABS Plastic',
             housingManufacturerId: seafrogs.id,
             cameraId: sonyFX3.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
+            productPhotos: ['/housings/sf-s-fx3.jpg']
         }
     })
 
@@ -551,7 +570,8 @@ async function main() {
             material: 'ABS Plastic',
             housingManufacturerId: seafrogs.id,
             cameraId: canonR5.id,
-            housingMountId: mountTypeSeaFrogsPolycarbonate.id
+            housingMountId: mountTypeSeaFrogsPolycarbonate.id,
+            productPhotos: ['/housings/sf-eosr5-np.webp']
         }
     })
 

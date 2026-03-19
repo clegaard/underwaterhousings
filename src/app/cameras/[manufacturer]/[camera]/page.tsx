@@ -46,7 +46,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
         notFound()
     }
 
-    const imageInfo = getCameraImagePathWithFallback(params.manufacturer, params.camera)
+    const imageInfo = getCameraImagePathWithFallback(camera.productPhotos)
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
