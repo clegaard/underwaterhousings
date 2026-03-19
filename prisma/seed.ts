@@ -972,6 +972,19 @@ async function main() {
         ],
     })
 
+    const bcrypt = require('bcryptjs')
+
+    await prisma.user.upsert({
+        where: { email: 'admin@dev.local' },
+        update: {},
+        create: {
+            email: 'admin@dev.local',
+            password: await bcrypt.hash('password', 12),
+            name: 'Dev Admin',
+            isSuperuser: true,
+        },
+    })
+
     console.log('✅ Database seeded successfully!')
 }
 

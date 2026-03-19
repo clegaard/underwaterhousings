@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { useSession, signOut } from 'next-auth/react'
 
 interface Manufacturer {
     id: string
@@ -15,8 +16,11 @@ interface NavigationProps {
 }
 
 export default function Navigation({ manufacturers, cameraManufacturers }: NavigationProps) {
+    const { data: session } = useSession()
     const [isHousingsOpen, setIsHousingsOpen] = useState(false)
     const [isCamerasOpen, setIsCamerasOpen] = useState(false)
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+    const userMenuRef = useRef<HTMLDivElement>(null)
     const housingsDropdownRef = useRef<HTMLDivElement>(null)
     const camerasDropdownRef = useRef<HTMLDivElement>(null)
 
@@ -28,6 +32,9 @@ export default function Navigation({ manufacturers, cameraManufacturers }: Navig
             }
             if (camerasDropdownRef.current && !camerasDropdownRef.current.contains(event.target as Node)) {
                 setIsCamerasOpen(false)
+            }
+            if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+                setIsUserMenuOpen(false)
             }
         }
 
@@ -169,6 +176,53 @@ export default function Navigation({ manufacturers, cameraManufacturers }: Navig
                         >
                             ⚙️ Admin
                         </Link>
+
+                        {/* Auth */}
+                        {session ? (
+                            <div className="relative" ref={userMenuRef}>
+                                <button
+                                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                                    className="flex items-center gap-2 text-gray-700 hover:text-blue-900 transition-colors"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
+                                        {(session.user?.name ?? session.user?.email ?? '?')[0].toUpperCase()}
+                                    </div>
+                                    <svg className={`w-4 h-4 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                {isUserMenuOpen && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                                        <div className="py-1">
+                                            <div className="px-4 py-2 text-xs text-gray-500 border-b">
+                                                {session.user?.email}
+                                            </div>
+                                            <button
+                                                onClick={() => { setIsUserMenuOpen(false); signOut({ callbackUrl: '/' }) }}
+                                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                            >
+                                                Sign out
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <Link
+                                    href="/auth/login"
+                                    className="text-gray-700 hover:text-blue-900 transition-colors font-medium text-sm"
+                                >
+                                    Log in
+                                </Link>
+                                <Link
+                                    href="/auth/signup"
+                                    className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                                >
+                                    Sign up
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

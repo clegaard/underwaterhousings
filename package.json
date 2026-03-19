@@ -16,7 +16,10 @@
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.20.0",
         "@prisma/client": "^6.19.2",
+        "@types/bcryptjs": "^2.4.6",
+        "bcryptjs": "^3.0.3",
         "next": "^14.2.33",
+        "next-auth": "^5.0.0-beta.30",
         "react": "^18",
         "react-dom": "^18",
         "react-photo-album": "^3.5.1"

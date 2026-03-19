@@ -1,6 +1,7 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import NavigationWrapper from '@/components/NavigationWrapper'
+import AuthProvider from '@/components/AuthProvider'
 
 export const metadata: Metadata = {
     title: 'Underwater Camera Housings',
@@ -15,8 +16,10 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className="antialiased">
-                <NavigationWrapper />
-                {children}
+                <AuthProvider>
+                    <NavigationWrapper />
+                    {children}
+                </AuthProvider>
             </body>
         </html>
     )
