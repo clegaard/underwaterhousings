@@ -58,6 +58,8 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         [cameras, cameraModel]
     )
 
+    const isFixedLens = selectedCamera?.interchangeableLens === false
+
     const availableLenses = useMemo(() =>
         selectedCamera?.cameraMount
             ? lenses.filter((l: any) => l.cameraMountId === selectedCamera.cameraMount.id).sort((a: any, b: any) => a.name.localeCompare(b.name))
@@ -82,25 +84,31 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         [initialHousings, housingName]
     )
 
+    const isFixedPort = selectedHousing?.interchangeablePort === false
+
     const selectedPort = useMemo(() =>
         portName ? ports.find((p: any) => p.name === portName) ?? null : null,
         [ports, portName]
     )
 
-    const availablePorts = useMemo(() =>
-        (selectedHousing?.housingMount && selectedLens)
-            ? ports
-                .filter((port: any) =>
-                    port.housingMountId === selectedHousing.housingMount.id &&
-                    port.lens?.some((l: any) => l.id === selectedLens.id)
-                )
-                .filter((port: any, index: number, self: any[]) =>
-                    index === self.findIndex((p: any) => p.name === port.name)
-                )
+    const availablePorts = useMemo(() => {
+        if (!selectedHousing?.housingMount) return []
+        if (isFixedLens) {
+            return ports
+                .filter((port: any) => port.housingMountId === selectedHousing.housingMount.id)
                 .sort((a: any, b: any) => a.name.localeCompare(b.name))
-            : [],
-        [ports, selectedHousing, selectedLens]
-    )
+        }
+        if (!selectedLens) return []
+        return ports
+            .filter((port: any) =>
+                port.housingMountId === selectedHousing.housingMount.id &&
+                port.lens?.some((l: any) => l.id === selectedLens.id)
+            )
+            .filter((port: any, index: number, self: any[]) =>
+                index === self.findIndex((p: any) => p.name === port.name)
+            )
+            .sort((a: any, b: any) => a.name.localeCompare(b.name))
+    }, [ports, selectedHousing, selectedLens, isFixedLens])
 
     // Compute valid combinations from current URL selections
     const filteredCombinations = useMemo(() => {
@@ -113,30 +121,39 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
             const camera = housing.Camera
             if (!camera) return
             const cameraWithImageInfo = cameras.find((c: any) => c.id === camera.id) || camera
+            const isFixed = camera.interchangeableLens === false
+            const isPortFixed = housing.interchangeablePort === false
 
-            const compatibleLenses = lenses.filter((lens: any) =>
-                lens.cameraMountId === camera.cameraMount?.id &&
-                (!lensName || lens.name === lensName)
-            )
+            const makeCombination = (lens: any, port: any) => {
+                const portWithImageInfo = port ? (ports.find((p: any) => p.id === port.id) || port) : null
+                return {
+                    id: `${camera.id}-${lens?.id ?? 'nolens'}-${housing.id}-${port?.id ?? 'noport'}`,
+                    camera: cameraWithImageInfo,
+                    lens,
+                    housing,
+                    port: portWithImageInfo,
+                    totalPrice: housing.priceAmount ? Number(housing.priceAmount) : 0,
+                    currency: housing.priceCurrency || 'USD'
+                }
+            }
 
-            compatibleLenses.forEach((lens: any) => {
-                const compatiblePorts = housing.ports.filter((port: any) =>
-                    port.lens?.some((l: any) => l.id === lens.id) &&
-                    (!portName || port.name === portName)
+            const lensesToUse = isFixed
+                ? [null]
+                : lenses.filter((lens: any) =>
+                    lens.cameraMountId === camera.cameraMount?.id &&
+                    (!lensName || lens.name === lensName)
                 )
-                compatiblePorts.forEach((port: any) => {
-                    const portWithImageInfo = ports.find((p: any) => p.id === port.id) || port
-                    const totalPrice = housing.priceAmount ? Number(housing.priceAmount) : 0
-                    combinations.push({
-                        id: `${camera.id}-${lens.id}-${housing.id}-${port.id}`,
-                        camera: cameraWithImageInfo,
-                        lens,
-                        housing,
-                        port: portWithImageInfo,
-                        totalPrice,
-                        currency: housing.priceCurrency || 'USD'
-                    })
-                })
+
+            lensesToUse.forEach((lens: any) => {
+                if (isPortFixed) {
+                    if (!portName) combinations.push(makeCombination(lens, null))
+                } else {
+                    const compatiblePorts = housing.ports.filter((port: any) =>
+                        (isFixed || port.lens?.some((l: any) => l.id === lens?.id)) &&
+                        (!portName || port.name === portName)
+                    )
+                    compatiblePorts.forEach((port: any) => combinations.push(makeCombination(lens, port)))
+                }
             })
         })
         return combinations
@@ -172,7 +189,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
                             {/* Step 1 — Camera */}
                             <div className="flex-1 flex flex-col items-center">
-                                <div className={`relative w-full aspect-square rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedCamera
+                                <div className={`relative w-full h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedCamera
                                     ? 'border-blue-400 bg-blue-50'
                                     : 'border-dashed border-gray-300 bg-gray-50'
                                     }`}>
@@ -224,75 +241,90 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 </select>
                             </div>
 
-                            {/* Arrow 1→2 */}
-                            <div className="flex-none flex items-center" style={{ paddingTop: 'calc(25% - 0.625rem)' }}>
-                                <svg className={`w-5 h-5 ${selectedCamera ? 'text-blue-400' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </div>
-
-                            {/* Step 2 — Lens */}
-                            <div className="flex-1 flex flex-col items-center">
-                                <div className={`relative w-full aspect-square rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedLens
-                                    ? 'border-blue-400 bg-blue-50'
-                                    : selectedCamera
-                                        ? 'border-dashed border-gray-300 bg-gray-50'
-                                        : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
-                                    }`}>
-                                    {selectedLens ? (
-                                        <>
-                                            <HousingImage
-                                                src={selectedLens.imageInfo?.src || '/lenses/fallback.png'}
-                                                fallback={selectedLens.imageInfo?.fallback || '/lenses/fallback.png'}
-                                                alt={selectedLens.name}
-                                                className="object-contain w-full h-full p-3"
-                                            />
-                                            <div className="absolute top-2 left-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${selectedCamera ? 'bg-gray-200' : 'bg-gray-100'}`}>
-                                                <span className={`text-sm font-bold ${selectedCamera ? 'text-gray-500' : 'text-gray-300'}`}>2</span>
-                                            </div>
-                                            <span className={`text-xs text-center px-2 ${selectedCamera ? 'text-gray-400' : 'text-gray-300'}`}>
-                                                {selectedCamera ? 'Choose lens' : 'Camera first'}
-                                            </span>
-                                        </div>
-                                    )}
+                            {/* Arrow 1→2 — hidden when fixed-lens */}
+                            <div
+                                className="flex-none overflow-hidden transition-all duration-300 ease-in-out"
+                                style={{ maxWidth: isFixedLens ? 0 : '2rem', opacity: isFixedLens ? 0 : 1 }}
+                            >
+                                <div className="flex items-center" style={{ paddingTop: 'calc(96px - 0.625rem)' }}>
+                                    <svg className={`w-5 h-5 flex-shrink-0 ${selectedCamera ? 'text-blue-400' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
                                 </div>
-                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Lens</div>
-                                <select
-                                    value={lensName}
-                                    onChange={(e) => setParams({ lens: e.target.value })}
-                                    disabled={!cameraModel || availableLenses.length === 0}
-                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!cameraModel || availableLenses.length === 0
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-white text-gray-900'
-                                        }`}
-                                >
-                                    <option value="">
-                                        {!cameraModel ? 'Select camera first' : availableLenses.length === 0 ? 'No compatible lenses' : 'Lens…'}
-                                    </option>
-                                    {availableLenses.map(lens => (
-                                        <option key={lens.id} value={lens.name}>{lens.name}</option>
-                                    ))}
-                                </select>
                             </div>
 
-                            {/* Arrow 2→3 */}
-                            <div className="flex-none flex items-center" style={{ paddingTop: 'calc(25% - 0.625rem)' }}>
-                                <svg className={`w-5 h-5 ${selectedLens ? 'text-blue-400' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
+                            {/* Step 2 — Lens (slides away for fixed-lens cameras) */}
+                            <div
+                                className="flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out"
+                                style={{ maxWidth: isFixedLens ? 0 : '500px', opacity: isFixedLens ? 0 : 1, pointerEvents: isFixedLens ? 'none' : undefined }}
+                            >
+                                <div className="flex flex-col items-center">
+                                    <div className={`relative w-full h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedLens
+                                        ? 'border-blue-400 bg-blue-50'
+                                        : selectedCamera
+                                            ? 'border-dashed border-gray-300 bg-gray-50'
+                                            : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
+                                        }`}>
+                                        {selectedLens ? (
+                                            <>
+                                                <HousingImage
+                                                    src={selectedLens.imageInfo?.src || '/lenses/fallback.png'}
+                                                    fallback={selectedLens.imageInfo?.fallback || '/lenses/fallback.png'}
+                                                    alt={selectedLens.name}
+                                                    className="object-contain w-full h-full p-3"
+                                                />
+                                                <div className="absolute top-2 left-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${selectedCamera ? 'bg-gray-200' : 'bg-gray-100'}`}>
+                                                    <span className={`text-sm font-bold ${selectedCamera ? 'text-gray-500' : 'text-gray-300'}`}>2</span>
+                                                </div>
+                                                <span className={`text-xs text-center px-2 ${selectedCamera ? 'text-gray-400' : 'text-gray-300'}`}>
+                                                    {selectedCamera ? 'Choose lens' : 'Camera first'}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Lens</div>
+                                    <select
+                                        value={lensName}
+                                        onChange={(e) => setParams({ lens: e.target.value })}
+                                        disabled={!cameraModel || availableLenses.length === 0}
+                                        className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!cameraModel || availableLenses.length === 0
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            : 'bg-white text-gray-900'
+                                            }`}
+                                    >
+                                        <option value="">
+                                            {!cameraModel ? 'Select camera first' : availableLenses.length === 0 ? 'No compatible lenses' : 'Lens…'}
+                                        </option>
+                                        {availableLenses.map(lens => (
+                                            <option key={lens.id} value={lens.name}>{lens.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Arrow 2→3 — hidden when fixed-lens */}
+                            <div
+                                className="flex-none overflow-hidden transition-all duration-300 ease-in-out"
+                                style={{ maxWidth: isFixedLens ? 0 : '2rem', opacity: isFixedLens ? 0 : 1 }}
+                            >
+                                <div className="flex items-center" style={{ paddingTop: 'calc(96px - 0.625rem)' }}>
+                                    <svg className={`w-5 h-5 flex-shrink-0 ${selectedLens ? 'text-blue-400' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
                             </div>
 
                             {/* Step 3 — Housing */}
                             <div className="flex-1 flex flex-col items-center">
-                                <div className={`relative w-full aspect-square rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedHousing
+                                <div className={`relative w-full h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedHousing
                                     ? 'border-blue-400 bg-blue-50'
-                                    : (selectedCamera && selectedLens)
+                                    : (selectedCamera && (isFixedLens || selectedLens))
                                         ? 'border-dashed border-gray-300 bg-gray-50'
                                         : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
                                     }`}>
@@ -310,11 +342,11 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                         </>
                                     ) : (
                                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${(selectedCamera && selectedLens) ? 'bg-gray-200' : 'bg-gray-100'}`}>
-                                                <span className={`text-sm font-bold ${(selectedCamera && selectedLens) ? 'text-gray-500' : 'text-gray-300'}`}>3</span>
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${(selectedCamera && (isFixedLens || selectedLens)) ? 'bg-gray-200' : 'bg-gray-100'}`}>
+                                                <span className={`text-sm font-bold ${(selectedCamera && (isFixedLens || selectedLens)) ? 'text-gray-500' : 'text-gray-300'}`}>{isFixedLens ? 2 : 3}</span>
                                             </div>
-                                            <span className={`text-xs text-center px-2 ${(selectedCamera && selectedLens) ? 'text-gray-400' : 'text-gray-300'}`}>
-                                                {(selectedCamera && selectedLens) ? 'Choose housing' : 'Lens first'}
+                                            <span className={`text-xs text-center px-2 ${(selectedCamera && (isFixedLens || selectedLens)) ? 'text-gray-400' : 'text-gray-300'}`}>
+                                                {(selectedCamera && (isFixedLens || selectedLens)) ? 'Choose housing' : isFixedLens ? 'Camera first' : 'Lens first'}
                                             </span>
                                         </div>
                                     )}
@@ -323,14 +355,14 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 <select
                                     value={housingName}
                                     onChange={(e) => setParams({ housing: e.target.value })}
-                                    disabled={!cameraModel || !lensName}
-                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!cameraModel || !lensName
+                                    disabled={!cameraModel || (!isFixedLens && !lensName)}
+                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!cameraModel || (!isFixedLens && !lensName)
                                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                         : 'bg-white text-gray-900'
                                         }`}
                                 >
                                     <option value="">
-                                        {!cameraModel ? 'Select camera first' : !lensName ? 'Select lens first' : 'Housing…'}
+                                        {!cameraModel ? 'Select camera first' : (!isFixedLens && !lensName) ? 'Select lens first' : 'Housing…'}
                                     </option>
                                     {availableHousings.map(housing => (
                                         <option key={housing.id} value={housing.name}>{housing.name}</option>
@@ -338,68 +370,78 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 </select>
                             </div>
 
-                            {/* Arrow 3→4 */}
-                            <div className="flex-none flex items-center" style={{ paddingTop: 'calc(25% - 0.625rem)' }}>
-                                <svg className={`w-5 h-5 ${selectedHousing ? 'text-blue-400' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
+                            {/* Arrow 3→4 — hidden when fixed-port */}
+                            <div
+                                className="flex-none overflow-hidden transition-all duration-300 ease-in-out"
+                                style={{ maxWidth: isFixedPort ? 0 : '2rem', opacity: isFixedPort ? 0 : 1 }}
+                            >
+                                <div className="flex items-center" style={{ paddingTop: 'calc(96px - 0.625rem)' }}>
+                                    <svg className={`w-5 h-5 flex-shrink-0 ${selectedHousing ? 'text-blue-400' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
                             </div>
 
-                            {/* Step 4 — Port */}
-                            <div className="flex-1 flex flex-col items-center">
-                                <div className={`relative w-full aspect-square rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedPort
-                                    ? 'border-blue-400 bg-blue-50'
-                                    : selectedHousing
-                                        ? 'border-dashed border-gray-300 bg-gray-50'
-                                        : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
-                                    }`}>
-                                    {selectedPort ? (
-                                        <>
-                                            <HousingImage
-                                                src={selectedPort.imageInfo?.src || '/ports/fallback.png'}
-                                                fallback={selectedPort.imageInfo?.fallback || '/ports/fallback.png'}
-                                                alt={selectedPort.name}
-                                                className="object-contain w-full h-full p-3"
-                                            />
-                                            <div className="absolute top-2 left-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                            {/* Step 4 — Port (slides away for fixed-port housings) */}
+                            <div
+                                className="flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out"
+                                style={{ maxWidth: isFixedPort ? 0 : '500px', opacity: isFixedPort ? 0 : 1, pointerEvents: isFixedPort ? 'none' : undefined }}
+                            >
+                                <div className="flex flex-col items-center">
+                                    <div className={`relative w-full h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedPort
+                                        ? 'border-blue-400 bg-blue-50'
+                                        : selectedHousing
+                                            ? 'border-dashed border-gray-300 bg-gray-50'
+                                            : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
+                                        }`}>
+                                        {selectedPort ? (
+                                            <>
+                                                <HousingImage
+                                                    src={selectedPort.imageInfo?.src || '/ports/fallback.png'}
+                                                    fallback={selectedPort.imageInfo?.fallback || '/ports/fallback.png'}
+                                                    alt={selectedPort.name}
+                                                    className="object-contain w-full h-full p-3"
+                                                />
+                                                <div className="absolute top-2 left-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${selectedHousing ? 'bg-gray-200' : 'bg-gray-100'}`}>
+                                                    <span className={`text-sm font-bold ${selectedHousing ? 'text-gray-500' : 'text-gray-300'}`}>{isFixedLens ? 3 : 4}</span>
+                                                </div>
+                                                <span className={`text-xs text-center px-2 ${selectedHousing ? 'text-gray-400' : 'text-gray-300'}`}>
+                                                    {selectedHousing ? 'Choose port' : 'Housing first'}
+                                                </span>
                                             </div>
-                                        </>
-                                    ) : (
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${selectedHousing ? 'bg-gray-200' : 'bg-gray-100'}`}>
-                                                <span className={`text-sm font-bold ${selectedHousing ? 'text-gray-500' : 'text-gray-300'}`}>4</span>
-                                            </div>
-                                            <span className={`text-xs text-center px-2 ${selectedHousing ? 'text-gray-400' : 'text-gray-300'}`}>
-                                                {selectedHousing ? 'Choose port' : 'Housing first'}
-                                            </span>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
+                                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Port</div>
+                                    <select
+                                        value={portName}
+                                        onChange={(e) => setParams({ port: e.target.value })}
+                                        disabled={!housingName || availablePorts.length === 0}
+                                        className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!housingName || availablePorts.length === 0
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            : 'bg-white text-gray-900'
+                                            }`}
+                                    >
+                                        <option value="">
+                                            {!housingName ? 'Select housing first' : availablePorts.length === 0 ? 'No compatible ports' : 'Port…'}
+                                        </option>
+                                        {availablePorts.map(port => (
+                                            <option key={port.id} value={port.name}>{port.name}</option>
+                                        ))}
+                                    </select>
                                 </div>
-                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Port</div>
-                                <select
-                                    value={portName}
-                                    onChange={(e) => setParams({ port: e.target.value })}
-                                    disabled={!housingName || availablePorts.length === 0}
-                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!housingName || availablePorts.length === 0
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-white text-gray-900'
-                                        }`}
-                                >
-                                    <option value="">
-                                        {!housingName ? 'Select housing first' : availablePorts.length === 0 ? 'No compatible ports' : 'Port…'}
-                                    </option>
-                                    {availablePorts.map(port => (
-                                        <option key={port.id} value={port.name}>{port.name}</option>
-                                    ))}
-                                </select>
                             </div>
 
                         </div>
                     </div>
 
-                    {/* Footer — shown only when all four components are explicitly selected and a valid combination exists */}
-                    {cameraModel && lensName && housingName && portName && filteredCombinations.length > 0 && filteredCombinations[0] && (
+                    {/* Footer — shown when all required components are selected and a valid combination exists */}
+                    {cameraModel && (isFixedLens || lensName) && housingName && (isFixedPort || portName) && filteredCombinations.length > 0 && filteredCombinations[0] && (
                         <div className="px-6 py-4 bg-blue-50 border-t border-blue-100 flex flex-wrap items-center justify-between gap-3">
                             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
                                 {filteredCombinations[0].housing.depthRating && (
@@ -415,7 +457,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 )}
                             </div>
                             <Link
-                                href={`/combinations/${filteredCombinations[0].camera.slug}/${filteredCombinations[0].lens.slug}/${filteredCombinations[0].housing.slug}/${filteredCombinations[0].port.id}`}
+                                href={`/combinations/${filteredCombinations[0].camera.slug}/${filteredCombinations[0].lens?.slug ?? 'none'}/${filteredCombinations[0].housing.slug}/${filteredCombinations[0].port?.id ?? 'none'}`}
                                 className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-1.5"
                             >
                                 View Full Details
