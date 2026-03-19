@@ -1,17 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { HousingImage } from '@/components/HousingImage'
-
-// Types for our filters
-type FilterState = {
-    cameraManufacturer: string
-    cameraModel: string
-    lens: string
-    port: string
-    manufacturer: string
-}
 
 // Client-side component for advanced filtering
 export default function HousingFilters({ initialHousings, cameras, manufacturers, lenses, ports }: {
@@ -21,200 +13,140 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
     lenses: any[],
     ports: any[]
 }) {
-    const [filters, setFilters] = useState<FilterState>({
-        cameraManufacturer: '',
-        cameraModel: '',
-        lens: '',
-        port: '',
-        manufacturer: ''
-    })
+    const router = useRouter()
+    const searchParams = useSearchParams()
 
-    const [filteredCombinations, setFilteredCombinations] = useState<any[]>([])
-    const [isFiltering, setIsFiltering] = useState(false)
-    const [showFilters, setShowFilters] = useState(false)
+    // Read filter state from URL
+    const cameraBrand = searchParams.get('cameraBrand') ?? ''
+    const cameraModel = searchParams.get('cameraModel') ?? ''
+    const lensName = searchParams.get('lens') ?? ''
+    const housingName = searchParams.get('housing') ?? ''
+    const portName = searchParams.get('port') ?? ''
 
-    // Get unique camera manufacturers and models
-    const uniqueCameraBrands = Array.from(new Set(cameras.map(c => c.brand.name))).sort()
-    const availableCameraModels = filters.cameraManufacturer
-        ? cameras.filter(c => c.brand.name === filters.cameraManufacturer).sort((a, b) => a.name.localeCompare(b.name))
-        : []
-
-    // Get lenses based on selected camera's mount
-    const selectedCamera = filters.cameraModel ? cameras.find(c => c.name === filters.cameraModel) : null
-    const availableLenses = selectedCamera?.cameraMount
-        ? lenses.filter(l => l.cameraMountId === selectedCamera.cameraMount.id).sort((a, b) => a.name.localeCompare(b.name))
-        : []
-
-    // Get available ports based on selected housing's mount and selected lens
-    // Try to find housing that matches both manufacturer and camera, otherwise just use manufacturer
-    const selectedHousing = filters.manufacturer
-        ? (selectedCamera
-            ? initialHousings.find(h => h.manufacturer.name === filters.manufacturer && h.cameraId === selectedCamera.id)
-            : null) || initialHousings.find(h => h.manufacturer.name === filters.manufacturer)
-        : null
-
-    const selectedLens = filters.lens ? lenses.find(l => l.name === filters.lens) : null
-    const selectedPort = filters.port ? ports.find(p => p.name === filters.port) : null
-
-    // Filter ports that are compatible with the selected housing's mount and lens
-    const availablePorts = (selectedHousing?.housingMount && selectedLens)
-        ? ports
-            .filter(port =>
-                port.housingMountId === selectedHousing.housingMount.id &&
-                port.lens?.some((l: any) => l.id === selectedLens.id)
-            )
-            .filter((port, index, self) =>
-                // Remove duplicates by port name
-                index === self.findIndex(p => p.name === port.name)
-            )
-            .sort((a, b) => a.name.localeCompare(b.name))
-        : []
-
-    // Clear camera model and lens when manufacturer changes
-    useEffect(() => {
-        if (filters.cameraModel && filters.cameraManufacturer) {
-            const selectedCamera = cameras.find(c => c.name === filters.cameraModel)
-            if (!selectedCamera || selectedCamera.brand.name !== filters.cameraManufacturer) {
-                setFilters(prev => ({ ...prev, cameraModel: '', lens: '' }))
-            }
-        }
-    }, [filters.cameraManufacturer, filters.cameraModel, cameras])
-
-    // Clear lens when camera model changes
-    useEffect(() => {
-        if (filters.lens && filters.cameraModel) {
-            const selectedCamera = cameras.find(c => c.name === filters.cameraModel)
-            const selectedLens = lenses.find(l => l.name === filters.lens)
-            if (!selectedCamera?.cameraMount || !selectedLens || selectedLens.cameraMountId !== selectedCamera.cameraMount.id) {
-                setFilters(prev => ({ ...prev, lens: '', port: '' }))
-            }
-        }
-    }, [filters.cameraModel, filters.lens, cameras, lenses])
-
-    // Clear manufacturer and port when camera model or lens changes
-    useEffect(() => {
-        if (!filters.cameraModel || !filters.lens) {
-            if (filters.manufacturer || filters.port) {
-                setFilters(prev => ({ ...prev, manufacturer: '', port: '' }))
-            }
-        }
-    }, [filters.cameraModel, filters.lens, filters.manufacturer, filters.port])
-
-    // Clear port when housing or lens changes
-    useEffect(() => {
-        if (filters.port && (filters.manufacturer || filters.lens)) {
-            const selectedHousing = filters.manufacturer
-                ? initialHousings.find(h => h.manufacturer.name === filters.manufacturer)
-                : null
-            const selectedLens = filters.lens ? lenses.find(l => l.name === filters.lens) : null
-
-            if (!selectedHousing?.housingMount || !selectedLens) {
-                setFilters(prev => ({ ...prev, port: '' }))
-            } else {
-                // Check if the port is still valid for the current housing mount/lens combo
-                const isValidCombo = ports.some(port =>
-                    port.housingMountId === selectedHousing.housingMount.id &&
-                    port.lens?.some((l: any) => l.id === selectedLens.id) &&
-                    port.name === filters.port
-                )
-                if (!isValidCombo) {
-                    setFilters(prev => ({ ...prev, port: '' }))
-                }
-            }
-        }
-    }, [filters.manufacturer, filters.lens, filters.port, initialHousings, lenses, ports])
-
-    // Apply filters and generate combinations
-    useEffect(() => {
-        setIsFiltering(true)
-
-        // Generate all valid combinations based on filters
-        const combinations: any[] = []
-
-        initialHousings.forEach(housing => {
-            // Camera manufacturer filter
-            if (filters.cameraManufacturer && housing.Camera) {
-                if (housing.Camera.brand.name !== filters.cameraManufacturer) {
-                    return
-                }
-            }
-
-            // Camera model filter
-            if (filters.cameraModel && housing.Camera) {
-                if (housing.Camera.name !== filters.cameraModel) {
-                    return
-                }
-            }
-
-            // Manufacturer filter
-            if (filters.manufacturer && housing.manufacturer.name !== filters.manufacturer) {
-                return
-            }
-
-            // For each housing, find compatible lenses and ports
-            const camera = housing.Camera
-
-            if (!camera) return
-
-            // Look up the full camera data with imageInfo from the cameras prop
-            const cameraWithImageInfo = cameras.find(c => c.id === camera.id) || camera
-
-            // Find lenses compatible with this camera's mount
-            const compatibleLenses = lenses.filter(lens =>
-                lens.cameraMountId === camera.cameraMount?.id &&
-                (!filters.lens || lens.name === filters.lens)
-            )
-
-            compatibleLenses.forEach(lens => {
-                // Find ports compatible with this lens and housing
-                const compatiblePorts = housing.ports.filter((port: any) =>
-                    port.lens?.some((l: any) => l.id === lens.id) &&
-                    (!filters.port || port.name === filters.port)
-                )
-
-                if (compatiblePorts.length > 0) {
-                    compatiblePorts.forEach((port: any) => {
-                        // Look up the full port data with imageInfo from the ports prop
-                        const portWithImageInfo = ports.find(p => p.id === port.id) || port
-
-                        // Calculate combined price
-                        const housingPrice = housing.priceAmount ? Number(housing.priceAmount) : 0
-                        const totalPrice = housingPrice
-
-                        combinations.push({
-                            id: `${camera.id}-${lens.id}-${housing.id}-${port.id}`,
-                            camera: cameraWithImageInfo,
-                            lens,
-                            housing,
-                            port: portWithImageInfo,
-                            totalPrice,
-                            currency: housing.priceCurrency || 'USD'
-                        })
-                    })
-                }
-                // Only show combinations where all four components (camera, lens, housing, port) are compatible
-            })
+    // Write one or more params at once, clearing downstream keys as needed
+    function setParams(updates: Record<string, string>) {
+        const params = new URLSearchParams(searchParams.toString())
+        // Key order defines the selection cascade; clearing a key clears everything after it
+        const cascade = ['cameraBrand', 'cameraModel', 'lens', 'housing', 'port']
+        const firstChanged = cascade.findIndex(k => k in updates)
+        // Clear all keys downstream of the first changed key
+        cascade.slice(firstChanged + 1).forEach(k => {
+            if (!(k in updates)) params.delete(k)
         })
-
-        setFilteredCombinations(combinations)
-        setIsFiltering(false)
-    }, [filters, initialHousings, lenses])
-
-    const clearFilters = () => {
-        setFilters({
-            cameraManufacturer: '',
-            cameraModel: '',
-            lens: '',
-            port: '',
-            manufacturer: ''
+        Object.entries(updates).forEach(([k, v]) => {
+            if (v) params.set(k, v)
+            else params.delete(k)
         })
+        router.replace(`/?${params.toString()}`, { scroll: false })
     }
 
-    const hasActiveFilters = filters.cameraManufacturer !== '' ||
-        filters.cameraModel !== '' ||
-        filters.lens !== '' ||
-        filters.port !== '' ||
-        filters.manufacturer !== ''
+    // Derived selections
+    const uniqueCameraBrands = useMemo(() =>
+        Array.from(new Set(cameras.map((c: any) => c.brand.name))).sort() as string[],
+        [cameras]
+    )
+
+    const availableCameraModels = useMemo(() =>
+        cameraBrand
+            ? cameras.filter((c: any) => c.brand.name === cameraBrand).sort((a: any, b: any) => a.name.localeCompare(b.name))
+            : [],
+        [cameras, cameraBrand]
+    )
+
+    const selectedCamera = useMemo(() =>
+        cameraModel ? cameras.find((c: any) => c.name === cameraModel) ?? null : null,
+        [cameras, cameraModel]
+    )
+
+    const availableLenses = useMemo(() =>
+        selectedCamera?.cameraMount
+            ? lenses.filter((l: any) => l.cameraMountId === selectedCamera.cameraMount.id).sort((a: any, b: any) => a.name.localeCompare(b.name))
+            : [],
+        [lenses, selectedCamera]
+    )
+
+    const availableHousings = useMemo(() =>
+        selectedCamera
+            ? initialHousings.filter((h: any) => h.cameraId === selectedCamera.id).sort((a: any, b: any) => a.name.localeCompare(b.name))
+            : [],
+        [initialHousings, selectedCamera]
+    )
+
+    const selectedLens = useMemo(() =>
+        lensName ? lenses.find((l: any) => l.name === lensName) ?? null : null,
+        [lenses, lensName]
+    )
+
+    const selectedHousing = useMemo(() =>
+        housingName ? initialHousings.find((h: any) => h.name === housingName) ?? null : null,
+        [initialHousings, housingName]
+    )
+
+    const selectedPort = useMemo(() =>
+        portName ? ports.find((p: any) => p.name === portName) ?? null : null,
+        [ports, portName]
+    )
+
+    const availablePorts = useMemo(() =>
+        (selectedHousing?.housingMount && selectedLens)
+            ? ports
+                .filter((port: any) =>
+                    port.housingMountId === selectedHousing.housingMount.id &&
+                    port.lens?.some((l: any) => l.id === selectedLens.id)
+                )
+                .filter((port: any, index: number, self: any[]) =>
+                    index === self.findIndex((p: any) => p.name === port.name)
+                )
+                .sort((a: any, b: any) => a.name.localeCompare(b.name))
+            : [],
+        [ports, selectedHousing, selectedLens]
+    )
+
+    // Compute valid combinations from current URL selections
+    const filteredCombinations = useMemo(() => {
+        const combinations: any[] = []
+        initialHousings.forEach((housing: any) => {
+            if (cameraBrand && housing.Camera?.brand.name !== cameraBrand) return
+            if (cameraModel && housing.Camera?.name !== cameraModel) return
+            if (housingName && housing.name !== housingName) return
+
+            const camera = housing.Camera
+            if (!camera) return
+            const cameraWithImageInfo = cameras.find((c: any) => c.id === camera.id) || camera
+
+            const compatibleLenses = lenses.filter((lens: any) =>
+                lens.cameraMountId === camera.cameraMount?.id &&
+                (!lensName || lens.name === lensName)
+            )
+
+            compatibleLenses.forEach((lens: any) => {
+                const compatiblePorts = housing.ports.filter((port: any) =>
+                    port.lens?.some((l: any) => l.id === lens.id) &&
+                    (!portName || port.name === portName)
+                )
+                compatiblePorts.forEach((port: any) => {
+                    const portWithImageInfo = ports.find((p: any) => p.id === port.id) || port
+                    const totalPrice = housing.priceAmount ? Number(housing.priceAmount) : 0
+                    combinations.push({
+                        id: `${camera.id}-${lens.id}-${housing.id}-${port.id}`,
+                        camera: cameraWithImageInfo,
+                        lens,
+                        housing,
+                        port: portWithImageInfo,
+                        totalPrice,
+                        currency: housing.priceCurrency || 'USD'
+                    })
+                })
+            })
+        })
+        return combinations
+    }, [initialHousings, cameras, lenses, ports, cameraBrand, cameraModel, lensName, housingName, portName])
+
+    const hasActiveFilters = !!(cameraBrand || cameraModel || lensName || housingName || portName)
+
+    const clearFilters = () => {
+        router.replace('/', { scroll: false })
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
@@ -241,8 +173,8 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                             {/* Step 1 — Camera */}
                             <div className="flex-1 flex flex-col items-center">
                                 <div className={`relative w-full aspect-square rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedCamera
-                                        ? 'border-blue-400 bg-blue-50'
-                                        : 'border-dashed border-gray-300 bg-gray-50'
+                                    ? 'border-blue-400 bg-blue-50'
+                                    : 'border-dashed border-gray-300 bg-gray-50'
                                     }`}>
                                     {selectedCamera ? (
                                         <>
@@ -268,8 +200,8 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Camera</div>
                                 {/* Camera manufacturer */}
                                 <select
-                                    value={filters.cameraManufacturer}
-                                    onChange={(e) => setFilters({ ...filters, cameraManufacturer: e.target.value, cameraModel: '' })}
+                                    value={cameraBrand}
+                                    onChange={(e) => setParams({ cameraBrand: e.target.value })}
                                     className="w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white mb-2"
                                 >
                                     <option value="">Brand…</option>
@@ -279,13 +211,13 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 </select>
                                 {/* Camera model */}
                                 <select
-                                    value={filters.cameraModel}
-                                    onChange={(e) => setFilters({ ...filters, cameraModel: e.target.value })}
-                                    disabled={!filters.cameraManufacturer}
-                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraManufacturer ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+                                    value={cameraModel}
+                                    onChange={(e) => setParams({ cameraModel: e.target.value })}
+                                    disabled={!cameraBrand}
+                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!cameraBrand ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
                                         }`}
                                 >
-                                    <option value="">{filters.cameraManufacturer ? 'Model…' : 'Select brand first'}</option>
+                                    <option value="">{cameraBrand ? 'Model…' : 'Select brand first'}</option>
                                     {availableCameraModels.map(camera => (
                                         <option key={camera.id} value={camera.name}>{camera.name}</option>
                                     ))}
@@ -302,10 +234,10 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                             {/* Step 2 — Lens */}
                             <div className="flex-1 flex flex-col items-center">
                                 <div className={`relative w-full aspect-square rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedLens
-                                        ? 'border-blue-400 bg-blue-50'
-                                        : selectedCamera
-                                            ? 'border-dashed border-gray-300 bg-gray-50'
-                                            : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
+                                    ? 'border-blue-400 bg-blue-50'
+                                    : selectedCamera
+                                        ? 'border-dashed border-gray-300 bg-gray-50'
+                                        : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
                                     }`}>
                                     {selectedLens ? (
                                         <>
@@ -332,16 +264,16 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 </div>
                                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Lens</div>
                                 <select
-                                    value={filters.lens}
-                                    onChange={(e) => setFilters({ ...filters, lens: e.target.value, port: '' })}
-                                    disabled={!filters.cameraModel || availableLenses.length === 0}
-                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraModel || availableLenses.length === 0
-                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                            : 'bg-white text-gray-900'
+                                    value={lensName}
+                                    onChange={(e) => setParams({ lens: e.target.value })}
+                                    disabled={!cameraModel || availableLenses.length === 0}
+                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!cameraModel || availableLenses.length === 0
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        : 'bg-white text-gray-900'
                                         }`}
                                 >
                                     <option value="">
-                                        {!filters.cameraModel ? 'Select camera first' : availableLenses.length === 0 ? 'No compatible lenses' : 'Lens…'}
+                                        {!cameraModel ? 'Select camera first' : availableLenses.length === 0 ? 'No compatible lenses' : 'Lens…'}
                                     </option>
                                     {availableLenses.map(lens => (
                                         <option key={lens.id} value={lens.name}>{lens.name}</option>
@@ -359,10 +291,10 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                             {/* Step 3 — Housing */}
                             <div className="flex-1 flex flex-col items-center">
                                 <div className={`relative w-full aspect-square rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedHousing
-                                        ? 'border-blue-400 bg-blue-50'
-                                        : (selectedCamera && selectedLens)
-                                            ? 'border-dashed border-gray-300 bg-gray-50'
-                                            : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
+                                    ? 'border-blue-400 bg-blue-50'
+                                    : (selectedCamera && selectedLens)
+                                        ? 'border-dashed border-gray-300 bg-gray-50'
+                                        : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
                                     }`}>
                                     {selectedHousing ? (
                                         <>
@@ -389,19 +321,19 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 </div>
                                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Housing</div>
                                 <select
-                                    value={filters.manufacturer}
-                                    onChange={(e) => setFilters({ ...filters, manufacturer: e.target.value, port: '' })}
-                                    disabled={!filters.cameraModel || !filters.lens}
-                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraModel || !filters.lens
-                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                            : 'bg-white text-gray-900'
+                                    value={housingName}
+                                    onChange={(e) => setParams({ housing: e.target.value })}
+                                    disabled={!cameraModel || !lensName}
+                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!cameraModel || !lensName
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        : 'bg-white text-gray-900'
                                         }`}
                                 >
                                     <option value="">
-                                        {!filters.cameraModel ? 'Select camera first' : !filters.lens ? 'Select lens first' : 'Housing…'}
+                                        {!cameraModel ? 'Select camera first' : !lensName ? 'Select lens first' : 'Housing…'}
                                     </option>
-                                    {manufacturers.map(manufacturer => (
-                                        <option key={manufacturer.id} value={manufacturer.name}>{manufacturer.name}</option>
+                                    {availableHousings.map(housing => (
+                                        <option key={housing.id} value={housing.name}>{housing.name}</option>
                                     ))}
                                 </select>
                             </div>
@@ -416,10 +348,10 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                             {/* Step 4 — Port */}
                             <div className="flex-1 flex flex-col items-center">
                                 <div className={`relative w-full aspect-square rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedPort
-                                        ? 'border-blue-400 bg-blue-50'
-                                        : selectedHousing
-                                            ? 'border-dashed border-gray-300 bg-gray-50'
-                                            : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
+                                    ? 'border-blue-400 bg-blue-50'
+                                    : selectedHousing
+                                        ? 'border-dashed border-gray-300 bg-gray-50'
+                                        : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
                                     }`}>
                                     {selectedPort ? (
                                         <>
@@ -446,16 +378,16 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 </div>
                                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Port</div>
                                 <select
-                                    value={filters.port}
-                                    onChange={(e) => setFilters({ ...filters, port: e.target.value })}
-                                    disabled={!filters.manufacturer || availablePorts.length === 0}
-                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.manufacturer || availablePorts.length === 0
-                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                            : 'bg-white text-gray-900'
+                                    value={portName}
+                                    onChange={(e) => setParams({ port: e.target.value })}
+                                    disabled={!housingName || availablePorts.length === 0}
+                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!housingName || availablePorts.length === 0
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        : 'bg-white text-gray-900'
                                         }`}
                                 >
                                     <option value="">
-                                        {!filters.manufacturer ? 'Select housing first' : availablePorts.length === 0 ? 'No compatible ports' : 'Port…'}
+                                        {!housingName ? 'Select housing first' : availablePorts.length === 0 ? 'No compatible ports' : 'Port…'}
                                     </option>
                                     {availablePorts.map(port => (
                                         <option key={port.id} value={port.name}>{port.name}</option>
