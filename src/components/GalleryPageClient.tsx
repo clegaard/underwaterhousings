@@ -1,45 +1,51 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import GalleryGrid, { GalleryPhotoData } from './GalleryGrid'
 
 interface GalleryPageClientProps {
     photos: GalleryPhotoData[]
-    initialCameraSlug?: string
-    initialLensSlug?: string
-    initialHousingSlug?: string
 }
 
-export default function GalleryPageClient({ photos, initialCameraSlug, initialLensSlug, initialHousingSlug }: GalleryPageClientProps) {
-    // Resolve slug → display name for initial state
-    const initialCamera = initialCameraSlug
-        ? (photos.find((p) => p.cameraSlug === initialCameraSlug)?.cameraName ?? '')
-        : ''
-    const initialLens = initialLensSlug
-        ? (photos.find((p) => p.lensSlug === initialLensSlug)?.lensName ?? '')
-        : ''
-    const initialHousing = initialHousingSlug
-        ? (photos.find((p) => p.housingSlug === initialHousingSlug)?.housingName ?? '')
-        : ''
+export default function GalleryPageClient({ photos }: GalleryPageClientProps) {
+    const router = useRouter()
+    const searchParams = useSearchParams()
 
-    const [camera, setCamera] = useState(initialCamera)
-    const [lens, setLens] = useState(initialLens)
-    const [housing, setHousing] = useState(initialHousing)
-    const [port, setPort] = useState('')
+    const cameraSlug = searchParams.get('camera') ?? ''
+    const lensSlug = searchParams.get('lens') ?? ''
+    const housingSlug = searchParams.get('housing') ?? ''
+    const portName = searchParams.get('port') ?? ''
 
-    // Derive unique options from all photos (sorted)
-    const cameras = useMemo(
-        () => Array.from(new Set(photos.map((p) => p.cameraName).filter((v): v is string => !!v))).sort(),
-        [photos]
-    )
-    const lenses = useMemo(
-        () => Array.from(new Set(photos.map((p) => p.lensName).filter((v): v is string => !!v))).sort(),
-        [photos]
-    )
-    const housings = useMemo(
-        () => Array.from(new Set(photos.map((p) => p.housingName).filter((v): v is string => !!v))).sort(),
-        [photos]
-    )
+    function setParam(key: string, value: string) {
+        const params = new URLSearchParams(searchParams.toString())
+        if (value) {
+            params.set(key, value)
+        } else {
+            params.delete(key)
+        }
+        router.replace(`/gallery?${params.toString()}`, { scroll: false })
+    }
+
+    // Derive unique [slug, displayName] pairs sorted by display name
+    const cameras = useMemo(() => {
+        const map = new Map<string, string>()
+        photos.forEach((p) => { if (p.cameraSlug && p.cameraName) map.set(p.cameraSlug, p.cameraName) })
+        return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]))
+    }, [photos])
+
+    const lenses = useMemo(() => {
+        const map = new Map<string, string>()
+        photos.forEach((p) => { if (p.lensSlug && p.lensName) map.set(p.lensSlug, p.lensName) })
+        return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]))
+    }, [photos])
+
+    const housings = useMemo(() => {
+        const map = new Map<string, string>()
+        photos.forEach((p) => { if (p.housingSlug && p.housingName) map.set(p.housingSlug, p.housingName) })
+        return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]))
+    }, [photos])
+
     const ports = useMemo(
         () => Array.from(new Set(photos.map((p) => p.portName).filter((v): v is string => !!v))).sort(),
         [photos]
@@ -49,103 +55,107 @@ export default function GalleryPageClient({ photos, initialCameraSlug, initialLe
         () =>
             photos.filter(
                 (p) =>
-                    (!camera || p.cameraName === camera) &&
-                    (!lens || p.lensName === lens) &&
-                    (!housing || p.housingName === housing) &&
-                    (!port || p.portName === port)
+                    (!cameraSlug || p.cameraSlug === cameraSlug) &&
+                    (!lensSlug || p.lensSlug === lensSlug) &&
+                    (!housingSlug || p.housingSlug === housingSlug) &&
+                    (!portName || p.portName === portName)
             ),
-        [photos, camera, lens, housing, port]
+        [photos, cameraSlug, lensSlug, housingSlug, portName]
     )
 
-    const hasActiveFilter = camera || lens || housing || port
+    const hasActiveFilter = !!(cameraSlug || lensSlug || housingSlug || portName)
 
     function clearAll() {
-        setCamera('')
-        setLens('')
-        setHousing('')
-        setPort('')
+        router.replace('/gallery', { scroll: false })
     }
 
     return (
-        <div>
-            {/* Filter bar */}
-            <div className="mb-6 p-4 bg-gray-900 rounded-xl border border-gray-800 flex flex-wrap gap-3 items-end">
-                <FilterSelect
-                    label="Camera"
-                    value={camera}
-                    options={cameras}
-                    onChange={setCamera}
-                    placeholder="All cameras"
-                />
-                <FilterSelect
-                    label="Lens"
-                    value={lens}
-                    options={lenses}
-                    onChange={setLens}
-                    placeholder="All lenses"
-                />
-                <FilterSelect
-                    label="Housing"
-                    value={housing}
-                    options={housings}
-                    onChange={setHousing}
-                    placeholder="All housings"
-                />
-                {ports.length > 0 && (
-                    <FilterSelect
-                        label="Port"
-                        value={port}
-                        options={ports}
-                        onChange={setPort}
-                        placeholder="All ports"
-                    />
-                )}
-                {hasActiveFilter && (
-                    <button
-                        onClick={clearAll}
-                        className="self-end text-sm text-gray-400 hover:text-white transition-colors px-3 py-2 rounded-lg border border-gray-700 hover:border-gray-500"
-                    >
-                        Clear filters
-                    </button>
-                )}
-                <span className="self-end ml-auto text-sm text-gray-500">
-                    {filtered.length} / {photos.length} photos
-                </span>
+        <div className="flex flex-col lg:flex-row gap-6">
+            {/* Filters Sidebar */}
+            <div className="lg:w-72 flex-shrink-0">
+                <div className="bg-white rounded-lg shadow-sm p-6 sticky top-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-semibold text-gray-900">Filters</h2>
+                        {hasActiveFilter && (
+                            <button
+                                onClick={clearAll}
+                                className="text-sm text-blue-600 hover:text-blue-800"
+                            >
+                                Clear all
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="space-y-5">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Camera</label>
+                            <select
+                                value={cameraSlug}
+                                onChange={(e) => setParam('camera', e.target.value)}
+                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                            >
+                                <option value="">All cameras</option>
+                                {cameras.map(([slug, name]) => (
+                                    <option key={slug} value={slug}>{name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Lens</label>
+                            <select
+                                value={lensSlug}
+                                onChange={(e) => setParam('lens', e.target.value)}
+                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                            >
+                                <option value="">All lenses</option>
+                                {lenses.map(([slug, name]) => (
+                                    <option key={slug} value={slug}>{name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Housing</label>
+                            <select
+                                value={housingSlug}
+                                onChange={(e) => setParam('housing', e.target.value)}
+                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                            >
+                                <option value="">All housings</option>
+                                {housings.map(([slug, name]) => (
+                                    <option key={slug} value={slug}>{name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {ports.length > 0 && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Port</label>
+                                <select
+                                    value={portName}
+                                    onChange={(e) => setParam('port', e.target.value)}
+                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                                >
+                                    <option value="">All ports</option>
+                                    {ports.map((opt) => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        <p className="text-sm text-gray-500 pt-1">
+                            {filtered.length} / {photos.length} photos
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            <GalleryGrid photos={filtered} />
-        </div>
-    )
-}
-
-function FilterSelect({
-    label,
-    value,
-    options,
-    onChange,
-    placeholder,
-}: {
-    label: string
-    value: string
-    options: string[]
-    onChange: (v: string) => void
-    placeholder: string
-}) {
-    return (
-        <div className="flex flex-col gap-1 min-w-[160px]">
-            <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">{label}</label>
-            <select
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="bg-gray-800 text-white text-sm rounded-lg border border-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-                <option value="">{placeholder}</option>
-                {options.map((opt) => (
-                    <option key={opt} value={opt}>
-                        {opt}
-                    </option>
-                ))}
-            </select>
+            {/* Gallery */}
+            <div className="flex-1 min-w-0">
+                <GalleryGrid photos={filtered} />
+            </div>
         </div>
     )
 }
