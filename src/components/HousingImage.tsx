@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface HousingImageProps {
     src: string
@@ -14,9 +14,13 @@ export function HousingImage({ src, fallback, alt, className }: HousingImageProp
     const [imageSrc, setImageSrc] = useState(src)
     const [hasError, setHasError] = useState(false)
 
+    useEffect(() => {
+        setImageSrc(src)
+        setHasError(false)
+    }, [src])
+
     const handleError = () => {
         if (!hasError) {
-            // Use fallback on error
             setHasError(true)
             setImageSrc(fallback)
         }

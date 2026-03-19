@@ -10,10 +10,6 @@ type FilterState = {
     cameraModel: string
     lens: string
     port: string
-    maxDepth: string
-    priceMin: number
-    priceMax: number
-    material: string
     manufacturer: string
 }
 
@@ -30,20 +26,12 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         cameraModel: '',
         lens: '',
         port: '',
-        maxDepth: '0',
-        priceMin: 0,
-        priceMax: 10000,
-        material: '',
         manufacturer: ''
     })
 
     const [filteredCombinations, setFilteredCombinations] = useState<any[]>([])
     const [isFiltering, setIsFiltering] = useState(false)
     const [showFilters, setShowFilters] = useState(false)
-
-    // Get unique values for filter options
-    const uniqueMaterials = Array.from(new Set(initialHousings.map(h => h.material).filter(Boolean)))
-    const uniqueDepthRatings = Array.from(new Set(initialHousings.map(h => h.depthRating).filter(Boolean))).sort((a, b) => a - b)
 
     // Get unique camera manufacturers and models
     const uniqueCameraBrands = Array.from(new Set(cameras.map(c => c.brand.name))).sort()
@@ -66,6 +54,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         : null
 
     const selectedLens = filters.lens ? lenses.find(l => l.name === filters.lens) : null
+    const selectedPort = filters.port ? ports.find(p => p.name === filters.port) : null
 
     // Filter ports that are compatible with the selected housing's mount and lens
     const availablePorts = (selectedHousing?.housingMount && selectedLens)
@@ -157,20 +146,6 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                 }
             }
 
-            // Max depth filter
-            if (filters.maxDepth !== '0') {
-                const requiredDepth = Number(filters.maxDepth)
-                const housingDepth = housing.depthRating || 0
-                if (housingDepth < requiredDepth) {
-                    return
-                }
-            }
-
-            // Material filter
-            if (filters.material && housing.material !== filters.material) {
-                return
-            }
-
             // Manufacturer filter
             if (filters.manufacturer && housing.manufacturer.name !== filters.manufacturer) {
                 return
@@ -204,14 +179,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
                         // Calculate combined price
                         const housingPrice = housing.priceAmount ? Number(housing.priceAmount) : 0
-                        const totalPrice = housingPrice // Can add camera, lens, port prices if available
-
-                        // Price range filter on combined price
-                        if (filters.priceMin > 0 || filters.priceMax < 10000) {
-                            if (totalPrice < filters.priceMin || totalPrice > filters.priceMax) {
-                                return
-                            }
-                        }
+                        const totalPrice = housingPrice
 
                         combinations.push({
                             id: `${camera.id}-${lens.id}-${housing.id}-${port.id}`,
@@ -238,10 +206,6 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
             cameraModel: '',
             lens: '',
             port: '',
-            maxDepth: '0',
-            priceMin: 0,
-            priceMax: 10000,
-            material: '',
             manufacturer: ''
         })
     }
@@ -250,427 +214,285 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         filters.cameraModel !== '' ||
         filters.lens !== '' ||
         filters.port !== '' ||
-        filters.maxDepth !== '0' ||
-        filters.priceMin > 0 ||
-        filters.priceMax < 10000 ||
-        filters.material !== '' ||
         filters.manufacturer !== ''
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+            <div className="max-w-5xl mx-auto px-4 py-8">
+                {/* Single unified setup card */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    {/* Card header */}
+                    <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                        <div>
+                            <h2 className="text-xl font-semibold text-gray-900">Build Your Setup</h2>
+                            <p className="text-sm text-gray-500 mt-0.5">Select components step by step to find a compatible underwater rig</p>
+                        </div>
+                        {hasActiveFilters && (
+                            <button onClick={clearFilters} className="text-sm text-blue-600 hover:text-blue-800">
+                                Clear all
+                            </button>
+                        )}
+                    </div>
 
+                    {/* Component flow */}
+                    <div className="p-6">
+                        <div className="flex items-start gap-2 sm:gap-4">
 
-            <div className="max-w-7xl mx-auto px-4 py-6">
-                <div className="flex flex-col lg:flex-row gap-6">
-                    {/* Filters Sidebar */}
-                    <div className="lg:w-80">
-                        <div className="bg-white rounded-lg shadow-sm p-6 sticky top-6">
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-xl font-semibold text-gray-900">Filters</h2>
-                                {hasActiveFilters && (
-                                    <button
-                                        onClick={clearFilters}
-                                        className="text-sm text-blue-600 hover:text-blue-800"
-                                    >
-                                        Clear all
-                                    </button>
-                                )}
-                            </div>
-
-                            <div className="space-y-6">
-                                {/* Camera Manufacturer */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Camera Manufacturer
-                                    </label>
-                                    <select
-                                        value={filters.cameraManufacturer}
-                                        onChange={(e) => setFilters({ ...filters, cameraManufacturer: e.target.value, cameraModel: '' })}
-                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                                    >
-                                        <option value="">All camera manufacturers</option>
-                                        {uniqueCameraBrands.map(brand => (
-                                            <option key={brand} value={brand}>
-                                                {brand}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                {/* Camera Model */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Camera Model
-                                    </label>
-                                    <select
-                                        value={filters.cameraModel}
-                                        onChange={(e) => setFilters({ ...filters, cameraModel: e.target.value })}
-                                        disabled={!filters.cameraManufacturer}
-                                        className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraManufacturer ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-900'
-                                            }`}
-                                    >
-                                        <option value="">
-                                            {!filters.cameraManufacturer ? 'Select manufacturer first' : 'All camera models'}
-                                        </option>
-                                        {availableCameraModels.map(camera => (
-                                            <option key={camera.id} value={camera.name}>
-                                                {camera.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                {/* Lens */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Lens
-                                    </label>
-                                    <select
-                                        value={filters.lens}
-                                        onChange={(e) => setFilters({ ...filters, lens: e.target.value, port: '' })}
-                                        disabled={!filters.cameraModel || availableLenses.length === 0}
-                                        className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraModel || availableLenses.length === 0
-                                            ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                                            : 'bg-white text-gray-900'
-                                            }`}
-                                    >
-                                        <option value="">
-                                            {!filters.cameraModel
-                                                ? 'Select camera model first'
-                                                : availableLenses.length === 0
-                                                    ? 'No compatible lenses'
-                                                    : 'All lenses'}
-                                        </option>
-                                        {availableLenses.map(lens => (
-                                            <option key={lens.id} value={lens.name}>
-                                                {lens.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {selectedCamera?.cameraMount && (
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Compatible with {selectedCamera.cameraMount.name}
-                                        </p>
+                            {/* Step 1 — Camera */}
+                            <div className="flex-1 flex flex-col items-center">
+                                <div className={`relative w-full aspect-square rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedCamera
+                                        ? 'border-blue-400 bg-blue-50'
+                                        : 'border-dashed border-gray-300 bg-gray-50'
+                                    }`}>
+                                    {selectedCamera ? (
+                                        <>
+                                            <HousingImage
+                                                src={selectedCamera.imageInfo?.src || '/cameras/fallback.png'}
+                                                fallback={selectedCamera.imageInfo?.fallback || '/cameras/fallback.png'}
+                                                alt={`${selectedCamera.brand.name} ${selectedCamera.name}`}
+                                                className="object-contain w-full h-full p-3"
+                                            />
+                                            <div className="absolute top-2 left-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mb-2">
+                                                <span className="text-gray-500 text-sm font-bold">1</span>
+                                            </div>
+                                            <span className="text-xs text-gray-400 text-center px-2">Choose camera</span>
+                                        </div>
                                     )}
                                 </div>
-
-                                {/* Manufacturer */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Housings
-                                    </label>
-                                    <select
-                                        value={filters.manufacturer}
-                                        onChange={(e) => setFilters({ ...filters, manufacturer: e.target.value, port: '' })}
-                                        disabled={!filters.cameraModel || !filters.lens}
-                                        className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraModel || !filters.lens
-                                            ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                                            : 'bg-white text-gray-900'
-                                            }`}
-                                    >
-                                        <option value="">
-                                            {!filters.cameraModel
-                                                ? 'Select camera model first'
-                                                : !filters.lens
-                                                    ? 'Select lens first'
-                                                    : 'All housings'}
-                                        </option>
-                                        {manufacturers.map(manufacturer => (
-                                            <option key={manufacturer.id} value={manufacturer.name}>
-                                                {manufacturer.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                {/* Port */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Port
-                                    </label>
-                                    <select
-                                        value={filters.port}
-                                        onChange={(e) => setFilters({ ...filters, port: e.target.value })}
-                                        disabled={!filters.manufacturer || !filters.lens || availablePorts.length === 0}
-                                        className={`w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.manufacturer || !filters.lens || availablePorts.length === 0
-                                            ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                                            : 'bg-white text-gray-900'
-                                            }`}
-                                    >
-                                        <option value="">
-                                            {!filters.manufacturer
-                                                ? 'Select housing first'
-                                                : !filters.lens
-                                                    ? 'Select lens first'
-                                                    : availablePorts.length === 0
-                                                        ? 'No compatible ports'
-                                                        : 'All ports'}
-                                        </option>
-                                        {availablePorts.map(port => (
-                                            <option key={port.id} value={port.name}>
-                                                {port.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {selectedHousing?.housingMount && selectedLens && availablePorts.length > 0 && (
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Compatible with {selectedHousing.housingMount.name} mount + {selectedLens.name}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Max Depth */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Maximum Depth Rating [m]
-                                    </label>
-                                    <select
-                                        value={filters.maxDepth}
-                                        onChange={(e) => setFilters({ ...filters, maxDepth: e.target.value })}
-                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                                    >
-                                        <option value="0">Any depth</option>
-                                        <option value="10">10</option>
-                                        <option value="20">20</option>
-                                        <option value="30">30</option>
-                                        <option value="40">40</option>
-                                        <option value="50">50</option>
-                                        <option value="60">60</option>
-                                        <option value="70">70</option>
-                                        <option value="80">80</option>
-                                        <option value="90">90</option>
-                                        <option value="100">100</option>
-                                    </select>
-                                </div>
-
-                                {/* Price Range */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Price Range: ${filters.priceMin} - ${filters.priceMax}
-                                    </label>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label className="text-xs text-gray-500">Min Price</label>
-                                            <input
-                                                type="range"
-                                                min="0"
-                                                max="5000"
-                                                step="100"
-                                                value={filters.priceMin}
-                                                onChange={(e) => setFilters({ ...filters, priceMin: Number(e.target.value) })}
-                                                className="w-full"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-xs text-gray-500">Max Price</label>
-                                            <input
-                                                type="range"
-                                                min="500"
-                                                max="10000"
-                                                step="100"
-                                                value={filters.priceMax}
-                                                onChange={(e) => setFilters({ ...filters, priceMax: Number(e.target.value) })}
-                                                className="w-full"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Material */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Material
-                                    </label>
-                                    <select
-                                        value={filters.material}
-                                        onChange={(e) => setFilters({ ...filters, material: e.target.value })}
-                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                                    >
-                                        <option value="">All materials</option>
-                                        {uniqueMaterials.map(material => (
-                                            <option key={material} value={material}>
-                                                {material}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Camera</div>
+                                {/* Camera manufacturer */}
+                                <select
+                                    value={filters.cameraManufacturer}
+                                    onChange={(e) => setFilters({ ...filters, cameraManufacturer: e.target.value, cameraModel: '' })}
+                                    className="w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white mb-2"
+                                >
+                                    <option value="">Brand…</option>
+                                    {uniqueCameraBrands.map(brand => (
+                                        <option key={brand} value={brand}>{brand}</option>
+                                    ))}
+                                </select>
+                                {/* Camera model */}
+                                <select
+                                    value={filters.cameraModel}
+                                    onChange={(e) => setFilters({ ...filters, cameraModel: e.target.value })}
+                                    disabled={!filters.cameraManufacturer}
+                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraManufacturer ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
+                                        }`}
+                                >
+                                    <option value="">{filters.cameraManufacturer ? 'Model…' : 'Select brand first'}</option>
+                                    {availableCameraModels.map(camera => (
+                                        <option key={camera.id} value={camera.name}>{camera.name}</option>
+                                    ))}
+                                </select>
                             </div>
 
-                            {/* Active Filters Summary */}
-                            {hasActiveFilters && (
-                                <div className="mt-6 pt-6 border-t border-gray-200">
-                                    <h3 className="text-sm font-medium text-gray-700 mb-2">Active Filters:</h3>
-                                    <div className="space-y-1 text-xs text-gray-600">
-                                        {filters.cameraManufacturer && <div>Camera Manufacturer: {filters.cameraManufacturer}</div>}
-                                        {filters.cameraModel && <div>Camera Model: {filters.cameraModel}</div>}
-                                        {filters.lens && <div>Lens: {filters.lens}</div>}
-                                        {filters.port && <div>Port: {filters.port}</div>}
-                                        {filters.manufacturer && <div>Housings: {filters.manufacturer}</div>}
-                                        {filters.maxDepth !== '0' && <div>Min Depth: {filters.maxDepth}m</div>}
-                                        {(filters.priceMin > 0 || filters.priceMax < 10000) &&
-                                            <div>Price: ${filters.priceMin} - ${filters.priceMax}</div>}
-                                        {filters.material && <div>Material: {filters.material}</div>}
-                                    </div>
+                            {/* Arrow 1→2 */}
+                            <div className="flex-none flex items-center" style={{ paddingTop: 'calc(25% - 0.625rem)' }}>
+                                <svg className={`w-5 h-5 ${selectedCamera ? 'text-blue-400' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+
+                            {/* Step 2 — Lens */}
+                            <div className="flex-1 flex flex-col items-center">
+                                <div className={`relative w-full aspect-square rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedLens
+                                        ? 'border-blue-400 bg-blue-50'
+                                        : selectedCamera
+                                            ? 'border-dashed border-gray-300 bg-gray-50'
+                                            : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
+                                    }`}>
+                                    {selectedLens ? (
+                                        <>
+                                            <HousingImage
+                                                src={selectedLens.imageInfo?.src || '/lenses/fallback.png'}
+                                                fallback={selectedLens.imageInfo?.fallback || '/lenses/fallback.png'}
+                                                alt={selectedLens.name}
+                                                className="object-contain w-full h-full p-3"
+                                            />
+                                            <div className="absolute top-2 left-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${selectedCamera ? 'bg-gray-200' : 'bg-gray-100'}`}>
+                                                <span className={`text-sm font-bold ${selectedCamera ? 'text-gray-500' : 'text-gray-300'}`}>2</span>
+                                            </div>
+                                            <span className={`text-xs text-center px-2 ${selectedCamera ? 'text-gray-400' : 'text-gray-300'}`}>
+                                                {selectedCamera ? 'Choose lens' : 'Camera first'}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Lens</div>
+                                <select
+                                    value={filters.lens}
+                                    onChange={(e) => setFilters({ ...filters, lens: e.target.value, port: '' })}
+                                    disabled={!filters.cameraModel || availableLenses.length === 0}
+                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraModel || availableLenses.length === 0
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            : 'bg-white text-gray-900'
+                                        }`}
+                                >
+                                    <option value="">
+                                        {!filters.cameraModel ? 'Select camera first' : availableLenses.length === 0 ? 'No compatible lenses' : 'Lens…'}
+                                    </option>
+                                    {availableLenses.map(lens => (
+                                        <option key={lens.id} value={lens.name}>{lens.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Arrow 2→3 */}
+                            <div className="flex-none flex items-center" style={{ paddingTop: 'calc(25% - 0.625rem)' }}>
+                                <svg className={`w-5 h-5 ${selectedLens ? 'text-blue-400' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+
+                            {/* Step 3 — Housing */}
+                            <div className="flex-1 flex flex-col items-center">
+                                <div className={`relative w-full aspect-square rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedHousing
+                                        ? 'border-blue-400 bg-blue-50'
+                                        : (selectedCamera && selectedLens)
+                                            ? 'border-dashed border-gray-300 bg-gray-50'
+                                            : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
+                                    }`}>
+                                    {selectedHousing ? (
+                                        <>
+                                            <HousingImage
+                                                src={selectedHousing.imageInfo?.src || '/housings/fallback.png'}
+                                                fallback={selectedHousing.imageInfo?.fallback || '/housings/fallback.png'}
+                                                alt={selectedHousing.name}
+                                                className="object-contain w-full h-full p-3"
+                                            />
+                                            <div className="absolute top-2 left-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${(selectedCamera && selectedLens) ? 'bg-gray-200' : 'bg-gray-100'}`}>
+                                                <span className={`text-sm font-bold ${(selectedCamera && selectedLens) ? 'text-gray-500' : 'text-gray-300'}`}>3</span>
+                                            </div>
+                                            <span className={`text-xs text-center px-2 ${(selectedCamera && selectedLens) ? 'text-gray-400' : 'text-gray-300'}`}>
+                                                {(selectedCamera && selectedLens) ? 'Choose housing' : 'Lens first'}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Housing</div>
+                                <select
+                                    value={filters.manufacturer}
+                                    onChange={(e) => setFilters({ ...filters, manufacturer: e.target.value, port: '' })}
+                                    disabled={!filters.cameraModel || !filters.lens}
+                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.cameraModel || !filters.lens
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            : 'bg-white text-gray-900'
+                                        }`}
+                                >
+                                    <option value="">
+                                        {!filters.cameraModel ? 'Select camera first' : !filters.lens ? 'Select lens first' : 'Housing…'}
+                                    </option>
+                                    {manufacturers.map(manufacturer => (
+                                        <option key={manufacturer.id} value={manufacturer.name}>{manufacturer.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Arrow 3→4 */}
+                            <div className="flex-none flex items-center" style={{ paddingTop: 'calc(25% - 0.625rem)' }}>
+                                <svg className={`w-5 h-5 ${selectedHousing ? 'text-blue-400' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+
+                            {/* Step 4 — Port */}
+                            <div className="flex-1 flex flex-col items-center">
+                                <div className={`relative w-full aspect-square rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedPort
+                                        ? 'border-blue-400 bg-blue-50'
+                                        : selectedHousing
+                                            ? 'border-dashed border-gray-300 bg-gray-50'
+                                            : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
+                                    }`}>
+                                    {selectedPort ? (
+                                        <>
+                                            <HousingImage
+                                                src={selectedPort.imageInfo?.src || '/ports/fallback.png'}
+                                                fallback={selectedPort.imageInfo?.fallback || '/ports/fallback.png'}
+                                                alt={selectedPort.name}
+                                                className="object-contain w-full h-full p-3"
+                                            />
+                                            <div className="absolute top-2 left-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${selectedHousing ? 'bg-gray-200' : 'bg-gray-100'}`}>
+                                                <span className={`text-sm font-bold ${selectedHousing ? 'text-gray-500' : 'text-gray-300'}`}>4</span>
+                                            </div>
+                                            <span className={`text-xs text-center px-2 ${selectedHousing ? 'text-gray-400' : 'text-gray-300'}`}>
+                                                {selectedHousing ? 'Choose port' : 'Housing first'}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Port</div>
+                                <select
+                                    value={filters.port}
+                                    onChange={(e) => setFilters({ ...filters, port: e.target.value })}
+                                    disabled={!filters.manufacturer || availablePorts.length === 0}
+                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!filters.manufacturer || availablePorts.length === 0
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            : 'bg-white text-gray-900'
+                                        }`}
+                                >
+                                    <option value="">
+                                        {!filters.manufacturer ? 'Select housing first' : availablePorts.length === 0 ? 'No compatible ports' : 'Port…'}
+                                    </option>
+                                    {availablePorts.map(port => (
+                                        <option key={port.id} value={port.name}>{port.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
                         </div>
                     </div>
 
-                    {/* Results */}
-                    <div className="flex-1">
-                        {isFiltering && (
-                            <div className="text-center py-8">
-                                <div className="inline-flex items-center text-blue-600">
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Filtering combinations...
-                                </div>
+                    {/* Footer — shown when a valid combination is found */}
+                    {filteredCombinations.length > 0 && filteredCombinations[0] && (
+                        <div className="px-6 py-4 bg-blue-50 border-t border-blue-100 flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                                {filteredCombinations[0].housing.depthRating && (
+                                    <span><span className="font-medium text-gray-800">{filteredCombinations[0].housing.depthRating}m</span> depth rating</span>
+                                )}
+                                {filteredCombinations[0].housing.material && (
+                                    <span>{filteredCombinations[0].housing.material}</span>
+                                )}
+                                {filteredCombinations[0].totalPrice > 0 && (
+                                    <span className="font-semibold text-gray-900 text-base">
+                                        ${filteredCombinations[0].totalPrice.toLocaleString()} {filteredCombinations[0].currency}
+                                    </span>
+                                )}
                             </div>
-                        )}
-
-                        {!isFiltering && filteredCombinations.length === 0 && (
-                            <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                                <div className="text-6xl mb-4">🔍</div>
-                                <h3 className="text-lg font-medium text-gray-900 mb-2">No combinations found</h3>
-                                <p className="text-gray-600 mb-4">Try adjusting your filters to see more results</p>
-                                <button
-                                    onClick={clearFilters}
-                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                                >
-                                    Clear all filters
-                                </button>
-                            </div>
-                        )}
-
-                        {!isFiltering && filteredCombinations.length > 0 && (
-                            <div className="flex justify-center">
-                                <div key={`${filteredCombinations.length}-${JSON.stringify(filters)}`} className="grid grid-cols-1 gap-6 max-w-4xl w-full">
-                                    {filteredCombinations.map((combo: any) => {
-                                        const { camera, lens, housing, port, totalPrice, currency } = combo
-
-                                        // Create detail URL for combination
-                                        const detailUrl = `/combinations/${camera.slug}/${lens.slug}/${housing.slug}${port ? '/' + port.id : ''}`
-
-                                        // Use pre-resolved image paths from server-side
-                                        const housingImageInfo = housing.imageInfo || {
-                                            src: '/housings/fallback.png',
-                                            fallback: '/housings/fallback.png'
-                                        }
-                                        const cameraImageInfo = camera.imageInfo || {
-                                            src: '/cameras/fallback.png',
-                                            fallback: '/cameras/fallback.png'
-                                        }
-                                        const lensImageInfo = lens.imageInfo || {
-                                            src: '/lenses/fallback.png',
-                                            fallback: '/lenses/fallback.png'
-                                        }
-                                        const portImageInfo = port?.imageInfo || {
-                                            src: '/ports/fallback.png',
-                                            fallback: '/ports/fallback.png'
-                                        }
-
-                                        return (
-                                            <Link
-                                                key={combo.id}
-                                                href={detailUrl}
-                                                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-200 hover:border-gray-300 block group"
-                                            >
-                                                <div className="p-5">
-                                                    {/* Components Grid */}
-                                                    <div className="grid grid-cols-4 gap-4 mb-4">
-                                                        {/* Camera */}
-                                                        <div className="flex flex-col">
-                                                            <div className="relative aspect-square bg-gray-50 rounded overflow-hidden mb-2">
-                                                                <HousingImage
-                                                                    src={cameraImageInfo.src}
-                                                                    fallback={cameraImageInfo.fallback}
-                                                                    alt={`${camera.brand.name} ${camera.name}`}
-                                                                    className="object-contain w-full h-full p-2"
-                                                                />
-                                                            </div>
-                                                            <div className="text-xs text-gray-500 mb-0.5">Camera</div>
-                                                            <div className="text-sm font-medium text-gray-900 line-clamp-2">
-                                                                {camera.brand.name} {camera.name}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Lens */}
-                                                        <div className="flex flex-col">
-                                                            <div className="relative aspect-square bg-gray-50 rounded overflow-hidden mb-2">
-                                                                <HousingImage
-                                                                    src={lensImageInfo.src}
-                                                                    fallback={lensImageInfo.fallback}
-                                                                    alt={lens.name}
-                                                                    className="object-contain w-full h-full p-2"
-                                                                />
-                                                            </div>
-                                                            <div className="text-xs text-gray-500 mb-0.5">Lens</div>
-                                                            <div className="text-sm font-medium text-gray-900 line-clamp-2">
-                                                                {lens.name}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Housing */}
-                                                        <div className="flex flex-col">
-                                                            <div className="relative aspect-square bg-gray-50 rounded overflow-hidden mb-2">
-                                                                <HousingImage
-                                                                    src={housingImageInfo.src}
-                                                                    fallback={housingImageInfo.fallback}
-                                                                    alt={housing.name}
-                                                                    className="object-contain w-full h-full p-2"
-                                                                />
-                                                            </div>
-                                                            <div className="text-xs text-gray-500 mb-0.5">Housing</div>
-                                                            <div className="text-sm font-medium text-gray-900 line-clamp-2">
-                                                                {housing.name}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Port */}
-                                                        <div className="flex flex-col">
-                                                            <div className="relative aspect-square bg-gray-50 rounded overflow-hidden mb-2">
-                                                                <HousingImage
-                                                                    src={portImageInfo.src}
-                                                                    fallback={portImageInfo.fallback}
-                                                                    alt={port.name}
-                                                                    className="object-contain w-full h-full p-2"
-                                                                />
-                                                            </div>
-                                                            <div className="text-xs text-gray-500 mb-0.5">Port</div>
-                                                            <div className="text-sm font-medium text-gray-900 line-clamp-2">
-                                                                {port.name}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Specs */}
-                                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100 text-sm text-gray-600">
-                                                        {housing.depthRating && (
-                                                            <div className="flex items-center gap-1">
-                                                                <span>{housing.depthRating}m</span>
-                                                            </div>
-                                                        )}
-                                                        {housing.material && (
-                                                            <div className="flex items-center gap-1">
-                                                                <span>{housing.material}</span>
-                                                            </div>
-                                                        )}
-                                                        {totalPrice > 0 && (
-                                                            <div className="font-semibold text-gray-900">
-                                                                ${totalPrice.toLocaleString()}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </Link>
-                                        )
-                                    })}
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                            <Link
+                                href={`/combinations/${filteredCombinations[0].camera.slug}/${filteredCombinations[0].lens.slug}/${filteredCombinations[0].housing.slug}/${filteredCombinations[0].port.id}`}
+                                className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+                            >
+                                View Full Details
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
