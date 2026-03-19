@@ -324,7 +324,9 @@ async function main() {
         data: {
             name: 'Iphone 14 Pro',
             slug: 'iphone-14-pro',
-            cameraManufacturerId: apple.id
+            cameraManufacturerId: apple.id,
+            interchangeableLens: false,
+            productPhotos: ['/cameras/iphone-14-pro.jpg']
         }
     })
 
@@ -369,7 +371,7 @@ async function main() {
     })
 
     // DiveVolk housings
-    await prisma.housing.create({
+    const housingDiveVolk = await prisma.housing.create({
         data: {
             name: 'SeaTouch 4 Pro',
             slug: 'seatouch-4',
@@ -380,6 +382,7 @@ async function main() {
             material: 'ABS Plastic',
             housingManufacturerId: divevolk.id,
             cameraId: iphone14Pro.id,
+            interchangeablePort: false,
             productPhotos: ['/housings/divevolk-seatouch-4-front.webp']
         }
     })
@@ -706,6 +709,154 @@ async function main() {
                 height: 854,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+            },
+            // iPhone 14 Pro photos through DiveVolk SeaTouch 4 Pro
+            {
+                imagePath: '/gallery/bobtail_squid.jpg',
+                width: 2028,
+                height: 2028,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/candy_crab.jpg',
+                width: 2534,
+                height: 2534,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/coconut_octopus.jpg',
+                width: 3603,
+                height: 2702,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/flamboyant_cuttlefish.jpg',
+                width: 2331,
+                height: 2331,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/ghost_pipefish.jpg',
+                width: 3024,
+                height: 4032,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/giant_frogfish.jpg',
+                width: 3024,
+                height: 4032,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/hairy_frogfish.jpg',
+                width: 2798,
+                height: 3730,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/hairy_lobster.jpg',
+                width: 1695,
+                height: 2260,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/nudi.jpg',
+                width: 4032,
+                height: 3024,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/nudi_cropped.jpg',
+                width: 5172,
+                height: 3879,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/nudibranch_eggs.jpg',
+                width: 3024,
+                height: 4032,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/nudibranch_trunicate.jpg',
+                width: 3024,
+                height: 4032,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/painted_frogfish.jpg',
+                width: 2588,
+                height: 3450,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/pano.jpg',
+                width: 11909,
+                height: 3730,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/pygmy_seahorse.jpg',
+                width: 4032,
+                height: 3024,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/shrimp.jpg',
+                width: 3024,
+                height: 3024,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/thresher.jpg',
+                width: 4320,
+                height: 7680,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/torch.jpg',
+                width: 3024,
+                height: 4032,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/turtle.jpg',
+                width: 6048,
+                height: 8064,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/wobbegong_drift_dive.jpg',
+                width: 8064,
+                height: 6048,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
+            },
+            {
+                imagePath: '/gallery/wobbegong_top.jpg',
+                width: 4914,
+                height: 6552,
+                cameraId: iphone14Pro.id,
+                housingId: housingDiveVolk.id,
             },
         ],
     })

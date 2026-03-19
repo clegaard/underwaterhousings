@@ -64,6 +64,7 @@ model Camera {
     galleryPhotos        GalleryPhoto[]
     // For simplicity, we can store product photos as an array of strings (URLs or file paths)
     productPhotos        String[]
+    interchangeableLens  Boolean            @default(true)
 
     @@map("cameras")
 }
