@@ -77,13 +77,12 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                             {housing.manufacturer.name}
                         </Link>
                         <span>→</span>
-                        <span className="text-gray-900 font-medium">{housing.model}</span>
+                        <span className="text-gray-900 font-medium">{housing.name}</span>
                     </nav>
 
                     <div className="flex justify-between items-start">
                         <div>
-                            <h1 className="text-4xl font-bold text-blue-900 mb-2">{housing.model}</h1>
-                            <h2 className="text-xl text-gray-700 mb-4">{housing.name}</h2>
+                            <h1 className="text-4xl font-bold text-blue-900 mb-2">{housing.name}</h1>
                             <div className="flex items-center gap-4">
                                 <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                                     {housing.manufacturer.name}
@@ -118,7 +117,7 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                             <h3 className="text-2xl font-bold text-gray-900 mb-4">Description</h3>
                             <p className="text-gray-700 leading-relaxed">
-                                {housing.description || `The ${housing.model} is a professional underwater housing designed for the ${housing.Camera?.brand.name} ${housing.Camera?.name}. This housing provides exceptional build quality and reliability for underwater photography enthusiasts and professionals.`}
+                                {housing.description || `The ${housing.name} is a professional underwater housing designed for the ${housing.Camera?.brand.name} ${housing.Camera?.name}. This housing provides exceptional build quality and reliability for underwater photography enthusiasts and professionals.`}
                             </p>
                         </div>
 
@@ -132,8 +131,8 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                                         <p className="text-gray-700">{housing.manufacturer.name}</p>
                                     </div>
                                     <div>
-                                        <h4 className="font-semibold text-gray-900 mb-1">Model</h4>
-                                        <p className="text-gray-700">{housing.model}</p>
+                                        <h4 className="font-semibold text-gray-900 mb-1">Name</h4>
+                                        <p className="text-gray-700">{housing.name}</p>
                                     </div>
                                     {housing.Camera && (
                                         <div>

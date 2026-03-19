@@ -7,6 +7,7 @@ async function main() {
     console.log('🌱 Seeding database...')
 
     // Clear existing data
+    await prisma.galleryPhoto.deleteMany()
     await prisma.port.deleteMany()
     await prisma.housingMount.deleteMany()
     await prisma.housing.deleteMany()
@@ -555,6 +556,139 @@ async function main() {
     })
 
 
+
+    // Gallery photos
+    await prisma.galleryPhoto.createMany({
+        data: [
+            {
+                imagePath: '/gallery/DSC01656.jpeg',
+                width: 1280,
+                height: 854,
+                cameraId: sonyA7RV.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                imagePath: '/gallery/DSC01728.jpeg',
+                width: 1280,
+                height: 854,
+                cameraId: sonyA7RV.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                imagePath: '/gallery/DSC01738.jpeg',
+                width: 1280,
+                height: 854,
+                cameraId: sonyA7RV.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                imagePath: '/gallery/DSC01881.jpeg',
+                width: 1280,
+                height: 1280,
+                cameraId: sonyA7RV.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                imagePath: '/gallery/DSC02017.jpeg',
+                width: 1280,
+                height: 854,
+                cameraId: sonyA7RV.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                imagePath: '/gallery/DSC02035.jpeg',
+                width: 854,
+                height: 1280,
+                cameraId: sonyA7RV.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                imagePath: '/gallery/DSC02155.jpeg',
+                width: 1280,
+                height: 854,
+                cameraId: sonyA7RV.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                imagePath: '/gallery/DSC02164.jpeg',
+                width: 1280,
+                height: 854,
+                cameraId: sonyA7RV.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                imagePath: '/gallery/DSC02174.jpeg',
+                width: 1280,
+                height: 854,
+                cameraId: sonyA7RV.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                imagePath: '/gallery/DSC02476.jpeg',
+                width: 1280,
+                height: 1280,
+                cameraId: sonyA7RV.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                imagePath: '/gallery/DSC02560.jpeg',
+                width: 1280,
+                height: 854,
+                cameraId: sonyA7RV.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                imagePath: '/gallery/DSC02640.jpeg',
+                width: 1280,
+                height: 1280,
+                cameraId: sonyA7RV.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                imagePath: '/gallery/DSC03346.jpeg',
+                width: 1280,
+                height: 854,
+                cameraId: sonyA7RV.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                imagePath: '/gallery/DSC03402.jpeg',
+                width: 1280,
+                height: 854,
+                cameraId: sonyA7RV.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                title: 'Nudibranch on coral',
+                description: 'A colorful nudibranch discovered on a reef dive',
+                imagePath: '/gallery/DSC06378.jpeg',
+                width: 1280,
+                height: 854,
+                location: 'Red Sea',
+                cameraId: sonyA7RV.id,
+                lensId: lensFE90MacroGOSS.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                title: 'Wide angle reef scene',
+                description: 'Expansive reef landscape with ambient light',
+                imagePath: '/gallery/DSC07814.jpeg',
+                width: 1280,
+                height: 854,
+                location: 'Red Sea',
+                cameraId: sonyA7RV.id,
+                lensId: lensFE24105F4GOSS.id,
+                housingId: housingA7RV.id,
+            },
+            {
+                imagePath: '/gallery/whale_shark.jpeg',
+                width: 1280,
+                height: 854,
+                cameraId: sonyA7RV.id,
+                housingId: housingA7RV.id,
+            },
+        ],
+    })
 
     console.log('✅ Database seeded successfully!')
 }

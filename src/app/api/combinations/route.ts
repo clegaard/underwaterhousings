@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
             port = housing.ports.find(p => p.id === parseInt(portId, 10))
         } else {
             // Find the first compatible port for this lens
-            port = housing.ports.find(p => p.lensId === lens.id)
+            port = housing.ports.find(p => p.lens.some(l => l.id === lens.id))
         }
 
         // Calculate combined pricing
@@ -121,7 +121,6 @@ export async function GET(request: NextRequest) {
                 housing: {
                     id: housing.id,
                     name: housing.name,
-                    model: housing.model,
                     slug: housing.slug,
                     manufacturer: housing.manufacturer.name,
                     manufacturerSlug: housing.manufacturer.slug,

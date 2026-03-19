@@ -133,7 +133,7 @@ export async function PUT(request: NextRequest) {
             where: {
                 slug,
                 cameraManufacturerId: cameraManufacturerId,
-                NOT: { id }
+                NOT: { id: parseInt(id) }
             }
         })
 
@@ -145,7 +145,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const camera = await prisma.camera.update({
-            where: { id },
+            where: { id: parseInt(id) },
             data: {
                 name,
                 slug,
@@ -181,7 +181,7 @@ export async function DELETE(request: NextRequest) {
 
         // Check if camera has any housings
         const housingCount = await prisma.housing.count({
-            where: { cameraId: id }
+            where: { cameraId: parseInt(id) }
         })
 
         if (housingCount > 0) {
@@ -193,7 +193,7 @@ export async function DELETE(request: NextRequest) {
 
         // Delete the camera
         await prisma.camera.delete({
-            where: { id }
+            where: { id: parseInt(id) }
         })
 
         return NextResponse.json({ message: 'Camera deleted successfully' })

@@ -611,7 +611,6 @@ function HousingsManagement({ housings, housingManufacturers, cameras, onDataUpd
     const [isAdding, setIsAdding] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
     const [formData, setFormData] = useState({
-        model: '',
         name: '',
         description: '',
         priceAmount: '',
@@ -624,7 +623,6 @@ function HousingsManagement({ housings, housingManufacturers, cameras, onDataUpd
 
     const resetForm = () => {
         setFormData({
-            model: '',
             name: '',
             description: '',
             priceAmount: '',
@@ -638,7 +636,6 @@ function HousingsManagement({ housings, housingManufacturers, cameras, onDataUpd
 
     const startEdit = (housing: any) => {
         setFormData({
-            model: housing.model || '',
             name: housing.name || '',
             description: housing.description || '',
             priceAmount: housing.priceAmount?.toString() || '',
@@ -735,16 +732,6 @@ function HousingsManagement({ housings, housingManufacturers, cameras, onDataUpd
                     </h3>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
-                                <input
-                                    type="text"
-                                    value={formData.model}
-                                    onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                />
-                            </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                                 <input
@@ -876,8 +863,7 @@ function HousingsManagement({ housings, housingManufacturers, cameras, onDataUpd
                     <div key={housing.id} className="p-4 border border-gray-200 rounded-lg">
                         <div className="flex justify-between items-start">
                             <div className="flex-1">
-                                <h3 className="font-medium text-gray-900">{housing.model}</h3>
-                                <p className="text-sm text-gray-600 mt-1">{housing.name}</p>
+                                <h3 className="font-medium text-gray-900">{housing.name}</h3>
                                 <div className="flex space-x-4 mt-2 text-xs text-gray-500">
                                     <span>Manufacturer: {housing.manufacturer?.name}</span>
                                     <span>Camera: {housing.Camera?.brand?.name} {housing.Camera?.name}</span>

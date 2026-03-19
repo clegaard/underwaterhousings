@@ -182,10 +182,7 @@ export default async function CombinationPage({ params }: CombinationPageProps) 
                                     <div className="border-l-4 border-purple-500 pl-4">
                                         <div className="text-sm text-gray-600 mb-1">🏠 Underwater Housing</div>
                                         <div className="text-lg font-semibold text-gray-900">
-                                            {combination.housing.manufacturer} {combination.housing.model}
-                                        </div>
-                                        <div className="text-sm text-gray-500">
-                                            {combination.housing.name}
+                                            {combination.housing.manufacturer} {combination.housing.name}
                                         </div>
                                         <div className="flex gap-4 mt-2 text-sm">
                                             <span className="text-gray-600">

@@ -101,7 +101,7 @@ export async function PUT(request: NextRequest) {
         const existingManufacturer = await prisma.housingManufacturer.findFirst({
             where: {
                 slug,
-                NOT: { id }
+                NOT: { id: parseInt(id) }
             }
         })
 
@@ -113,7 +113,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const manufacturer = await prisma.housingManufacturer.update({
-            where: { id },
+            where: { id: parseInt(id) },
             data: {
                 name,
                 slug,
@@ -146,7 +146,7 @@ export async function DELETE(request: NextRequest) {
 
         // Check if manufacturer has any housings
         const housingCount = await prisma.housing.count({
-            where: { housingManufacturerId: id }
+            where: { housingManufacturerId: parseInt(id) }
         })
 
         if (housingCount > 0) {
@@ -158,7 +158,7 @@ export async function DELETE(request: NextRequest) {
 
         // Delete the manufacturer
         await prisma.housingManufacturer.delete({
-            where: { id }
+            where: { id: parseInt(id) }
         })
 
         return NextResponse.json({ message: 'Manufacturer deleted successfully' })

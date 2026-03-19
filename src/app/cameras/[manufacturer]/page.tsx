@@ -110,7 +110,7 @@ export default async function CameraManufacturerPage({ params }: CameraManufactu
                                                             >
                                                                 <div className="flex justify-between items-center">
                                                                     <div>
-                                                                        <div className="font-medium text-gray-900">{housing.model}</div>
+                                                                        <div className="font-medium text-gray-900">{housing.name}</div>
                                                                         <div className="text-sm text-gray-600">{housing.manufacturer.name}</div>
                                                                     </div>
                                                                     {housing.priceAmount && (

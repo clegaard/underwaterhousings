@@ -26,7 +26,7 @@ async function getManufacturerHousings(manufacturerSlug: string) {
                         }
                     },
                     orderBy: {
-                        model: 'asc'
+                        name: 'asc'
                     }
                 }
             }
@@ -119,7 +119,7 @@ export default async function ManufacturerPage({ params }: ManufacturerPageProps
                                         <div className="p-6">
                                             <div className="flex justify-between items-start mb-3">
                                                 <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
-                                                    {housing.model}
+                                                    {housing.name}
                                                 </h3>
                                                 {housing.Camera && (
                                                     <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">

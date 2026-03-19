@@ -25,7 +25,7 @@ async function getAdminData() {
                         }
                     }
                 },
-                orderBy: { model: 'asc' }
+                orderBy: { name: 'asc' }
             })
         ])
 

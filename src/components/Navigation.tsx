@@ -147,6 +147,13 @@ export default function Navigation({ manufacturers, cameraManufacturers }: Navig
                             )}
                         </div>
 
+                        <Link
+                            href="/gallery"
+                            className="text-gray-700 hover:text-blue-900 transition-colors font-medium"
+                        >
+                            Gallery
+                        </Link>
+
                         {/* Additional nav items can be added here */}
                         <Link
                             href="/about"

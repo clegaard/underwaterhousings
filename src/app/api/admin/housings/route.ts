@@ -23,7 +23,7 @@ export async function GET() {
                     }
                 }
             },
-            orderBy: { model: 'asc' }
+            orderBy: { name: 'asc' }
         })
         return NextResponse.json(housings)
     } catch (error) {
@@ -40,7 +40,6 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
         const {
-            model,
             name,
             description,
             priceAmount,
@@ -51,7 +50,7 @@ export async function POST(request: NextRequest) {
             cameraId
         } = body
 
-        if (!model || !name || !housingManufacturerId || !cameraId) {
+        if (!name || !housingManufacturerId || !cameraId) {
             return NextResponse.json(
                 { error: 'Model, name, housing manufacturer, and camera are required' },
                 { status: 400 }
@@ -102,7 +101,6 @@ export async function POST(request: NextRequest) {
 
         const housing = await prisma.housing.create({
             data: {
-                model,
                 name,
                 slug,
                 description: description || null,
@@ -148,7 +146,6 @@ export async function PUT(request: NextRequest) {
 
         const body = await request.json()
         const {
-            model,
             name,
             description,
             priceAmount,
@@ -160,7 +157,7 @@ export async function PUT(request: NextRequest) {
         } = body
 
         // Validate required fields
-        if (!model || !name || !housingManufacturerId || !cameraId) {
+        if (!name || !housingManufacturerId || !cameraId) {
             return NextResponse.json(
                 { error: 'Model, name, housing manufacturer, and camera are required' },
                 { status: 400 }
@@ -198,7 +195,7 @@ export async function PUT(request: NextRequest) {
             where: {
                 slug,
                 housingManufacturerId,
-                NOT: { id }
+                NOT: { id: parseInt(id) }
             }
         })
 
@@ -210,9 +207,8 @@ export async function PUT(request: NextRequest) {
         }
 
         const housing = await prisma.housing.update({
-            where: { id },
+            where: { id: parseInt(id) },
             data: {
-                model,
                 name,
                 slug,
                 description: description || null,
@@ -258,7 +254,7 @@ export async function DELETE(request: NextRequest) {
 
         // Delete the housing (no dependent checks needed as housing is typically a leaf entity)
         await prisma.housing.delete({
-            where: { id }
+            where: { id: parseInt(id) }
         })
 
         return NextResponse.json({ message: 'Housing deleted successfully' })

@@ -100,7 +100,7 @@ export async function PUT(request: NextRequest) {
         const existingManufacturer = await prisma.cameraManufacturer.findFirst({
             where: {
                 slug,
-                NOT: { id }
+                NOT: { id: parseInt(id) }
             }
         })
 
@@ -112,7 +112,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const manufacturer = await prisma.cameraManufacturer.update({
-            where: { id },
+            where: { id: parseInt(id) },
             data: {
                 name,
                 slug
@@ -144,7 +144,7 @@ export async function DELETE(request: NextRequest) {
 
         // Check if manufacturer has any cameras
         const cameraCount = await prisma.camera.count({
-            where: { cameraManufacturerId: id }
+            where: { cameraManufacturerId: parseInt(id) }
         })
 
         if (cameraCount > 0) {
@@ -156,7 +156,7 @@ export async function DELETE(request: NextRequest) {
 
         // Delete the manufacturer
         await prisma.cameraManufacturer.delete({
-            where: { id }
+            where: { id: parseInt(id) }
         })
 
         return NextResponse.json({ message: 'Manufacturer deleted successfully' })
