@@ -184,6 +184,12 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                                 >
                                     View All {housing.manufacturer.name} Housings
                                 </Link>
+                                <Link
+                                    href={`/gallery?housing=${params.housing}`}
+                                    className="w-full bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-center block"
+                                >
+                                    📷 View Photos
+                                </Link>
                             </div>
                         </div>
 

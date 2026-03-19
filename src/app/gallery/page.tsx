@@ -30,10 +30,13 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
             cameraName: photo.camera
                 ? `${photo.camera.brand.name} ${photo.camera.name}`
                 : undefined,
+            cameraSlug: photo.camera?.slug ?? undefined,
             lensName: photo.lens?.name ?? undefined,
+            lensSlug: photo.lens?.slug ?? undefined,
             housingName: photo.housing
                 ? `${photo.housing.manufacturer.name} ${photo.housing.name}`
                 : undefined,
+            housingSlug: photo.housing?.slug ?? undefined,
             portName: photo.port?.name ?? undefined,
         }))
     } catch (error) {
@@ -42,7 +45,11 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
     }
 }
 
-export default async function GalleryPage() {
+export default async function GalleryPage({
+    searchParams,
+}: {
+    searchParams: { camera?: string; lens?: string; housing?: string }
+}) {
     const photos = await getGalleryPhotos()
 
     return (
@@ -54,7 +61,12 @@ export default async function GalleryPage() {
                         Photos taken with different combinations of camera bodies, lenses, housings, and ports.
                     </p>
                 </div>
-                <GalleryPageClient photos={photos} />
+                <GalleryPageClient
+                    photos={photos}
+                    initialCameraSlug={searchParams.camera}
+                    initialLensSlug={searchParams.lens}
+                    initialHousingSlug={searchParams.housing}
+                />
             </div>
         </main>
     )

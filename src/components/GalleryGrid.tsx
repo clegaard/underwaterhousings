@@ -11,8 +11,11 @@ export interface GalleryPhotoData extends Photo {
     location?: string
     takenAt?: string
     cameraName?: string
+    cameraSlug?: string
     lensName?: string
+    lensSlug?: string
     housingName?: string
+    housingSlug?: string
     portName?: string
 }
 

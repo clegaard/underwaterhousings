@@ -5,12 +5,26 @@ import GalleryGrid, { GalleryPhotoData } from './GalleryGrid'
 
 interface GalleryPageClientProps {
     photos: GalleryPhotoData[]
+    initialCameraSlug?: string
+    initialLensSlug?: string
+    initialHousingSlug?: string
 }
 
-export default function GalleryPageClient({ photos }: GalleryPageClientProps) {
-    const [camera, setCamera] = useState('')
-    const [lens, setLens] = useState('')
-    const [housing, setHousing] = useState('')
+export default function GalleryPageClient({ photos, initialCameraSlug, initialLensSlug, initialHousingSlug }: GalleryPageClientProps) {
+    // Resolve slug → display name for initial state
+    const initialCamera = initialCameraSlug
+        ? (photos.find((p) => p.cameraSlug === initialCameraSlug)?.cameraName ?? '')
+        : ''
+    const initialLens = initialLensSlug
+        ? (photos.find((p) => p.lensSlug === initialLensSlug)?.lensName ?? '')
+        : ''
+    const initialHousing = initialHousingSlug
+        ? (photos.find((p) => p.housingSlug === initialHousingSlug)?.housingName ?? '')
+        : ''
+
+    const [camera, setCamera] = useState(initialCamera)
+    const [lens, setLens] = useState(initialLens)
+    const [housing, setHousing] = useState(initialHousing)
     const [port, setPort] = useState('')
 
     // Derive unique options from all photos (sorted)
