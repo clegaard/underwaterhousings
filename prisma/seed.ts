@@ -589,6 +589,9 @@ async function main() {
                 height: 854,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+                focalLength: 47,
+                aperture: 16,
+                shutterSpeed: '1/200',
             },
             {
                 imagePath: '/gallery/DSC01728.jpeg',
@@ -596,6 +599,9 @@ async function main() {
                 height: 854,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+                focalLength: 70,
+                aperture: 13,
+                shutterSpeed: '1/200',
             },
             {
                 imagePath: '/gallery/DSC01738.jpeg',
@@ -603,6 +609,9 @@ async function main() {
                 height: 854,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+                focalLength: 70,
+                aperture: 11,
+                shutterSpeed: '1/200',
             },
             {
                 imagePath: '/gallery/DSC01881.jpeg',
@@ -610,6 +619,9 @@ async function main() {
                 height: 1280,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+                focalLength: 70,
+                aperture: 3.2,
+                shutterSpeed: '1/200',
             },
             {
                 imagePath: '/gallery/DSC02017.jpeg',
@@ -617,6 +629,9 @@ async function main() {
                 height: 854,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+                focalLength: 70,
+                aperture: 14,
+                shutterSpeed: '1/60',
             },
             {
                 imagePath: '/gallery/DSC02035.jpeg',
@@ -624,6 +639,9 @@ async function main() {
                 height: 1280,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+                focalLength: 70,
+                aperture: 10,
+                shutterSpeed: '1/60',
             },
             {
                 imagePath: '/gallery/DSC02155.jpeg',
@@ -631,6 +649,9 @@ async function main() {
                 height: 854,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+                focalLength: 53,
+                aperture: 9,
+                shutterSpeed: '1/200',
             },
             {
                 imagePath: '/gallery/DSC02164.jpeg',
@@ -638,6 +659,9 @@ async function main() {
                 height: 854,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+                focalLength: 30,
+                aperture: 14,
+                shutterSpeed: '1/160',
             },
             {
                 imagePath: '/gallery/DSC02174.jpeg',
@@ -645,6 +669,9 @@ async function main() {
                 height: 854,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+                focalLength: 40,
+                aperture: 6.3,
+                shutterSpeed: '1/200',
             },
             {
                 imagePath: '/gallery/DSC02476.jpeg',
@@ -652,6 +679,9 @@ async function main() {
                 height: 1280,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+                focalLength: 27,
+                aperture: 8,
+                shutterSpeed: '1/60',
             },
             {
                 imagePath: '/gallery/DSC02560.jpeg',
@@ -659,6 +689,9 @@ async function main() {
                 height: 854,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+                focalLength: 24,
+                aperture: 8,
+                shutterSpeed: '1/100',
             },
             {
                 imagePath: '/gallery/DSC02640.jpeg',
@@ -666,6 +699,9 @@ async function main() {
                 height: 1280,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+                focalLength: 24,
+                aperture: 18,
+                shutterSpeed: '1/200',
             },
             {
                 imagePath: '/gallery/DSC03346.jpeg',
@@ -673,6 +709,9 @@ async function main() {
                 height: 854,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+                focalLength: 53,
+                aperture: 16,
+                shutterSpeed: '1/100',
             },
             {
                 imagePath: '/gallery/DSC03402.jpeg',
@@ -680,6 +719,9 @@ async function main() {
                 height: 854,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+                focalLength: 24,
+                aperture: 4.5,
+                shutterSpeed: '1/200',
             },
             {
                 title: 'Nudibranch on coral',
@@ -691,6 +733,9 @@ async function main() {
                 cameraId: sonyA7RV.id,
                 lensId: lensFE90MacroGOSS.id,
                 housingId: housingA7RV.id,
+                focalLength: 24,
+                aperture: 4,
+                shutterSpeed: '1/640',
             },
             {
                 title: 'Wide angle reef scene',
@@ -702,6 +747,9 @@ async function main() {
                 cameraId: sonyA7RV.id,
                 lensId: lensFE24105F4GOSS.id,
                 housingId: housingA7RV.id,
+                focalLength: 70,
+                aperture: 4,
+                shutterSpeed: '1/160',
             },
             {
                 imagePath: '/gallery/whale_shark.jpeg',
@@ -709,6 +757,9 @@ async function main() {
                 height: 854,
                 cameraId: sonyA7RV.id,
                 housingId: housingA7RV.id,
+                focalLength: 24,
+                aperture: 4.5,
+                shutterSpeed: '1/200',
             },
             // iPhone 14 Pro photos through DiveVolk SeaTouch 4 Pro
             {
@@ -717,6 +768,9 @@ async function main() {
                 height: 2028,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/540',
             },
             {
                 imagePath: '/gallery/candy_crab.jpg',
@@ -724,6 +778,9 @@ async function main() {
                 height: 2534,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/160',
             },
             {
                 imagePath: '/gallery/coconut_octopus.jpg',
@@ -731,6 +788,9 @@ async function main() {
                 height: 2702,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/430',
             },
             {
                 imagePath: '/gallery/flamboyant_cuttlefish.jpg',
@@ -738,6 +798,9 @@ async function main() {
                 height: 2331,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/250',
             },
             {
                 imagePath: '/gallery/ghost_pipefish.jpg',
@@ -745,6 +808,9 @@ async function main() {
                 height: 4032,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/100',
             },
             {
                 imagePath: '/gallery/giant_frogfish.jpg',
@@ -752,6 +818,9 @@ async function main() {
                 height: 4032,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/290',
             },
             {
                 imagePath: '/gallery/hairy_frogfish.jpg',
@@ -759,6 +828,9 @@ async function main() {
                 height: 3730,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/100',
             },
             {
                 imagePath: '/gallery/hairy_lobster.jpg',
@@ -766,6 +838,9 @@ async function main() {
                 height: 2260,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/670',
             },
             {
                 imagePath: '/gallery/nudi.jpg',
@@ -773,6 +848,9 @@ async function main() {
                 height: 3024,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/200',
             },
             {
                 imagePath: '/gallery/nudi_cropped.jpg',
@@ -780,6 +858,9 @@ async function main() {
                 height: 3879,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/200',
             },
             {
                 imagePath: '/gallery/nudibranch_eggs.jpg',
@@ -787,6 +868,9 @@ async function main() {
                 height: 4032,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/530',
             },
             {
                 imagePath: '/gallery/nudibranch_trunicate.jpg',
@@ -794,6 +878,9 @@ async function main() {
                 height: 4032,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/470',
             },
             {
                 imagePath: '/gallery/painted_frogfish.jpg',
@@ -801,6 +888,9 @@ async function main() {
                 height: 3450,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/100',
             },
             {
                 imagePath: '/gallery/pano.jpg',
@@ -808,6 +898,9 @@ async function main() {
                 height: 3730,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 6.9,
+                aperture: 1.8,
+                shutterSpeed: '1/900',
             },
             {
                 imagePath: '/gallery/pygmy_seahorse.jpg',
@@ -815,6 +908,9 @@ async function main() {
                 height: 3024,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/560',
             },
             {
                 imagePath: '/gallery/shrimp.jpg',
@@ -822,6 +918,9 @@ async function main() {
                 height: 3024,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/800',
             },
             {
                 imagePath: '/gallery/thresher.jpg',
@@ -836,6 +935,9 @@ async function main() {
                 height: 4032,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 2.2,
+                aperture: 2.2,
+                shutterSpeed: '1/200',
             },
             {
                 imagePath: '/gallery/turtle.jpg',
@@ -843,6 +945,9 @@ async function main() {
                 height: 8064,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 6.9,
+                aperture: 1.8,
+                shutterSpeed: '1/60',
             },
             {
                 imagePath: '/gallery/wobbegong_drift_dive.jpg',
@@ -850,6 +955,9 @@ async function main() {
                 height: 6048,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 6.9,
+                aperture: 1.8,
+                shutterSpeed: '1/120',
             },
             {
                 imagePath: '/gallery/wobbegong_top.jpg',
@@ -857,6 +965,9 @@ async function main() {
                 height: 6552,
                 cameraId: iphone14Pro.id,
                 housingId: housingDiveVolk.id,
+                focalLength: 6.9,
+                aperture: 1.8,
+                shutterSpeed: '1/170',
             },
         ],
     })

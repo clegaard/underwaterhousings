@@ -39,6 +39,9 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
                 : undefined,
             housingSlug: photo.housing?.slug ?? undefined,
             portName: photo.port?.name ?? undefined,
+            focalLength: photo.focalLength ?? undefined,
+            shutterSpeed: photo.shutterSpeed ?? undefined,
+            aperture: photo.aperture ?? undefined,
         }))
     } catch (error) {
         console.error('Error fetching gallery photos:', error)

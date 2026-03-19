@@ -87,6 +87,7 @@ model Housing {
     ports                 Port[]
     galleryPhotos         GalleryPhoto[]
     productPhotos         String[]
+    interchangeablePort   Boolean             @default(true)
 
     @@map("housings")
 }
@@ -126,15 +127,18 @@ model Lens {
 // ============================= PHOTO GALLERY =============================
 
 model GalleryPhoto {
-    id          Int       @id @default(autoincrement())
-    title       String?
-    description String?
-    imagePath   String
-    width       Int
-    height      Int
-    takenAt     DateTime?
-    location    String?
-    createdAt   DateTime  @default(now())
+    id           Int       @id @default(autoincrement())
+    title        String?
+    description  String?
+    imagePath    String
+    width        Int
+    height       Int
+    takenAt      DateTime?
+    location     String?
+    focalLength  Float?
+    shutterSpeed String?
+    aperture     Float?
+    createdAt    DateTime  @default(now())
 
     camera    Camera?  @relation(fields: [cameraId], references: [id])
     cameraId  Int?
