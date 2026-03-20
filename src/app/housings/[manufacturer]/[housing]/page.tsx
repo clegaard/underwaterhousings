@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import Image from 'next/image'
 import { HousingImage } from '@/components/HousingImage'
 import ImageGallery from '@/components/ImageGallery'
 import { getAllHousingImages } from '@/lib/images'
@@ -60,177 +61,222 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
         priceAmount: housing.priceAmount ? Number(housing.priceAmount) : null
     }
 
+    const galleryPhotos = await prisma.galleryPhoto.findMany({
+        where: { cameraRig: { housingId: housing.id } },
+        orderBy: { takenAt: 'desc' },
+        take: 12,
+    })
+
     return (
-        <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
-            {/* Header */}
-            <div className="bg-white shadow-sm border-b">
-                <div className="max-w-4xl mx-auto px-4 py-6">
-                    <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-                        <Link href="/" className="hover:text-blue-600 transition-colors">
-                            Home
-                        </Link>
-                        <span>→</span>
-                        <Link
-                            href={`/housings/${params.manufacturer}`}
-                            className="hover:text-blue-600 transition-colors capitalize"
-                        >
-                            {housing.manufacturer.name}
-                        </Link>
-                        <span>→</span>
-                        <span className="text-gray-900 font-medium">{housing.name}</span>
-                    </nav>
+        <>
+            <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+                {/* Header */}
+                <div className="bg-white shadow-sm border-b">
+                    <div className="max-w-4xl mx-auto px-4 py-6">
+                        <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+                            <Link href="/" className="hover:text-blue-600 transition-colors">
+                                Home
+                            </Link>
+                            <span>→</span>
+                            <Link
+                                href={`/housings/${params.manufacturer}`}
+                                className="hover:text-blue-600 transition-colors capitalize"
+                            >
+                                {housing.manufacturer.name}
+                            </Link>
+                            <span>→</span>
+                            <span className="text-gray-900 font-medium">{housing.name}</span>
+                        </nav>
 
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <h1 className="text-4xl font-bold text-blue-900 mb-2">{housing.name}</h1>
-                            <div className="flex items-center gap-4">
-                                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                                    {housing.manufacturer.name}
-                                </span>
-                                {housing.Camera && (
-                                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                                        {housing.Camera.brand.name} {housing.Camera.name}
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h1 className="text-4xl font-bold text-blue-900 mb-2">{housing.name}</h1>
+                                <div className="flex items-center gap-4">
+                                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                                        {housing.manufacturer.name}
                                     </span>
-                                )}
-                            </div>
-                        </div>
-                        {housing.priceAmount && (
-                            <div className="text-right">
-                                <div className="text-3xl font-bold text-green-600">
-                                    ${Number(housing.priceAmount).toLocaleString()}
-                                </div>
-                                <div className="text-sm text-gray-600">{housing.priceCurrency}</div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* Content */}
-            <div className="max-w-4xl mx-auto px-4 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Main Content */}
-                    <div className="lg:col-span-2">
-                        {/* Housing Images Gallery */}
-                        <ImageGallery images={housingImages} />
-
-                        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-4">Description</h3>
-                            <p className="text-gray-700 leading-relaxed">
-                                {housing.description || `The ${housing.name} is a professional underwater housing designed for the ${housing.Camera?.brand.name} ${housing.Camera?.name}. This housing provides exceptional build quality and reliability for underwater photography enthusiasts and professionals.`}
-                            </p>
-                        </div>
-
-                        {/* Specifications */}
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-4">Specifications</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                    <div>
-                                        <h4 className="font-semibold text-gray-900 mb-1">Manufacturer</h4>
-                                        <p className="text-gray-700">{housing.manufacturer.name}</p>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold text-gray-900 mb-1">Name</h4>
-                                        <p className="text-gray-700">{housing.name}</p>
-                                    </div>
                                     {housing.Camera && (
-                                        <div>
-                                            <h4 className="font-semibold text-gray-900 mb-1">Compatible Camera</h4>
-                                            <p className="text-gray-700">{housing.Camera.brand.name} {housing.Camera.name}</p>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="space-y-4">
-                                    {housing.depthRating && (
-                                        <div>
-                                            <h4 className="font-semibold text-gray-900 mb-1">Depth Rating</h4>
-                                            <p className="text-gray-700">{housing.depthRating}m</p>
-                                        </div>
-                                    )}
-                                    {housing.material && (
-                                        <div>
-                                            <h4 className="font-semibold text-gray-900 mb-1">Material</h4>
-                                            <p className="text-gray-700">{housing.material}</p>
-                                        </div>
-                                    )}
-                                    {housing.priceAmount && (
-                                        <div>
-                                            <h4 className="font-semibold text-gray-900 mb-1">Price</h4>
-                                            <p className="text-gray-700">
-                                                ${Number(housing.priceAmount).toLocaleString()} {housing.priceCurrency}
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Sidebar */}
-                    <div className="space-y-6">
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
-                            <div className="space-y-3">
-                                <Link
-                                    href="/"
-                                    className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center block"
-                                >
-                                    ← Back to Search
-                                </Link>
-                                <Link
-                                    href={`/${params.manufacturer}`}
-                                    className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors text-center block"
-                                >
-                                    View All {housing.manufacturer.name} Housings
-                                </Link>
-                                <Link
-                                    href={`/gallery?housing=${params.housing}`}
-                                    className="w-full bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-center block"
-                                >
-                                    📷 View Photos
-                                </Link>
-                            </div>
-                        </div>
-
-                        {housing.Camera && (
-                            <div className="bg-white rounded-lg shadow-sm p-6">
-                                <h3 className="text-lg font-bold text-gray-900 mb-4">Camera Compatibility</h3>
-                                <div className="space-y-2">
-                                    <div className="flex items-center space-x-2">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                        <span className="text-sm text-gray-700">
+                                        <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                                             {housing.Camera.brand.name} {housing.Camera.name}
                                         </span>
+                                    )}
+                                </div>
+                            </div>
+                            {housing.priceAmount && (
+                                <div className="text-right">
+                                    <div className="text-3xl font-bold text-green-600">
+                                        ${Number(housing.priceAmount).toLocaleString()}
+                                    </div>
+                                    <div className="text-sm text-gray-600">{housing.priceCurrency}</div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Content */}
+                <div className="max-w-4xl mx-auto px-4 py-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* Main Content */}
+                        <div className="lg:col-span-2">
+                            {/* Housing Images Gallery */}
+                            <ImageGallery images={housingImages} />
+
+                            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                                <h3 className="text-2xl font-bold text-gray-900 mb-4">Description</h3>
+                                <p className="text-gray-700 leading-relaxed">
+                                    {housing.description || `The ${housing.name} is a professional underwater housing designed for the ${housing.Camera?.brand.name} ${housing.Camera?.name}. This housing provides exceptional build quality and reliability for underwater photography enthusiasts and professionals.`}
+                                </p>
+                            </div>
+
+                            {/* Specifications */}
+                            <div className="bg-white rounded-lg shadow-sm p-6">
+                                <h3 className="text-2xl font-bold text-gray-900 mb-4">Specifications</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900 mb-1">Manufacturer</h4>
+                                            <p className="text-gray-700">{housing.manufacturer.name}</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900 mb-1">Name</h4>
+                                            <p className="text-gray-700">{housing.name}</p>
+                                        </div>
+                                        {housing.Camera && (
+                                            <div>
+                                                <h4 className="font-semibold text-gray-900 mb-1">Compatible Camera</h4>
+                                                <p className="text-gray-700">{housing.Camera.brand.name} {housing.Camera.name}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="space-y-4">
+                                        {housing.depthRating && (
+                                            <div>
+                                                <h4 className="font-semibold text-gray-900 mb-1">Depth Rating</h4>
+                                                <p className="text-gray-700">{housing.depthRating}m</p>
+                                            </div>
+                                        )}
+                                        {housing.material && (
+                                            <div>
+                                                <h4 className="font-semibold text-gray-900 mb-1">Material</h4>
+                                                <p className="text-gray-700">{housing.material}</p>
+                                            </div>
+                                        )}
+                                        {housing.priceAmount && (
+                                            <div>
+                                                <h4 className="font-semibold text-gray-900 mb-1">Price</h4>
+                                                <p className="text-gray-700">
+                                                    ${Number(housing.priceAmount).toLocaleString()} {housing.priceCurrency}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
-                        )}
+                        </div>
 
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">Key Features</h3>
-                            <ul className="space-y-2 text-sm text-gray-700">
-                                <li className="flex items-start space-x-2">
-                                    <span className="text-green-500 mt-1">✓</span>
-                                    <span>Professional grade construction</span>
-                                </li>
-                                <li className="flex items-start space-x-2">
-                                    <span className="text-green-500 mt-1">✓</span>
-                                    <span>Precision machined controls</span>
-                                </li>
-                                <li className="flex items-start space-x-2">
-                                    <span className="text-green-500 mt-1">✓</span>
-                                    <span>Reliable sealing system</span>
-                                </li>
-                                <li className="flex items-start space-x-2">
-                                    <span className="text-green-500 mt-1">✓</span>
-                                    <span>Compatible with accessories</span>
-                                </li>
-                            </ul>
+                        {/* Sidebar */}
+                        <div className="space-y-6">
+                            <div className="bg-white rounded-lg shadow-sm p-6">
+                                <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
+                                <div className="space-y-3">
+                                    <Link
+                                        href="/"
+                                        className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center block"
+                                    >
+                                        ← Back to Search
+                                    </Link>
+                                    <Link
+                                        href={`/${params.manufacturer}`}
+                                        className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors text-center block"
+                                    >
+                                        View All {housing.manufacturer.name} Housings
+                                    </Link>
+                                    <Link
+                                        href={`/gallery?housing=${params.housing}`}
+                                        className="w-full bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-center block"
+                                    >
+                                        📷 View Photos
+                                    </Link>
+                                </div>
+                            </div>
+
+                            {housing.Camera && (
+                                <div className="bg-white rounded-lg shadow-sm p-6">
+                                    <h3 className="text-lg font-bold text-gray-900 mb-4">Camera Compatibility</h3>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center space-x-2">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                            <span className="text-sm text-gray-700">
+                                                {housing.Camera.brand.name} {housing.Camera.name}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="bg-white rounded-lg shadow-sm p-6">
+                                <h3 className="text-lg font-bold text-gray-900 mb-4">Key Features</h3>
+                                <ul className="space-y-2 text-sm text-gray-700">
+                                    <li className="flex items-start space-x-2">
+                                        <span className="text-green-500 mt-1">✓</span>
+                                        <span>Professional grade construction</span>
+                                    </li>
+                                    <li className="flex items-start space-x-2">
+                                        <span className="text-green-500 mt-1">✓</span>
+                                        <span>Precision machined controls</span>
+                                    </li>
+                                    <li className="flex items-start space-x-2">
+                                        <span className="text-green-500 mt-1">✓</span>
+                                        <span>Reliable sealing system</span>
+                                    </li>
+                                    <li className="flex items-start space-x-2">
+                                        <span className="text-green-500 mt-1">✓</span>
+                                        <span>Compatible with accessories</span>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            {/* Gallery */}
+            {galleryPhotos.length > 0 && (
+                <div className="max-w-4xl mx-auto px-4 pb-8">
+                    <div className="bg-white rounded-lg shadow-lg p-8">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Photos taken with this housing</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {galleryPhotos.map((photo) => (
+                                <div key={photo.id} className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                                    <Image
+                                        src={photo.imagePath}
+                                        alt={photo.title ?? photo.description ?? 'Gallery photo'}
+                                        fill
+                                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                    />
+                                    {(photo.title || photo.location) && (
+                                        <div className="absolute inset-x-0 bottom-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-2 py-1.5">
+                                            {photo.title && (
+                                                <p className="text-white text-xs font-medium truncate">{photo.title}</p>
+                                            )}
+                                            {photo.location && (
+                                                <p className="text-gray-300 text-xs">📍 {photo.location}</p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-4 text-right">
+                            <Link href={`/gallery?housing=${housing.slug}`} className="text-sm text-blue-600 hover:text-blue-800">
+                                View all photos in gallery →
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     )
 }

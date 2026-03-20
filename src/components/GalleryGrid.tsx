@@ -12,7 +12,6 @@ export interface GalleryPhotoData extends Photo {
     description?: string
     location?: string
     takenAt?: string
-    cameraRigId?: number
     rigLabel?: string
     cameraName?: string
     cameraSlug?: string
@@ -21,6 +20,7 @@ export interface GalleryPhotoData extends Photo {
     housingName?: string
     housingSlug?: string
     portName?: string
+    portSlug?: string
     focalLength?: number
     shutterSpeed?: string
     aperture?: number
@@ -93,9 +93,14 @@ export default function GalleryGrid({ photos }: GalleryGridProps) {
                                     <p className="text-white text-xs font-medium leading-tight mb-1 truncate">{photo.title}</p>
                                 )}
                                 <div className="flex items-center justify-between gap-2">
-                                    {photo.rigLabel && photo.cameraRigId ? (
+                                    {photo.rigLabel && photo.cameraSlug && photo.housingSlug ? (
                                         <Link
-                                            href={`/rigs/${photo.cameraRigId}`}
+                                            href={`/rigs?${new URLSearchParams({
+                                                camera: photo.cameraSlug,
+                                                housing: photo.housingSlug,
+                                                ...(photo.lensSlug ? { lens: photo.lensSlug } : {}),
+                                                ...(photo.portSlug ? { port: photo.portSlug } : {}),
+                                            }).toString()}`}
                                             onClick={(e) => e.stopPropagation()}
                                             className="text-gray-300 text-xs hover:text-white transition-colors truncate"
                                         >
@@ -152,9 +157,14 @@ export default function GalleryGrid({ photos }: GalleryGridProps) {
                         <div className="w-full bg-black rounded-b-lg px-4 py-2.5 flex flex-col gap-1 shadow-2xl">
                             <div className="flex items-center justify-between gap-4">
                                 {/* Rig link */}
-                                {photos[lightboxIndex].rigLabel && photos[lightboxIndex].cameraRigId ? (
+                                {photos[lightboxIndex].rigLabel && photos[lightboxIndex].cameraSlug && photos[lightboxIndex].housingSlug ? (
                                     <Link
-                                        href={`/rigs/${photos[lightboxIndex].cameraRigId}`}
+                                        href={`/rigs?${new URLSearchParams({
+                                            camera: photos[lightboxIndex].cameraSlug!,
+                                            housing: photos[lightboxIndex].housingSlug!,
+                                            ...(photos[lightboxIndex].lensSlug ? { lens: photos[lightboxIndex].lensSlug! } : {}),
+                                            ...(photos[lightboxIndex].portSlug ? { port: photos[lightboxIndex].portSlug! } : {}),
+                                        }).toString()}`}
                                         onClick={(e) => e.stopPropagation()}
                                         className="text-white text-sm font-medium hover:text-blue-300 transition-colors truncate"
                                     >

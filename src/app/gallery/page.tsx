@@ -41,7 +41,6 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
                 description: photo.description ?? undefined,
                 location: photo.location ?? undefined,
                 takenAt: photo.takenAt?.toISOString() ?? undefined,
-                cameraRigId: rig?.id ?? undefined,
                 rigLabel: parts.length > 0 ? parts.join(' · ') : undefined,
                 cameraName: rig?.camera
                     ? `${rig.camera.brand.name} ${rig.camera.name}`
@@ -54,6 +53,7 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
                     : undefined,
                 housingSlug: rig?.housing?.slug ?? undefined,
                 portName: rig?.port?.name ?? undefined,
+                portSlug: rig?.port?.slug ?? undefined,
                 focalLength: photo.focalLength ?? undefined,
                 shutterSpeed: photo.shutterSpeed ?? undefined,
                 aperture: photo.aperture ?? undefined,

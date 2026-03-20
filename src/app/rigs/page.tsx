@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { HousingImage } from '@/components/HousingImage'
@@ -35,15 +36,29 @@ async function getRigComponents(cameraSlug: string, housingSlug: string, lensSlu
 
     if (!camera || !housing) return null
 
-    const lens = lensSlug
-        ? await prisma.lens.findUnique({ where: { slug: lensSlug }, include: { cameraMount: true } })
-        : null
+    const [lens, port] = await Promise.all([
+        lensSlug
+            ? prisma.lens.findUnique({ where: { slug: lensSlug }, include: { cameraMount: true } })
+            : Promise.resolve(null),
+        portSlug
+            ? prisma.port.findUnique({ where: { slug: portSlug } })
+            : Promise.resolve(null),
+    ])
 
-    const port = portSlug
-        ? await prisma.port.findUnique({ where: { slug: portSlug } })
-        : null
+    // Fetch gallery photos that belong to a CameraRig matching these components
+    const galleryPhotos = await prisma.galleryPhoto.findMany({
+        where: {
+            cameraRig: {
+                cameraId: camera.id,
+                housingId: housing.id,
+                lensId: lens?.id ?? null,
+                portId: port?.id ?? null,
+            },
+        },
+        orderBy: { takenAt: 'desc' },
+    })
 
-    return { camera, housing, lens, port }
+    return { camera, housing, lens, port, galleryPhotos }
 }
 
 export default async function RigBuilderPage({ searchParams }: RigBuilderPageProps) {
@@ -54,7 +69,7 @@ export default async function RigBuilderPage({ searchParams }: RigBuilderPagePro
     const components = await getRigComponents(cameraSlug, housingSlug, lensSlug, portSlug)
     if (!components) notFound()
 
-    const { camera, housing, lens, port } = components
+    const { camera, housing, lens, port, galleryPhotos } = components
 
     const cameraImageInfo = getCameraImagePathWithFallback(camera.productPhotos ?? [])
     const housingImageInfo = getHousingImagePathWithFallback(housing.productPhotos ?? [])
@@ -284,6 +299,43 @@ export default async function RigBuilderPage({ searchParams }: RigBuilderPagePro
                     </div>
                 </div>
             </div>
+
+            {/* Gallery */}
+            {galleryPhotos.length > 0 && (
+                <div className="max-w-7xl mx-auto px-4 pb-8">
+                    <div className="bg-white rounded-lg shadow-lg p-8">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Photos taken with this setup</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {galleryPhotos.map((photo) => (
+                                <div key={photo.id} className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                                    <Image
+                                        src={photo.imagePath}
+                                        alt={photo.title ?? photo.description ?? 'Gallery photo'}
+                                        fill
+                                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                    />
+                                    {(photo.title || photo.location) && (
+                                        <div className="absolute inset-x-0 bottom-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-2 py-1.5">
+                                            {photo.title && (
+                                                <p className="text-white text-xs font-medium truncate">{photo.title}</p>
+                                            )}
+                                            {photo.location && (
+                                                <p className="text-gray-300 text-xs">📍 {photo.location}</p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-4 text-right">
+                            <Link href={`/gallery?camera=${camera.slug}`} className="text-sm text-blue-600 hover:text-blue-800">
+                                View all photos in gallery →
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
