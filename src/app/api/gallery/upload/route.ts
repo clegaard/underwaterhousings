@@ -6,7 +6,12 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
     const session = await auth()
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const dbUser = await prisma.user.findUnique({ where: { email: session.user.email } })
+    if (!dbUser) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -76,7 +81,7 @@ export async function POST(request: NextRequest) {
             lensId: lensIdStr ? parseInt(lensIdStr) : null,
             housingId: housingIdStr ? parseInt(housingIdStr) : null,
             portId: portIdStr ? parseInt(portIdStr) : null,
-            userId: parseInt(session.user.id),
+            userId: dbUser.id,
         },
     })
 

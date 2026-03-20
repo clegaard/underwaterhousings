@@ -8,6 +8,7 @@ interface Camera {
     id: number
     name: string
     brand: { name: string }
+    exifId: string | null
 }
 
 interface Housing {
@@ -19,6 +20,7 @@ interface Housing {
 interface Lens {
     id: number
     name: string
+    exifId: string | null
 }
 
 interface Port {
@@ -84,6 +86,8 @@ export default function GalleryUploadButton() {
     const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null)
     const [form, setForm] = useState<UploadForm>(EMPTY_FORM)
     const [equipment, setEquipment] = useState<Equipment>({ cameras: [], housings: [], lenses: [], ports: [] })
+    const [exifCameraModel, setExifCameraModel] = useState<string | null>(null)
+    const [exifLensModel, setExifLensModel] = useState<string | null>(null)
     const [isUploading, setIsUploading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [exifLoading, setExifLoading] = useState(false)
@@ -105,12 +109,29 @@ export default function GalleryUploadButton() {
         }
     }, [])
 
+    // Auto-select camera/lens dropdowns when EXIF model strings are matched against loaded equipment
+    useEffect(() => {
+        if (!exifCameraModel && !exifLensModel) return
+        setForm(prev => {
+            const updates: Partial<UploadForm> = {}
+            if (exifCameraModel && !prev.cameraId) {
+                const match = equipment.cameras.find(c => c.exifId === exifCameraModel)
+                if (match) updates.cameraId = String(match.id)
+            }
+            if (exifLensModel && !prev.lensId) {
+                const match = equipment.lenses.find(l => l.exifId === exifLensModel)
+                if (match) updates.lensId = String(match.id)
+            }
+            return Object.keys(updates).length ? { ...prev, ...updates } : prev
+        })
+    }, [equipment, exifCameraModel, exifLensModel])
+
     const extractExif = useCallback(async (f: File) => {
         setExifLoading(true)
         try {
             const exifr = (await import('exifr')).default
             const exif = await exifr.parse(f, {
-                pick: ['FocalLength', 'FNumber', 'ExposureTime', 'DateTimeOriginal'],
+                pick: ['FocalLength', 'FNumber', 'ExposureTime', 'DateTimeOriginal', 'Model', 'LensModel'],
             })
             if (!exif) return
             const updates: Partial<UploadForm> = {}
@@ -118,6 +139,8 @@ export default function GalleryUploadButton() {
             if (exif.FNumber != null) updates.aperture = String(exif.FNumber)
             if (exif.ExposureTime != null) updates.shutterSpeed = formatShutterSpeed(exif.ExposureTime)
             if (exif.DateTimeOriginal) updates.takenAt = toDatetimeLocal(new Date(exif.DateTimeOriginal))
+            if (exif.Model) setExifCameraModel(String(exif.Model).trim())
+            if (exif.LensModel) setExifLensModel(String(exif.LensModel).trim())
             setForm(prev => ({ ...prev, ...updates }))
         } catch {
             // EXIF extraction is non-critical
@@ -198,6 +221,8 @@ export default function GalleryUploadButton() {
         setDimensions(null)
         setForm(EMPTY_FORM)
         setError(null)
+        setExifCameraModel(null)
+        setExifLensModel(null)
         if (previewUrlRef.current) {
             URL.revokeObjectURL(previewUrlRef.current)
             previewUrlRef.current = null

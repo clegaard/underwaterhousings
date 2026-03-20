@@ -65,6 +65,8 @@ model Camera {
     productPhotos        String[]
     interchangeableLens  Boolean            @default(true)
     galleryPhotos        GalleryPhoto[]
+    // Identified by EXIF data when users upload photos without explicitly linking to a camera
+    exifId               String?            @unique
 
     @@map("cameras")
 }
@@ -120,6 +122,8 @@ model Lens {
     cameraId      Int?
     productPhotos String[]
     galleryPhotos GalleryPhoto[]
+    // Identified by EXIF data when users upload photos without explicitly linking to a lens
+    exifId        String?        @unique
 
     @@map("lenses")
 }

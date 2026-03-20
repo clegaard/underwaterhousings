@@ -141,6 +141,7 @@ async function main() {
         data: {
             name: 'Sony FE 24-70mm f/2.8 GM II',
             slug: 'sel2470gmii',
+            exifId: 'FE 24-70mm F2.8 GM II',
             cameraMountId: sonyE.id,
             productPhotos: ['/lenses/sel2470gmii.jpg']
         }
@@ -269,6 +270,17 @@ async function main() {
             cameraManufacturerId: sony.id,
             cameraMountId: sonyE.id,
             productPhotos: ['/cameras/ilce-7m5-front.webp']
+        }
+    })
+
+    const sonyA7IV = await prisma.camera.create({
+        data: {
+            name: 'A7 IV',
+            slug: 'ilce-7m4',
+            exifId: 'ILCE-7M4',
+            cameraManufacturerId: sony.id,
+            cameraMountId: sonyE.id,
+            productPhotos: ['/cameras/ilce-7m4-front.webp']
         }
     })
 
