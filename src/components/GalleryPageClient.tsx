@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import GalleryGrid, { GalleryPhotoData } from './GalleryGrid'
+import GalleryUploadButton from './GalleryUploadButton'
 
 interface GalleryPageClientProps {
     photos: GalleryPhotoData[]
@@ -154,6 +155,9 @@ export default function GalleryPageClient({ photos }: GalleryPageClientProps) {
 
             {/* Gallery */}
             <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-end mb-4">
+                    <GalleryUploadButton />
+                </div>
                 <GalleryGrid photos={filtered} />
             </div>
         </div>
