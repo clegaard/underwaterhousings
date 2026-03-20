@@ -4,12 +4,33 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
-interface CameraRig {
+interface Camera {
     id: number
     name: string
-    camera: { name: string; brand: { name: string } }
-    lens: { name: string } | null
-    housing: { name: string; manufacturer: { name: string } } | null
+    brand: { name: string }
+}
+
+interface Housing {
+    id: number
+    name: string
+    manufacturer: { name: string }
+}
+
+interface Lens {
+    id: number
+    name: string
+}
+
+interface Port {
+    id: number
+    name: string
+}
+
+interface Equipment {
+    cameras: Camera[]
+    housings: Housing[]
+    lenses: Lens[]
+    ports: Port[]
 }
 
 interface UploadForm {
@@ -20,7 +41,10 @@ interface UploadForm {
     focalLength: string
     aperture: string
     shutterSpeed: string
-    cameraRigId: string
+    cameraId: string
+    lensId: string
+    housingId: string
+    portId: string
 }
 
 const EMPTY_FORM: UploadForm = {
@@ -31,7 +55,10 @@ const EMPTY_FORM: UploadForm = {
     focalLength: '',
     aperture: '',
     shutterSpeed: '',
-    cameraRigId: '',
+    cameraId: '',
+    lensId: '',
+    housingId: '',
+    portId: '',
 }
 
 function formatShutterSpeed(exposureTime: number): string {
@@ -56,7 +83,7 @@ export default function GalleryUploadButton() {
     const [preview, setPreview] = useState<string | null>(null)
     const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null)
     const [form, setForm] = useState<UploadForm>(EMPTY_FORM)
-    const [rigs, setRigs] = useState<CameraRig[]>([])
+    const [equipment, setEquipment] = useState<Equipment>({ cameras: [], housings: [], lenses: [], ports: [] })
     const [isUploading, setIsUploading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [exifLoading, setExifLoading] = useState(false)
@@ -67,7 +94,7 @@ export default function GalleryUploadButton() {
         if (!isOpen) return
         fetch('/api/camera-rigs')
             .then(r => r.json())
-            .then(data => setRigs(data.data ?? []))
+            .then(data => setEquipment(data.data ?? { cameras: [], housings: [], lenses: [], ports: [] }))
             .catch(() => { })
     }, [isOpen])
 
@@ -146,7 +173,10 @@ export default function GalleryUploadButton() {
             if (form.focalLength) fd.append('focalLength', form.focalLength)
             if (form.aperture) fd.append('aperture', form.aperture)
             if (form.shutterSpeed) fd.append('shutterSpeed', form.shutterSpeed)
-            if (form.cameraRigId) fd.append('cameraRigId', form.cameraRigId)
+            if (form.cameraId) fd.append('cameraId', form.cameraId)
+            if (form.lensId) fd.append('lensId', form.lensId)
+            if (form.housingId) fd.append('housingId', form.housingId)
+            if (form.portId) fd.append('portId', form.portId)
 
             const res = await fetch('/api/gallery/upload', { method: 'POST', body: fd })
             const data = await res.json()
@@ -310,19 +340,63 @@ export default function GalleryUploadButton() {
                                         </div>
                                     </div>
 
-                                    {/* Camera rig */}
+                                    {/* Equipment */}
                                     <div>
-                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Camera rig (optional)</p>
-                                        <select
-                                            value={form.cameraRigId}
-                                            onChange={e => setForm(prev => ({ ...prev, cameraRigId: e.target.value }))}
-                                            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                                        >
-                                            <option value="">No rig selected</option>
-                                            {rigs.map(rig => (
-                                                <option key={rig.id} value={String(rig.id)}>{rig.name}</option>
-                                            ))}
-                                        </select>
+                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Equipment (optional)</p>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1">Camera</label>
+                                                <select
+                                                    value={form.cameraId}
+                                                    onChange={e => setForm(prev => ({ ...prev, cameraId: e.target.value }))}
+                                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                                                >
+                                                    <option value="">None</option>
+                                                    {equipment.cameras.map(c => (
+                                                        <option key={c.id} value={String(c.id)}>{c.brand.name} {c.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1">Housing</label>
+                                                <select
+                                                    value={form.housingId}
+                                                    onChange={e => setForm(prev => ({ ...prev, housingId: e.target.value }))}
+                                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                                                >
+                                                    <option value="">None</option>
+                                                    {equipment.housings.map(h => (
+                                                        <option key={h.id} value={String(h.id)}>{h.manufacturer.name} {h.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1">Lens</label>
+                                                <select
+                                                    value={form.lensId}
+                                                    onChange={e => setForm(prev => ({ ...prev, lensId: e.target.value }))}
+                                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                                                >
+                                                    <option value="">None</option>
+                                                    {equipment.lenses.map(l => (
+                                                        <option key={l.id} value={String(l.id)}>{l.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1">Port</label>
+                                                <select
+                                                    value={form.portId}
+                                                    onChange={e => setForm(prev => ({ ...prev, portId: e.target.value }))}
+                                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                                                >
+                                                    <option value="">None</option>
+                                                    {equipment.ports.map(p => (
+                                                        <option key={p.id} value={String(p.id)}>{p.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
                                 </>
                             )}

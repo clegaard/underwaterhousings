@@ -64,7 +64,7 @@ model Camera {
     // For simplicity, we can store product photos as an array of strings (URLs or file paths)
     productPhotos        String[]
     interchangeableLens  Boolean            @default(true)
-    cameraRigs           CameraRig[]
+    galleryPhotos        GalleryPhoto[]
 
     @@map("cameras")
 }
@@ -87,7 +87,7 @@ model Housing {
     ports                 Port[]
     productPhotos         String[]
     interchangeablePort   Boolean             @default(true)
-    cameraRigs            CameraRig[]
+    galleryPhotos         GalleryPhoto[]
 
     @@map("housings")
 }
@@ -104,42 +104,24 @@ model Port {
     housingMount          HousingMount?       @relation(fields: [housingMountId], references: [id])
     housingMountId        Int?
     productPhotos         String[]
-    cameraRigs            CameraRig[]
+    galleryPhotos         GalleryPhoto[]
 
     @@map("ports")
 }
 
 model Lens {
-    id            Int         @id @default(autoincrement())
-    name          String
-    slug          String      @unique
-    cameraMount   CameraMount @relation(fields: [cameraMountId], references: [id])
-    cameraMountId Int
-    ports         Port[]
-    camera        Camera?     @relation(fields: [cameraId], references: [id])
-    cameraId      Int?
-    productPhotos String[]
-    cameraRigs    CameraRig[]
-
-    @@map("lenses")
-}
-
-// ============================= CAMERA RIGS =============================
-
-model CameraRig {
     id            Int            @id @default(autoincrement())
     name          String
-    camera        Camera         @relation(fields: [cameraId], references: [id])
-    cameraId      Int
-    lens          Lens?          @relation(fields: [lensId], references: [id])
-    lensId        Int?
-    housing       Housing?       @relation(fields: [housingId], references: [id])
-    housingId     Int?
-    port          Port?          @relation(fields: [portId], references: [id])
-    portId        Int?
+    slug          String         @unique
+    cameraMount   CameraMount    @relation(fields: [cameraMountId], references: [id])
+    cameraMountId Int
+    ports         Port[]
+    camera        Camera?        @relation(fields: [cameraId], references: [id])
+    cameraId      Int?
+    productPhotos String[]
     galleryPhotos GalleryPhoto[]
 
-    @@map("camera_rigs")
+    @@map("lenses")
 }
 
 // ============================= USERS & AUTH =============================
@@ -176,8 +158,14 @@ model GalleryPhoto {
     aperture     Float?
     createdAt    DateTime  @default(now())
 
-    cameraRig   CameraRig? @relation(fields: [cameraRigId], references: [id])
-    cameraRigId Int?
+    camera    Camera?  @relation(fields: [cameraId], references: [id])
+    cameraId  Int?
+    lens      Lens?    @relation(fields: [lensId], references: [id])
+    lensId    Int?
+    housing   Housing? @relation(fields: [housingId], references: [id])
+    housingId Int?
+    port      Port?    @relation(fields: [portId], references: [id])
+    portId    Int?
 
     user   User? @relation(fields: [userId], references: [id])
     userId Int?

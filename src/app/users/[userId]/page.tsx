@@ -15,14 +15,10 @@ async function getUserWithPhotos(userId: number) {
             galleryPhotos: {
                 orderBy: { takenAt: 'desc' },
                 include: {
-                    cameraRig: {
-                        include: {
-                            camera: { include: { brand: true } },
-                            lens: true,
-                            housing: { include: { manufacturer: true } },
-                            port: true,
-                        },
-                    },
+                    camera: { include: { brand: true } },
+                    lens: true,
+                    housing: { include: { manufacturer: true } },
+                    port: true,
                 },
             },
         },
@@ -48,12 +44,11 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
     if (!user) notFound()
 
     const photos: GalleryPhotoData[] = user.galleryPhotos.map((photo) => {
-        const rig = photo.cameraRig
         const parts = [
-            rig?.camera ? `${rig.camera.brand.name} ${rig.camera.name}` : null,
-            rig?.lens?.name ?? null,
-            rig?.housing ? `${rig.housing.manufacturer.name} ${rig.housing.name}` : null,
-            rig?.port?.name ?? null,
+            photo.camera ? `${photo.camera.brand.name} ${photo.camera.name}` : null,
+            photo.lens?.name ?? null,
+            photo.housing ? `${photo.housing.manufacturer.name} ${photo.housing.name}` : null,
+            photo.port?.name ?? null,
         ].filter(Boolean)
 
         return {
@@ -65,16 +60,16 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
             location: photo.location ?? undefined,
             takenAt: photo.takenAt?.toISOString() ?? undefined,
             rigLabel: parts.length > 0 ? parts.join(' · ') : undefined,
-            cameraName: rig?.camera ? `${rig.camera.brand.name} ${rig.camera.name}` : undefined,
-            cameraSlug: rig?.camera?.slug ?? undefined,
-            lensName: rig?.lens?.name ?? undefined,
-            lensSlug: rig?.lens?.slug ?? undefined,
-            housingName: rig?.housing
-                ? `${rig.housing.manufacturer.name} ${rig.housing.name}`
+            cameraName: photo.camera ? `${photo.camera.brand.name} ${photo.camera.name}` : undefined,
+            cameraSlug: photo.camera?.slug ?? undefined,
+            lensName: photo.lens?.name ?? undefined,
+            lensSlug: photo.lens?.slug ?? undefined,
+            housingName: photo.housing
+                ? `${photo.housing.manufacturer.name} ${photo.housing.name}`
                 : undefined,
-            housingSlug: rig?.housing?.slug ?? undefined,
-            portName: rig?.port?.name ?? undefined,
-            portSlug: rig?.port?.slug ?? undefined,
+            housingSlug: photo.housing?.slug ?? undefined,
+            portName: photo.port?.name ?? undefined,
+            portSlug: photo.port?.slug ?? undefined,
             focalLength: photo.focalLength ?? undefined,
             shutterSpeed: photo.shutterSpeed ?? undefined,
             aperture: photo.aperture ?? undefined,
