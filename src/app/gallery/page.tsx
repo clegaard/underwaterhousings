@@ -13,10 +13,14 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
         const photos = await prisma.galleryPhoto.findMany({
             orderBy: { takenAt: 'desc' },
             include: {
-                camera: { include: { brand: true } },
-                lens: true,
-                housing: { include: { manufacturer: true } },
-                port: true,
+                cameraRig: {
+                    include: {
+                        camera: { include: { brand: true } },
+                        lens: true,
+                        housing: { include: { manufacturer: true } },
+                        port: true,
+                    },
+                },
             },
         })
 
@@ -28,17 +32,17 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
             description: photo.description ?? undefined,
             location: photo.location ?? undefined,
             takenAt: photo.takenAt?.toISOString() ?? undefined,
-            cameraName: photo.camera
-                ? `${photo.camera.brand.name} ${photo.camera.name}`
+            cameraName: photo.cameraRig?.camera
+                ? `${photo.cameraRig.camera.brand.name} ${photo.cameraRig.camera.name}`
                 : undefined,
-            cameraSlug: photo.camera?.slug ?? undefined,
-            lensName: photo.lens?.name ?? undefined,
-            lensSlug: photo.lens?.slug ?? undefined,
-            housingName: photo.housing
-                ? `${photo.housing.manufacturer.name} ${photo.housing.name}`
+            cameraSlug: photo.cameraRig?.camera?.slug ?? undefined,
+            lensName: photo.cameraRig?.lens?.name ?? undefined,
+            lensSlug: photo.cameraRig?.lens?.slug ?? undefined,
+            housingName: photo.cameraRig?.housing
+                ? `${photo.cameraRig.housing.manufacturer.name} ${photo.cameraRig.housing.name}`
                 : undefined,
-            housingSlug: photo.housing?.slug ?? undefined,
-            portName: photo.port?.name ?? undefined,
+            housingSlug: photo.cameraRig?.housing?.slug ?? undefined,
+            portName: photo.cameraRig?.port?.name ?? undefined,
             focalLength: photo.focalLength ?? undefined,
             shutterSpeed: photo.shutterSpeed ?? undefined,
             aperture: photo.aperture ?? undefined,
