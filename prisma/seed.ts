@@ -17,6 +17,7 @@ async function main() {
     await prisma.cameraMount.deleteMany()
     await prisma.cameraManufacturer.deleteMany()
     await prisma.housingManufacturer.deleteMany()
+    await prisma.user.deleteMany()
 
     // Create housing manufacturers
     const nauticam = await prisma.housingManufacturer.create({
@@ -619,14 +620,13 @@ async function main() {
 
     const bcrypt = require('bcryptjs')
 
-    const adminUser = await prisma.user.upsert({
-        where: { email: 'admin@dev.local' },
-        update: {},
-        create: {
+    const adminUser = await prisma.user.create({
+        data: {
             email: 'admin@dev.local',
             password: await bcrypt.hash('password', 12),
             name: 'Dev Admin',
             isSuperuser: true,
+            bio: 'Administrator account for development and testing purposes.',
         },
     })
 

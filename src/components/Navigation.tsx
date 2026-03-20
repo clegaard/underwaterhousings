@@ -197,6 +197,13 @@ export default function Navigation({ manufacturers, cameraManufacturers }: Navig
                                             <div className="px-4 py-2 text-xs text-gray-500 border-b">
                                                 {session.user?.email}
                                             </div>
+                                            <Link
+                                                href={`/users/${session.user?.id}`}
+                                                onClick={() => setIsUserMenuOpen(false)}
+                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                            >
+                                                Profile
+                                            </Link>
                                             <button
                                                 onClick={() => { setIsUserMenuOpen(false); signOut({ callbackUrl: '/' }) }}
                                                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"

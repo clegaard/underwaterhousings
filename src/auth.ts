@@ -35,6 +35,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     callbacks: {
         jwt({ token, user }) {
             if (user) {
+                token['id'] = user.id
                 const u = user as { isSuperuser?: boolean; isUser?: boolean }
                 token['isSuperuser'] = u.isSuperuser
                 token['isUser'] = u.isUser
@@ -43,6 +44,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         },
         session({ session, token }) {
             if (session.user) {
+                session.user.id = token['id'] as string
                 const s = session.user as { isSuperuser?: boolean; isUser?: boolean }
                 s.isSuperuser = token['isSuperuser'] as boolean | undefined
                 s.isUser = token['isUser'] as boolean | undefined
