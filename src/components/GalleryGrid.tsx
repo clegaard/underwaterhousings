@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { useState, useEffect, useCallback } from 'react'
 import { RowsPhotoAlbum } from 'react-photo-album'
 import type { Photo } from 'react-photo-album'
@@ -11,6 +12,8 @@ export interface GalleryPhotoData extends Photo {
     description?: string
     location?: string
     takenAt?: string
+    cameraRigId?: number
+    rigLabel?: string
     cameraName?: string
     cameraSlug?: string
     lensName?: string
@@ -89,19 +92,29 @@ export default function GalleryGrid({ photos }: GalleryGridProps) {
                                 {photo.title && (
                                     <p className="text-white text-xs font-medium leading-tight mb-1 truncate">{photo.title}</p>
                                 )}
-                                <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
-                                    {photo.cameraName && (
-                                        <span className="text-gray-300 text-xs">{photo.cameraName}</span>
-                                    )}
-                                    {photo.focalLength && (
-                                        <span className="text-gray-400 text-xs">{photo.focalLength}mm</span>
-                                    )}
-                                    {photo.aperture && (
-                                        <span className="text-gray-400 text-xs">f/{photo.aperture}</span>
-                                    )}
-                                    {photo.shutterSpeed && (
-                                        <span className="text-gray-400 text-xs">{photo.shutterSpeed}s</span>
-                                    )}
+                                <div className="flex items-center justify-between gap-2">
+                                    {photo.rigLabel && photo.cameraRigId ? (
+                                        <Link
+                                            href={`/rigs/${photo.cameraRigId}`}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="text-gray-300 text-xs hover:text-white transition-colors truncate"
+                                        >
+                                            {photo.rigLabel}
+                                        </Link>
+                                    ) : photo.rigLabel ? (
+                                        <span className="text-gray-300 text-xs truncate">{photo.rigLabel}</span>
+                                    ) : null}
+                                    <div className="flex items-center gap-x-2 flex-shrink-0">
+                                        {photo.focalLength && (
+                                            <span className="text-gray-400 text-xs">{photo.focalLength}mm</span>
+                                        )}
+                                        {photo.aperture && (
+                                            <span className="text-gray-400 text-xs">f/{photo.aperture}</span>
+                                        )}
+                                        {photo.shutterSpeed && (
+                                            <span className="text-gray-400 text-xs">{photo.shutterSpeed}s</span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -137,27 +150,32 @@ export default function GalleryGrid({ photos }: GalleryGridProps) {
 
                         {/* Metadata bar */}
                         <div className="w-full bg-black rounded-b-lg px-4 py-2.5 flex flex-col gap-1 shadow-2xl">
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                                    {photos[lightboxIndex].cameraName && (
-                                        <span className="text-white text-sm font-medium">{photos[lightboxIndex].cameraName}</span>
-                                    )}
-                                    {photos[lightboxIndex].lensName && (
-                                        <span className="text-gray-400 text-sm">{photos[lightboxIndex].lensName}</span>
-                                    )}
-                                </div>
-                                <div className="flex items-center gap-x-4">
+                            <div className="flex items-center justify-between gap-4">
+                                {/* Rig link */}
+                                {photos[lightboxIndex].rigLabel && photos[lightboxIndex].cameraRigId ? (
+                                    <Link
+                                        href={`/rigs/${photos[lightboxIndex].cameraRigId}`}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="text-white text-sm font-medium hover:text-blue-300 transition-colors truncate"
+                                    >
+                                        {photos[lightboxIndex].rigLabel}
+                                    </Link>
+                                ) : photos[lightboxIndex].rigLabel ? (
+                                    <span className="text-white text-sm font-medium truncate">{photos[lightboxIndex].rigLabel}</span>
+                                ) : null}
+                                {/* EXIF */}
+                                <div className="flex items-center gap-x-3 flex-shrink-0 text-gray-300 text-sm">
                                     {photos[lightboxIndex].focalLength && (
-                                        <span className="text-gray-300 text-sm">{photos[lightboxIndex].focalLength}mm</span>
+                                        <span>{photos[lightboxIndex].focalLength}mm</span>
                                     )}
                                     {photos[lightboxIndex].aperture && (
-                                        <span className="text-gray-300 text-sm">f/{photos[lightboxIndex].aperture}</span>
+                                        <span>f/{photos[lightboxIndex].aperture}</span>
                                     )}
                                     {photos[lightboxIndex].shutterSpeed && (
-                                        <span className="text-gray-300 text-sm">{photos[lightboxIndex].shutterSpeed}s</span>
+                                        <span>{photos[lightboxIndex].shutterSpeed}s</span>
                                     )}
                                     {photos[lightboxIndex].location && (
-                                        <span className="text-gray-400 text-sm">{photos[lightboxIndex].location}</span>
+                                        <span className="text-gray-400">{photos[lightboxIndex].location}</span>
                                     )}
                                 </div>
                             </div>

@@ -148,7 +148,10 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                 if (isPortFixed) {
                     if (!portName) combinations.push(makeCombination(lens, null))
                 } else {
-                    const compatiblePorts = housing.ports.filter((port: any) =>
+                    // Use the global ports list filtered by housing mount — same logic as the port dropdown.
+                    // This handles ports that share a mount type across multiple housings.
+                    const compatiblePorts = ports.filter((port: any) =>
+                        port.housingMountId === housing.housingMount?.id &&
                         (isFixed || port.lens?.some((l: any) => l.id === lens?.id)) &&
                         (!portName || port.name === portName)
                     )
@@ -457,7 +460,13 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 )}
                             </div>
                             <Link
-                                href={`/combinations/${filteredCombinations[0].camera.slug}/${filteredCombinations[0].lens?.slug ?? 'none'}/${filteredCombinations[0].housing.slug}/${filteredCombinations[0].port?.id ?? 'none'}`}
+                                href={(() => {
+                                    const c = filteredCombinations[0]
+                                    const params = new URLSearchParams({ camera: c.camera.slug, housing: c.housing.slug })
+                                    if (c.lens?.slug) params.set('lens', c.lens.slug)
+                                    if (c.port?.slug) params.set('port', c.port.slug)
+                                    return `/rigs?${params.toString()}`
+                                })()}
                                 className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-1.5"
                             >
                                 View Full Details

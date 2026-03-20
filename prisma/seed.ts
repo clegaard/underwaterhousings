@@ -407,8 +407,8 @@ async function main() {
 
     await prisma.housing.create({
         data: {
-            name: 'Sony ZV-E1',
-            slug: 'sony-zv-e1',
+            name: 'SF-S-ZV-E1',
+            slug: 'sf-s-zv-e1',
             description: 'Professional underwater housing for Sony ZV-E1 camera with full control access',
             priceAmount: 455,
             priceCurrency: 'USD',

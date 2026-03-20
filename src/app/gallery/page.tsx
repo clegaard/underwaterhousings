@@ -24,29 +24,41 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
             },
         })
 
-        return photos.map((photo) => ({
-            src: photo.imagePath,
-            width: photo.width,
-            height: photo.height,
-            title: photo.title ?? undefined,
-            description: photo.description ?? undefined,
-            location: photo.location ?? undefined,
-            takenAt: photo.takenAt?.toISOString() ?? undefined,
-            cameraName: photo.cameraRig?.camera
-                ? `${photo.cameraRig.camera.brand.name} ${photo.cameraRig.camera.name}`
-                : undefined,
-            cameraSlug: photo.cameraRig?.camera?.slug ?? undefined,
-            lensName: photo.cameraRig?.lens?.name ?? undefined,
-            lensSlug: photo.cameraRig?.lens?.slug ?? undefined,
-            housingName: photo.cameraRig?.housing
-                ? `${photo.cameraRig.housing.manufacturer.name} ${photo.cameraRig.housing.name}`
-                : undefined,
-            housingSlug: photo.cameraRig?.housing?.slug ?? undefined,
-            portName: photo.cameraRig?.port?.name ?? undefined,
-            focalLength: photo.focalLength ?? undefined,
-            shutterSpeed: photo.shutterSpeed ?? undefined,
-            aperture: photo.aperture ?? undefined,
-        }))
+        return photos.map((photo) => {
+            const rig = photo.cameraRig
+            const parts = [
+                rig?.camera ? `${rig.camera.brand.name} ${rig.camera.name}` : null,
+                rig?.lens?.name ?? null,
+                rig?.housing ? `${rig.housing.manufacturer.name} ${rig.housing.name}` : null,
+                rig?.port?.name ?? null,
+            ].filter(Boolean)
+
+            return {
+                src: photo.imagePath,
+                width: photo.width,
+                height: photo.height,
+                title: photo.title ?? undefined,
+                description: photo.description ?? undefined,
+                location: photo.location ?? undefined,
+                takenAt: photo.takenAt?.toISOString() ?? undefined,
+                cameraRigId: rig?.id ?? undefined,
+                rigLabel: parts.length > 0 ? parts.join(' · ') : undefined,
+                cameraName: rig?.camera
+                    ? `${rig.camera.brand.name} ${rig.camera.name}`
+                    : undefined,
+                cameraSlug: rig?.camera?.slug ?? undefined,
+                lensName: rig?.lens?.name ?? undefined,
+                lensSlug: rig?.lens?.slug ?? undefined,
+                housingName: rig?.housing
+                    ? `${rig.housing.manufacturer.name} ${rig.housing.name}`
+                    : undefined,
+                housingSlug: rig?.housing?.slug ?? undefined,
+                portName: rig?.port?.name ?? undefined,
+                focalLength: photo.focalLength ?? undefined,
+                shutterSpeed: photo.shutterSpeed ?? undefined,
+                aperture: photo.aperture ?? undefined,
+            }
+        })
     } catch (error) {
         console.error('Error fetching gallery photos:', error)
         return []
