@@ -145,14 +145,17 @@ model CameraRig {
 // ============================= USERS & AUTH =============================
 
 model User {
-    id          Int      @id @default(autoincrement())
-    email       String   @unique
-    password    String
-    name        String?
-    isSuperuser Boolean  @default(false)
-    isUser      Boolean  @default(true)
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
+    id             Int            @id @default(autoincrement())
+    email          String         @unique
+    password       String
+    name           String?
+    bio            String?
+    profilePicture String?
+    isSuperuser    Boolean        @default(false)
+    isUser         Boolean        @default(true)
+    createdAt      DateTime       @default(now())
+    updatedAt      DateTime       @updatedAt
+    galleryPhotos  GalleryPhoto[]
 
     @@map("users")
 }
@@ -175,6 +178,9 @@ model GalleryPhoto {
 
     cameraRig   CameraRig? @relation(fields: [cameraRigId], references: [id])
     cameraRigId Int?
+
+    user   User? @relation(fields: [userId], references: [id])
+    userId Int?
 
     @@map("gallery_photos")
 }

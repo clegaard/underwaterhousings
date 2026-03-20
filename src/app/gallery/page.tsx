@@ -21,6 +21,7 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
                         port: true,
                     },
                 },
+                user: true,
             },
         })
 
@@ -57,6 +58,9 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
                 focalLength: photo.focalLength ?? undefined,
                 shutterSpeed: photo.shutterSpeed ?? undefined,
                 aperture: photo.aperture ?? undefined,
+                userName: photo.user?.name ?? undefined,
+                userId: photo.user?.id ?? undefined,
+                userProfilePicture: photo.user?.profilePicture ?? undefined,
             }
         })
     } catch (error) {

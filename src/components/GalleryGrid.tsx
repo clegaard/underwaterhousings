@@ -24,6 +24,9 @@ export interface GalleryPhotoData extends Photo {
     focalLength?: number
     shutterSpeed?: string
     aperture?: number
+    userName?: string
+    userId?: number
+    userProfilePicture?: string
 }
 
 interface GalleryGridProps {
@@ -119,6 +122,26 @@ export default function GalleryGrid({ photos }: GalleryGridProps) {
                                         {photo.shutterSpeed && (
                                             <span className="text-gray-400 text-xs">{photo.shutterSpeed}s</span>
                                         )}
+                                        {photo.userId && photo.userName && (
+                                            <Link
+                                                href={`/users/${photo.userId}`}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="flex items-center gap-1 group/user"
+                                            >
+                                                {photo.userProfilePicture ? (
+                                                    <img
+                                                        src={photo.userProfilePicture}
+                                                        alt={photo.userName}
+                                                        className="w-4 h-4 rounded-full object-cover ring-1 ring-white/30"
+                                                    />
+                                                ) : (
+                                                    <span className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center text-white text-[9px] font-bold ring-1 ring-white/30 flex-shrink-0">
+                                                        {photo.userName.charAt(0).toUpperCase()}
+                                                    </span>
+                                                )}
+                                                <span className="text-gray-400 text-xs group-hover/user:text-white transition-colors truncate">{photo.userName}</span>
+                                            </Link>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -173,7 +196,7 @@ export default function GalleryGrid({ photos }: GalleryGridProps) {
                                 ) : photos[lightboxIndex].rigLabel ? (
                                     <span className="text-white text-sm font-medium truncate">{photos[lightboxIndex].rigLabel}</span>
                                 ) : null}
-                                {/* EXIF */}
+                                {/* EXIF + user emblem */}
                                 <div className="flex items-center gap-x-3 flex-shrink-0 text-gray-300 text-sm">
                                     {photos[lightboxIndex].focalLength && (
                                         <span>{photos[lightboxIndex].focalLength}mm</span>
@@ -186,6 +209,28 @@ export default function GalleryGrid({ photos }: GalleryGridProps) {
                                     )}
                                     {photos[lightboxIndex].location && (
                                         <span className="text-gray-400">{photos[lightboxIndex].location}</span>
+                                    )}
+                                    {photos[lightboxIndex].userId && photos[lightboxIndex].userName && (
+                                        <Link
+                                            href={`/users/${photos[lightboxIndex].userId}`}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="flex items-center gap-1.5 group/user"
+                                        >
+                                            {photos[lightboxIndex].userProfilePicture ? (
+                                                <img
+                                                    src={photos[lightboxIndex].userProfilePicture}
+                                                    alt={photos[lightboxIndex].userName!}
+                                                    className="w-5 h-5 rounded-full object-cover ring-1 ring-white/30"
+                                                />
+                                            ) : (
+                                                <span className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold ring-1 ring-white/30 flex-shrink-0">
+                                                    {photos[lightboxIndex].userName!.charAt(0).toUpperCase()}
+                                                </span>
+                                            )}
+                                            <span className="text-gray-300 text-sm group-hover/user:text-white transition-colors">
+                                                {photos[lightboxIndex].userName}
+                                            </span>
+                                        </Link>
                                     )}
                                 </div>
                             </div>
