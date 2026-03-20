@@ -24,6 +24,7 @@ export interface GalleryPhotoData extends Photo {
     focalLength?: number
     shutterSpeed?: string
     aperture?: number
+    photoId?: number
     userName?: string
     userId?: number
     userProfilePicture?: string
@@ -31,9 +32,14 @@ export interface GalleryPhotoData extends Photo {
 
 interface GalleryGridProps {
     photos: GalleryPhotoData[]
+    selectionMode?: boolean
+    selectedIds?: Set<number>
+    currentUserId?: number
+    onPhotoClick?: (photoId: number, index: number, shiftKey: boolean) => void
+    onExitSelection?: () => void
 }
 
-export default function GalleryGrid({ photos }: GalleryGridProps) {
+export default function GalleryGrid({ photos, selectionMode = false, selectedIds, currentUserId, onPhotoClick, onExitSelection }: GalleryGridProps) {
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
     const closeLightbox = useCallback(() => setLightboxIndex(null), [])
@@ -57,6 +63,15 @@ export default function GalleryGrid({ photos }: GalleryGridProps) {
         return () => window.removeEventListener('keydown', onKey)
     }, [lightboxIndex, closeLightbox, goNext, goPrev])
 
+    useEffect(() => {
+        if (!selectionMode) return
+        function onKey(e: KeyboardEvent) {
+            if (e.key === 'Escape') onExitSelection?.()
+        }
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
+    }, [selectionMode, onExitSelection])
+
     if (photos.length === 0) {
         return (
             <div className="text-center py-24 text-gray-400">
@@ -77,9 +92,17 @@ export default function GalleryGrid({ photos }: GalleryGridProps) {
                 render={{
                     image: (props, { photo, index }) => (
                         <div
-                            className="relative group overflow-hidden cursor-pointer"
+                            className={`relative group overflow-hidden ${selectionMode && photo.userId !== currentUserId ? 'cursor-default' : 'cursor-pointer'}`}
                             style={{ aspectRatio: 'var(--react-photo-album--photo-width) / var(--react-photo-album--photo-height)' }}
-                            onClick={() => setLightboxIndex(index)}
+                            onClick={(e) => {
+                                if (selectionMode) {
+                                    if (photo.photoId != null && photo.userId === currentUserId) {
+                                        onPhotoClick?.(photo.photoId, index, e.shiftKey)
+                                    }
+                                } else {
+                                    setLightboxIndex(index)
+                                }
+                            }}
                         >
                             <Image
                                 src={photo.src}
@@ -90,6 +113,34 @@ export default function GalleryGrid({ photos }: GalleryGridProps) {
                                 priority={index < 4}
                                 loading={index < 4 ? 'eager' : 'lazy'}
                             />
+                            {/* Selection mode overlays */}
+                            {selectionMode && (
+                                <>
+                                    {/* Gray out photos not owned by current user */}
+                                    {photo.userId !== currentUserId && (
+                                        <div className="absolute inset-0 bg-white/50 pointer-events-none" />
+                                    )}
+                                    {/* Blue tint on selected photos */}
+                                    {photo.photoId != null && selectedIds?.has(photo.photoId) && (
+                                        <div className="absolute inset-0 bg-blue-500/25 pointer-events-none" />
+                                    )}
+                                    {/* Selection circle — top-right, always visible in selection mode */}
+                                    <div className={`absolute top-2 right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center shadow-sm transition-colors
+                                        ${photo.userId !== currentUserId
+                                            ? 'border-gray-300 bg-white/30 opacity-40'
+                                            : photo.photoId != null && selectedIds?.has(photo.photoId)
+                                                ? 'bg-blue-500 border-blue-500'
+                                                : 'border-white bg-black/40'
+                                        }`}
+                                    >
+                                        {photo.photoId != null && selectedIds?.has(photo.photoId) && (
+                                            <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                </>
+                            )}
                             {/* Hover overlay */}
                             <div className="absolute inset-x-0 bottom-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-2.5 py-2">
                                 {photo.title && (

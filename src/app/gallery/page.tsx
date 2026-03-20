@@ -53,6 +53,7 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
                 focalLength: photo.focalLength ?? undefined,
                 shutterSpeed: photo.shutterSpeed ?? undefined,
                 aperture: photo.aperture ?? undefined,
+                photoId: photo.id,
                 userName: photo.user?.name ?? undefined,
                 userId: photo.user?.id ?? undefined,
                 userProfilePicture: photo.user?.profilePicture ?? undefined,

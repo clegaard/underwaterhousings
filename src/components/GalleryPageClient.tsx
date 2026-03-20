@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import GalleryGrid, { GalleryPhotoData } from './GalleryGrid'
 import GalleryUploadButton from './GalleryUploadButton'
 
@@ -12,6 +13,75 @@ interface GalleryPageClientProps {
 export default function GalleryPageClient({ photos }: GalleryPageClientProps) {
     const router = useRouter()
     const searchParams = useSearchParams()
+
+    const { data: session } = useSession()
+    const currentUserId = session?.user?.id ? parseInt(session.user.id) : undefined
+
+    const [selectionMode, setSelectionMode] = useState(false)
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+    const [isDeleting, setIsDeleting] = useState(false)
+    const lastSelectedIndex = useRef<number | null>(null)
+    const filteredRef = useRef<GalleryPhotoData[]>([])
+
+    const handlePhotoClick = useCallback((photoId: number, index: number, shiftKey: boolean) => {
+        if (shiftKey && lastSelectedIndex.current !== null) {
+            const from = Math.min(lastSelectedIndex.current, index)
+            const to = Math.max(lastSelectedIndex.current, index)
+            setSelectedIds(prev => {
+                const next = new Set(prev)
+                for (let i = from; i <= to; i++) {
+                    const p = filteredRef.current[i]
+                    if (p?.photoId != null && p.userId === currentUserId) {
+                        next.add(p.photoId)
+                    }
+                }
+                return next
+            })
+        } else {
+            lastSelectedIndex.current = index
+            setSelectedIds(prev => {
+                const next = new Set(prev)
+                if (next.has(photoId)) next.delete(photoId)
+                else next.add(photoId)
+                return next
+            })
+        }
+    }, [currentUserId])
+
+    function enterSelection() {
+        setSelectionMode(true)
+        setSelectedIds(new Set())
+        lastSelectedIndex.current = null
+    }
+
+    function exitSelection() {
+        setSelectionMode(false)
+        setSelectedIds(new Set())
+        lastSelectedIndex.current = null
+    }
+
+    async function deleteSelected() {
+        if (selectedIds.size === 0 || isDeleting) return
+        setIsDeleting(true)
+        try {
+            const res = await fetch('/api/gallery/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: Array.from(selectedIds) }),
+            })
+            if (!res.ok) {
+                const data = await res.json()
+                alert(data.error ?? 'Failed to delete photos')
+                return
+            }
+            exitSelection()
+            router.refresh()
+        } catch {
+            alert('Failed to delete photos')
+        } finally {
+            setIsDeleting(false)
+        }
+    }
 
     const cameraSlug = searchParams.get('camera') ?? ''
     const lensSlug = searchParams.get('lens') ?? ''
@@ -63,6 +133,7 @@ export default function GalleryPageClient({ photos }: GalleryPageClientProps) {
             ),
         [photos, cameraSlug, lensSlug, housingSlug, portName]
     )
+    filteredRef.current = filtered
 
     const hasActiveFilter = !!(cameraSlug || lensSlug || housingSlug || portName)
 
@@ -155,10 +226,61 @@ export default function GalleryPageClient({ photos }: GalleryPageClientProps) {
 
             {/* Gallery */}
             <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-end mb-4">
-                    <GalleryUploadButton />
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                        {selectionMode && (
+                            <>
+                                <button
+                                    onClick={exitSelection}
+                                    className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <span className="text-sm text-gray-500">
+                                    {selectedIds.size} {selectedIds.size === 1 ? 'photo' : 'photos'} selected
+                                </span>
+                            </>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                        {selectionMode && selectedIds.size > 0 && (
+                            <button
+                                onClick={deleteSelected}
+                                disabled={isDeleting}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                {isDeleting ? (
+                                    <>
+                                        <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                        </svg>
+                                        Deleting…
+                                    </>
+                                ) : (
+                                    <>Delete {selectedIds.size}</>
+                                )}
+                            </button>
+                        )}
+                        {!selectionMode && currentUserId && (
+                            <button
+                                onClick={enterSelection}
+                                className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                            >
+                                Select
+                            </button>
+                        )}
+                        {!selectionMode && <GalleryUploadButton />}
+                    </div>
                 </div>
-                <GalleryGrid photos={filtered} />
+                <GalleryGrid
+                    photos={filtered}
+                    selectionMode={selectionMode}
+                    selectedIds={selectedIds}
+                    currentUserId={currentUserId}
+                    onPhotoClick={handlePhotoClick}
+                    onExitSelection={exitSelection}
+                />
             </div>
         </div>
     )
