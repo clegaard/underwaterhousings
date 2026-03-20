@@ -1,5 +1,14 @@
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
 import { NextRequest, NextResponse } from 'next/server'
+
+async function requireSuperuser() {
+    const session = await auth()
+    if (!(session?.user as { isSuperuser?: boolean } | undefined)?.isSuperuser) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    return null
+}
 
 // Function to create URL-friendly slugs
 function createSlug(text: string): string {
@@ -32,9 +41,11 @@ export async function GET() {
 
 // POST - Create new camera
 export async function POST(request: NextRequest) {
+    const denied = await requireSuperuser()
+    if (denied) return denied
     try {
         const body = await request.json()
-        const { name, cameraManufacturerId } = body
+        const { name, cameraManufacturerId, interchangeableLens, cameraMountId, productPhotos, exifId } = body
 
         if (!name || !cameraManufacturerId) {
             return NextResponse.json(
@@ -74,7 +85,11 @@ export async function POST(request: NextRequest) {
             data: {
                 name,
                 slug,
-                cameraManufacturerId
+                cameraManufacturerId,
+                interchangeableLens: interchangeableLens ?? true,
+                cameraMountId: interchangeableLens && cameraMountId ? cameraMountId : null,
+                productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
+                exifId: exifId?.trim() || null,
             },
             include: {
                 brand: true
@@ -93,6 +108,8 @@ export async function POST(request: NextRequest) {
 
 // PUT - Update camera
 export async function PUT(request: NextRequest) {
+    const denied = await requireSuperuser()
+    if (denied) return denied
     try {
         const { searchParams } = new URL(request.url)
         const id = searchParams.get('id')
@@ -105,7 +122,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { name, cameraManufacturerId } = body
+        const { name, cameraManufacturerId, interchangeableLens, cameraMountId, productPhotos, exifId } = body
 
         if (!name || !cameraManufacturerId) {
             return NextResponse.json(
@@ -126,7 +143,7 @@ export async function PUT(request: NextRequest) {
             )
         }
 
-        const slug = createSlug(name)
+        const slug = createSlug(`${manufacturer.name} ${name}`)
 
         // Check if camera with this slug already exists for this manufacturer (excluding current camera)
         const existingCamera = await prisma.camera.findFirst({
@@ -149,7 +166,11 @@ export async function PUT(request: NextRequest) {
             data: {
                 name,
                 slug,
-                cameraManufacturerId: cameraManufacturerId
+                cameraManufacturerId,
+                interchangeableLens: interchangeableLens ?? true,
+                cameraMountId: interchangeableLens && cameraMountId ? cameraMountId : null,
+                productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
+                exifId: exifId?.trim() || null,
             },
             include: {
                 brand: true
@@ -168,6 +189,8 @@ export async function PUT(request: NextRequest) {
 
 // DELETE - Delete camera
 export async function DELETE(request: NextRequest) {
+    const denied = await requireSuperuser()
+    if (denied) return denied
     try {
         const { searchParams } = new URL(request.url)
         const id = searchParams.get('id')

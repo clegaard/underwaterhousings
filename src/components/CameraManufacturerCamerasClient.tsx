@@ -1,0 +1,523 @@
+'use client'
+
+import { useState, useRef } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { HousingImage } from '@/components/HousingImage'
+
+interface Camera {
+    id: number
+    name: string
+    slug: string
+    housings: { id: number }[]
+    cameraMount: { id: number; name: string; slug: string } | null
+    interchangeableLens: boolean
+    exifId: string | null
+    productPhotos: string[]
+    imageInfo: { src: string; fallback: string }
+}
+
+interface Manufacturer {
+    id: number
+    name: string
+    slug: string
+}
+
+interface CameraMount {
+    id: number
+    name: string
+    slug: string
+}
+
+type PhotoSlot =
+    | { kind: 'existing'; path: string }
+    | { kind: 'new'; id: string; file: File; previewUrl: string }
+
+interface Props {
+    cameras: Camera[]
+    manufacturer: Manufacturer
+    cameraMounts: CameraMount[]
+    isSuperuser: boolean
+}
+
+export default function CameraManufacturerCamerasClient({ cameras: initial, manufacturer, cameraMounts, isSuperuser }: Props) {
+    const router = useRouter()
+    const [cameras, setCameras] = useState(initial)
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
+    const [modal, setModal] = useState<'add' | 'edit' | 'delete' | null>(null)
+    const [target, setTarget] = useState<Camera | null>(null)
+
+    // Shared form state (add + edit)
+    const [nameInput, setNameInput] = useState('')
+    const [interchangeableLens, setInterchangeableLens] = useState(true)
+    const [mountId, setMountId] = useState<number | ''>('')
+    const [exifIdInput, setExifIdInput] = useState('')
+    const [photos, setPhotos] = useState<PhotoSlot[]>([])
+    const [dragPhotoIdx, setDragPhotoIdx] = useState<number | null>(null)
+
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+
+    function resetForm() {
+        setNameInput('')
+        setInterchangeableLens(true)
+        setMountId('')
+        setExifIdInput('')
+        setPhotos(prev => {
+            prev.forEach(p => { if (p.kind === 'new') URL.revokeObjectURL(p.previewUrl) })
+            return []
+        })
+        setDragPhotoIdx(null)
+    }
+
+    function openAdd() {
+        resetForm()
+        setError(null)
+        setModal('add')
+    }
+
+    function openEdit(c: Camera) {
+        setTarget(c)
+        setNameInput(c.name)
+        setInterchangeableLens(c.interchangeableLens)
+        setMountId(c.cameraMount?.id ?? '')
+        setExifIdInput(c.exifId ?? '')
+        setPhotos(c.productPhotos.map(path => ({ kind: 'existing' as const, path })))
+        setDragPhotoIdx(null)
+        setError(null)
+        setModal('edit')
+    }
+
+    function openDelete(c: Camera) {
+        setTarget(c)
+        setError(null)
+        setModal('delete')
+    }
+
+    function close() {
+        resetForm()
+        setModal(null)
+        setTarget(null)
+        setError(null)
+    }
+
+    function handleFilesAdd(files: FileList | null) {
+        if (!files) return
+        const items: PhotoSlot[] = Array.from(files)
+            .filter(f => f.type.startsWith('image/'))
+            .map(file => ({
+                kind: 'new' as const,
+                id: Math.random().toString(36).slice(2),
+                file,
+                previewUrl: URL.createObjectURL(file),
+            }))
+        setPhotos(prev => [...prev, ...items])
+    }
+
+    function removePhoto(idx: number) {
+        setPhotos(prev => {
+            const item = prev[idx]
+            if (item?.kind === 'new') URL.revokeObjectURL(item.previewUrl)
+            return prev.filter((_, i) => i !== idx)
+        })
+    }
+
+    function handlePhotoDragStart(e: React.DragEvent, idx: number) {
+        e.dataTransfer.effectAllowed = 'move'
+        setDragPhotoIdx(idx)
+    }
+
+    function handlePhotoDragOver(e: React.DragEvent, idx: number) {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'move'
+        if (dragPhotoIdx === null || dragPhotoIdx === idx) return
+        setPhotos(prev => {
+            const arr = [...prev]
+            const [item] = arr.splice(dragPhotoIdx, 1)
+            arr.splice(idx, 0, item)
+            return arr
+        })
+        setDragPhotoIdx(idx)
+    }
+
+    function handlePhotoDragEnd() {
+        setDragPhotoIdx(null)
+    }
+
+    function getSlotPreview(slot: PhotoSlot): string {
+        return slot.kind === 'existing' ? slot.path : slot.previewUrl
+    }
+
+    async function buildFinalPhotoPaths(): Promise<string[]> {
+        const paths: string[] = []
+        for (const slot of photos) {
+            if (slot.kind === 'existing') {
+                paths.push(slot.path)
+            } else {
+                const fd = new FormData()
+                fd.append('file', slot.file)
+                fd.append('manufacturerSlug', manufacturer.slug)
+                const res = await fetch('/api/admin/cameras/photos', { method: 'POST', body: fd })
+                const data = await res.json()
+                if (!res.ok) throw new Error(data.error ?? 'Failed to upload image')
+                paths.push(data.path)
+            }
+        }
+        return paths
+    }
+
+    async function handleAdd() {
+        if (!nameInput.trim()) return
+        setLoading(true)
+        setError(null)
+        try {
+            const productPhotos = await buildFinalPhotoPaths()
+            const res = await fetch('/api/admin/cameras', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: nameInput.trim(),
+                    cameraManufacturerId: manufacturer.id,
+                    interchangeableLens,
+                    cameraMountId: interchangeableLens && mountId !== '' ? mountId : null,
+                    productPhotos,
+                    exifId: exifIdInput.trim() || null,
+                }),
+            })
+            const data = await res.json()
+            if (!res.ok) { setError(data.error ?? 'Failed to create'); return }
+            router.refresh()
+            close()
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Network error')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    async function handleEdit() {
+        if (!target || !nameInput.trim()) return
+        setLoading(true)
+        setError(null)
+        try {
+            const productPhotos = await buildFinalPhotoPaths()
+            const res = await fetch(`/api/admin/cameras?id=${target.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: nameInput.trim(),
+                    cameraManufacturerId: manufacturer.id,
+                    interchangeableLens,
+                    cameraMountId: interchangeableLens && mountId !== '' ? mountId : null,
+                    productPhotos,
+                    exifId: exifIdInput.trim() || null,
+                }),
+            })
+            const data = await res.json()
+            if (!res.ok) { setError(data.error ?? 'Failed to update'); return }
+            router.refresh()
+            close()
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Network error')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    async function handleDelete() {
+        if (!target) return
+        setLoading(true)
+        setError(null)
+        try {
+            const res = await fetch(`/api/admin/cameras?id=${target.id}`, { method: 'DELETE' })
+            const data = await res.json()
+            if (!res.ok) { setError(data.error ?? 'Failed to delete'); return }
+            setCameras(prev => prev.filter(c => c.id !== target.id))
+            close()
+        } catch {
+            setError('Network error')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <>
+            <div className="mb-6 flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-900">
+                    All {manufacturer.name} Camera Models
+                </h2>
+                <div className="flex items-center gap-3">
+                    {isSuperuser && (
+                        <button
+                            onClick={openAdd}
+                            className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add camera
+                        </button>
+                    )}
+                    <Link
+                        href="/cameras"
+                        className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                    >
+                        ← Back to Cameras
+                    </Link>
+                </div>
+            </div>
+
+            {cameras.length > 0 ? (
+                <div className="flex justify-center">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl w-full">
+                        {cameras.map((camera) => (
+                            <div key={camera.id} className="relative group/card">
+                                <Link
+                                    href={`/cameras/${manufacturer.slug}/${camera.slug}`}
+                                    className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group overflow-hidden"
+                                >
+                                    <div className="relative w-full h-48 bg-gray-100">
+                                        <HousingImage
+                                            src={camera.imageInfo.src}
+                                            fallback={camera.imageInfo.fallback}
+                                            alt={camera.name}
+                                            className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                                        />
+                                    </div>
+                                    <div className="p-5">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
+                                                {camera.name}
+                                            </h3>
+                                            {camera.cameraMount && (
+                                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded flex-shrink-0 ml-2">
+                                                    {camera.cameraMount.slug.toUpperCase()}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="space-y-1 text-sm mb-4">
+                                            {camera.cameraMount && (
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">Mount:</span>
+                                                    <span className="font-medium">{camera.cameraMount.name}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-600">Housings:</span>
+                                                <span className="font-medium text-green-700">{camera.housings.length} available</span>
+                                            </div>
+                                        </div>
+                                        <div className="pt-3 border-t border-gray-100">
+                                            <div className="flex items-center justify-between text-xs text-gray-500 group-hover:text-blue-600 transition-colors">
+                                                <span>View details</span>
+                                                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Link>
+
+                                {isSuperuser && (
+                                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={() => openEdit(camera)}
+                                            title="Edit"
+                                            className="w-7 h-7 bg-white border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-blue-600 hover:border-blue-300 shadow-sm transition-colors"
+                                        >
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            onClick={() => openDelete(camera)}
+                                            title="Delete"
+                                            className="w-7 h-7 bg-white border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-red-600 hover:border-red-300 shadow-sm transition-colors"
+                                        >
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a1 1 0 00-1-1H8a1 1 0 00-1 1h10z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ) : (
+                <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                    <div className="text-6xl mb-4">📷</div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No cameras found</h3>
+                    <p className="text-gray-600 mb-4">
+                        No camera models are currently available for {manufacturer.name}.
+                    </p>
+                    <Link href="/cameras" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Browse all manufacturers
+                    </Link>
+                </div>
+            )}
+
+            {/* Add / Edit modal */}
+            {(modal === 'add' || modal === 'edit') && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+                    onClick={(e) => { if (e.target === e.currentTarget) close() }}
+                >
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                            {modal === 'edit' ? 'Edit camera' : 'Add camera'}
+                        </h3>
+
+                        {/* Name */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <input
+                            autoFocus
+                            type="text"
+                            value={nameInput}
+                            onChange={e => setNameInput(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') handleAdd() }}
+                            placeholder={`e.g. ${manufacturer.name} A7R V`}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        {/* Interchangeable lens */}
+                        <label className="flex items-center gap-2.5 mb-4 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={interchangeableLens}
+                                onChange={e => {
+                                    setInterchangeableLens(e.target.checked)
+                                    if (!e.target.checked) setMountId('')
+                                }}
+                                className="w-4 h-4 accent-blue-600"
+                            />
+                            <span className="text-sm font-medium text-gray-700">Interchangeable lens camera</span>
+                        </label>
+
+                        {/* Camera mount */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Camera mount</label>
+                        <select
+                            value={mountId}
+                            onChange={e => setMountId(e.target.value ? parseInt(e.target.value) : '')}
+                            disabled={!interchangeableLens}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                        >
+                            <option value="">— None —</option>
+                            {cameraMounts.map(m => (
+                                <option key={m.id} value={m.id}>{m.name}</option>
+                            ))}
+                        </select>
+
+                        {/* EXIF ID */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">EXIF camera ID</label>
+                        <input
+                            type="text"
+                            value={exifIdInput}
+                            onChange={e => setExifIdInput(e.target.value)}
+                            placeholder="e.g. ILCE-7RM5"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        {/* Product photos */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product photos</label>
+                        <div
+                            className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors mb-3"
+                            onClick={() => fileInputRef.current?.click()}
+                            onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy' }}
+                            onDrop={e => { e.preventDefault(); handleFilesAdd(e.dataTransfer.files) }}
+                        >
+                            <svg className="w-6 h-6 mx-auto text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4-4a3 3 0 014.24 0L16 16m-2-2l2-2a3 3 0 014.24 0L22 16M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p className="text-sm text-gray-500">Click or drag images here</p>
+                            <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP, AVIF · max 20 MB each</p>
+                        </div>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={e => handleFilesAdd(e.target.files)}
+                        />
+
+                        {photos.length > 0 && (
+                            <div className="grid grid-cols-4 gap-2 mb-4">
+                                {photos.map((slot, idx) => (
+                                    <div
+                                        key={slot.kind === 'new' ? slot.id : slot.path + idx}
+                                        draggable
+                                        onDragStart={e => handlePhotoDragStart(e, idx)}
+                                        onDragOver={e => handlePhotoDragOver(e, idx)}
+                                        onDragEnd={handlePhotoDragEnd}
+                                        className={`relative group/photo aspect-square rounded-lg overflow-hidden border-2 cursor-grab active:cursor-grabbing transition-all ${dragPhotoIdx === idx ? 'opacity-40 border-blue-400 scale-95' : 'border-gray-200 hover:border-gray-400'}`}
+                                    >
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={getSlotPreview(slot)} alt="" className="w-full h-full object-cover" />
+                                        {idx === 0 && (
+                                            <span className="absolute bottom-0 left-0 right-0 text-center bg-blue-600 text-white text-xs py-0.5 font-medium">
+                                                Cover
+                                            </span>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => removePhoto(idx)}
+                                            className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover/photo:opacity-100 transition-opacity text-xs leading-none"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+                        <div className="flex justify-end gap-3">
+                            <button onClick={close} className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900">Cancel</button>
+                            <button
+                                onClick={modal === 'edit' ? handleEdit : handleAdd}
+                                disabled={loading || !nameInput.trim()}
+                                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                            >
+                                {loading ? 'Saving…' : modal === 'edit' ? 'Save' : 'Add'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete confirmation modal */}
+            {modal === 'delete' && target && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+                    onClick={(e) => { if (e.target === e.currentTarget) close() }}
+                >
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete camera?</h3>
+                        <p className="text-sm text-gray-600 mb-1">
+                            Are you sure you want to delete <strong>{target.name}</strong>?
+                        </p>
+                        {target.housings.length > 0 && (
+                            <p className="text-sm text-amber-600 mb-4">
+                                This camera has {target.housings.length} housing{target.housings.length !== 1 ? 's' : ''} associated with it and cannot be deleted.
+                            </p>
+                        )}
+                        {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+                        <div className="flex justify-end gap-3">
+                            <button onClick={close} className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900">Cancel</button>
+                            <button
+                                onClick={handleDelete}
+                                disabled={loading || target.housings.length > 0}
+                                className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+                            >
+                                {loading ? 'Deleting…' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    )
+}

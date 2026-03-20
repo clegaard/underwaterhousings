@@ -1,5 +1,13 @@
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/auth'
+
+async function requireSuperuser() {
+    const session = await auth()
+    const user = session?.user as { isSuperuser?: boolean } | undefined
+    if (!user?.isSuperuser) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    return null
+}
 
 // Function to create URL-friendly slugs
 function createSlug(text: string): string {
@@ -29,6 +37,8 @@ export async function GET() {
 
 // POST - Create new camera manufacturer
 export async function POST(request: NextRequest) {
+    const denied = await requireSuperuser()
+    if (denied) return denied
     try {
         const body = await request.json()
         const { name } = body
@@ -73,6 +83,8 @@ export async function POST(request: NextRequest) {
 
 // PUT - Update camera manufacturer
 export async function PUT(request: NextRequest) {
+    const denied = await requireSuperuser()
+    if (denied) return denied
     try {
         const { searchParams } = new URL(request.url)
         const id = searchParams.get('id')
@@ -131,6 +143,8 @@ export async function PUT(request: NextRequest) {
 
 // DELETE - Delete camera manufacturer
 export async function DELETE(request: NextRequest) {
+    const denied = await requireSuperuser()
+    if (denied) return denied
     try {
         const { searchParams } = new URL(request.url)
         const id = searchParams.get('id')
