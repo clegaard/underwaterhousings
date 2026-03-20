@@ -62,7 +62,7 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
     }
 
     const galleryPhotos = await prisma.galleryPhoto.findMany({
-        where: { cameraRig: { housingId: housing.id } },
+        where: { housingId: housing.id },
         orderBy: { takenAt: 'desc' },
         take: 12,
     })
