@@ -169,14 +169,6 @@ export default function Navigation({ manufacturers, cameraManufacturers }: Navig
                             About
                         </Link>
 
-                        {/* Admin Panel */}
-                        <Link
-                            href="/admin"
-                            className="text-gray-700 hover:text-red-600 transition-colors font-medium bg-gray-100 px-3 py-1 rounded-md text-sm"
-                        >
-                            ⚙️ Admin
-                        </Link>
-
                         {/* Auth */}
                         {session ? (
                             <div className="relative" ref={userMenuRef}>
