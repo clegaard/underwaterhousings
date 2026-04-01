@@ -29,7 +29,33 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         // Key order defines the selection cascade; clearing a key clears everything after it
         const cascade = ['cameraBrand', 'cameraModel', 'lens', 'housing', 'port']
         const firstChanged = cascade.findIndex(k => k in updates)
-        // Clear all keys downstream of the first changed key
+
+        // Special case: when only the lens changes, housing is always still compatible
+        // (it's filtered by camera, not lens). Only clear port if the new lens is
+        // incompatible with the currently selected port.
+        if (firstChanged === 2 && Object.keys(updates).length === 1 && 'lens' in updates) {
+            Object.entries(updates).forEach(([k, v]) => {
+                if (v) params.set(k, v)
+                else params.delete(k)
+            })
+            const newLensName = updates['lens']
+            if (!newLensName) {
+                // Lens was cleared — port requires a lens, so clear it too
+                params.delete('port')
+            } else if (portName && selectedHousing) {
+                const newLens = lenses.find((l: any) => l.name === newLensName) ?? null
+                const portStillValid = newLens && ports.some((p: any) =>
+                    p.name === portName &&
+                    p.housingMountId === selectedHousing.housingMount?.id &&
+                    p.lens?.some((l: any) => l.id === newLens.id)
+                )
+                if (!portStillValid) params.delete('port')
+            }
+            router.replace(`/?${params.toString()}`, { scroll: false })
+            return
+        }
+
+        // Default: clear all keys downstream of the first changed key
         cascade.slice(firstChanged + 1).forEach(k => {
             if (!(k in updates)) params.delete(k)
         })
