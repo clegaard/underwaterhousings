@@ -1,0 +1,485 @@
+'use client'
+
+import { useState, useRef } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { HousingImage } from '@/components/HousingImage'
+
+interface Housing {
+    id: number
+    name: string
+    slug: string
+    depthRating: number | null
+    priceAmount: number | null
+    priceCurrency: string | null
+    camera: { id: number; name: string; brand: { name: string } } | null
+    imageInfo: { src: string; fallback: string }
+}
+
+interface Manufacturer {
+    id: number
+    name: string
+    slug: string
+}
+
+interface HousingMount {
+    id: number
+    name: string
+    slug: string
+}
+
+interface Camera {
+    id: number
+    name: string
+    brand: { name: string }
+}
+
+type PhotoSlot =
+    | { kind: 'existing'; path: string }
+    | { kind: 'new'; id: string; file: File; previewUrl: string }
+
+interface Props {
+    housings: Housing[]
+    manufacturer: Manufacturer
+    housingMounts: HousingMount[]
+    cameras: Camera[]
+    isSuperuser: boolean
+}
+
+export default function HousingManufacturerHousingsClient({
+    housings: initial,
+    manufacturer,
+    housingMounts,
+    cameras,
+    isSuperuser,
+}: Props) {
+    const router = useRouter()
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
+    const [showModal, setShowModal] = useState(false)
+
+    // Form state
+    const [nameInput, setNameInput] = useState('')
+    const [cameraSearch, setCameraSearch] = useState('')
+    const [cameraId, setCameraId] = useState<number | ''>('')
+    const [mountId, setMountId] = useState<number | ''>('')
+    const [depthRating, setDepthRating] = useState('')
+    const [priceAmount, setPriceAmount] = useState('')
+    const [priceCurrency, setPriceCurrency] = useState('USD')
+    const [photos, setPhotos] = useState<PhotoSlot[]>([])
+    const [dragPhotoIdx, setDragPhotoIdx] = useState<number | null>(null)
+
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+
+    // Filtered cameras for the search dropdown
+    const filteredCameras = cameras.filter(c =>
+        cameraSearch.trim() === '' ||
+        `${c.brand.name} ${c.name}`.toLowerCase().includes(cameraSearch.toLowerCase())
+    )
+    const selectedCamera = cameras.find(c => c.id === cameraId) ?? null
+
+    function resetForm() {
+        setNameInput('')
+        setCameraSearch('')
+        setCameraId('')
+        setMountId('')
+        setDepthRating('')
+        setPriceAmount('')
+        setPriceCurrency('USD')
+        setPhotos(prev => {
+            prev.forEach(p => { if (p.kind === 'new') URL.revokeObjectURL(p.previewUrl) })
+            return []
+        })
+        setDragPhotoIdx(null)
+        setError(null)
+    }
+
+    function openModal() {
+        resetForm()
+        setShowModal(true)
+    }
+
+    function close() {
+        resetForm()
+        setShowModal(false)
+    }
+
+    function handleFilesAdd(files: FileList | null) {
+        if (!files) return
+        const items: PhotoSlot[] = Array.from(files)
+            .filter(f => f.type.startsWith('image/'))
+            .map(file => ({
+                kind: 'new' as const,
+                id: Math.random().toString(36).slice(2),
+                file,
+                previewUrl: URL.createObjectURL(file),
+            }))
+        setPhotos(prev => [...prev, ...items])
+    }
+
+    function removePhoto(idx: number) {
+        setPhotos(prev => {
+            const item = prev[idx]
+            if (item?.kind === 'new') URL.revokeObjectURL(item.previewUrl)
+            return prev.filter((_, i) => i !== idx)
+        })
+    }
+
+    function handlePhotoDragStart(e: React.DragEvent, idx: number) {
+        e.dataTransfer.effectAllowed = 'move'
+        setDragPhotoIdx(idx)
+    }
+
+    function handlePhotoDragOver(e: React.DragEvent, idx: number) {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'move'
+        if (dragPhotoIdx === null || dragPhotoIdx === idx) return
+        setPhotos(prev => {
+            const arr = [...prev]
+            const [item] = arr.splice(dragPhotoIdx, 1)
+            arr.splice(idx, 0, item)
+            return arr
+        })
+        setDragPhotoIdx(idx)
+    }
+
+    function handlePhotoDragEnd() {
+        setDragPhotoIdx(null)
+    }
+
+    function getSlotPreview(slot: PhotoSlot): string {
+        return slot.kind === 'existing' ? slot.path : slot.previewUrl
+    }
+
+    async function buildFinalPhotoPaths(): Promise<string[]> {
+        const paths: string[] = []
+        for (const slot of photos) {
+            if (slot.kind === 'existing') {
+                paths.push(slot.path)
+            } else {
+                const fd = new FormData()
+                fd.append('file', slot.file)
+                fd.append('manufacturerSlug', manufacturer.slug)
+                const res = await fetch('/api/admin/housings/photos', { method: 'POST', body: fd })
+                const data = await res.json()
+                if (!res.ok) throw new Error(data.error ?? 'Failed to upload image')
+                paths.push(data.path)
+            }
+        }
+        return paths
+    }
+
+    async function handleAdd() {
+        if (!nameInput.trim() || !cameraId) return
+        setLoading(true)
+        setError(null)
+        try {
+            const productPhotos = await buildFinalPhotoPaths()
+            const res = await fetch('/api/admin/housings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: nameInput.trim(),
+                    housingManufacturerId: manufacturer.id,
+                    cameraId,
+                    housingMountId: mountId !== '' ? mountId : null,
+                    depthRating: depthRating ? parseInt(depthRating) : undefined,
+                    priceAmount: priceAmount ? priceAmount : undefined,
+                    priceCurrency,
+                    productPhotos,
+                }),
+            })
+            const data = await res.json()
+            if (!res.ok) { setError(data.error ?? 'Failed to create'); return }
+            router.refresh()
+            close()
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Network error')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <>
+            <div className="mb-6 flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-900">
+                    All {manufacturer.name} Housings
+                </h2>
+                <div className="flex items-center gap-3">
+                    {isSuperuser && (
+                        <button
+                            onClick={openModal}
+                            className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add housing
+                        </button>
+                    )}
+                    <Link
+                        href="/"
+                        className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                    >
+                        ← Back to Search
+                    </Link>
+                </div>
+            </div>
+
+            {initial.length > 0 ? (
+                <div className="flex justify-center">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl">
+                        {initial.map((housing) => (
+                            <Link
+                                key={housing.id}
+                                href={`/housings/${manufacturer.slug}/${housing.slug}`}
+                                className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group overflow-hidden"
+                            >
+                                <div className="relative w-full h-48 bg-gray-100">
+                                    <HousingImage
+                                        src={housing.imageInfo.src}
+                                        fallback={housing.imageInfo.fallback}
+                                        alt={housing.name}
+                                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex justify-between items-start mb-3">
+                                        <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
+                                            {housing.name}
+                                        </h3>
+                                        {housing.camera && (
+                                            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded flex-shrink-0 ml-2">
+                                                {housing.camera.brand.name} {housing.camera.name}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="space-y-2 text-sm">
+                                        {housing.depthRating != null && (
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-600">Depth Rating:</span>
+                                                <span className="font-medium text-green-700">{housing.depthRating}m</span>
+                                            </div>
+                                        )}
+                                        {housing.priceAmount != null && (
+                                            <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                                                <span className="text-gray-600">Price:</span>
+                                                <span className="font-bold text-green-600 text-lg">
+                                                    ${housing.priceAmount.toLocaleString()} {housing.priceCurrency}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="mt-4 pt-3 border-t border-gray-100">
+                                        <div className="flex items-center justify-between text-xs text-gray-500 group-hover:text-blue-600 transition-colors">
+                                            <span>View details</span>
+                                            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            ) : (
+                <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                    <div className="text-6xl mb-4">🤿</div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No housings found</h3>
+                    <p className="text-gray-600 mb-4">
+                        No housings are currently available from {manufacturer.name}.
+                    </p>
+                    <Link href="/" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Browse all manufacturers
+                    </Link>
+                </div>
+            )}
+
+            {/* Add housing modal */}
+            {showModal && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+                    onClick={(e) => { if (e.target === e.currentTarget) close() }}
+                >
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add housing</h3>
+
+                        {/* Name */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <input
+                            autoFocus
+                            type="text"
+                            value={nameInput}
+                            onChange={e => setNameInput(e.target.value)}
+                            placeholder={`e.g. ${manufacturer.name} NA-A7IV`}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        {/* Compatible camera body */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Compatible camera body <span className="text-red-500">*</span>
+                        </label>
+                        {selectedCamera ? (
+                            <div className="flex items-center gap-2 mb-4">
+                                <span className="flex-1 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-900 font-medium">
+                                    {selectedCamera.brand.name} {selectedCamera.name}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => { setCameraId(''); setCameraSearch('') }}
+                                    className="text-sm text-gray-500 hover:text-red-600 px-2 py-1"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <input
+                                    type="text"
+                                    value={cameraSearch}
+                                    onChange={e => setCameraSearch(e.target.value)}
+                                    placeholder="Search cameras…"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-1"
+                                />
+                                <div className="border border-gray-200 rounded-lg mb-4 max-h-44 overflow-y-auto">
+                                    {filteredCameras.length === 0 ? (
+                                        <p className="px-3 py-2 text-sm text-gray-400">No cameras found</p>
+                                    ) : (
+                                        filteredCameras.map(c => (
+                                            <button
+                                                key={c.id}
+                                                type="button"
+                                                onClick={() => { setCameraId(c.id); setCameraSearch('') }}
+                                                className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-gray-100 last:border-b-0"
+                                            >
+                                                <span className="text-gray-500 mr-1">{c.brand.name}</span>
+                                                {c.name}
+                                            </button>
+                                        ))
+                                    )}
+                                </div>
+                            </>
+                        )}
+
+                        {/* Port system (housing mount) */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Port system</label>
+                        <select
+                            value={mountId}
+                            onChange={e => setMountId(e.target.value ? parseInt(e.target.value) : '')}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        >
+                            <option value="">— None —</option>
+                            {housingMounts.map(m => (
+                                <option key={m.id} value={m.id}>{m.name}</option>
+                            ))}
+                        </select>
+
+                        {/* Depth rating */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Max depth rating (m)</label>
+                        <input
+                            type="number"
+                            min="0"
+                            value={depthRating}
+                            onChange={e => setDepthRating(e.target.value)}
+                            placeholder="e.g. 100"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        {/* Price */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                        <div className="flex gap-2 mb-4">
+                            <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={priceAmount}
+                                onChange={e => setPriceAmount(e.target.value)}
+                                placeholder="e.g. 3595"
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                            />
+                            <select
+                                value={priceCurrency}
+                                onChange={e => setPriceCurrency(e.target.value)}
+                                className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                            >
+                                <option>USD</option>
+                                <option>EUR</option>
+                                <option>GBP</option>
+                                <option>JPY</option>
+                                <option>AUD</option>
+                            </select>
+                        </div>
+
+                        {/* Product photos */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product photos</label>
+                        <div
+                            className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors mb-3"
+                            onClick={() => fileInputRef.current?.click()}
+                            onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy' }}
+                            onDrop={e => { e.preventDefault(); handleFilesAdd(e.dataTransfer.files) }}
+                        >
+                            <svg className="w-6 h-6 mx-auto text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4-4a3 3 0 014.24 0L16 16m-2-2l2-2a3 3 0 014.24 0L22 16M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p className="text-sm text-gray-500">Click or drag images here</p>
+                            <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP, AVIF · max 20 MB each</p>
+                        </div>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={e => handleFilesAdd(e.target.files)}
+                        />
+
+                        {photos.length > 0 && (
+                            <div className="grid grid-cols-4 gap-2 mb-4">
+                                {photos.map((slot, idx) => (
+                                    <div
+                                        key={slot.kind === 'new' ? slot.id : slot.path + idx}
+                                        draggable
+                                        onDragStart={e => handlePhotoDragStart(e, idx)}
+                                        onDragOver={e => handlePhotoDragOver(e, idx)}
+                                        onDragEnd={handlePhotoDragEnd}
+                                        className={`relative group/photo aspect-square rounded-lg overflow-hidden border-2 cursor-grab active:cursor-grabbing transition-all ${dragPhotoIdx === idx ? 'opacity-40 border-blue-400 scale-95' : 'border-gray-200 hover:border-gray-400'}`}
+                                    >
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={getSlotPreview(slot)} alt="" className="w-full h-full object-cover" />
+                                        {idx === 0 && (
+                                            <span className="absolute bottom-0 left-0 right-0 text-center bg-blue-600 text-white text-xs py-0.5 font-medium">
+                                                Cover
+                                            </span>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => removePhoto(idx)}
+                                            className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover/photo:opacity-100 transition-opacity text-xs leading-none"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+                        <div className="flex justify-end gap-3">
+                            <button onClick={close} className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900">Cancel</button>
+                            <button
+                                onClick={handleAdd}
+                                disabled={loading || !nameInput.trim() || !cameraId}
+                                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                            >
+                                {loading ? 'Saving…' : 'Add housing'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    )
+}

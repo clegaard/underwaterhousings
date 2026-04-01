@@ -1,8 +1,8 @@
 import { prisma } from '@/lib/prisma'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getHousingImagePathWithFallback } from '@/lib/images'
-import { HousingImage } from '@/components/HousingImage'
+import { auth } from '@/auth'
+import HousingManufacturerHousingsClient from '@/components/HousingManufacturerHousingsClient'
 
 interface ManufacturerPageProps {
     params: {
@@ -13,25 +13,17 @@ interface ManufacturerPageProps {
 async function getManufacturerHousings(manufacturerSlug: string) {
     try {
         const manufacturer = await prisma.housingManufacturer.findUnique({
-            where: {
-                slug: manufacturerSlug
-            },
+            where: { slug: manufacturerSlug },
             include: {
                 housings: {
                     include: {
-                        Camera: {
-                            include: {
-                                brand: true
-                            }
-                        }
+                        Camera: { include: { brand: true } }
                     },
-                    orderBy: {
-                        name: 'asc'
-                    }
-                }
+                    orderBy: { name: 'asc' }
+                },
+                housingMounts: { orderBy: { name: 'asc' } }
             }
         })
-
         return manufacturer
     } catch (error) {
         console.error('Error fetching manufacturer housings:', error)
@@ -40,21 +32,42 @@ async function getManufacturerHousings(manufacturerSlug: string) {
 }
 
 export default async function ManufacturerPage({ params }: ManufacturerPageProps) {
-    const manufacturer = await getManufacturerHousings(params.manufacturer)
+    const [manufacturer, session, allCameras] = await Promise.all([
+        getManufacturerHousings(params.manufacturer),
+        auth(),
+        prisma.camera.findMany({ include: { brand: true }, orderBy: { name: 'asc' } }),
+    ])
 
     if (!manufacturer) {
         notFound()
     }
 
-    // Convert Decimal fields to numbers and pre-resolve image paths
-    const housingsData = manufacturer.housings.map(housing => {
-        const imageInfo = getHousingImagePathWithFallback(housing.productPhotos)
-        return {
-            ...housing,
-            priceAmount: housing.priceAmount ? Number(housing.priceAmount) : null,
-            imageInfo
-        }
-    })
+    const isSuperuser = !!(session?.user as { isSuperuser?: boolean } | undefined)?.isSuperuser
+
+    const housingsData = manufacturer.housings.map(housing => ({
+        id: housing.id,
+        name: housing.name,
+        slug: housing.slug,
+        depthRating: housing.depthRating,
+        priceAmount: housing.priceAmount ? Number(housing.priceAmount) : null,
+        priceCurrency: housing.priceCurrency,
+        camera: housing.Camera
+            ? { id: housing.Camera.id, name: housing.Camera.name, brand: { name: housing.Camera.brand.name } }
+            : null,
+        imageInfo: getHousingImagePathWithFallback(housing.productPhotos),
+    }))
+
+    const cameras = allCameras.map(c => ({
+        id: c.id,
+        name: c.name,
+        brand: { name: c.brand.name },
+    }))
+
+    const housingMounts = manufacturer.housingMounts.map(m => ({
+        id: m.id,
+        name: m.name,
+        slug: m.slug,
+    }))
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
@@ -78,116 +91,13 @@ export default async function ManufacturerPage({ params }: ManufacturerPageProps
 
             {/* Content */}
             <div className="max-w-6xl mx-auto px-4 py-8">
-                <div className="mb-6 flex justify-between items-center">
-                    <h2 className="text-2xl font-bold text-gray-900">
-                        All {manufacturer.name} Housings
-                    </h2>
-                    <Link
-                        href="/"
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        ← Back to Search
-                    </Link>
-                </div>
-
-                {housingsData.length > 0 ? (
-                    <div className="flex justify-center">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl">
-                            {housingsData.map((housing) => {
-                                // Use database slugs for SEO-friendly URLs with new structure
-                                const detailUrl = `/housings/${manufacturer.slug}/${housing.slug}`
-
-                                // Use pre-resolved image paths
-                                const imageInfo = housing.imageInfo
-
-                                return (
-                                    <Link
-                                        key={housing.id}
-                                        href={detailUrl}
-                                        className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group overflow-hidden"
-                                    >
-                                        {/* Housing Image */}
-                                        <div className="relative w-full h-48 bg-gray-100">
-                                            <HousingImage
-                                                src={imageInfo.src}
-                                                fallback={imageInfo.fallback}
-                                                alt={housing.name}
-                                                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                            />
-                                        </div>
-
-                                        <div className="p-6">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
-                                                    {housing.name}
-                                                </h3>
-                                                {housing.Camera && (
-                                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                                                        {housing.Camera.brand.name} {housing.Camera.name}
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            <h4 className="text-sm font-medium text-gray-800 mb-2">{housing.name}</h4>
-                                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                                                {housing.description || `Professional underwater housing for ${housing.Camera?.brand.name} ${housing.Camera?.name}`}
-                                            </p>
-
-                                            <div className="space-y-2 text-sm">
-                                                {housing.depthRating && (
-                                                    <div className="flex justify-between">
-                                                        <span className="text-gray-600">Depth Rating:</span>
-                                                        <span className="font-medium text-green-700">{housing.depthRating}m</span>
-                                                    </div>
-                                                )}
-
-                                                {housing.material && (
-                                                    <div className="flex justify-between">
-                                                        <span className="text-gray-600">Material:</span>
-                                                        <span className="font-medium">{housing.material}</span>
-                                                    </div>
-                                                )}
-
-                                                {housing.priceAmount && (
-                                                    <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                                                        <span className="text-gray-600">Price:</span>
-                                                        <span className="font-bold text-green-600 text-lg">
-                                                            ${Number(housing.priceAmount).toLocaleString()} {housing.priceCurrency}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Click indicator */}
-                                            <div className="mt-4 pt-3 border-t border-gray-100">
-                                                <div className="flex items-center justify-between text-xs text-gray-500 group-hover:text-blue-600 transition-colors">
-                                                    <span>View details</span>
-                                                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                                    </svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                )
-                            })}
-                        </div>
-                    </div>
-                ) : (
-                    <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                        <div className="text-6xl mb-4">📷</div>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No housings found</h3>
-                        <p className="text-gray-600 mb-4">
-                            No housings are currently available from {manufacturer.name}
-                        </p>
-                        <Link
-                            href="/"
-                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                            Browse all manufacturers
-                        </Link>
-                    </div>
-                )}
+                <HousingManufacturerHousingsClient
+                    housings={housingsData}
+                    manufacturer={{ id: manufacturer.id, name: manufacturer.name, slug: manufacturer.slug }}
+                    housingMounts={housingMounts}
+                    cameras={cameras}
+                    isSuperuser={isSuperuser}
+                />
             </div>
         </div>
     )

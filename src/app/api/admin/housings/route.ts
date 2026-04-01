@@ -1,5 +1,14 @@
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
 import { NextRequest, NextResponse } from 'next/server'
+
+async function requireSuperuser() {
+    const session = await auth()
+    if (!(session?.user as { isSuperuser?: boolean } | undefined)?.isSuperuser) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    return null
+}
 
 // Function to create URL-friendly slugs
 function createSlug(text: string): string {
@@ -37,6 +46,8 @@ export async function GET() {
 
 // POST - Create new housing
 export async function POST(request: NextRequest) {
+    const denied = await requireSuperuser()
+    if (denied) return denied
     try {
         const body = await request.json()
         const {
@@ -47,7 +58,9 @@ export async function POST(request: NextRequest) {
             depthRating,
             material,
             housingManufacturerId,
-            cameraId
+            cameraId,
+            housingMountId,
+            productPhotos,
         } = body
 
         if (!name || !housingManufacturerId || !cameraId) {
@@ -109,7 +122,9 @@ export async function POST(request: NextRequest) {
                 depthRating: depthRating ? parseInt(depthRating) : 0,
                 material: material || null,
                 housingManufacturerId,
-                cameraId
+                cameraId,
+                housingMountId: housingMountId ?? null,
+                productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
             },
             include: {
                 manufacturer: true,
@@ -133,6 +148,8 @@ export async function POST(request: NextRequest) {
 
 // PUT - Update housing
 export async function PUT(request: NextRequest) {
+    const denied = await requireSuperuser()
+    if (denied) return denied
     try {
         const { searchParams } = new URL(request.url)
         const id = searchParams.get('id')
@@ -153,7 +170,9 @@ export async function PUT(request: NextRequest) {
             depthRating,
             material,
             housingManufacturerId,
-            cameraId
+            cameraId,
+            housingMountId,
+            productPhotos,
         } = body
 
         // Validate required fields
@@ -217,7 +236,9 @@ export async function PUT(request: NextRequest) {
                 depthRating: depthRating ? parseInt(depthRating) : 0,
                 material: material || null,
                 housingManufacturerId,
-                cameraId
+                cameraId,
+                housingMountId: housingMountId ?? null,
+                productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
             },
             include: {
                 manufacturer: true,
@@ -241,6 +262,8 @@ export async function PUT(request: NextRequest) {
 
 // DELETE - Delete housing
 export async function DELETE(request: NextRequest) {
+    const denied = await requireSuperuser()
+    if (denied) return denied
     try {
         const { searchParams } = new URL(request.url)
         const id = searchParams.get('id')

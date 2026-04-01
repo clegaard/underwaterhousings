@@ -77,6 +77,11 @@ export default async function RigBuilderPage({ searchParams }: RigBuilderPagePro
     const housingPrice = housing.priceAmount ? Number(housing.priceAmount) : null
     const currency = housing.priceCurrency ?? 'USD'
 
+    const galleryParams = new URLSearchParams({ camera: camera.slug, housing: housing.slug })
+    if (lens) galleryParams.set('lens', lens.slug)
+    if (port) galleryParams.set('port', port.slug)
+    const galleryUrl = `/gallery?${galleryParams.toString()}`
+
     const title = [
         `${camera.brand.name} ${camera.name}`,
         lens?.name,
@@ -242,6 +247,12 @@ export default async function RigBuilderPage({ searchParams }: RigBuilderPagePro
                                     >
                                         View Housing Details
                                     </Link>
+                                    <Link
+                                        href={galleryUrl}
+                                        className="w-full bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-center block"
+                                    >
+                                        📷 View Photos
+                                    </Link>
                                 </div>
                             </div>
 
@@ -341,7 +352,7 @@ export default async function RigBuilderPage({ searchParams }: RigBuilderPagePro
                             ))}
                         </div>
                         <div className="mt-4 text-right">
-                            <Link href={`/gallery?camera=${camera.slug}`} className="text-sm text-blue-600 hover:text-blue-800">
+                            <Link href={galleryUrl} className="text-sm text-blue-600 hover:text-blue-800">
                                 View all photos in gallery →
                             </Link>
                         </div>
