@@ -66,23 +66,32 @@ export default function Navigation({ manufacturers, cameraManufacturers }: Navig
 
                         {/* Housings Dropdown */}
                         <div className="relative" ref={housingsDropdownRef}>
-                            <button
-                                onClick={() => {
-                                    setIsHousingsOpen(!isHousingsOpen)
-                                    setIsCamerasOpen(false) // Close cameras dropdown
-                                }}
-                                className="flex items-center text-gray-700 hover:text-blue-900 transition-colors font-medium"
-                            >
-                                Housings
-                                <svg
-                                    className={`ml-1 h-4 w-4 transition-transform ${isHousingsOpen ? 'rotate-180' : ''}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
+                            <div className="flex items-center">
+                                <Link
+                                    href="/housings"
+                                    className="text-gray-700 hover:text-blue-900 transition-colors font-medium"
+                                    onClick={() => setIsHousingsOpen(false)}
                                 >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
+                                    Housings
+                                </Link>
+                                <button
+                                    onClick={() => {
+                                        setIsHousingsOpen(!isHousingsOpen)
+                                        setIsCamerasOpen(false)
+                                    }}
+                                    className="ml-1 p-0.5 text-gray-700 hover:text-blue-900 transition-colors"
+                                    aria-label="Browse housing manufacturers"
+                                >
+                                    <svg
+                                        className={`h-4 w-4 transition-transform ${isHousingsOpen ? 'rotate-180' : ''}`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                            </div>
 
                             {/* Dropdown Menu */}
                             {isHousingsOpen && (
@@ -111,23 +120,32 @@ export default function Navigation({ manufacturers, cameraManufacturers }: Navig
 
                         {/* Cameras Dropdown */}
                         <div className="relative" ref={camerasDropdownRef}>
-                            <button
-                                onClick={() => {
-                                    setIsCamerasOpen(!isCamerasOpen)
-                                    setIsHousingsOpen(false) // Close housings dropdown
-                                }}
-                                className="flex items-center text-gray-700 hover:text-blue-900 transition-colors font-medium"
-                            >
-                                Cameras
-                                <svg
-                                    className={`ml-1 h-4 w-4 transition-transform ${isCamerasOpen ? 'rotate-180' : ''}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
+                            <div className="flex items-center">
+                                <Link
+                                    href="/cameras"
+                                    className="text-gray-700 hover:text-blue-900 transition-colors font-medium"
+                                    onClick={() => setIsCamerasOpen(false)}
                                 >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
+                                    Cameras
+                                </Link>
+                                <button
+                                    onClick={() => {
+                                        setIsCamerasOpen(!isCamerasOpen)
+                                        setIsHousingsOpen(false)
+                                    }}
+                                    className="ml-1 p-0.5 text-gray-700 hover:text-blue-900 transition-colors"
+                                    aria-label="Browse camera manufacturers"
+                                >
+                                    <svg
+                                        className={`h-4 w-4 transition-transform ${isCamerasOpen ? 'rotate-180' : ''}`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                            </div>
 
                             {/* Dropdown Menu */}
                             {isCamerasOpen && (
