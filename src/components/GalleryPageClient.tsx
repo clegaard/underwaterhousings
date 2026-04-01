@@ -5,12 +5,14 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import GalleryGrid, { GalleryPhotoData } from './GalleryGrid'
 import GalleryUploadButton from './GalleryUploadButton'
+import { InitialFilterOptions } from '@/app/gallery/page'
 
 interface GalleryPageClientProps {
     photos: GalleryPhotoData[]
+    initialFilters?: InitialFilterOptions
 }
 
-export default function GalleryPageClient({ photos }: GalleryPageClientProps) {
+export default function GalleryPageClient({ photos, initialFilters }: GalleryPageClientProps) {
     const router = useRouter()
     const searchParams = useSearchParams()
 
@@ -98,32 +100,36 @@ export default function GalleryPageClient({ photos }: GalleryPageClientProps) {
         router.replace(`/gallery?${params.toString()}`, { scroll: false })
     }
 
-    // Derive unique [slug, displayName] pairs sorted by display name
+    // Derive unique [slug, displayName] pairs sorted by display name, merging in any initial filter option
     const cameras = useMemo(() => {
         const map = new Map<string, string>()
+        if (initialFilters?.camera) map.set(initialFilters.camera.slug, initialFilters.camera.name)
         photos.forEach((p) => { if (p.cameraSlug && p.cameraName) map.set(p.cameraSlug, p.cameraName) })
         return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]))
-    }, [photos])
+    }, [photos, initialFilters?.camera])
 
     const lenses = useMemo(() => {
         const map = new Map<string, string>()
+        if (initialFilters?.lens) map.set(initialFilters.lens.slug, initialFilters.lens.name)
         photos.forEach((p) => { if (p.lensSlug && p.lensName) map.set(p.lensSlug, p.lensName) })
         return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]))
-    }, [photos])
+    }, [photos, initialFilters?.lens])
 
     const housings = useMemo(() => {
         const map = new Map<string, string>()
+        if (initialFilters?.housing) map.set(initialFilters.housing.slug, initialFilters.housing.name)
         photos.forEach((p) => { if (p.housingSlug && p.housingName) map.set(p.housingSlug, p.housingName) })
         return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]))
-    }, [photos])
+    }, [photos, initialFilters?.housing])
 
     const ports = useMemo(
         () => {
             const map = new Map<string, string>()
+            if (initialFilters?.port) map.set(initialFilters.port.slug, initialFilters.port.name)
             photos.forEach((p) => { if (p.portSlug && p.portName) map.set(p.portSlug, p.portName) })
             return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]))
         },
-        [photos]
+        [photos, initialFilters?.port]
     )
 
     const filtered = useMemo(

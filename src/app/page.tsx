@@ -6,7 +6,7 @@ import HousingFilters from '@/components/HousingFilters'
 async function getHousingsData() {
     try {
         // Optimized: Reduced from 5 queries to 3 queries
-        const [housings, cameras, lenses] = await Promise.all([
+        const [housings, cameras, lenses, portsRaw] = await Promise.all([
             prisma.housing.findMany({
                 include: {
                     manufacturer: {
@@ -22,13 +22,7 @@ async function getHousingsData() {
                             cameraMount: true
                         }
                     },
-                    housingMount: true,
-                    ports: {
-                        include: {
-                            lens: true,
-                            housingMount: true
-                        }
-                    }
+                    housingMount: true
                 },
                 orderBy: {
                     name: 'asc'
@@ -51,6 +45,15 @@ async function getHousingsData() {
                 orderBy: {
                     name: 'asc'
                 }
+            }),
+            prisma.port.findMany({
+                include: {
+                    lens: true,
+                    housingMount: true
+                },
+                orderBy: {
+                    name: 'asc'
+                }
             })
         ])
 
@@ -65,22 +68,13 @@ async function getHousingsData() {
             a.name.localeCompare(b.name)
         )
 
-        // Derive ports from housings (no separate query needed)
-        const portsMap = new Map()
-        housings.forEach(housing => {
-            housing.ports.forEach(port => {
-                if (!portsMap.has(port.id)) {
-                    portsMap.set(port.id, port)
-                }
-            })
-        })
-        const ports = Array.from(portsMap.values()).map(port => {
+        const ports = portsRaw.map(port => {
             const imageInfo = getPortImagePathWithFallback(port.productPhotos)
             return {
                 ...port,
                 imageInfo
             }
-        }).sort((a, b) => a.name.localeCompare(b.name))
+        })
 
         return {
             housings: housings.map(housing => {

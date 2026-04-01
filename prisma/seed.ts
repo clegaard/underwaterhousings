@@ -488,7 +488,6 @@ async function main() {
             name: 'FL100',
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
-            housingId: housingA7IV.id,
             lens: { connect: [{ id: lensFE90MacroGOSS.id }, { id: lensFE2470GMII.id }, { id: lensFE24105F4GOSS.id }, { id: lensSigma2470dgdnii.id }] },
             slug: 'fl100',
             productPhotos: ['/ports/fl100.png']
@@ -501,7 +500,6 @@ async function main() {
             name: 'WA000S-A',
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
-            housingId: housingA7RV.id,
             lens: { connect: [{ id: lensFE24105F4GOSS.id }, { id: lensFE2470GM.id }, { id: lensFE2470GMII.id }] },
             slug: 'wa000s-a'
         }
@@ -513,7 +511,6 @@ async function main() {
             name: 'FL1655',
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
-            housingId: housingA7RV.id,
             lens: { connect: [{ id: lensFE2470F4ZAOSS.id }] },
             slug: 'fl1655'
         }
@@ -526,7 +523,6 @@ async function main() {
             name: 'WA005-B',
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
-            housingId: housingA7RV.id,
             lens: { connect: [{ id: lensFE1635GM.id }] },
             slug: 'wa005-b',
             productPhotos: ['/ports/wa005-b.png']
@@ -539,7 +535,6 @@ async function main() {
             name: 'WA005-F',
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
-            housingId: housingA7RV.id,
             lens: { connect: [{ id: lensFE1224F4G.id }, { id: lensFEPZ1635F4G.id }] },
             slug: 'wa005-f',
             productPhotos: ['/ports/wa005-f.png']
@@ -552,7 +547,6 @@ async function main() {
             name: 'FL2870',
             housingManufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
-            housingId: housingA7RV.id,
             lens: { connect: [{ id: lensEPZ18105F4GOSS.id }] },
             slug: 'fl2870',
             productPhotos: ['/ports/fl2870.png']

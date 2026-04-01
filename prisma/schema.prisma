@@ -86,7 +86,6 @@ model Housing {
     cameraId              Int
     housingMount          HousingMount?       @relation(fields: [housingMountId], references: [id])
     housingMountId        Int?
-    ports                 Port[]
     productPhotos         String[]
     interchangeablePort   Boolean             @default(true)
     galleryPhotos         GalleryPhoto[]
@@ -100,8 +99,6 @@ model Port {
     manufacturer          HousingManufacturer @relation(fields: [housingManufacturerId], references: [id])
     housingManufacturerId Int
     name                  String
-    housing               Housing?            @relation(fields: [housingId], references: [id])
-    housingId             Int?
     lens                  Lens[]
     housingMount          HousingMount?       @relation(fields: [housingMountId], references: [id])
     housingMountId        Int?

@@ -8,6 +8,13 @@ export const metadata = {
     description: 'Photos taken with various underwater camera housing configurations',
 }
 
+export interface InitialFilterOptions {
+    camera?: { slug: string; name: string }
+    housing?: { slug: string; name: string }
+    lens?: { slug: string; name: string }
+    port?: { slug: string; name: string }
+}
+
 async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
     try {
         const photos = await prisma.galleryPhoto.findMany({
@@ -65,8 +72,37 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
     }
 }
 
-export default async function GalleryPage() {
-    const photos = await getGalleryPhotos()
+export default async function GalleryPage({
+    searchParams,
+}: {
+    searchParams?: { camera?: string; housing?: string; lens?: string; port?: string }
+}) {
+    const [photos, initialFilters] = await Promise.all([
+        getGalleryPhotos(),
+        (async (): Promise<InitialFilterOptions> => {
+            const { camera: cameraSlug, housing: housingSlug, lens: lensSlug, port: portSlug } = searchParams ?? {}
+            const [camera, housing, lens, port] = await Promise.all([
+                cameraSlug
+                    ? prisma.camera.findUnique({ where: { slug: cameraSlug }, include: { brand: true } })
+                    : null,
+                housingSlug
+                    ? prisma.housing.findUnique({ where: { slug: housingSlug }, include: { manufacturer: true } })
+                    : null,
+                lensSlug
+                    ? prisma.lens.findUnique({ where: { slug: lensSlug } })
+                    : null,
+                portSlug
+                    ? prisma.port.findUnique({ where: { slug: portSlug } })
+                    : null,
+            ])
+            return {
+                camera: camera ? { slug: camera.slug, name: `${camera.brand.name} ${camera.name}` } : undefined,
+                housing: housing ? { slug: housing.slug, name: `${housing.manufacturer.name} ${housing.name}` } : undefined,
+                lens: lens ? { slug: lens.slug, name: lens.name } : undefined,
+                port: port ? { slug: port.slug, name: port.name } : undefined,
+            }
+        })(),
+    ])
 
     return (
         <main className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
@@ -78,7 +114,7 @@ export default async function GalleryPage() {
                     </p>
                 </div>
                 <Suspense>
-                    <GalleryPageClient photos={photos} />
+                    <GalleryPageClient photos={photos} initialFilters={initialFilters} />
                 </Suspense>
             </div>
         </main>
