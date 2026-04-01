@@ -86,7 +86,7 @@ export default function GalleryPageClient({ photos }: GalleryPageClientProps) {
     const cameraSlug = searchParams.get('camera') ?? ''
     const lensSlug = searchParams.get('lens') ?? ''
     const housingSlug = searchParams.get('housing') ?? ''
-    const portName = searchParams.get('port') ?? ''
+    const portSlug = searchParams.get('port') ?? ''
 
     function setParam(key: string, value: string) {
         const params = new URLSearchParams(searchParams.toString())
@@ -118,7 +118,11 @@ export default function GalleryPageClient({ photos }: GalleryPageClientProps) {
     }, [photos])
 
     const ports = useMemo(
-        () => Array.from(new Set(photos.map((p) => p.portName).filter((v): v is string => !!v))).sort(),
+        () => {
+            const map = new Map<string, string>()
+            photos.forEach((p) => { if (p.portSlug && p.portName) map.set(p.portSlug, p.portName) })
+            return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]))
+        },
         [photos]
     )
 
@@ -129,13 +133,13 @@ export default function GalleryPageClient({ photos }: GalleryPageClientProps) {
                     (!cameraSlug || p.cameraSlug === cameraSlug) &&
                     (!lensSlug || p.lensSlug === lensSlug) &&
                     (!housingSlug || p.housingSlug === housingSlug) &&
-                    (!portName || p.portName === portName)
+                    (!portSlug || p.portSlug === portSlug)
             ),
-        [photos, cameraSlug, lensSlug, housingSlug, portName]
+        [photos, cameraSlug, lensSlug, housingSlug, portSlug]
     )
     filteredRef.current = filtered
 
-    const hasActiveFilter = !!(cameraSlug || lensSlug || housingSlug || portName)
+    const hasActiveFilter = !!(cameraSlug || lensSlug || housingSlug || portSlug)
 
     function clearAll() {
         router.replace('/gallery', { scroll: false })
@@ -205,13 +209,13 @@ export default function GalleryPageClient({ photos }: GalleryPageClientProps) {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Port</label>
                                 <select
-                                    value={portName}
+                                    value={portSlug}
                                     onChange={(e) => setParam('port', e.target.value)}
                                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                                 >
                                     <option value="">All ports</option>
-                                    {ports.map((opt) => (
-                                        <option key={opt} value={opt}>{opt}</option>
+                                    {ports.map(([slug, name]) => (
+                                        <option key={slug} value={slug}>{name}</option>
                                     ))}
                                 </select>
                             </div>
