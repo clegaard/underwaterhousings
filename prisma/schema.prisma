@@ -70,6 +70,8 @@ model Camera {
     galleryPhotos            GalleryPhoto[]
     // Identified by EXIF data when users upload photos without explicitly linking to a camera
     exifId                   String?            @unique
+    productReviews           ProductReview[]
+    rigReviews               RigReview[]
 
     @@map("cameras")
 }
@@ -92,6 +94,8 @@ model Housing {
     productPhotos         String[]
     interchangeablePort   Boolean             @default(true)
     galleryPhotos         GalleryPhoto[]
+    productReviews        ProductReview[]
+    rigReviews            RigReview[]
 
     @@map("housings")
 }
@@ -107,23 +111,27 @@ model Port {
     housingMountId        Int?
     productPhotos         String[]
     galleryPhotos         GalleryPhoto[]
+    productReviews        ProductReview[]
+    rigReviews            RigReview[]
 
     @@map("ports")
 }
 
 model Lens {
-    id            Int            @id @default(autoincrement())
-    name          String
-    slug          String         @unique
-    cameraMount   CameraMount    @relation(fields: [cameraMountId], references: [id])
-    cameraMountId Int
-    ports         Port[]
-    camera        Camera?        @relation(fields: [cameraId], references: [id])
-    cameraId      Int?
-    productPhotos String[]
-    galleryPhotos GalleryPhoto[]
+    id             Int             @id @default(autoincrement())
+    name           String
+    slug           String          @unique
+    cameraMount    CameraMount     @relation(fields: [cameraMountId], references: [id])
+    cameraMountId  Int
+    ports          Port[]
+    camera         Camera?         @relation(fields: [cameraId], references: [id])
+    cameraId       Int?
+    productPhotos  String[]
+    galleryPhotos  GalleryPhoto[]
     // Identified by EXIF data when users upload photos without explicitly linking to a lens
-    exifId        String?        @unique
+    exifId         String?         @unique
+    productReviews ProductReview[]
+    rigReviews     RigReview[]
 
     @@map("lenses")
 }
@@ -131,17 +139,19 @@ model Lens {
 // ============================= USERS & AUTH =============================
 
 model User {
-    id             Int            @id @default(autoincrement())
-    email          String         @unique
+    id             Int             @id @default(autoincrement())
+    email          String          @unique
     password       String
     name           String?
     bio            String?
     profilePicture String?
-    isSuperuser    Boolean        @default(false)
-    isUser         Boolean        @default(true)
-    createdAt      DateTime       @default(now())
-    updatedAt      DateTime       @updatedAt
+    isSuperuser    Boolean         @default(false)
+    isUser         Boolean         @default(true)
+    createdAt      DateTime        @default(now())
+    updatedAt      DateTime        @updatedAt
     galleryPhotos  GalleryPhoto[]
+    productReviews ProductReview[]
+    rigReviews     RigReview[]
 
     @@map("users")
 }
@@ -175,4 +185,59 @@ model GalleryPhoto {
     userId Int?
 
     @@map("gallery_photos")
+}
+
+// =================== REVIEWS =========================
+
+model ProductReview {
+    id        Int      @id @default(autoincrement())
+    comment   String?
+    rating    Int
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    camera   Camera? @relation(fields: [cameraId], references: [id])
+    cameraId Int?
+
+    housing   Housing? @relation(fields: [housingId], references: [id])
+    housingId Int?
+
+    port   Port? @relation(fields: [portId], references: [id])
+    portId Int?
+
+    lens   Lens? @relation(fields: [lensId], references: [id])
+    lensId Int?
+
+    user   User @relation(fields: [userId], references: [id])
+    userId Int
+
+    @@map("product_reviews")
+}
+
+model RigReview {
+    id        Int      @id @default(autoincrement())
+    comment   String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    ratingOpticalQuality Int // Rating 1-5 of the percieved optical quality of the system (overall sharpness, vignetting, corner sharpness, etc.)
+    ratingReliability    Int // Rating 1-5 of the perceived reliability of the system (flooding, mechanical failures of buttons and levers)
+    ratingEaseOfUse      Int // Rating 1-5 of the perceived ease of use of the system (access to important buttons, weight and ergonomics, ease of changing ports)
+
+    camera   Camera? @relation(fields: [cameraId], references: [id])
+    cameraId Int?
+
+    housing   Housing? @relation(fields: [housingId], references: [id])
+    housingId Int?
+
+    port   Port? @relation(fields: [portId], references: [id])
+    portId Int?
+
+    lens   Lens? @relation(fields: [lensId], references: [id])
+    lensId Int?
+
+    user   User @relation(fields: [userId], references: [id])
+    userId Int
+
+    reviewPhotos String[] // Optional array of photo of the assembled rig, mechanical failures, flooded equipment, etc. Uploaded by the user when creating the review
 }

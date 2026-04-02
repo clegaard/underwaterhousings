@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { useState, useEffect } from 'react'
 
 interface HousingImageProps {
@@ -27,12 +26,12 @@ export function HousingImage({ src, fallback, alt, className }: HousingImageProp
     }
 
     return (
-        <Image
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
             src={imageSrc}
             alt={alt}
-            fill
-            className={className}
             onError={handleError}
+            className={`absolute inset-0 w-full h-full ${className ?? ''}`}
         />
     )
 }

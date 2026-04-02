@@ -2,7 +2,9 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
 import { HousingImage } from '@/components/HousingImage'
+import RigReviewsSection, { type RigReviewData } from '@/components/RigReviewsSection'
 import {
     getHousingImagePathWithFallback,
     getCameraImagePathWithFallback,
@@ -59,15 +61,41 @@ async function getRigComponents(cameraSlug: string, housingSlug: string, lensSlu
     return { camera, housing, lens, port, galleryPhotos }
 }
 
+async function getRigReviews(
+    cameraId: number,
+    housingId: number,
+    lensId: number | null,
+    portId: number | null,
+): Promise<RigReviewData[]> {
+    const reviews = await prisma.rigReview.findMany({
+        where: { cameraId, housingId, lensId, portId },
+        include: { user: { select: { id: true, name: true } } },
+        orderBy: { createdAt: 'desc' },
+    })
+    return reviews.map(r => ({
+        ...r,
+        createdAt: r.createdAt.toISOString(),
+    }))
+}
+
 export default async function RigBuilderPage({ searchParams }: RigBuilderPageProps) {
     const { camera: cameraSlug, housing: housingSlug, lens: lensSlug, port: portSlug } = searchParams
 
     if (!cameraSlug || !housingSlug) notFound()
 
-    const components = await getRigComponents(cameraSlug, housingSlug, lensSlug, portSlug)
+    const [components, session] = await Promise.all([
+        getRigComponents(cameraSlug, housingSlug, lensSlug, portSlug),
+        auth(),
+    ])
     if (!components) notFound()
 
     const { camera, housing, lens, port, galleryPhotos } = components
+
+    const reviews = await getRigReviews(
+        camera.id, housing.id, lens?.id ?? null, port?.id ?? null
+    )
+
+    const userId = (session?.user as { id?: string } | undefined)?.id ?? null
 
     const cameraImageInfo = getCameraImagePathWithFallback(camera.productPhotos ?? [])
     const housingImageInfo = getHousingImagePathWithFallback(housing.productPhotos ?? [])
@@ -321,6 +349,18 @@ export default async function RigBuilderPage({ searchParams }: RigBuilderPagePro
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Reviews */}
+            <div className="max-w-4xl mx-auto px-4 pb-8">
+                <RigReviewsSection
+                    reviews={reviews}
+                    cameraId={camera.id}
+                    housingId={housing.id}
+                    lensId={lens?.id ?? null}
+                    portId={port?.id ?? null}
+                    userId={userId}
+                />
             </div>
 
             {/* Gallery */}
