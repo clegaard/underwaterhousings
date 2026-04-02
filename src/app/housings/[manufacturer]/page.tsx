@@ -48,9 +48,14 @@ export default async function ManufacturerPage({ params }: ManufacturerPageProps
         id: housing.id,
         name: housing.name,
         slug: housing.slug,
+        description: housing.description,
+        material: housing.material,
+        housingMountId: housing.housingMountId,
         depthRating: housing.depthRating,
         priceAmount: housing.priceAmount ? Number(housing.priceAmount) : null,
         priceCurrency: housing.priceCurrency,
+        productPhotos: housing.productPhotos,
+        interchangeablePort: housing.interchangeablePort,
         camera: housing.Camera
             ? { id: housing.Camera.id, name: housing.Camera.name, brand: { name: housing.Camera.brand.name } }
             : null,

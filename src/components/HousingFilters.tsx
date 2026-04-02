@@ -85,6 +85,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
     )
 
     const isFixedLens = selectedCamera?.interchangeableLens === false
+    const isFullSystem = !!(selectedCamera?.canBeUsedWithoutAHousing && selectedCamera?.interchangeableLens === false)
 
     const availableLenses = useMemo(() =>
         selectedCamera?.cameraMount
@@ -350,7 +351,9 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                             </div>
 
                             {/* Step 3 — Housing */}
-                            <div className="flex-1 flex flex-col items-center">
+                            <div
+                                className="flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out flex flex-col items-center"
+                            >
                                 <div className={`relative w-full h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedHousing
                                     ? 'border-blue-400 bg-blue-50'
                                     : (selectedCamera && (isFixedLens || selectedLens))
@@ -468,6 +471,24 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
                         </div>
                     </div>
+
+                    {/* Footer — shown for waterproof full-system cameras when no housing is selected */}
+                    {isFullSystem && cameraModel && !housingName && (
+                        <div className="px-6 py-4 bg-blue-50 border-t border-blue-100 flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                                <span className="font-medium text-gray-800">Camera is waterproof and fixed lens - housing is optional</span>
+                            </div>
+                            <Link
+                                href={`/rigs?camera=${selectedCamera!.slug}`}
+                                className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+                            >
+                                View Full Details
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </Link>
+                        </div>
+                    )}
 
                     {/* Footer — shown when all required components are selected and a valid combination exists */}
                     {cameraModel && (isFixedLens || lensName) && housingName && (isFixedPort || portName) && filteredCombinations.length > 0 && filteredCombinations[0] && (

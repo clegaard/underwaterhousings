@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { HousingImage } from '@/components/HousingImage'
+import { getCameraImagePathWithFallback } from '@/lib/images'
 
 interface Camera {
     id: number
@@ -12,6 +13,7 @@ interface Camera {
     housings: { id: number }[]
     cameraMount: { id: number; name: string; slug: string } | null
     interchangeableLens: boolean
+    canBeUsedWithoutAHousing: boolean
     exifId: string | null
     productPhotos: string[]
     imageInfo: { src: string; fallback: string }
@@ -51,6 +53,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
     // Shared form state (add + edit)
     const [nameInput, setNameInput] = useState('')
     const [interchangeableLens, setInterchangeableLens] = useState(true)
+    const [canBeUsedWithoutAHousing, setCanBeUsedWithoutAHousing] = useState(false)
     const [mountId, setMountId] = useState<number | ''>('')
     const [exifIdInput, setExifIdInput] = useState('')
     const [photos, setPhotos] = useState<PhotoSlot[]>([])
@@ -62,6 +65,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
     function resetForm() {
         setNameInput('')
         setInterchangeableLens(true)
+        setCanBeUsedWithoutAHousing(false)
         setMountId('')
         setExifIdInput('')
         setPhotos(prev => {
@@ -81,6 +85,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
         setTarget(c)
         setNameInput(c.name)
         setInterchangeableLens(c.interchangeableLens)
+        setCanBeUsedWithoutAHousing(c.canBeUsedWithoutAHousing)
         setMountId(c.cameraMount?.id ?? '')
         setExifIdInput(c.exifId ?? '')
         setPhotos(c.productPhotos.map(path => ({ kind: 'existing' as const, path })))
@@ -208,6 +213,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                     name: nameInput.trim(),
                     cameraManufacturerId: manufacturer.id,
                     interchangeableLens,
+                    canBeUsedWithoutAHousing,
                     cameraMountId: interchangeableLens && mountId !== '' ? mountId : null,
                     productPhotos,
                     exifId: exifIdInput.trim() || null,
@@ -215,6 +221,20 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
             })
             const data = await res.json()
             if (!res.ok) { setError(data.error ?? 'Failed to create'); return }
+            const resolvedMount = cameraMounts.find(m => m.id === mountId) ?? null
+            const newCamera: Camera = {
+                id: data.id,
+                name: nameInput.trim(),
+                slug: data.slug,
+                housings: [],
+                interchangeableLens,
+                canBeUsedWithoutAHousing,
+                cameraMount: interchangeableLens && resolvedMount ? resolvedMount : null,
+                exifId: exifIdInput.trim() || null,
+                productPhotos,
+                imageInfo: getCameraImagePathWithFallback(productPhotos),
+            }
+            setCameras(prev => [...prev, newCamera])
             router.refresh()
             close()
         } catch (err) {
@@ -237,6 +257,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                     name: nameInput.trim(),
                     cameraManufacturerId: manufacturer.id,
                     interchangeableLens,
+                    canBeUsedWithoutAHousing,
                     cameraMountId: interchangeableLens && mountId !== '' ? mountId : null,
                     productPhotos,
                     exifId: exifIdInput.trim() || null,
@@ -250,6 +271,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                 name: nameInput.trim(),
                 slug: data.slug,
                 interchangeableLens,
+                canBeUsedWithoutAHousing,
                 cameraMount: interchangeableLens && resolvedMount ? resolvedMount : null,
                 productPhotos,
                 exifId: exifIdInput.trim() || null,
@@ -421,7 +443,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                         />
 
                         {/* Interchangeable lens */}
-                        <label className="flex items-center gap-2.5 mb-4 cursor-pointer select-none">
+                        <label className="flex items-center gap-2.5 mb-3 cursor-pointer select-none">
                             <input
                                 type="checkbox"
                                 checked={interchangeableLens}
@@ -432,6 +454,17 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                                 className="w-4 h-4 accent-blue-600"
                             />
                             <span className="text-sm font-medium text-gray-700">Interchangeable lens camera</span>
+                        </label>
+
+                        {/* Waterproof without housing */}
+                        <label className="flex items-center gap-2.5 mb-4 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={canBeUsedWithoutAHousing}
+                                onChange={e => setCanBeUsedWithoutAHousing(e.target.checked)}
+                                className="w-4 h-4 accent-blue-600"
+                            />
+                            <span className="text-sm font-medium text-gray-700">Camera is waterproof without a housing</span>
                         </label>
 
                         {/* Camera mount */}

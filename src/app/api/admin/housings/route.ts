@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
             cameraId,
             housingMountId,
             productPhotos,
+            interchangeablePort = true,
         } = body
 
         if (!name || !housingManufacturerId || !cameraId) {
@@ -125,6 +126,7 @@ export async function POST(request: NextRequest) {
                 cameraId,
                 housingMountId: housingMountId ?? null,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
+                interchangeablePort,
             },
             include: {
                 manufacturer: true,
@@ -173,6 +175,7 @@ export async function PUT(request: NextRequest) {
             cameraId,
             housingMountId,
             productPhotos,
+            interchangeablePort = true,
         } = body
 
         // Validate required fields
@@ -239,6 +242,7 @@ export async function PUT(request: NextRequest) {
                 cameraId,
                 housingMountId: housingMountId ?? null,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
+                interchangeablePort,
             },
             include: {
                 manufacturer: true,

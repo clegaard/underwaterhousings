@@ -9,9 +9,14 @@ interface Housing {
     id: number
     name: string
     slug: string
+    description: string | null
+    material: string | null
+    housingMountId: number | null
     depthRating: number | null
     priceAmount: number | null
     priceCurrency: string | null
+    productPhotos: string[]
+    interchangeablePort: boolean
     camera: { id: number; name: string; brand: { name: string } } | null
     imageInfo: { src: string; fallback: string }
 }
@@ -56,7 +61,9 @@ export default function HousingManufacturerHousingsClient({
     const router = useRouter()
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    const [showModal, setShowModal] = useState(false)
+    const [housings, setHousings] = useState(initial)
+    const [modal, setModal] = useState<'add' | 'edit' | 'delete' | null>(null)
+    const [target, setTarget] = useState<Housing | null>(null)
 
     // Form state
     const [nameInput, setNameInput] = useState('')
@@ -66,6 +73,7 @@ export default function HousingManufacturerHousingsClient({
     const [depthRating, setDepthRating] = useState('')
     const [priceAmount, setPriceAmount] = useState('')
     const [priceCurrency, setPriceCurrency] = useState('USD')
+    const [interchangeablePort, setInterchangeablePort] = useState(true)
     const [photos, setPhotos] = useState<PhotoSlot[]>([])
     const [dragPhotoIdx, setDragPhotoIdx] = useState<number | null>(null)
 
@@ -87,6 +95,7 @@ export default function HousingManufacturerHousingsClient({
         setDepthRating('')
         setPriceAmount('')
         setPriceCurrency('USD')
+        setInterchangeablePort(true)
         setPhotos(prev => {
             prev.forEach(p => { if (p.kind === 'new') URL.revokeObjectURL(p.previewUrl) })
             return []
@@ -95,14 +104,39 @@ export default function HousingManufacturerHousingsClient({
         setError(null)
     }
 
-    function openModal() {
+    function openAdd() {
         resetForm()
-        setShowModal(true)
+        setTarget(null)
+        setModal('add')
+    }
+
+    function openEdit(h: Housing) {
+        setTarget(h)
+        setNameInput(h.name)
+        setCameraId(h.camera?.id ?? '')
+        setCameraSearch('')
+        setMountId(h.housingMountId ?? '')
+        setDepthRating(h.depthRating != null ? String(h.depthRating) : '')
+        setPriceAmount(h.priceAmount != null ? String(h.priceAmount) : '')
+        setPriceCurrency(h.priceCurrency ?? 'USD')
+        setInterchangeablePort(h.interchangeablePort)
+        setPhotos(h.productPhotos.map(path => ({ kind: 'existing' as const, path })))
+        setDragPhotoIdx(null)
+        setError(null)
+        setModal('edit')
+    }
+
+    function openDelete(h: Housing) {
+        setTarget(h)
+        setError(null)
+        setModal('delete')
     }
 
     function close() {
         resetForm()
-        setShowModal(false)
+        setModal(null)
+        setTarget(null)
+        setError(null)
     }
 
     function handleFilesAdd(files: FileList | null) {
@@ -141,10 +175,10 @@ export default function HousingManufacturerHousingsClient({
     }, [])
 
     useEffect(() => {
-        if (!showModal) return
+        if (!modal || modal === 'delete') return
         document.addEventListener('paste', handlePasteEvent)
         return () => document.removeEventListener('paste', handlePasteEvent)
-    }, [showModal, handlePasteEvent])
+    }, [modal, handlePasteEvent])
 
     function removePhoto(idx: number) {
         setPhotos(prev => {
@@ -215,15 +249,96 @@ export default function HousingManufacturerHousingsClient({
                     depthRating: depthRating ? parseInt(depthRating) : undefined,
                     priceAmount: priceAmount ? priceAmount : undefined,
                     priceCurrency,
+                    interchangeablePort,
                     productPhotos,
                 }),
             })
             const data = await res.json()
             if (!res.ok) { setError(data.error ?? 'Failed to create'); return }
+            const cam = cameras.find(c => c.id === cameraId) ?? null
+            const newHousing: Housing = {
+                id: data.id,
+                name: nameInput.trim(),
+                slug: data.slug,
+                description: null,
+                material: null,
+                housingMountId: mountId !== '' ? (mountId as number) : null,
+                depthRating: depthRating ? parseInt(depthRating) : null,
+                priceAmount: priceAmount ? parseFloat(priceAmount) : null,
+                priceCurrency,
+                interchangeablePort,
+                productPhotos,
+                camera: cam ? { id: cam.id, name: cam.name, brand: cam.brand } : null,
+                imageInfo: { src: productPhotos[0] ? productPhotos[0] : '/housings/fallback.png', fallback: '/housings/fallback.png' },
+            }
+            setHousings(prev => [...prev, newHousing])
             router.refresh()
             close()
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Network error')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    async function handleEdit() {
+        if (!target || !nameInput.trim() || !cameraId) return
+        setLoading(true)
+        setError(null)
+        try {
+            const productPhotos = await buildFinalPhotoPaths()
+            const res = await fetch(`/api/admin/housings?id=${target.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: nameInput.trim(),
+                    housingManufacturerId: manufacturer.id,
+                    cameraId,
+                    housingMountId: mountId !== '' ? mountId : null,
+                    depthRating: depthRating ? parseInt(depthRating) : undefined,
+                    priceAmount: priceAmount ? priceAmount : undefined,
+                    priceCurrency,
+                    interchangeablePort,
+                    productPhotos,
+                }),
+            })
+            const data = await res.json()
+            if (!res.ok) { setError(data.error ?? 'Failed to update'); return }
+            const cam = cameras.find(c => c.id === cameraId) ?? null
+            setHousings(prev => prev.map(h => h.id !== target.id ? h : {
+                ...h,
+                name: nameInput.trim(),
+                slug: data.slug,
+                housingMountId: mountId !== '' ? (mountId as number) : null,
+                depthRating: depthRating ? parseInt(depthRating) : null,
+                priceAmount: priceAmount ? parseFloat(priceAmount) : null,
+                priceCurrency,
+                interchangeablePort,
+                productPhotos,
+                camera: cam ? { id: cam.id, name: cam.name, brand: cam.brand } : null,
+                imageInfo: { src: productPhotos[0] ? productPhotos[0] : '/housings/fallback.png', fallback: '/housings/fallback.png' },
+            }))
+            router.refresh()
+            close()
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Network error')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    async function handleDelete() {
+        if (!target) return
+        setLoading(true)
+        setError(null)
+        try {
+            const res = await fetch(`/api/admin/housings?id=${target.id}`, { method: 'DELETE' })
+            const data = await res.json()
+            if (!res.ok) { setError(data.error ?? 'Failed to delete'); return }
+            setHousings(prev => prev.filter(h => h.id !== target.id))
+            close()
+        } catch {
+            setError('Network error')
         } finally {
             setLoading(false)
         }
@@ -238,7 +353,7 @@ export default function HousingManufacturerHousingsClient({
                 <div className="flex items-center gap-3">
                     {isSuperuser && (
                         <button
-                            onClick={openModal}
+                            onClick={openAdd}
                             className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,60 +371,84 @@ export default function HousingManufacturerHousingsClient({
                 </div>
             </div>
 
-            {initial.length > 0 ? (
+            {housings.length > 0 ? (
                 <div className="flex justify-center">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl">
-                        {initial.map((housing) => (
-                            <Link
-                                key={housing.id}
-                                href={`/housings/${manufacturer.slug}/${housing.slug}`}
-                                className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group overflow-hidden"
-                            >
-                                <div className="relative w-full h-48 bg-gray-100">
-                                    <HousingImage
-                                        src={housing.imageInfo.src}
-                                        fallback={housing.imageInfo.fallback}
-                                        alt={housing.name}
-                                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
-                                </div>
-                                <div className="p-6">
-                                    <div className="flex justify-between items-start mb-3">
-                                        <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
-                                            {housing.name}
-                                        </h3>
-                                        {housing.camera && (
-                                            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded flex-shrink-0 ml-2">
-                                                {housing.camera.brand.name} {housing.camera.name}
-                                            </span>
-                                        )}
+                        {housings.map((housing) => (
+                            <div key={housing.id} className="relative group/card">
+                                <Link
+                                    href={`/housings/${manufacturer.slug}/${housing.slug}`}
+                                    className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group overflow-hidden"
+                                >
+                                    <div className="relative w-full h-48 bg-gray-100">
+                                        <HousingImage
+                                            src={housing.imageInfo.src}
+                                            fallback={housing.imageInfo.fallback}
+                                            alt={housing.name}
+                                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                        />
                                     </div>
-                                    <div className="space-y-2 text-sm">
-                                        {housing.depthRating != null && (
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600">Depth Rating:</span>
-                                                <span className="font-medium text-green-700">{housing.depthRating}m</span>
-                                            </div>
-                                        )}
-                                        {housing.priceAmount != null && (
-                                            <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                                                <span className="text-gray-600">Price:</span>
-                                                <span className="font-bold text-green-600 text-lg">
-                                                    ${housing.priceAmount.toLocaleString()} {housing.priceCurrency}
+                                    <div className="p-6">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
+                                                {housing.name}
+                                            </h3>
+                                            {housing.camera && (
+                                                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded flex-shrink-0 ml-2">
+                                                    {housing.camera.brand.name} {housing.camera.name}
                                                 </span>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2 text-sm">
+                                            {housing.depthRating != null && (
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-600">Depth Rating:</span>
+                                                    <span className="font-medium text-green-700">{housing.depthRating}m</span>
+                                                </div>
+                                            )}
+                                            {housing.priceAmount != null && (
+                                                <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                                                    <span className="text-gray-600">Price:</span>
+                                                    <span className="font-bold text-green-600 text-lg">
+                                                        ${housing.priceAmount.toLocaleString()} {housing.priceCurrency}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="mt-4 pt-3 border-t border-gray-100">
+                                            <div className="flex items-center justify-between text-xs text-gray-500 group-hover:text-blue-600 transition-colors">
+                                                <span>View details</span>
+                                                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                </svg>
                                             </div>
-                                        )}
-                                    </div>
-                                    <div className="mt-4 pt-3 border-t border-gray-100">
-                                        <div className="flex items-center justify-between text-xs text-gray-500 group-hover:text-blue-600 transition-colors">
-                                            <span>View details</span>
-                                            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                            </svg>
                                         </div>
                                     </div>
-                                </div>
-                            </Link>
+                                </Link>
+
+                                {isSuperuser && (
+                                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={() => openEdit(housing)}
+                                            title="Edit"
+                                            className="w-7 h-7 bg-white border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-blue-600 hover:border-blue-300 shadow-sm transition-colors"
+                                        >
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            onClick={() => openDelete(housing)}
+                                            title="Delete"
+                                            className="w-7 h-7 bg-white border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-red-600 hover:border-red-300 shadow-sm transition-colors"
+                                        >
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a1 1 0 00-1-1H8a1 1 0 00-1 1h10z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         ))}
                     </div>
                 </div>
@@ -326,14 +465,14 @@ export default function HousingManufacturerHousingsClient({
                 </div>
             )}
 
-            {/* Add housing modal */}
-            {showModal && (
+            {/* Add / Edit housing modal */}
+            {(modal === 'add' || modal === 'edit') && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
                     onClick={(e) => { if (e.target === e.currentTarget) close() }}
                 >
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add housing</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">{modal === 'edit' ? 'Edit housing' : 'Add housing'}</h3>
 
                         {/* Name */}
                         <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -392,12 +531,27 @@ export default function HousingManufacturerHousingsClient({
                             </>
                         )}
 
+                        {/* Interchangeable port checkbox */}
+                        <label className="flex items-center gap-2 mb-4 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={interchangeablePort}
+                                onChange={e => {
+                                    setInterchangeablePort(e.target.checked)
+                                    if (!e.target.checked) setMountId('')
+                                }}
+                                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="text-sm font-medium text-gray-700">Interchangeable port</span>
+                        </label>
+
                         {/* Port system (housing mount) */}
                         <label className="block text-sm font-medium text-gray-700 mb-1">Port system</label>
                         <select
                             value={mountId}
                             onChange={e => setMountId(e.target.value ? parseInt(e.target.value) : '')}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                            disabled={!interchangeablePort}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                         >
                             <option value="">— None —</option>
                             {housingMounts.map(m => (
@@ -498,11 +652,37 @@ export default function HousingManufacturerHousingsClient({
                         <div className="flex justify-end gap-3">
                             <button onClick={close} className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900">Cancel</button>
                             <button
-                                onClick={handleAdd}
+                                onClick={modal === 'edit' ? handleEdit : handleAdd}
                                 disabled={loading || !nameInput.trim() || !cameraId}
                                 className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                             >
-                                {loading ? 'Saving…' : 'Add housing'}
+                                {loading ? 'Saving…' : modal === 'edit' ? 'Save' : 'Add housing'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete confirmation modal */}
+            {modal === 'delete' && target && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+                    onClick={(e) => { if (e.target === e.currentTarget) close() }}
+                >
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete housing?</h3>
+                        <p className="text-sm text-gray-600 mb-6">
+                            Are you sure you want to delete <strong>{target.name}</strong>? This cannot be undone.
+                        </p>
+                        {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+                        <div className="flex justify-end gap-3">
+                            <button onClick={close} className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900">Cancel</button>
+                            <button
+                                onClick={handleDelete}
+                                disabled={loading}
+                                className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+                            >
+                                {loading ? 'Deleting…' : 'Delete'}
                             </button>
                         </div>
                     </div>

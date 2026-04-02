@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     if (denied) return denied
     try {
         const body = await request.json()
-        const { name, cameraManufacturerId, interchangeableLens, cameraMountId, productPhotos, exifId } = body
+        const { name, cameraManufacturerId, interchangeableLens, canBeUsedWithoutAHousing, cameraMountId, productPhotos, exifId } = body
 
         if (!name || !cameraManufacturerId) {
             return NextResponse.json(
@@ -87,6 +87,7 @@ export async function POST(request: NextRequest) {
                 slug,
                 cameraManufacturerId,
                 interchangeableLens: interchangeableLens ?? true,
+                canBeUsedWithoutAHousing: canBeUsedWithoutAHousing ?? false,
                 cameraMountId: interchangeableLens && cameraMountId ? cameraMountId : null,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 exifId: exifId?.trim() || null,
@@ -122,7 +123,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { name, cameraManufacturerId, interchangeableLens, cameraMountId, productPhotos, exifId } = body
+        const { name, cameraManufacturerId, interchangeableLens, canBeUsedWithoutAHousing, cameraMountId, productPhotos, exifId } = body
 
         if (!name || !cameraManufacturerId) {
             return NextResponse.json(
@@ -168,6 +169,7 @@ export async function PUT(request: NextRequest) {
                 slug,
                 cameraManufacturerId,
                 interchangeableLens: interchangeableLens ?? true,
+                canBeUsedWithoutAHousing: canBeUsedWithoutAHousing ?? false,
                 cameraMountId: interchangeableLens && cameraMountId ? cameraMountId : null,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 exifId: exifId?.trim() || null,

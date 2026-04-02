@@ -52,21 +52,24 @@ model HousingMount {
 }
 
 model Camera {
-    id                   Int                @id @default(autoincrement())
-    name                 String
-    slug                 String             @unique
-    brand                CameraManufacturer @relation(fields: [cameraManufacturerId], references: [id])
-    cameraManufacturerId Int
-    cameraMount          CameraMount?       @relation(fields: [cameraMountId], references: [id])
-    cameraMountId        Int?
-    lens                 Lens[]
-    housings             Housing[]
+    id                       Int                @id @default(autoincrement())
+    name                     String
+    slug                     String             @unique
+    brand                    CameraManufacturer @relation(fields: [cameraManufacturerId], references: [id])
+    cameraManufacturerId     Int
+    cameraMount              CameraMount?       @relation(fields: [cameraMountId], references: [id])
+    cameraMountId            Int?
+    lens                     Lens[]
+    housings                 Housing[]
     // For simplicity, we can store product photos as an array of strings (URLs or file paths)
-    productPhotos        String[]
-    interchangeableLens  Boolean            @default(true)
-    galleryPhotos        GalleryPhoto[]
+    productPhotos            String[]
+    interchangeableLens      Boolean            @default(true)
+    // Some cameras like GoPros, Osmo Actions and TG-6/7 can be used without a housing
+    // This distincition is necessary to allow images taken without a housing to be properly categorized in the gallery
+    canBeUsedWithoutAHousing Boolean            @default(false)
+    galleryPhotos            GalleryPhoto[]
     // Identified by EXIF data when users upload photos without explicitly linking to a camera
-    exifId               String?            @unique
+    exifId                   String?            @unique
 
     @@map("cameras")
 }
