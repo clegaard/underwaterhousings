@@ -1,0 +1,30 @@
+services:
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: underwaterhousings-minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Web console
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+
+  # One-shot container that creates the bucket and sets it to public read
+  minio-init:
+    image: quay.io/minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+        sleep 3 &&
+        mc alias set local http://minio:9000 minioadmin minioadmin &&
+        mc mb --ignore-existing local/underwaterhousings &&
+        mc anonymous set download local/underwaterhousings &&
+        echo 'Bucket ready.'
+      "
+
+volumes:
+  minio_data:

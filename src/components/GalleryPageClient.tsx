@@ -22,6 +22,7 @@ export default function GalleryPageClient({ photos, initialFilters }: GalleryPag
     const [selectionMode, setSelectionMode] = useState(false)
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
     const [isDeleting, setIsDeleting] = useState(false)
+    const [deleteError, setDeleteError] = useState<string | null>(null)
     const lastSelectedIndex = useRef<number | null>(null)
     const filteredRef = useRef<GalleryPhotoData[]>([])
 
@@ -59,12 +60,14 @@ export default function GalleryPageClient({ photos, initialFilters }: GalleryPag
     function exitSelection() {
         setSelectionMode(false)
         setSelectedIds(new Set())
+        setDeleteError(null)
         lastSelectedIndex.current = null
     }
 
     async function deleteSelected() {
         if (selectedIds.size === 0 || isDeleting) return
         setIsDeleting(true)
+        setDeleteError(null)
         try {
             const res = await fetch('/api/gallery/delete', {
                 method: 'POST',
@@ -72,14 +75,14 @@ export default function GalleryPageClient({ photos, initialFilters }: GalleryPag
                 body: JSON.stringify({ ids: Array.from(selectedIds) }),
             })
             if (!res.ok) {
-                const data = await res.json()
-                alert(data.error ?? 'Failed to delete photos')
+                const data = await res.json().catch(() => ({}))
+                setDeleteError(data.error ?? `Failed to delete photos (${res.status})`)
                 return
             }
             exitSelection()
             router.refresh()
         } catch {
-            alert('Failed to delete photos')
+            setDeleteError('Could not reach the server. Please try again.')
         } finally {
             setIsDeleting(false)
         }
@@ -253,6 +256,19 @@ export default function GalleryPageClient({ photos, initialFilters }: GalleryPag
                         )}
                     </div>
                     <div className="flex items-center gap-3">
+                        {deleteError && (
+                            <span className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5">
+                                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                                </svg>
+                                {deleteError}
+                                <button onClick={() => setDeleteError(null)} className="text-red-400 hover:text-red-600 transition-colors ml-1">
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </span>
+                        )}
                         {selectionMode && selectedIds.size > 0 && (
                             <button
                                 onClick={deleteSelected}

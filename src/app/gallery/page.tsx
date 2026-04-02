@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { prisma } from '@/lib/prisma'
 import GalleryPageClient from '@/components/GalleryPageClient'
 import { GalleryPhotoData } from '@/components/GalleryGrid'
+import { withBase } from '@/lib/images'
 
 export const metadata = {
     title: 'Gallery | Underwater Camera Housings',
@@ -37,7 +38,7 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
             ].filter(Boolean)
 
             return {
-                src: photo.imagePath,
+                src: withBase(photo.imagePath),
                 width: photo.width,
                 height: photo.height,
                 title: photo.title ?? undefined,
@@ -63,7 +64,7 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
                 photoId: photo.id,
                 userName: photo.user?.name ?? undefined,
                 userId: photo.user?.id ?? undefined,
-                userProfilePicture: photo.user?.profilePicture ?? undefined,
+                userProfilePicture: photo.user?.profilePicture ? withBase(photo.user.profilePicture) : undefined,
             }
         })
     } catch (error) {

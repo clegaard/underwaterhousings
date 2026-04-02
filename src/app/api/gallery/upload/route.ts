@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { uploadToStorage, isStorageConfigured, checkStorageReachable } from '@/lib/storage'
 
 export async function POST(request: NextRequest) {
     const session = await auth()
@@ -43,13 +42,22 @@ export async function POST(request: NextRequest) {
     }
 
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-    const uploadDir = path.join(process.cwd(), 'public', 'gallery', 'uploads')
-    await mkdir(uploadDir, { recursive: true })
-
     const bytes = await file.arrayBuffer()
-    await writeFile(path.join(uploadDir, filename), Buffer.from(bytes))
+    const buffer = Buffer.from(bytes)
 
-    const imagePath = `/gallery/uploads/${filename}`
+    if (!isStorageConfigured()) {
+        return NextResponse.json({ error: 'Storage is not configured' }, { status: 503 })
+    }
+
+    try {
+        await checkStorageReachable()
+    } catch (err) {
+        return NextResponse.json({ error: err instanceof Error ? err.message : 'Storage unavailable' }, { status: 503 })
+    }
+
+    const key = `gallery/${filename}`
+    await uploadToStorage(key, buffer, file.type)
+    const imagePath = `/${key}`
     const width = parseInt(formData.get('width') as string) || 1280
     const height = parseInt(formData.get('height') as string) || 854
 

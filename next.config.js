@@ -4,6 +4,18 @@ const nextConfig = {
         formats: ['image/webp'],
         remotePatterns: [
             {
+                // MinIO local dev
+                protocol: 'http',
+                hostname: 'localhost',
+                port: '9000',
+            },
+            {
+                // MinIO accessed via Docker service name
+                protocol: 'http',
+                hostname: 'minio',
+                port: '9000',
+            },
+            {
                 protocol: 'https',
                 hostname: 'www.nauticam.com',
             },

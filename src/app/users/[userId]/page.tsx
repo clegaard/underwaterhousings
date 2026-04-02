@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { GalleryPhotoData } from '@/components/GalleryGrid'
 import GalleryGrid from '@/components/GalleryGrid'
+import { withBase } from '@/lib/images'
 import { Suspense } from 'react'
 
 interface UserProfilePageProps {
@@ -52,7 +53,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
         ].filter(Boolean)
 
         return {
-            src: photo.imagePath,
+            src: withBase(photo.imagePath),
             width: photo.width,
             height: photo.height,
             title: photo.title ?? undefined,
@@ -75,7 +76,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
             aperture: photo.aperture ?? undefined,
             userName: user.name ?? undefined,
             userId: user.id,
-            userProfilePicture: user.profilePicture ?? undefined,
+            userProfilePicture: user.profilePicture ? withBase(user.profilePicture) : undefined,
         }
     })
 
@@ -88,7 +89,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
                 <div className="flex items-center gap-5 mb-8">
                     {user.profilePicture ? (
                         <img
-                            src={user.profilePicture}
+                            src={withBase(user.profilePicture)}
                             alt={displayName}
                             className="w-20 h-20 rounded-full object-cover ring-4 ring-white shadow-md"
                         />

@@ -39,6 +39,134 @@ interface GalleryGridProps {
     onExitSelection?: () => void
 }
 
+interface GalleryPhotoTileProps {
+    photo: GalleryPhotoData
+    index: number
+    selectionMode: boolean
+    selectedIds?: Set<number>
+    currentUserId?: number
+    onPhotoClick?: (photoId: number, index: number, shiftKey: boolean) => void
+    onOpenLightbox: (index: number) => void
+}
+
+function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUserId, onPhotoClick, onOpenLightbox }: GalleryPhotoTileProps) {
+    const [loaded, setLoaded] = useState(false)
+
+    return (
+        <div
+            className={`relative group overflow-hidden ${selectionMode && photo.userId !== currentUserId ? 'cursor-default' : 'cursor-pointer'}`}
+            style={{ aspectRatio: `${photo.width} / ${photo.height}` }}
+            onClick={(e) => {
+                if (selectionMode) {
+                    if (photo.photoId != null && photo.userId === currentUserId) {
+                        onPhotoClick?.(photo.photoId, index, e.shiftKey)
+                    }
+                } else {
+                    onOpenLightbox(index)
+                }
+            }}
+        >
+            {/* Shimmer placeholder — same aspect ratio, disappears once image loads */}
+            {!loaded && (
+                <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+            )}
+            <Image
+                src={photo.src}
+                alt={photo.title ?? photo.description ?? 'Gallery photo'}
+                fill
+                sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw"
+                className={`object-cover transition-[opacity,transform] duration-300 group-hover:scale-105 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+                priority={index < 4}
+                loading={index < 4 ? 'eager' : 'lazy'}
+                onLoad={() => setLoaded(true)}
+            />
+            {/* Selection mode overlays */}
+            {selectionMode && (
+                <>
+                    {/* Gray out photos not owned by current user */}
+                    {photo.userId !== currentUserId && (
+                        <div className="absolute inset-0 bg-white/50 pointer-events-none" />
+                    )}
+                    {/* Blue tint on selected photos */}
+                    {photo.photoId != null && selectedIds?.has(photo.photoId) && (
+                        <div className="absolute inset-0 bg-blue-500/25 pointer-events-none" />
+                    )}
+                    {/* Selection circle — top-right, always visible in selection mode */}
+                    <div className={`absolute top-2 right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center shadow-sm transition-colors
+                        ${photo.userId !== currentUserId
+                            ? 'border-gray-300 bg-white/30 opacity-40'
+                            : photo.photoId != null && selectedIds?.has(photo.photoId)
+                                ? 'bg-blue-500 border-blue-500'
+                                : 'border-white bg-black/40'
+                        }`}
+                    >
+                        {photo.photoId != null && selectedIds?.has(photo.photoId) && (
+                            <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        )}
+                    </div>
+                </>
+            )}
+            {/* Hover overlay */}
+            <div className="absolute inset-x-0 bottom-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-2.5 py-2">
+                {photo.title && (
+                    <p className="text-white text-xs font-medium leading-tight mb-1 truncate">{photo.title}</p>
+                )}
+                <div className="flex items-center justify-between gap-2">
+                    {photo.rigLabel && photo.cameraSlug && photo.housingSlug ? (
+                        <Link
+                            href={`/rigs?${new URLSearchParams({
+                                camera: photo.cameraSlug,
+                                housing: photo.housingSlug,
+                                ...(photo.lensSlug ? { lens: photo.lensSlug } : {}),
+                                ...(photo.portSlug ? { port: photo.portSlug } : {}),
+                            }).toString()}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-gray-300 text-xs hover:text-white transition-colors truncate"
+                        >
+                            {photo.rigLabel}
+                        </Link>
+                    ) : photo.rigLabel ? (
+                        <span className="text-gray-300 text-xs truncate">{photo.rigLabel}</span>
+                    ) : null}
+                    <div className="flex items-center gap-x-2 flex-shrink-0">
+                        {photo.focalLength && (
+                            <span className="text-gray-400 text-xs">{photo.focalLength}mm</span>
+                        )}
+                        {photo.aperture && (
+                            <span className="text-gray-400 text-xs">f/{photo.aperture}</span>
+                        )}
+                        {photo.shutterSpeed && (
+                            <span className="text-gray-400 text-xs">{photo.shutterSpeed}s</span>
+                        )}
+                        {photo.userId && photo.userName && (
+                            <Link
+                                href={`/users/${photo.userId}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="flex items-center gap-1 group/user"
+                            >
+                                {photo.userProfilePicture ? (
+                                    <img
+                                        src={photo.userProfilePicture}
+                                        alt={photo.userName}
+                                        className="w-4 h-4 rounded-full object-cover ring-1 ring-white/30"
+                                    />
+                                ) : (
+                                    <span className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center text-white text-[9px] font-bold ring-1 ring-white/30 flex-shrink-0">
+                                        {photo.userName.charAt(0).toUpperCase()}
+                                    </span>
+                                )}
+                                <span className="text-gray-400 text-xs group-hover/user:text-white transition-colors truncate">{photo.userName}</span>
+                            </Link>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 export default function GalleryGrid({ photos, selectionMode = false, selectedIds, currentUserId, onPhotoClick, onExitSelection }: GalleryGridProps) {
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
@@ -91,112 +219,15 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                 defaultContainerWidth={1200}
                 render={{
                     image: (props, { photo, index }) => (
-                        <div
-                            className={`relative group overflow-hidden ${selectionMode && photo.userId !== currentUserId ? 'cursor-default' : 'cursor-pointer'}`}
-                            style={{ aspectRatio: 'var(--react-photo-album--photo-width) / var(--react-photo-album--photo-height)' }}
-                            onClick={(e) => {
-                                if (selectionMode) {
-                                    if (photo.photoId != null && photo.userId === currentUserId) {
-                                        onPhotoClick?.(photo.photoId, index, e.shiftKey)
-                                    }
-                                } else {
-                                    setLightboxIndex(index)
-                                }
-                            }}
-                        >
-                            <Image
-                                src={photo.src}
-                                alt={photo.title ?? photo.description ?? 'Gallery photo'}
-                                fill
-                                sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw"
-                                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                priority={index < 4}
-                                loading={index < 4 ? 'eager' : 'lazy'}
-                            />
-                            {/* Selection mode overlays */}
-                            {selectionMode && (
-                                <>
-                                    {/* Gray out photos not owned by current user */}
-                                    {photo.userId !== currentUserId && (
-                                        <div className="absolute inset-0 bg-white/50 pointer-events-none" />
-                                    )}
-                                    {/* Blue tint on selected photos */}
-                                    {photo.photoId != null && selectedIds?.has(photo.photoId) && (
-                                        <div className="absolute inset-0 bg-blue-500/25 pointer-events-none" />
-                                    )}
-                                    {/* Selection circle — top-right, always visible in selection mode */}
-                                    <div className={`absolute top-2 right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center shadow-sm transition-colors
-                                        ${photo.userId !== currentUserId
-                                            ? 'border-gray-300 bg-white/30 opacity-40'
-                                            : photo.photoId != null && selectedIds?.has(photo.photoId)
-                                                ? 'bg-blue-500 border-blue-500'
-                                                : 'border-white bg-black/40'
-                                        }`}
-                                    >
-                                        {photo.photoId != null && selectedIds?.has(photo.photoId) && (
-                                            <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        )}
-                                    </div>
-                                </>
-                            )}
-                            {/* Hover overlay */}
-                            <div className="absolute inset-x-0 bottom-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-2.5 py-2">
-                                {photo.title && (
-                                    <p className="text-white text-xs font-medium leading-tight mb-1 truncate">{photo.title}</p>
-                                )}
-                                <div className="flex items-center justify-between gap-2">
-                                    {photo.rigLabel && photo.cameraSlug && photo.housingSlug ? (
-                                        <Link
-                                            href={`/rigs?${new URLSearchParams({
-                                                camera: photo.cameraSlug,
-                                                housing: photo.housingSlug,
-                                                ...(photo.lensSlug ? { lens: photo.lensSlug } : {}),
-                                                ...(photo.portSlug ? { port: photo.portSlug } : {}),
-                                            }).toString()}`}
-                                            onClick={(e) => e.stopPropagation()}
-                                            className="text-gray-300 text-xs hover:text-white transition-colors truncate"
-                                        >
-                                            {photo.rigLabel}
-                                        </Link>
-                                    ) : photo.rigLabel ? (
-                                        <span className="text-gray-300 text-xs truncate">{photo.rigLabel}</span>
-                                    ) : null}
-                                    <div className="flex items-center gap-x-2 flex-shrink-0">
-                                        {photo.focalLength && (
-                                            <span className="text-gray-400 text-xs">{photo.focalLength}mm</span>
-                                        )}
-                                        {photo.aperture && (
-                                            <span className="text-gray-400 text-xs">f/{photo.aperture}</span>
-                                        )}
-                                        {photo.shutterSpeed && (
-                                            <span className="text-gray-400 text-xs">{photo.shutterSpeed}s</span>
-                                        )}
-                                        {photo.userId && photo.userName && (
-                                            <Link
-                                                href={`/users/${photo.userId}`}
-                                                onClick={(e) => e.stopPropagation()}
-                                                className="flex items-center gap-1 group/user"
-                                            >
-                                                {photo.userProfilePicture ? (
-                                                    <img
-                                                        src={photo.userProfilePicture}
-                                                        alt={photo.userName}
-                                                        className="w-4 h-4 rounded-full object-cover ring-1 ring-white/30"
-                                                    />
-                                                ) : (
-                                                    <span className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center text-white text-[9px] font-bold ring-1 ring-white/30 flex-shrink-0">
-                                                        {photo.userName.charAt(0).toUpperCase()}
-                                                    </span>
-                                                )}
-                                                <span className="text-gray-400 text-xs group-hover/user:text-white transition-colors truncate">{photo.userName}</span>
-                                            </Link>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <GalleryPhotoTile
+                            photo={photo}
+                            index={index}
+                            selectionMode={selectionMode}
+                            selectedIds={selectedIds}
+                            currentUserId={currentUserId}
+                            onPhotoClick={onPhotoClick}
+                            onOpenLightbox={setLightboxIndex}
+                        />
                     ),
                 }}
             />
