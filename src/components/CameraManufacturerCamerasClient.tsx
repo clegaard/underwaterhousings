@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { HousingImage } from '@/components/HousingImage'
@@ -115,6 +115,34 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
         setPhotos(prev => [...prev, ...items])
     }
 
+    const handlePasteEvent = useCallback((e: ClipboardEvent) => {
+        const items = Array.from(e.clipboardData?.items ?? [])
+        const imageItems: PhotoSlot[] = []
+        for (const item of items) {
+            if (!item.type.startsWith('image/')) continue
+            const file = item.getAsFile()
+            if (!file) continue
+            const ext = item.type.split('/')[1] ?? 'png'
+            const renamedFile = new File([file], `paste-${Date.now()}.${ext}`, { type: item.type })
+            imageItems.push({
+                kind: 'new' as const,
+                id: Math.random().toString(36).slice(2),
+                file: renamedFile,
+                previewUrl: URL.createObjectURL(renamedFile),
+            })
+        }
+        if (imageItems.length > 0) {
+            e.preventDefault()
+            setPhotos(prev => [...prev, ...imageItems])
+        }
+    }, [])
+
+    useEffect(() => {
+        if (!modal) return
+        document.addEventListener('paste', handlePasteEvent)
+        return () => document.removeEventListener('paste', handlePasteEvent)
+    }, [modal, handlePasteEvent])
+
     function removePhoto(idx: number) {
         setPhotos(prev => {
             const item = prev[idx]
@@ -216,6 +244,16 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
             })
             const data = await res.json()
             if (!res.ok) { setError(data.error ?? 'Failed to update'); return }
+            const resolvedMount = cameraMounts.find(m => m.id === mountId) ?? null
+            setCameras(prev => prev.map(c => c.id !== target.id ? c : {
+                ...c,
+                name: nameInput.trim(),
+                slug: data.slug,
+                interchangeableLens,
+                cameraMount: interchangeableLens && resolvedMount ? resolvedMount : null,
+                productPhotos,
+                exifId: exifIdInput.trim() || null,
+            }))
             router.refresh()
             close()
         } catch (err) {
@@ -377,7 +415,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                             type="text"
                             value={nameInput}
                             onChange={e => setNameInput(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') handleAdd() }}
+                            onKeyDown={e => { if (e.key === 'Enter') modal === 'edit' ? handleEdit() : handleAdd() }}
                             placeholder={`e.g. ${manufacturer.name} A7R V`}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
@@ -431,7 +469,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                             <svg className="w-6 h-6 mx-auto text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4-4a3 3 0 014.24 0L16 16m-2-2l2-2a3 3 0 014.24 0L22 16M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <p className="text-sm text-gray-500">Click or drag images here</p>
+                            <p className="text-sm text-gray-500">Click, drag, or paste images here</p>
                             <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP, AVIF · max 20 MB each</p>
                         </div>
                         <input
