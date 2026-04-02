@@ -249,14 +249,19 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
 
                     {/* Image container */}
                     <div
-                        className="relative max-w-[90vw] max-h-[85vh] flex flex-col items-center"
+                        className="relative max-w-[90vw] max-h-[85vh] flex flex-col items-stretch"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <img
-                            src={photos[lightboxIndex].src}
-                            alt={photos[lightboxIndex].title ?? photos[lightboxIndex].description ?? 'Gallery photo'}
-                            className="max-w-[90vw] max-h-[75vh] object-contain rounded-t-lg shadow-2xl"
-                        />
+                        <div className="relative rounded-t-lg overflow-hidden shadow-2xl" style={{ width: '90vw', maxWidth: '1200px', height: '75vh' }}>
+                            <Image
+                                src={photos[lightboxIndex].src}
+                                alt={photos[lightboxIndex].title ?? photos[lightboxIndex].description ?? 'Gallery photo'}
+                                fill
+                                sizes="min(90vw, 1200px)"
+                                className="object-contain"
+                                priority
+                            />
+                        </div>
 
                         {/* Metadata bar */}
                         <div className="w-full bg-black rounded-b-lg px-4 py-2.5 flex flex-col gap-1 shadow-2xl">

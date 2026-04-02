@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { HousingImage } from '@/components/HousingImage'
 
 interface ImageGalleryProps {
@@ -161,29 +160,30 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
                         )}
 
                         {/* Image */}
-                        <div className="relative bg-white rounded-lg p-4 max-w-[90vw] max-h-[90vh] w-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-                            <div className="relative max-w-full max-h-full flex items-center justify-center">
-                                <Image
-                                    src={images[selectedImage].src}
-                                    alt={images[selectedImage].alt}
-                                    width={800}
-                                    height={600}
-                                    className="max-w-full max-h-[80vh] object-contain"
-                                    onError={(e) => {
-                                        const target = e.target as HTMLImageElement
-                                        target.src = images[selectedImage].fallback
-                                    }}
-                                />
-                                {/* Image info */}
-                                <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white px-3 py-1 rounded text-sm font-medium capitalize">
-                                    {images[selectedImage].type} view
-                                </div>
-                                {images.length > 1 && (
-                                    <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-3 py-1 rounded text-sm font-medium">
-                                        {selectedImage + 1} of {images.length}
-                                    </div>
-                                )}
+                        <div
+                            className="relative bg-white rounded-lg p-4 flex items-center justify-center"
+                            style={{ maxWidth: '90vw', maxHeight: '90vh' }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={images[selectedImage].src}
+                                alt={images[selectedImage].alt}
+                                style={{ maxWidth: '85vw', maxHeight: '82vh', objectFit: 'contain', display: 'block' }}
+                                onError={(e) => {
+                                    const target = e.target as HTMLImageElement
+                                    target.src = images[selectedImage].fallback
+                                }}
+                            />
+                            {/* Image info */}
+                            <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white px-3 py-1 rounded text-sm font-medium capitalize">
+                                {images[selectedImage].type} view
                             </div>
+                            {images.length > 1 && (
+                                <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white px-3 py-1 rounded text-sm font-medium">
+                                    {selectedImage + 1} of {images.length}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
