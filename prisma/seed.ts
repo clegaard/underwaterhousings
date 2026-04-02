@@ -35,9 +35,25 @@ const CONTENT_TYPES: Record<string, string> = {
     '.gif': 'image/gif',
 }
 
-async function uploadPublicFile(relativePath: string): Promise<void> {
+function getSeedDataPaths(): string[] {
+    const seedDataDir = path.join(process.cwd(), 'seed_data')
+    const result: string[] = []
+    const subdirs = fs.readdirSync(seedDataDir, { withFileTypes: true })
+        .filter(d => d.isDirectory())
+        .map(d => d.name)
+    for (const subdir of subdirs) {
+        const subdirPath = path.join(seedDataDir, subdir)
+        const files = fs.readdirSync(subdirPath, { withFileTypes: true })
+            .filter(f => f.isFile())
+            .map(f => `/${subdir}/${f.name}`)
+        result.push(...files)
+    }
+    return result
+}
+
+async function uploadSeedFile(relativePath: string): Promise<void> {
     if (!s3Client) return
-    const filePath = path.join(process.cwd(), 'public', relativePath)
+    const filePath = path.join(process.cwd(), 'seed_data', relativePath)
     if (!fs.existsSync(filePath)) {
         console.log(`  ⚠️  Skipping ${relativePath} (file not found)`)
         return
@@ -68,81 +84,10 @@ async function main() {
         } finally {
             clearTimeout(timer)
         }
-        console.log('�📤 Uploading images to S3...')
-        const imagePaths = [
-            // Cameras
-            '/cameras/ilce-7m5-front.webp',
-            '/cameras/ilce-7m4-front.webp',
-            '/cameras/a6700.webp',
-            '/cameras/r6-ii-front.webp',
-            '/cameras/iphone-14-pro.jpg',
-            // Lenses
-            '/lenses/a024-24-70-28-ii.png',
-            '/lenses/sel90m28g.avif',
-            '/lenses/sel2470gmii.jpg',
-            '/lenses/sel24105.avif',
-            '/lenses/sel28702.avif',
-            '/lenses/selp18105g.avif',
-            // Housings
-            '/housings/na-om5ii-front.webp',
-            '/housings/na-om5ii-back.webp',
-            '/housings/divevolk-seatouch-4-front.webp',
-            '/housings/sf-s-r6-ii-front.webp',
-            '/housings/sf-s-r6-ii-back.webp',
-            '/housings/sf-s-zv1-e1-front.webp',
-            '/housings/sf-a7iv-sl.jpg',
-            '/housings/sf-s-a7rv-front.webp',
-            '/housings/sf-s-a6700-front.jpg',
-            '/housings/sf-s-a6700-back.jpg',
-            '/housings/sf-s-fx3.jpg',
-            '/housings/sf-eosr5-np.webp',
-            // Ports
-            '/ports/fl100.png',
-            '/ports/wa005-b.png',
-            '/ports/wa005-f.png',
-            '/ports/fl2870.png',
-            // Gallery
-            '/gallery/DSC01656.jpeg',
-            '/gallery/DSC01728.jpeg',
-            '/gallery/DSC01738.jpeg',
-            '/gallery/DSC01881.jpeg',
-            '/gallery/DSC02017.jpeg',
-            '/gallery/DSC02035.jpeg',
-            '/gallery/DSC02155.jpeg',
-            '/gallery/DSC02164.jpeg',
-            '/gallery/DSC02174.jpeg',
-            '/gallery/DSC02476.jpeg',
-            '/gallery/DSC02560.jpeg',
-            '/gallery/DSC02640.jpeg',
-            '/gallery/DSC03346.jpeg',
-            '/gallery/DSC03402.jpeg',
-            '/gallery/DSC06378.jpeg',
-            '/gallery/DSC07814.jpeg',
-            '/gallery/whale_shark.jpeg',
-            '/gallery/bobtail_squid.jpg',
-            '/gallery/candy_crab.jpg',
-            '/gallery/coconut_octopus.jpg',
-            '/gallery/flamboyant_cuttlefish.jpg',
-            '/gallery/ghost_pipefish.jpg',
-            '/gallery/giant_frogfish.jpg',
-            '/gallery/hairy_frogfish.jpg',
-            '/gallery/hairy_lobster.jpg',
-            '/gallery/nudi.jpg',
-            '/gallery/nudi_cropped.jpg',
-            '/gallery/nudibranch_eggs.jpg',
-            '/gallery/nudibranch_trunicate.jpg',
-            '/gallery/painted_frogfish.jpg',
-            '/gallery/pano.jpg',
-            '/gallery/pygmy_seahorse.jpg',
-            '/gallery/shrimp.jpg',
-            '/gallery/thresher.jpg',
-            '/gallery/torch.jpg',
-            '/gallery/turtle.jpg',
-            '/gallery/wobbegong_drift_dive.jpg',
-            '/gallery/wobbegong_top.jpg',
-        ]
+        console.log('📤 Uploading images to S3...')
+        const imagePaths = getSeedDataPaths()
         for (const p of imagePaths) {
-            await uploadPublicFile(p)
+            await uploadSeedFile(p)
         }
         console.log('✅ Images uploaded!')
     } else {
