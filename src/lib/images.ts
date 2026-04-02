@@ -5,12 +5,12 @@ export function withBase(path: string): string {
 }
 
 export function getHousingImagePathWithFallback(productPhotos: string[]): { src: string; fallback: string } {
-    const fallback = withBase('/housings/fallback.png')
+    const fallback = '/housings/fallback.png'
     return { src: productPhotos[0] ? withBase(productPhotos[0]) : fallback, fallback }
 }
 
 export function getCameraImagePathWithFallback(productPhotos: string[]): { src: string; fallback: string } {
-    const fallback = withBase('/cameras/fallback.png')
+    const fallback = '/cameras/fallback.png'
     return { src: productPhotos[0] ? withBase(productPhotos[0]) : fallback, fallback }
 }
 
@@ -18,7 +18,7 @@ export function getAllHousingImages(
     productPhotos: string[],
     housingName: string
 ): Array<{ src: string; fallback: string; type: string; alt: string }> {
-    const fallback = withBase('/housings/fallback.png')
+    const fallback = '/housings/fallback.png'
     return productPhotos.map(photo => {
         const baseName = (photo.split('/').pop() ?? '').replace(/\.[^.]+$/, '')
         const type = baseName.split('-').pop() ?? baseName
@@ -27,11 +27,11 @@ export function getAllHousingImages(
 }
 
 export function getLensImagePathWithFallback(productPhotos: string[]): { src: string; fallback: string } {
-    const fallback = withBase('/lenses/fallback.png')
+    const fallback = '/lenses/fallback.png'
     return { src: productPhotos[0] ? withBase(productPhotos[0]) : fallback, fallback }
 }
 
 export function getPortImagePathWithFallback(productPhotos: string[]): { src: string; fallback: string } {
-    const fallback = withBase('/ports/fallback.png')
+    const fallback = '/ports/fallback.png'
     return { src: productPhotos[0] ? withBase(productPhotos[0]) : fallback, fallback }
 }

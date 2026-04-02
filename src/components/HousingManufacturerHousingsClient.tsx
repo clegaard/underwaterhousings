@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { HousingImage } from '@/components/HousingImage'
+import { getHousingImagePathWithFallback } from '@/lib/images'
 
 interface Housing {
     id: number
@@ -269,7 +270,7 @@ export default function HousingManufacturerHousingsClient({
                 interchangeablePort,
                 productPhotos,
                 camera: cam ? { id: cam.id, name: cam.name, brand: cam.brand } : null,
-                imageInfo: { src: productPhotos[0] ? productPhotos[0] : '/housings/fallback.png', fallback: '/housings/fallback.png' },
+                imageInfo: getHousingImagePathWithFallback(productPhotos),
             }
             setHousings(prev => [...prev, newHousing])
             router.refresh()
@@ -316,7 +317,7 @@ export default function HousingManufacturerHousingsClient({
                 interchangeablePort,
                 productPhotos,
                 camera: cam ? { id: cam.id, name: cam.name, brand: cam.brand } : null,
-                imageInfo: { src: productPhotos[0] ? productPhotos[0] : '/housings/fallback.png', fallback: '/housings/fallback.png' },
+                imageInfo: getHousingImagePathWithFallback(productPhotos),
             }))
             router.refresh()
             close()
