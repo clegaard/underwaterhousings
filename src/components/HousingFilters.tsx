@@ -229,7 +229,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         return total
     }, [selectedCamera, selectedLens, selectedHousing, selectedPort])
 
-    const relevantReviews = useMemo((): { ratingOpticalQuality: number; ratingReliability: number; ratingEaseOfUse: number }[] => {
+    const relevantReviews = useMemo((): any[] => {
         if ((selectedHousing as any)?.rigReviews?.length) return (selectedHousing as any).rigReviews
         if (usingWithoutHousing && (selectedCamera as any)?.rigReviews?.length) return (selectedCamera as any).rigReviews
         return []
@@ -265,6 +265,51 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         return () => { if (animFrameRef.current !== null) cancelAnimationFrame(animFrameRef.current) }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [maxDepth])
+    // ────────────────────────────────────────────────────────────────────────
+
+    // ── Review carousel ─────────────────────────────────────────────────────
+    const sortedReviews = useMemo(() => {
+        return [...relevantReviews]
+            .filter((r: any) => r.id !== undefined)
+            .sort((a: any, b: any) => {
+                const score = (r: any) =>
+                    ((r.reviewPhotos?.length ?? 0) > 0 ? 2 : 0) +
+                    (r.comment ? 1 : 0) +
+                    (r.ratingOpticalQuality + r.ratingReliability + r.ratingEaseOfUse) / 15
+                return score(b) - score(a)
+            })
+    }, [relevantReviews])
+
+    const [reviewIdx, setReviewIdx] = useState(0)
+    useEffect(() => { setReviewIdx(0) }, [selectedCamera?.id, selectedHousing?.id])
+
+    // ── Gallery ──────────────────────────────────────────────────────────────
+    const [galleryPhotos, setGalleryPhotos] = useState<Array<{ id: number; src: string; title: string | null; location: string | null }>>([])
+    const [galleryLoading, setGalleryLoading] = useState(false)
+
+    const galleryUrl = useMemo(() => {
+        if (!selectedCamera) return null
+        const p = new URLSearchParams({ camera: selectedCamera.slug })
+        if (selectedHousing) {
+            p.set('housing', selectedHousing.slug)
+            if (selectedLens?.slug) p.set('lens', selectedLens.slug)
+            if (selectedPort?.slug) p.set('port', selectedPort.slug)
+        }
+        return `/gallery?${p.toString()}`
+    }, [selectedCamera, selectedHousing, selectedLens, selectedPort])
+
+    useEffect(() => {
+        if (!selectedCamera) { setGalleryPhotos([]); return }
+        setGalleryLoading(true)
+        const params = new URLSearchParams({ camera: selectedCamera.slug })
+        if (selectedHousing) params.set('housing', selectedHousing.slug)
+        fetch(`/api/gallery?${params.toString()}`)
+            .then(r => r.json())
+            .then(data => setGalleryPhotos(data.photos ?? []))
+            .catch(() => setGalleryPhotos([]))
+            .finally(() => setGalleryLoading(false))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedCamera?.id, selectedHousing?.id])
     // ────────────────────────────────────────────────────────────────────────
 
     const clearFilters = () => {
@@ -575,12 +620,17 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2 min-w-0">
                                                     <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></div>
-                                                    <span className="text-sm text-gray-600">Camera</span>
-                                                    <span className="text-xs text-gray-400 truncate">{selectedCamera.name}</span>
+                                                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Camera</span>
+                                                    <Link
+                                                        href={`/cameras/${selectedCamera.brand.slug}/${selectedCamera.slug}`}
+                                                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 truncate transition-colors"
+                                                    >
+                                                        {selectedCamera.name}
+                                                    </Link>
                                                 </div>
                                                 {selectedCamera.priceAmount
-                                                    ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4">${Number(selectedCamera.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
-                                                    : <span className="text-xs text-gray-400 pl-4">&mdash;</span>
+                                                    ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4 shrink-0">${Number(selectedCamera.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                                    : <span className="text-xs text-gray-400 pl-4 shrink-0">&mdash;</span>
                                                 }
                                             </div>
 
@@ -589,12 +639,23 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2 min-w-0">
                                                         <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${selectedLens ? 'bg-blue-400' : 'bg-gray-200'}`}></div>
-                                                        <span className={`text-sm ${selectedLens ? 'text-gray-600' : 'text-gray-400'}`}>Lens</span>
-                                                        {selectedLens && <span className="text-xs text-gray-400 truncate">{selectedLens.name}</span>}
+                                                        <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Lens</span>
+                                                        {selectedLens?.manufacturer?.slug ? (
+                                                            <Link
+                                                                href={`/lenses/${selectedLens.manufacturer.slug}/${selectedLens.slug}`}
+                                                                className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 truncate transition-colors"
+                                                            >
+                                                                {selectedLens.name}
+                                                            </Link>
+                                                        ) : (
+                                                            <span className={`text-sm truncate ${selectedLens ? 'text-gray-600' : 'text-gray-300 italic'}`}>
+                                                                {selectedLens ? selectedLens.name : 'Not selected'}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                     {selectedLens?.priceAmount
-                                                        ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4">${Number(selectedLens.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
-                                                        : <span className="text-xs text-gray-400 pl-4">{selectedLens ? '\u2014' : 'Not selected'}</span>
+                                                        ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4 shrink-0">${Number(selectedLens.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                                        : <span className="text-xs text-gray-400 pl-4 shrink-0">{selectedLens ? '\u2014' : 'Not selected'}</span>
                                                     }
                                                 </div>
                                             )}
@@ -604,12 +665,21 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2 min-w-0">
                                                         <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${selectedHousing ? 'bg-blue-400' : 'bg-gray-200'}`}></div>
-                                                        <span className={`text-sm ${selectedHousing ? 'text-gray-600' : 'text-gray-400'}`}>Housing</span>
-                                                        {selectedHousing && <span className="text-xs text-gray-400 truncate">{selectedHousing.name}</span>}
+                                                        <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Housing</span>
+                                                        {selectedHousing ? (
+                                                            <Link
+                                                                href={`/housings/${selectedHousing.manufacturer.slug}/${selectedHousing.slug}`}
+                                                                className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 truncate transition-colors"
+                                                            >
+                                                                {selectedHousing.name}
+                                                            </Link>
+                                                        ) : (
+                                                            <span className="text-sm text-gray-300 italic">Not selected</span>
+                                                        )}
                                                     </div>
                                                     {selectedHousing?.priceAmount
-                                                        ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4">${Number(selectedHousing.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
-                                                        : <span className="text-xs text-gray-400 pl-4">{selectedHousing ? '\u2014' : 'Not selected'}</span>
+                                                        ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4 shrink-0">${Number(selectedHousing.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                                        : <span className="text-xs text-gray-400 pl-4 shrink-0">{selectedHousing ? '\u2014' : 'Not selected'}</span>
                                                     }
                                                 </div>
                                             )}
@@ -619,8 +689,19 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2 min-w-0">
                                                         <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${selectedPort ? 'bg-blue-400' : 'bg-gray-200'}`}></div>
-                                                        <span className={`text-sm ${selectedPort ? 'text-gray-600' : 'text-gray-400'}`}>Port</span>
-                                                        {selectedPort && <span className="text-xs text-gray-400 truncate">{selectedPort.name}</span>}
+                                                        <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Port</span>
+                                                        {selectedPort?.manufacturer?.slug ? (
+                                                            <Link
+                                                                href={`/ports/${selectedPort.manufacturer.slug}`}
+                                                                className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 truncate transition-colors"
+                                                            >
+                                                                {selectedPort.name}
+                                                            </Link>
+                                                        ) : (
+                                                            <span className={`text-sm truncate ${selectedPort ? 'text-gray-600' : 'text-gray-300 italic'}`}>
+                                                                {selectedPort ? selectedPort.name : 'Not selected'}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                     {selectedPort?.priceAmount
                                                         ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4">${Number(selectedPort.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
@@ -676,23 +757,171 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 </div>
                             </div>
 
-                            {/* Community Rating */}
+                            {/* Community Reviews */}
                             <div className="border-t border-gray-100 px-6 py-5">
-                                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Community Rating</h4>
-                                {rigRating !== null ? (
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-2xl font-bold text-gray-900 tabular-nums">{rigRating.toFixed(1)}</span>
-                                        <div className="flex">
-                                            {Array.from({ length: 5 }, (_, i) => (
-                                                <span key={i} className={`text-xl ${i < Math.round(rigRating!) ? 'text-yellow-400' : 'text-gray-200'}`}>★</span>
-                                            ))}
+                                <div className="flex items-center justify-between mb-3">
+                                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Community Reviews</h4>
+                                    {isRigComplete && selectedCamera && (
+                                        <Link
+                                            href={(() => {
+                                                if (usingWithoutHousing) return `/rigs?camera=${selectedCamera.slug}#reviews`
+                                                const p = new URLSearchParams({ camera: selectedCamera.slug, housing: selectedHousing!.slug })
+                                                if (selectedLens?.slug) p.set('lens', selectedLens.slug)
+                                                if (selectedPort?.slug) p.set('port', selectedPort.slug)
+                                                return `/rigs?${p.toString()}#reviews`
+                                            })()}
+                                            className="text-xs text-blue-500 hover:text-blue-700 transition-colors"
+                                        >
+                                            View all
+                                        </Link>
+                                    )}
+                                </div>
+                                {sortedReviews.length > 0 ? (
+                                    <>
+                                        {/* Aggregate score */}
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <span className="text-xl font-bold text-gray-900 tabular-nums">{rigRating?.toFixed(1)}</span>
+                                            <div className="flex gap-0.5">
+                                                {[1, 2, 3, 4, 5].map(n => (
+                                                    <span key={n} className={`text-base ${n <= Math.round(rigRating ?? 0) ? 'text-yellow-400' : 'text-gray-200'}`}>★</span>
+                                                ))}
+                                            </div>
+                                            <span className="text-xs text-gray-400">({sortedReviews.length} review{sortedReviews.length !== 1 ? 's' : ''})</span>
                                         </div>
-                                        <span className="text-sm text-gray-400">
-                                            ({relevantReviews.length} review{relevantReviews.length !== 1 ? 's' : ''})
-                                        </span>
-                                    </div>
+                                        {/* Rating bars */}
+                                        <div className="space-y-1.5 mb-4">
+                                            {([
+                                                { label: 'Optical', key: 'ratingOpticalQuality' },
+                                                { label: 'Reliability', key: 'ratingReliability' },
+                                                { label: 'Ease of use', key: 'ratingEaseOfUse' },
+                                            ]).map(({ label, key }) => {
+                                                const avg = sortedReviews.reduce((s: number, r: any) => s + (r[key] as number), 0) / sortedReviews.length
+                                                return (
+                                                    <div key={label} className="flex items-center gap-2 text-xs">
+                                                        <span className="w-20 text-gray-500 shrink-0">{label}</span>
+                                                        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                                            <div className="h-full bg-yellow-400 rounded-full" style={{ width: `${(avg / 5) * 100}%` }} />
+                                                        </div>
+                                                        <span className="w-7 text-right text-gray-600 font-medium tabular-nums">{avg.toFixed(1)}</span>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                        {/* Carousel card */}
+                                        <div className="bg-gray-50 rounded-xl p-4">
+                                            {(() => {
+                                                const r = sortedReviews[reviewIdx] as any
+                                                const avgRating = (r.ratingOpticalQuality + r.ratingReliability + r.ratingEaseOfUse) / 3
+                                                return (
+                                                    <>
+                                                        <div className="flex items-start gap-2.5 mb-2">
+                                                            <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-semibold shrink-0">
+                                                                {(r.user?.name ?? '?')[0].toUpperCase()}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                                                    <span className="text-xs font-medium text-gray-900">{r.user?.name ?? 'Anonymous'}</span>
+                                                                    <span className="text-xs text-gray-400">{new Date(r.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}</span>
+                                                                </div>
+                                                                <div className="flex gap-0.5 mt-0.5">
+                                                                    {[1, 2, 3, 4, 5].map(n => (
+                                                                        <span key={n} className={`text-sm ${n <= Math.round(avgRating) ? 'text-yellow-400' : 'text-gray-200'}`}>★</span>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {r.comment && (
+                                                            <p className="text-xs text-gray-700 leading-relaxed mb-3 line-clamp-3">{r.comment}</p>
+                                                        )}
+                                                        {r.reviewPhotos?.length > 0 && (
+                                                            <div className="flex gap-1.5 mb-3">
+                                                                {(r.reviewPhotos as string[]).slice(0, 3).map((src, i) => (
+                                                                    <div key={i} className="h-14 w-14 rounded-lg overflow-hidden bg-gray-200 shrink-0">
+                                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                        <img src={src} alt="" className="h-full w-full object-cover" />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-gray-400">
+                                                            <span>Optical {r.ratingOpticalQuality}/5</span>
+                                                            <span>Reliability {r.ratingReliability}/5</span>
+                                                            <span>Ease {r.ratingEaseOfUse}/5</span>
+                                                        </div>
+                                                    </>
+                                                )
+                                            })()}
+                                        </div>
+                                        {/* Navigation */}
+                                        {sortedReviews.length > 1 && (
+                                            <div className="flex items-center justify-between mt-3">
+                                                <button
+                                                    onClick={() => setReviewIdx(i => (i - 1 + sortedReviews.length) % sortedReviews.length)}
+                                                    className="p-1 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                                                </button>
+                                                <span className="text-xs text-gray-400 tabular-nums">{reviewIdx + 1} / {sortedReviews.length}</span>
+                                                <button
+                                                    onClick={() => setReviewIdx(i => (i + 1) % sortedReviews.length)}
+                                                    className="p-1 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
                                 ) : (
                                     <p className="text-sm text-gray-400">No reviews yet for this {selectedHousing ? 'housing' : 'camera'}</p>
+                                )}
+                            </div>
+
+                            {/* Sample Photos */}
+                            <div className="border-t border-gray-100 px-6 py-5">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Sample Photos</h4>
+                                    {galleryUrl && (
+                                        <Link href={galleryUrl} className="text-xs text-blue-500 hover:text-blue-700 transition-colors">
+                                            View all →
+                                        </Link>
+                                    )}
+                                </div>
+                                {galleryLoading ? (
+                                    <div className="flex items-center justify-center py-6">
+                                        <div className="w-5 h-5 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
+                                    </div>
+                                ) : galleryPhotos.length > 0 ? (
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {galleryPhotos.map(photo => (
+                                            <Link key={photo.id} href={galleryUrl ?? '/gallery'}>
+                                                <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 group relative">
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img
+                                                        src={photo.src}
+                                                        alt={photo.title ?? ''}
+                                                        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                    />
+                                                    {photo.location && (
+                                                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <p className="text-white text-xs truncate">📍 {photo.location}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-6 text-center">
+                                        <svg className="w-8 h-8 text-gray-200 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4-4a3 3 0 014.24 0L16 16m-2-2l2-2a3 3 0 014.24 0L22 16M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <p className="text-xs text-gray-400">No photos yet for this setup</p>
+                                        {isRigComplete && galleryUrl && (
+                                            <Link href={galleryUrl} className="text-xs text-blue-500 hover:text-blue-700 mt-1 transition-colors">
+                                                Be the first to upload →
+                                            </Link>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         </>

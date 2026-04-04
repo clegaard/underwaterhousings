@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { getHousingImagePathWithFallback, getCameraImagePathWithFallback, getLensImagePathWithFallback, getPortImagePathWithFallback } from '@/lib/images'
+import { withBase, getHousingImagePathWithFallback, getCameraImagePathWithFallback, getLensImagePathWithFallback, getPortImagePathWithFallback } from '@/lib/images'
 import HousingFilters from '@/components/HousingFilters'
 
 // Server-side data fetching functions
@@ -25,9 +25,14 @@ async function getHousingsData() {
                     housingMount: true,
                     rigReviews: {
                         select: {
+                            id: true,
                             ratingOpticalQuality: true,
                             ratingReliability: true,
-                            ratingEaseOfUse: true
+                            ratingEaseOfUse: true,
+                            comment: true,
+                            reviewPhotos: true,
+                            createdAt: true,
+                            user: { select: { id: true, name: true } },
                         }
                     }
                 },
@@ -41,9 +46,14 @@ async function getHousingsData() {
                     cameraMount: true,
                     rigReviews: {
                         select: {
+                            id: true,
                             ratingOpticalQuality: true,
                             ratingReliability: true,
-                            ratingEaseOfUse: true
+                            ratingEaseOfUse: true,
+                            comment: true,
+                            reviewPhotos: true,
+                            createdAt: true,
+                            user: { select: { id: true, name: true } },
                         }
                     }
                 },
@@ -54,7 +64,8 @@ async function getHousingsData() {
             }),
             prisma.lens.findMany({
                 include: {
-                    cameraMount: true
+                    cameraMount: true,
+                    manufacturer: { select: { slug: true } },
                 },
                 orderBy: {
                     name: 'asc'
@@ -63,7 +74,8 @@ async function getHousingsData() {
             prisma.port.findMany({
                 include: {
                     lens: true,
-                    housingMount: true
+                    housingMount: true,
+                    manufacturer: { select: { slug: true } },
                 },
                 orderBy: {
                     name: 'asc'
@@ -96,14 +108,24 @@ async function getHousingsData() {
                 return {
                     ...housing,
                     priceAmount: housing.priceAmount ? Number(housing.priceAmount) : null,
-                    imageInfo
+                    imageInfo,
+                    rigReviews: housing.rigReviews.map((r: any) => ({
+                        ...r,
+                        createdAt: r.createdAt.toISOString(),
+                        reviewPhotos: r.reviewPhotos.map((p: string) => withBase(p)),
+                    })),
                 }
             }),
             cameras: cameras.map(camera => {
                 const imageInfo = getCameraImagePathWithFallback(camera.productPhotos)
                 return {
                     ...camera,
-                    imageInfo
+                    imageInfo,
+                    rigReviews: camera.rigReviews.map((r: any) => ({
+                        ...r,
+                        createdAt: r.createdAt.toISOString(),
+                        reviewPhotos: r.reviewPhotos.map((p: string) => withBase(p)),
+                    })),
                 }
             }),
             lenses: lenses.map(lens => {
