@@ -13,25 +13,44 @@ interface Manufacturer {
 interface NavigationProps {
     manufacturers: Manufacturer[]
     cameraManufacturers: Manufacturer[]
+    lensManufacturers: Manufacturer[]
+    portManufacturers: Manufacturer[]
 }
 
-export default function Navigation({ manufacturers, cameraManufacturers }: NavigationProps) {
+export default function Navigation({ manufacturers, cameraManufacturers, lensManufacturers, portManufacturers }: NavigationProps) {
     const { data: session } = useSession()
-    const [isHousingsOpen, setIsHousingsOpen] = useState(false)
     const [isCamerasOpen, setIsCamerasOpen] = useState(false)
+    const [isLensesOpen, setIsLensesOpen] = useState(false)
+    const [isHousingsOpen, setIsHousingsOpen] = useState(false)
+    const [isPortsOpen, setIsPortsOpen] = useState(false)
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
     const userMenuRef = useRef<HTMLDivElement>(null)
-    const housingsDropdownRef = useRef<HTMLDivElement>(null)
     const camerasDropdownRef = useRef<HTMLDivElement>(null)
+    const lensesDropdownRef = useRef<HTMLDivElement>(null)
+    const housingsDropdownRef = useRef<HTMLDivElement>(null)
+    const portsDropdownRef = useRef<HTMLDivElement>(null)
+
+    function closeAll() {
+        setIsCamerasOpen(false)
+        setIsLensesOpen(false)
+        setIsHousingsOpen(false)
+        setIsPortsOpen(false)
+    }
 
     // Close dropdowns when clicking outside
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
+            if (camerasDropdownRef.current && !camerasDropdownRef.current.contains(event.target as Node)) {
+                setIsCamerasOpen(false)
+            }
+            if (lensesDropdownRef.current && !lensesDropdownRef.current.contains(event.target as Node)) {
+                setIsLensesOpen(false)
+            }
             if (housingsDropdownRef.current && !housingsDropdownRef.current.contains(event.target as Node)) {
                 setIsHousingsOpen(false)
             }
-            if (camerasDropdownRef.current && !camerasDropdownRef.current.contains(event.target as Node)) {
-                setIsCamerasOpen(false)
+            if (portsDropdownRef.current && !portsDropdownRef.current.contains(event.target as Node)) {
+                setIsPortsOpen(false)
             }
             if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
                 setIsUserMenuOpen(false)
@@ -57,66 +76,6 @@ export default function Navigation({ manufacturers, cameraManufacturers }: Navig
 
                     {/* Navigation Menu */}
                     <div className="flex items-center space-x-8">
-                        <Link
-                            href="/"
-                            className="text-gray-700 hover:text-blue-900 transition-colors font-medium"
-                        >
-                            Home
-                        </Link>
-
-                        {/* Housings Dropdown */}
-                        <div className="relative" ref={housingsDropdownRef}>
-                            <div className="flex items-center">
-                                <Link
-                                    href="/housings"
-                                    className="text-gray-700 hover:text-blue-900 transition-colors font-medium"
-                                    onClick={() => setIsHousingsOpen(false)}
-                                >
-                                    Housings
-                                </Link>
-                                <button
-                                    onClick={() => {
-                                        setIsHousingsOpen(!isHousingsOpen)
-                                        setIsCamerasOpen(false)
-                                    }}
-                                    className="ml-1 p-0.5 text-gray-700 hover:text-blue-900 transition-colors"
-                                    aria-label="Browse housing manufacturers"
-                                >
-                                    <svg
-                                        className={`h-4 w-4 transition-transform ${isHousingsOpen ? 'rotate-180' : ''}`}
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            {/* Dropdown Menu */}
-                            {isHousingsOpen && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
-                                    <div className="py-1">
-                                        {manufacturers.map((manufacturer) => (
-                                            <Link
-                                                key={manufacturer.id}
-                                                href={`/housings/${manufacturer.slug}`}
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-900 transition-colors"
-                                                onClick={() => setIsHousingsOpen(false)}
-                                            >
-                                                {manufacturer.name}
-                                            </Link>
-                                        ))}
-
-                                        {manufacturers.length === 0 && (
-                                            <div className="px-4 py-2 text-sm text-gray-500">
-                                                No manufacturers available
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
 
                         {/* Cameras Dropdown */}
                         <div className="relative" ref={camerasDropdownRef}>
@@ -129,61 +88,140 @@ export default function Navigation({ manufacturers, cameraManufacturers }: Navig
                                     Cameras
                                 </Link>
                                 <button
-                                    onClick={() => {
-                                        setIsCamerasOpen(!isCamerasOpen)
-                                        setIsHousingsOpen(false)
-                                    }}
+                                    onClick={() => { closeAll(); setIsCamerasOpen(v => !v) }}
                                     className="ml-1 p-0.5 text-gray-700 hover:text-blue-900 transition-colors"
                                     aria-label="Browse camera manufacturers"
                                 >
-                                    <svg
-                                        className={`h-4 w-4 transition-transform ${isCamerasOpen ? 'rotate-180' : ''}`}
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
+                                    <svg className={`h-4 w-4 transition-transform ${isCamerasOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
                             </div>
-
-                            {/* Dropdown Menu */}
                             {isCamerasOpen && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                                <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
                                     <div className="py-1">
-                                        {cameraManufacturers.map((manufacturer) => (
-                                            <Link
-                                                key={manufacturer.id}
-                                                href={`/cameras/${manufacturer.slug}`}
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-900 transition-colors"
-                                                onClick={() => setIsCamerasOpen(false)}
-                                            >
-                                                {manufacturer.name}
+                                        {cameraManufacturers.map((m) => (
+                                            <Link key={m.id} href={`/cameras/${m.slug}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-900 transition-colors" onClick={() => setIsCamerasOpen(false)}>
+                                                {m.name}
                                             </Link>
                                         ))}
-
-                                        {cameraManufacturers.length === 0 && (
-                                            <div className="px-4 py-2 text-sm text-gray-500">
-                                                No camera manufacturers available
-                                            </div>
-                                        )}
+                                        {cameraManufacturers.length === 0 && <div className="px-4 py-2 text-sm text-gray-500">No manufacturers available</div>}
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        <Link
-                            href="/gallery"
-                            className="text-gray-700 hover:text-blue-900 transition-colors font-medium"
-                        >
+                        {/* Lenses Dropdown */}
+                        <div className="relative" ref={lensesDropdownRef}>
+                            <div className="flex items-center">
+                                <Link
+                                    href="/lenses"
+                                    className="text-gray-700 hover:text-blue-900 transition-colors font-medium"
+                                    onClick={() => setIsLensesOpen(false)}
+                                >
+                                    Lenses
+                                </Link>
+                                <button
+                                    onClick={() => { closeAll(); setIsLensesOpen(v => !v) }}
+                                    className="ml-1 p-0.5 text-gray-700 hover:text-blue-900 transition-colors"
+                                    aria-label="Browse lens manufacturers"
+                                >
+                                    <svg className={`h-4 w-4 transition-transform ${isLensesOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                            </div>
+                            {isLensesOpen && (
+                                <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                                    <div className="py-1">
+                                        {lensManufacturers.map((m) => (
+                                            <Link key={m.id} href={`/lenses/${m.slug}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-900 transition-colors" onClick={() => setIsLensesOpen(false)}>
+                                                {m.name}
+                                            </Link>
+                                        ))}
+                                        {lensManufacturers.length === 0 && <div className="px-4 py-2 text-sm text-gray-500">No manufacturers available</div>}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Housings Dropdown */}
+                        <div className="relative" ref={housingsDropdownRef}>
+                            <div className="flex items-center">
+                                <Link
+                                    href="/housings"
+                                    className="text-gray-700 hover:text-blue-900 transition-colors font-medium"
+                                    onClick={() => setIsHousingsOpen(false)}
+                                >
+                                    Housings
+                                </Link>
+                                <button
+                                    onClick={() => { closeAll(); setIsHousingsOpen(v => !v) }}
+                                    className="ml-1 p-0.5 text-gray-700 hover:text-blue-900 transition-colors"
+                                    aria-label="Browse housing manufacturers"
+                                >
+                                    <svg className={`h-4 w-4 transition-transform ${isHousingsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                            </div>
+                            {isHousingsOpen && (
+                                <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                                    <div className="py-1">
+                                        {manufacturers.map((m) => (
+                                            <Link key={m.id} href={`/housings/${m.slug}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-900 transition-colors" onClick={() => setIsHousingsOpen(false)}>
+                                                {m.name}
+                                            </Link>
+                                        ))}
+                                        {manufacturers.length === 0 && <div className="px-4 py-2 text-sm text-gray-500">No manufacturers available</div>}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Ports Dropdown */}
+                        <div className="relative" ref={portsDropdownRef}>
+                            <div className="flex items-center">
+                                <Link
+                                    href="/ports"
+                                    className="text-gray-700 hover:text-blue-900 transition-colors font-medium"
+                                    onClick={() => setIsPortsOpen(false)}
+                                >
+                                    Ports
+                                </Link>
+                                <button
+                                    onClick={() => { closeAll(); setIsPortsOpen(v => !v) }}
+                                    className="ml-1 p-0.5 text-gray-700 hover:text-blue-900 transition-colors"
+                                    aria-label="Browse port manufacturers"
+                                >
+                                    <svg className={`h-4 w-4 transition-transform ${isPortsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                            </div>
+                            {isPortsOpen && (
+                                <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                                    <div className="py-1">
+                                        {portManufacturers.map((m) => (
+                                            <Link key={m.id} href={`/ports/${m.slug}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-900 transition-colors" onClick={() => setIsPortsOpen(false)}>
+                                                {m.name}
+                                            </Link>
+                                        ))}
+                                        {portManufacturers.length === 0 && <div className="px-4 py-2 text-sm text-gray-500">No manufacturers available</div>}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <Link href="/manufacturers" className="text-gray-700 hover:text-blue-900 transition-colors font-medium">
+                            Manufacturers
+                        </Link>
+
+                        <Link href="/gallery" className="text-gray-700 hover:text-blue-900 transition-colors font-medium">
                             Gallery
                         </Link>
 
-                        {/* Additional nav items can be added here */}
-                        <Link
-                            href="/about"
-                            className="text-gray-700 hover:text-blue-900 transition-colors font-medium"
-                        >
+                        <Link href="/about" className="text-gray-700 hover:text-blue-900 transition-colors font-medium">
                             About
                         </Link>
 

@@ -19,6 +19,7 @@ model Manufacturer {
     housings      Housing[]
     lenses        Lens[]
     ports         Port[]
+    logoPath      String?
 
     @@map("manufacturers")
 }
@@ -92,20 +93,22 @@ model Housing {
 }
 
 model Port {
-    id             Int            @id @default(autoincrement())
-    name           String
-    slug           String         @unique
-    description    String?
-    manufacturerId Int
-    housingMountId Int?
-    productPhotos  String[]
-    priceAmount    Decimal?       @db.Decimal(10, 2)
-    priceCurrency  String?        @default("USD")
-    rigReviews     RigReview[]
-    galleryPhotos  GalleryPhoto[]
-    housingMount   HousingMount?  @relation(fields: [housingMountId], references: [id])
-    manufacturer   Manufacturer   @relation(fields: [manufacturerId], references: [id])
-    lens           Lens[]         @relation("LensToPort")
+    id              Int            @id @default(autoincrement())
+    name            String
+    slug            String         @unique
+    description     String?
+    manufacturerId  Int
+    housingMountId  Int?
+    productPhotos   String[]
+    priceAmount     Decimal?       @db.Decimal(10, 2)
+    priceCurrency   String?        @default("USD")
+    isFlatPort      Boolean        @default(false) // True if it's a flat port, false if it's a dome port
+    hemisphereWidth Float? // For dome ports, the width of the hemisphere in mm
+    rigReviews      RigReview[]
+    galleryPhotos   GalleryPhoto[]
+    housingMount    HousingMount?  @relation(fields: [housingMountId], references: [id])
+    manufacturer    Manufacturer   @relation(fields: [manufacturerId], references: [id])
+    lens            Lens[]         @relation("LensToPort")
 
     @@map("ports")
 }
@@ -121,7 +124,7 @@ model Lens {
     cameraMountId        Int
     cameraId             Int?
     productPhotos        String[]
-    manufacturerId       Int?
+    manufacturerId       Int
     exifId               String?        @unique
     rigReviews           RigReview[]
     galleryPhotos        GalleryPhoto[]

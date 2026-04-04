@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { Metadata } from 'next'
 import Link from 'next/link'
+import { withBase } from '@/lib/images'
 
 export const metadata: Metadata = {
     title: 'Housing Manufacturers - UW Housings',
@@ -56,13 +57,21 @@ export default async function HousingsPage() {
                                 href={`/housings/${manufacturer.slug}`}
                                 className="group block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6"
                             >
-                                <div className="flex items-center justify-between mb-3">
-                                    <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
-                                        {manufacturer.name}
-                                    </h3>
-                                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                                        Housings
-                                    </span>
+                                <div className="flex items-start gap-3 mb-3">
+                                    {manufacturer.logoPath && (
+                                        <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0 mt-0.5">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={withBase(manufacturer.logoPath)} alt={`${manufacturer.name} logo`} className="absolute inset-0 w-full h-full object-contain p-1" />
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between items-start flex-1">
+                                        <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
+                                            {manufacturer.name}
+                                        </h3>
+                                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                                            Housings
+                                        </span>
+                                    </div>
                                 </div>
                                 {manufacturer.description && (
                                     <p className="text-sm text-gray-600 mb-3 line-clamp-2">{manufacturer.description}</p>

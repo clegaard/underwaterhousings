@@ -33,6 +33,7 @@ const CONTENT_TYPES: Record<string, string> = {
     '.png': 'image/png',
     '.avif': 'image/avif',
     '.gif': 'image/gif',
+    '.svg': 'image/svg+xml',
 }
 
 function getSeedDataPaths(): string[] {
@@ -111,7 +112,8 @@ async function main() {
         data: {
             name: 'Nauticam',
             slug: 'nauticam',
-            description: 'Premium underwater housings for professional photography'
+            description: 'Premium underwater housings for professional photography',
+            logoPath: '/manufacturers/nauticam.avif',
         }
     })
 
@@ -119,7 +121,8 @@ async function main() {
         data: {
             name: 'SeaFrogs',
             slug: 'seafrogs',
-            description: 'Affordable underwater housings for mirrorless and compact cameras'
+            description: 'Affordable underwater housings for mirrorless and compact cameras',
+            logoPath: '/manufacturers/seafrogs.jpg',
         }
     })
 
@@ -127,44 +130,70 @@ async function main() {
         data: {
             name: 'DiveVolk',
             slug: 'divevolk',
-            description: 'touch enabled smartphone cases'
+            description: 'touch enabled smartphone cases',
+            logoPath: '/manufacturers/divevolk.png',
         }
     })
 
     const sony = await prisma.manufacturer.create({
         data: {
             name: 'Sony',
-            slug: 'sony'
+            slug: 'sony',
+            logoPath: '/manufacturers/sony.svg',
         }
     })
 
     const canon = await prisma.manufacturer.create({
         data: {
             name: 'Canon',
-            slug: 'canon'
+            slug: 'canon',
+            logoPath: '/manufacturers/canon.svg',
         }
     })
 
     const nikon = await prisma.manufacturer.create({
         data: {
             name: 'Nikon',
-            slug: 'nikon'
+            slug: 'nikon',
+            logoPath: '/manufacturers/nikon.svg',
         }
     })
 
     const omSystem = await prisma.manufacturer.create({
         data: {
             name: 'OM System',
-            slug: 'om-system'
+            slug: 'om-system',
         }
     })
 
     const apple = await prisma.manufacturer.create({
         data: {
             name: 'Apple',
-            slug: 'apple'
+            slug: 'apple',
+            logoPath: '/manufacturers/apple.png',
         }
     })
+
+    // Create a Sigma manufacturer for the Sigma lens
+    const sigma = await prisma.manufacturer.create({
+        data: {
+            name: 'Sigma',
+            slug: 'sigma',
+            logoPath: '/manufacturers/sigma.svg',
+        }
+    })
+
+    const sealife = await prisma.manufacturer.create({
+        data: {
+            name: 'SeaLife',
+            slug: 'sealife',
+            description: 'Underwater cameras and housings for recreational divers',
+            logoPath: '/manufacturers/sealife.jpg',
+        }
+    })
+
+
+    // ============================= CAMERA MOUNTS =============================
 
     // Create camera mounts based on common mount types
     const sonyE = await prisma.cameraMount.create({
@@ -182,7 +211,7 @@ async function main() {
         }
     })
 
-    // Create camera models based on scraped data
+    // ============================= CAMERAS =============================
 
     // Sony cameras
     const sonyZVE1 = await prisma.camera.create({
@@ -200,153 +229,6 @@ async function main() {
             slug: 'a7-iii',
             manufacturerId: sony.id,
             cameraMountId: sonyE.id
-        }
-    })
-
-    // ============================= LENSES =============================
-
-    // ----------------------------- E-MOUNT LENSES -----------------------------
-    const lensSigma2470dgdnii = await prisma.lens.create({
-        data: {
-            name: 'Sigma 24-70mm f/2.8 DG DN Art II',
-            slug: 'a024-24-70-28-ii',
-            cameraMountId: sonyE.id,
-            productPhotos: ['/lenses/a024-24-70-28-ii.png']
-        }
-    })
-
-    const lensFE90MacroGOSS = await prisma.lens.create({
-        data: {
-            name: 'Sony FE 90mm f/2.8 Macro G OSS',
-            slug: 'sel90m28g',
-            cameraMountId: sonyE.id,
-            productPhotos: ['/lenses/sel90m28g.avif']
-        }
-    })
-
-    const lensFE2470GMII = await prisma.lens.create({
-        data: {
-            name: 'Sony FE 24-70mm f/2.8 GM II',
-            slug: 'sel2470gmii',
-            exifId: 'FE 24-70mm F2.8 GM II',
-            cameraMountId: sonyE.id,
-            productPhotos: ['/lenses/sel2470gmii.jpg']
-        }
-    })
-
-    const lensFE1635GM = await prisma.lens.create({
-        data: {
-            name: 'Sony FE 16-35mm f/2.8 GM',
-            slug: 'sony-fe-16-35mm-f28-gm',
-            cameraMountId: sonyE.id
-        }
-    })
-
-    const lensFE1635GMII = await prisma.lens.create({
-        data: {
-            name: 'Sony FE 16-35mm f/2.8 GM II',
-            slug: 'sel1635gmii',
-            cameraMountId: sonyE.id
-        }
-    })
-
-    await prisma.lens.create({
-        data: {
-            name: 'Sony FE 70-200mm f/2.8 GM OSS II',
-            slug: 'sel70200gmii',
-            cameraMountId: sonyE.id
-        }
-    })
-
-    // Additional lenses from A7R V port chart
-    const lensFE24105F4GOSS = await prisma.lens.create({
-        data: {
-            name: 'Sony FE 24-105mm f/4 G OSS',
-            slug: 'sel24105',
-            cameraMountId: sonyE.id,
-            productPhotos: ['/lenses/sel24105.avif']
-        }
-    })
-
-    const lensFE2870OSS = await prisma.lens.create({
-        data: {
-            name: 'Sony FE 28-70mm f/3.5-5.6 OSS',
-            slug: 'sel28702',
-            cameraMountId: sonyE.id,
-            productPhotos: ['/lenses/sel28702.avif']
-        }
-    })
-
-    const lensFE1635F4 = await prisma.lens.create({
-        data: {
-            name: 'Sony FE 16-35mm f/4 ZA OSS',
-            slug: 'sony-fe-16-35mm-f4-za-oss',
-            cameraMountId: sonyE.id
-        }
-    })
-
-    const lensFE2470F4ZAOSS = await prisma.lens.create({
-        data: {
-            name: 'Sony FE 24-70mm f/4 ZA OSS',
-            slug: 'sony-fe-24-70mm-f4-za-oss',
-            cameraMountId: sonyE.id
-        }
-    })
-
-    const lensFE1224F4G = await prisma.lens.create({
-        data: {
-            name: 'Sony FE 12-24mm f/4 G',
-            slug: 'sony-fe-12-24mm-f4-g',
-            cameraMountId: sonyE.id
-        }
-    })
-
-    const lensFE2470GM = await prisma.lens.create({
-        data: {
-            name: 'Sony FE 24-70mm f/2.8 GM',
-            slug: 'sony-fe-24-70mm-f28-gm',
-            cameraMountId: sonyE.id
-        }
-    })
-
-    const lensFEPZ1635F4G = await prisma.lens.create({
-        data: {
-            name: 'Sony FE PZ 16-35mm f/4 G',
-            slug: 'sony-fe-pz-16-35mm-f4-g',
-            cameraMountId: sonyE.id
-        }
-    })
-
-    const lensEPZ18105F4GOSS = await prisma.lens.create({
-        data: {
-            name: 'Sony E PZ 18-105mm f/4 G OSS',
-            slug: 'selp18105g',
-            cameraMountId: sonyE.id,
-            productPhotos: ['/lenses/selp18105g.avif']
-        }
-    })
-
-    await prisma.lens.create({
-        data: {
-            name: 'Canon RF 15-35mm f/2.8L IS USM',
-            slug: 'canon-rf-15-35mm-f28l-is-usm',
-            cameraMountId: canonRF.id
-        }
-    })
-
-    await prisma.lens.create({
-        data: {
-            name: 'Canon RF 24-70mm f/2.8L IS USM',
-            slug: 'canon-rf-24-70mm-f28l-is-usm',
-            cameraMountId: canonRF.id
-        }
-    })
-
-    await prisma.lens.create({
-        data: {
-            name: 'Canon RF 100mm f/2.8L Macro IS USM',
-            slug: 'canon-rf-100mm-f28l-macro-is-usm',
-            cameraMountId: canonRF.id
         }
     })
 
@@ -430,6 +312,186 @@ async function main() {
         }
     })
 
+
+    const sealifemc3 = await prisma.camera.create({
+        data: {
+            name: 'SeaLife Micro 3.0',
+            slug: 'sl550',
+            manufacturerId: sealife.id,
+            interchangeableLens: false,
+            canBeUsedWithoutAHousing: true,
+            productPhotos: ['/cameras/sl550.webp']
+        }
+    })
+
+    // ============================= LENSES =============================
+
+    // ----------------------------- E-MOUNT LENSES -----------------------------
+
+
+    const lensSigma2470dgdnii = await prisma.lens.create({
+        data: {
+            name: 'Sigma 24-70mm f/2.8 DG DN Art II',
+            slug: 'a024-24-70-28-ii',
+            cameraMountId: sonyE.id,
+            manufacturerId: sigma.id,
+            productPhotos: ['/lenses/a024-24-70-28-ii.png']
+        }
+    })
+
+    const lensFE90MacroGOSS = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 90mm f/2.8 Macro G OSS',
+            slug: 'sel90m28g',
+            cameraMountId: sonyE.id,
+            manufacturerId: sony.id,
+            productPhotos: ['/lenses/sel90m28g.avif']
+        }
+    })
+
+    const lensFE2470GMII = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 24-70mm f/2.8 GM II',
+            slug: 'sel2470gmii',
+            exifId: 'FE 24-70mm F2.8 GM II',
+            cameraMountId: sonyE.id,
+            manufacturerId: sony.id,
+            productPhotos: ['/lenses/sel2470gmii.jpg']
+        }
+    })
+
+    const lensFE1635GM = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 16-35mm f/2.8 GM',
+            slug: 'sony-fe-16-35mm-f28-gm',
+            cameraMountId: sonyE.id,
+            manufacturerId: sony.id,
+        }
+    })
+
+    const lensFE1635GMII = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 16-35mm f/2.8 GM II',
+            slug: 'sel1635gmii',
+            cameraMountId: sonyE.id,
+            manufacturerId: sony.id,
+        }
+    })
+
+    await prisma.lens.create({
+        data: {
+            name: 'Sony FE 70-200mm f/2.8 GM OSS II',
+            slug: 'sel70200gmii',
+            cameraMountId: sonyE.id,
+            manufacturerId: sony.id,
+        }
+    })
+
+    // Additional lenses from A7R V port chart
+    const lensFE24105F4GOSS = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 24-105mm f/4 G OSS',
+            slug: 'sel24105',
+            cameraMountId: sonyE.id,
+            manufacturerId: sony.id,
+            productPhotos: ['/lenses/sel24105.avif']
+        }
+    })
+
+    const lensFE2870OSS = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 28-70mm f/3.5-5.6 OSS',
+            slug: 'sel28702',
+            cameraMountId: sonyE.id,
+            manufacturerId: sony.id,
+            productPhotos: ['/lenses/sel28702.avif']
+        }
+    })
+
+    const lensFE1635F4 = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 16-35mm f/4 ZA OSS',
+            slug: 'sony-fe-16-35mm-f4-za-oss',
+            cameraMountId: sonyE.id,
+            manufacturerId: sony.id,
+        }
+    })
+
+    const lensFE2470F4ZAOSS = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 24-70mm f/4 ZA OSS',
+            slug: 'sony-fe-24-70mm-f4-za-oss',
+            cameraMountId: sonyE.id,
+            manufacturerId: sony.id,
+        }
+    })
+
+    const lensFE1224F4G = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 12-24mm f/4 G',
+            slug: 'sony-fe-12-24mm-f4-g',
+            cameraMountId: sonyE.id,
+            manufacturerId: sony.id,
+        }
+    })
+
+    const lensFE2470GM = await prisma.lens.create({
+        data: {
+            name: 'Sony FE 24-70mm f/2.8 GM',
+            slug: 'sony-fe-24-70mm-f28-gm',
+            cameraMountId: sonyE.id,
+            manufacturerId: sony.id,
+        }
+    })
+
+    const lensFEPZ1635F4G = await prisma.lens.create({
+        data: {
+            name: 'Sony FE PZ 16-35mm f/4 G',
+            slug: 'sony-fe-pz-16-35mm-f4-g',
+            cameraMountId: sonyE.id,
+            manufacturerId: sony.id,
+        }
+    })
+
+    const lensEPZ18105F4GOSS = await prisma.lens.create({
+        data: {
+            name: 'Sony E PZ 18-105mm f/4 G OSS',
+            slug: 'selp18105g',
+            cameraMountId: sonyE.id,
+            manufacturerId: sony.id,
+            productPhotos: ['/lenses/selp18105g.avif']
+        }
+    })
+
+    await prisma.lens.create({
+        data: {
+            name: 'Canon RF 15-35mm f/2.8L IS USM',
+            slug: 'canon-rf-15-35mm-f28l-is-usm',
+            cameraMountId: canonRF.id,
+            manufacturerId: canon.id,
+        }
+    })
+
+    await prisma.lens.create({
+        data: {
+            name: 'Canon RF 24-70mm f/2.8L IS USM',
+            slug: 'canon-rf-24-70mm-f28l-is-usm',
+            cameraMountId: canonRF.id,
+            manufacturerId: canon.id,
+        }
+    })
+
+    await prisma.lens.create({
+        data: {
+            name: 'Canon RF 100mm f/2.8L Macro IS USM',
+            slug: 'canon-rf-100mm-f28l-macro-is-usm',
+            cameraMountId: canonRF.id,
+            manufacturerId: canon.id,
+        }
+    })
+
+    // ============= HOUSING MOUNTS ===============
+
     // Create housing mount types for different housings
     const mountTypeNauticamN120 = await prisma.housingMount.create({
         data: {
@@ -451,7 +513,7 @@ async function main() {
     })
 
 
-    // Create housings based on scraped data from manufacturers
+    // ========== HOUSINGS =================
 
     // Nauticam housings
     await prisma.housing.create({

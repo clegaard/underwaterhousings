@@ -3,11 +3,13 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { withBase } from '@/lib/images'
 
 interface Manufacturer {
     id: number
     name: string
     slug: string
+    logoPath: string | null
     _count: { cameras: number }
     cameras: { housings: { id: number }[] }[]
 }
@@ -146,13 +148,21 @@ export default function CameraManufacturersClient({ manufacturers: initial, isSu
                                         className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group"
                                     >
                                         <div className="p-6">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
-                                                    {manufacturer.name}
-                                                </h3>
-                                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                                                    Cameras
-                                                </span>
+                                            <div className="flex items-start gap-3 mb-3">
+                                                {manufacturer.logoPath && (
+                                                    <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0 mt-0.5">
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img src={withBase(manufacturer.logoPath)} alt={`${manufacturer.name} logo`} className="absolute inset-0 w-full h-full object-contain p-1" />
+                                                    </div>
+                                                )}
+                                                <div className="flex justify-between items-start flex-1">
+                                                    <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
+                                                        {manufacturer.name}
+                                                    </h3>
+                                                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                                                        Cameras
+                                                    </span>
+                                                </div>
                                             </div>
                                             <div className="space-y-2 text-sm">
                                                 <div className="flex justify-between">

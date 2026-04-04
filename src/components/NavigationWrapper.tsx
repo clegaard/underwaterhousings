@@ -12,24 +12,31 @@ interface Manufacturer {
 export default function NavigationWrapper() {
     const [manufacturers, setManufacturers] = useState<Manufacturer[]>([])
     const [cameraManufacturers, setCameraManufacturers] = useState<Manufacturer[]>([])
+    const [lensManufacturers, setLensManufacturers] = useState<Manufacturer[]>([])
+    const [portManufacturers, setPortManufacturers] = useState<Manufacturer[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         async function fetchData() {
             try {
-                const [manufacturersResponse, cameraManufacturersResponse] = await Promise.all([
+                const [manufacturersResponse, cameraManufacturersResponse, lensManufacturersResponse, portManufacturersResponse] = await Promise.all([
                     fetch('/api/manufacturers?simple=true'),
-                    fetch('/api/camera-manufacturers?simple=true')
+                    fetch('/api/camera-manufacturers?simple=true'),
+                    fetch('/api/lenses?simple=true'),
+                    fetch('/api/ports?simple=true'),
                 ])
 
                 if (manufacturersResponse.ok) {
-                    const manufacturersData = await manufacturersResponse.json()
-                    setManufacturers(manufacturersData)
+                    setManufacturers(await manufacturersResponse.json())
                 }
-
                 if (cameraManufacturersResponse.ok) {
-                    const cameraManufacturersData = await cameraManufacturersResponse.json()
-                    setCameraManufacturers(cameraManufacturersData)
+                    setCameraManufacturers(await cameraManufacturersResponse.json())
+                }
+                if (lensManufacturersResponse.ok) {
+                    setLensManufacturers(await lensManufacturersResponse.json())
+                }
+                if (portManufacturersResponse.ok) {
+                    setPortManufacturers(await portManufacturersResponse.json())
                 }
             } catch (error) {
                 console.error('Failed to fetch manufacturers:', error)
@@ -58,5 +65,5 @@ export default function NavigationWrapper() {
         )
     }
 
-    return <Navigation manufacturers={manufacturers} cameraManufacturers={cameraManufacturers} />
+    return <Navigation manufacturers={manufacturers} cameraManufacturers={cameraManufacturers} lensManufacturers={lensManufacturers} portManufacturers={portManufacturers} />
 }
