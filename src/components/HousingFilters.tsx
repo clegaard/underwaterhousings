@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { HousingImage } from '@/components/HousingImage'
@@ -228,6 +228,43 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         if (selectedPort?.priceAmount) total += Number(selectedPort.priceAmount)
         return total
     }, [selectedCamera, selectedLens, selectedHousing, selectedPort])
+
+    const relevantReviews = useMemo((): { ratingOpticalQuality: number; ratingReliability: number; ratingEaseOfUse: number }[] => {
+        if ((selectedHousing as any)?.rigReviews?.length) return (selectedHousing as any).rigReviews
+        if (usingWithoutHousing && (selectedCamera as any)?.rigReviews?.length) return (selectedCamera as any).rigReviews
+        return []
+    }, [selectedHousing, selectedCamera, usingWithoutHousing])
+
+    const rigRating = useMemo(() => {
+        if (!relevantReviews.length) return null
+        const sum = relevantReviews.reduce((acc, r) =>
+            acc + (r.ratingOpticalQuality + r.ratingReliability + r.ratingEaseOfUse) / 3, 0)
+        return sum / relevantReviews.length
+    }, [relevantReviews])
+
+    const isRigComplete = usingWithoutHousing || (!!housingName && (isFixedPort || !!portName))
+
+    // Animated depth counter
+    const [displayedDepth, setDisplayedDepth] = useState<number | null>(maxDepth)
+    const animFrameRef = useRef<number | null>(null)
+    useEffect(() => {
+        if (animFrameRef.current !== null) cancelAnimationFrame(animFrameRef.current)
+        if (maxDepth === null) { setDisplayedDepth(null); return }
+        const start = displayedDepth ?? maxDepth
+        if (start === maxDepth) return
+        const duration = 400
+        const startTime = performance.now()
+        const animate = (now: number) => {
+            const t = Math.min((now - startTime) / duration, 1)
+            const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+            setDisplayedDepth(Math.round(start + (maxDepth - start) * eased))
+            if (t < 1) animFrameRef.current = requestAnimationFrame(animate)
+            else setDisplayedDepth(maxDepth)
+        }
+        animFrameRef.current = requestAnimationFrame(animate)
+        return () => { if (animFrameRef.current !== null) cancelAnimationFrame(animFrameRef.current) }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [maxDepth])
     // ────────────────────────────────────────────────────────────────────────
 
     const clearFilters = () => {
@@ -254,6 +291,9 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
                     {/* Component flow */}
                     <div className="p-6">
+
+
+
                         <div className="flex items-start gap-2 sm:gap-4">
 
                             {/* Step 1 — Camera */}
@@ -608,14 +648,14 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                         {maxDepth !== null ? (
                                             <div className="flex flex-col items-center justify-center flex-1 gap-4">
                                                 <div className="flex items-end gap-1">
-                                                    <span className="text-6xl font-bold text-blue-700 tabular-nums leading-none">{maxDepth}</span>
+                                                    <span className="text-6xl font-bold text-blue-700 tabular-nums leading-none">{displayedDepth ?? maxDepth}</span>
                                                     <span className="text-2xl font-semibold text-blue-400 mb-1">m</span>
                                                 </div>
                                                 <div className="w-full">
                                                     <div className="w-full bg-blue-50 rounded-full h-2.5 overflow-hidden">
                                                         <div
                                                             className="h-2.5 rounded-full bg-gradient-to-r from-cyan-400 to-blue-700 transition-all duration-500"
-                                                            style={{ width: `${Math.min((maxDepth / 120) * 100, 100)}%` }}
+                                                            style={{ width: `${Math.min(((displayedDepth ?? maxDepth) / 120) * 100, 100)}%` }}
                                                         />
                                                     </div>
                                                     <div className="flex justify-between mt-1">
@@ -636,33 +676,66 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 </div>
                             </div>
 
-                            {/* View Full Details CTA */}
-                            {(usingWithoutHousing || (housingName && (isFixedPort || portName))) && (
-                                <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex flex-col gap-3">
-                                    {canUseWithoutHousing && usingWithoutHousing && (
-                                        <p className="text-xs text-gray-400 text-center">
-                                            This camera can be used without a housing. Add a compatible housing above to increase depth rating.
-                                        </p>
-                                    )}
-                                    <Link
-                                        href={(() => {
-                                            if (usingWithoutHousing) return `/rigs?camera=${selectedCamera.slug}`
-                                            const p = new URLSearchParams({ camera: selectedCamera.slug, housing: selectedHousing!.slug })
-                                            if (selectedLens?.slug) p.set('lens', selectedLens.slug)
-                                            if (selectedPort?.slug) p.set('port', selectedPort.slug)
-                                            return `/rigs?${p.toString()}`
-                                        })()}
-                                        className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-6 py-3 rounded-lg transition-colors"
-                                    >
-                                        View Full Details
-                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </Link>
-                                </div>
-                            )}
+                            {/* Community Rating */}
+                            <div className="border-t border-gray-100 px-6 py-5">
+                                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Community Rating</h4>
+                                {rigRating !== null ? (
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-2xl font-bold text-gray-900 tabular-nums">{rigRating.toFixed(1)}</span>
+                                        <div className="flex">
+                                            {Array.from({ length: 5 }, (_, i) => (
+                                                <span key={i} className={`text-xl ${i < Math.round(rigRating!) ? 'text-yellow-400' : 'text-gray-200'}`}>★</span>
+                                            ))}
+                                        </div>
+                                        <span className="text-sm text-gray-400">
+                                            ({relevantReviews.length} review{relevantReviews.length !== 1 ? 's' : ''})
+                                        </span>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-gray-400">No reviews yet for this {selectedHousing ? 'housing' : 'camera'}</p>
+                                )}
+                            </div>
                         </>
                     )}
+
+                    {/* CTA — always visible; active when rig is complete */}
+                    <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
+                        {canUseWithoutHousing && usingWithoutHousing && (
+                            <p className="text-xs text-gray-400 text-center mb-3">
+                                This camera can be used without a housing. Add a compatible housing above to increase depth rating.
+                            </p>
+                        )}
+                        {isRigComplete && selectedCamera ? (
+                            <Link
+                                href={(() => {
+                                    if (usingWithoutHousing) return `/rigs?camera=${selectedCamera.slug}`
+                                    const p = new URLSearchParams({ camera: selectedCamera.slug, housing: selectedHousing!.slug })
+                                    if (selectedLens?.slug) p.set('lens', selectedLens.slug)
+                                    if (selectedPort?.slug) p.set('port', selectedPort.slug)
+                                    return `/rigs?${p.toString()}`
+                                })()}
+                                className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-6 py-3 rounded-lg transition-colors"
+                            >
+                                View Full Details
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </Link>
+                        ) : (
+                            <div className="flex items-center justify-center gap-2 w-full bg-gray-100 text-gray-400 text-sm font-medium px-6 py-3 rounded-lg cursor-default select-none">
+                                {!selectedCamera
+                                    ? 'Select a camera to get started'
+                                    : (!isFixedLens && !lensName)
+                                        ? 'Select a lens to continue'
+                                        : (!usingWithoutHousing && !housingName)
+                                            ? 'Select a housing to continue'
+                                            : 'Select a port to continue'}
+                                <svg className="w-4 h-4 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        )}
+                    </div>
                     {/* ─────────────────────────────────────────────────────── */}
 
                 </div>

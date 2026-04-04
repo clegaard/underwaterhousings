@@ -219,8 +219,8 @@ async function main() {
             name: 'ZV-E1',
             slug: 'zv-e1',
             manufacturerId: sony.id,
-            cameraMountId: sonyE.id
-
+            cameraMountId: sonyE.id,
+            priceAmount: 2198,
         }
     })
 
@@ -229,7 +229,8 @@ async function main() {
             name: 'A7 III',
             slug: 'a7-iii',
             manufacturerId: sony.id,
-            cameraMountId: sonyE.id
+            cameraMountId: sonyE.id,
+            priceAmount: 1998,
         }
     })
 
@@ -239,6 +240,7 @@ async function main() {
             slug: 'ilce-7rm5',
             manufacturerId: sony.id,
             cameraMountId: sonyE.id,
+            priceAmount: 3498,
             productPhotos: ['/cameras/ilce-7m5-front.webp']
         }
     })
@@ -250,6 +252,7 @@ async function main() {
             exifId: 'ILCE-7M4',
             manufacturerId: sony.id,
             cameraMountId: sonyE.id,
+            priceAmount: 2498,
             productPhotos: ['/cameras/ilce-7m4-front.webp']
         }
     })
@@ -260,6 +263,7 @@ async function main() {
             slug: 'a6700',
             manufacturerId: sony.id,
             cameraMountId: sonyE.id,
+            priceAmount: 1398,
             productPhotos: ['/cameras/a6700.webp']
         }
     })
@@ -269,7 +273,8 @@ async function main() {
             name: 'FX3',
             slug: 'fx3',
             manufacturerId: sony.id,
-            cameraMountId: sonyE.id
+            cameraMountId: sonyE.id,
+            priceAmount: 3498,
         }
     })
 
@@ -280,6 +285,7 @@ async function main() {
             slug: 'r6-ii',
             manufacturerId: canon.id,
             cameraMountId: canonRF.id,
+            priceAmount: 2499,
             productPhotos: ['/cameras/r6-ii-front.webp']
         }
     })
@@ -289,7 +295,8 @@ async function main() {
             name: 'EOS R5',
             slug: 'r5',
             manufacturerId: canon.id,
-            cameraMountId: canonRF.id
+            cameraMountId: canonRF.id,
+            priceAmount: 3799,
         }
     })
 
@@ -351,6 +358,7 @@ async function main() {
             slug: 'a024-24-70-28-ii',
             cameraMountId: sonyE.id,
             manufacturerId: sigma.id,
+            priceAmount: 899,
             productPhotos: ['/lenses/a024-24-70-28-ii.png']
         }
     })
@@ -361,6 +369,7 @@ async function main() {
             slug: 'sel90m28g',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
+            priceAmount: 1098,
             productPhotos: ['/lenses/sel90m28g.avif']
         }
     })
@@ -372,6 +381,7 @@ async function main() {
             exifId: 'FE 24-70mm F2.8 GM II',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
+            priceAmount: 2298,
             productPhotos: ['/lenses/sel2470gmii.jpg']
         }
     })
@@ -382,6 +392,7 @@ async function main() {
             slug: 'sony-fe-16-35mm-f28-gm',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
+            priceAmount: 2198,
         }
     })
 
@@ -391,6 +402,7 @@ async function main() {
             slug: 'sel1635gmii',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
+            priceAmount: 2298,
         }
     })
 
@@ -400,6 +412,7 @@ async function main() {
             slug: 'sel70200gmii',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
+            priceAmount: 2798,
         }
     })
 
@@ -410,6 +423,7 @@ async function main() {
             slug: 'sel24105',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
+            priceAmount: 1298,
             productPhotos: ['/lenses/sel24105.avif']
         }
     })
@@ -420,6 +434,7 @@ async function main() {
             slug: 'sel28702',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
+            priceAmount: 298,
             productPhotos: ['/lenses/sel28702.avif']
         }
     })
@@ -430,6 +445,7 @@ async function main() {
             slug: 'sony-fe-16-35mm-f4-za-oss',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
+            priceAmount: 1348,
         }
     })
 
@@ -439,6 +455,7 @@ async function main() {
             slug: 'sony-fe-24-70mm-f4-za-oss',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
+            priceAmount: 998,
         }
     })
 
@@ -448,6 +465,7 @@ async function main() {
             slug: 'sony-fe-12-24mm-f4-g',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
+            priceAmount: 1698,
         }
     })
 
@@ -457,6 +475,7 @@ async function main() {
             slug: 'sony-fe-24-70mm-f28-gm',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
+            priceAmount: 1798,
         }
     })
 
@@ -466,6 +485,7 @@ async function main() {
             slug: 'sony-fe-pz-16-35mm-f4-g',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
+            priceAmount: 1498,
         }
     })
 
@@ -475,6 +495,7 @@ async function main() {
             slug: 'selp18105g',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
+            priceAmount: 598,
             productPhotos: ['/lenses/selp18105g.avif']
         }
     })
@@ -485,6 +506,7 @@ async function main() {
             slug: 'canon-rf-15-35mm-f28l-is-usm',
             cameraMountId: canonRF.id,
             manufacturerId: canon.id,
+            priceAmount: 2299,
         }
     })
 
@@ -494,6 +516,7 @@ async function main() {
             slug: 'canon-rf-24-70mm-f28l-is-usm',
             cameraMountId: canonRF.id,
             manufacturerId: canon.id,
+            priceAmount: 2299,
         }
     })
 
@@ -503,6 +526,7 @@ async function main() {
             slug: 'canon-rf-100mm-f28l-macro-is-usm',
             cameraMountId: canonRF.id,
             manufacturerId: canon.id,
+            priceAmount: 1499,
         }
     })
 
@@ -655,6 +679,9 @@ async function main() {
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             lens: { connect: [{ id: lensFE90MacroGOSS.id }, { id: lensFE2470GMII.id }, { id: lensFE24105F4GOSS.id }, { id: lensSigma2470dgdnii.id }] },
             slug: 'fl100',
+            priceAmount: 189,
+            priceCurrency: 'USD',
+            depthRating: 40,
             productPhotos: ['/ports/fl100.png']
         }
     })
@@ -666,7 +693,10 @@ async function main() {
             manufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             lens: { connect: [{ id: lensFE24105F4GOSS.id }, { id: lensFE2470GM.id }, { id: lensFE2470GMII.id }] },
-            slug: 'wa000s-a'
+            slug: 'wa000s-a',
+            priceAmount: 229,
+            priceCurrency: 'USD',
+            depthRating: 40,
         }
     })
 
@@ -677,7 +707,10 @@ async function main() {
             manufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             lens: { connect: [{ id: lensFE2470F4ZAOSS.id }] },
-            slug: 'fl1655'
+            slug: 'fl1655',
+            priceAmount: 159,
+            priceCurrency: 'USD',
+            depthRating: 40,
         }
     })
 
@@ -690,6 +723,9 @@ async function main() {
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             lens: { connect: [{ id: lensFE1635GM.id }] },
             slug: 'wa005-b',
+            priceAmount: 249,
+            priceCurrency: 'USD',
+            depthRating: 40,
             productPhotos: ['/ports/wa005-b.png']
         }
     })
@@ -702,6 +738,9 @@ async function main() {
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             lens: { connect: [{ id: lensFE1224F4G.id }, { id: lensFEPZ1635F4G.id }] },
             slug: 'wa005-f',
+            priceAmount: 249,
+            priceCurrency: 'USD',
+            depthRating: 40,
             productPhotos: ['/ports/wa005-f.png']
         }
     })
@@ -714,6 +753,9 @@ async function main() {
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             lens: { connect: [{ id: lensEPZ18105F4GOSS.id }] },
             slug: 'fl2870',
+            priceAmount: 169,
+            priceCurrency: 'USD',
+            depthRating: 40,
             productPhotos: ['/ports/fl2870.png']
         }
     })

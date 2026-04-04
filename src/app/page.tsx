@@ -22,7 +22,14 @@ async function getHousingsData() {
                             cameraMount: true
                         }
                     },
-                    housingMount: true
+                    housingMount: true,
+                    rigReviews: {
+                        select: {
+                            ratingOpticalQuality: true,
+                            ratingReliability: true,
+                            ratingEaseOfUse: true
+                        }
+                    }
                 },
                 orderBy: {
                     name: 'asc'
@@ -31,7 +38,14 @@ async function getHousingsData() {
             prisma.camera.findMany({
                 include: {
                     brand: true,
-                    cameraMount: true
+                    cameraMount: true,
+                    rigReviews: {
+                        select: {
+                            ratingOpticalQuality: true,
+                            ratingReliability: true,
+                            ratingEaseOfUse: true
+                        }
+                    }
                 },
                 orderBy: [
                     { brand: { name: 'asc' } },

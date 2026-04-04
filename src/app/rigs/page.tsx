@@ -78,10 +78,107 @@ async function getRigReviews(
     }))
 }
 
+async function getCameraOnly(cameraSlug: string) {
+    const camera = await prisma.camera.findUnique({
+        where: { slug: cameraSlug },
+        include: { brand: true, cameraMount: true },
+    })
+    return camera ?? null
+}
+
+async function getCameraOnlyReviews(cameraId: number): Promise<RigReviewData[]> {
+    const reviews = await prisma.rigReview.findMany({
+        where: { cameraId, housingId: null, lensId: null, portId: null },
+        include: { user: { select: { id: true, name: true } } },
+        orderBy: { createdAt: 'desc' },
+    })
+    return reviews.map(r => ({ ...r, createdAt: r.createdAt.toISOString() }))
+}
+
 export default async function RigBuilderPage({ searchParams }: RigBuilderPageProps) {
     const { camera: cameraSlug, housing: housingSlug, lens: lensSlug, port: portSlug } = searchParams
 
-    if (!cameraSlug || !housingSlug) notFound()
+    if (!cameraSlug) notFound()
+
+    // Camera-only path (no housing)
+    if (!housingSlug) {
+        const [camera, session] = await Promise.all([getCameraOnly(cameraSlug), auth()])
+        if (!camera || !camera.canBeUsedWithoutAHousing) notFound()
+
+        const reviews = await getCameraOnlyReviews(camera.id)
+        const userId = (session?.user as { id?: string } | undefined)?.id ?? null
+        const cameraImageInfo = getCameraImagePathWithFallback(camera.productPhotos ?? [])
+        const title = `${camera.brand.name} ${camera.name} — No Housing`
+
+        return (
+            <>
+                <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+                    <div className="bg-white shadow-sm border-b">
+                        <div className="max-w-4xl mx-auto px-4 py-6">
+                            <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+                                <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
+                                <span>→</span>
+                                <span className="text-gray-900 font-medium">Rig Details</span>
+                            </nav>
+                            <h1 className="text-2xl font-semibold text-gray-900">{title}</h1>
+                        </div>
+                    </div>
+
+                    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+                        {/* Image */}
+                        <div className="bg-white rounded-lg shadow-sm overflow-hidden p-4">
+                            <div className="flex gap-2">
+                                <div className="relative flex-1 max-w-xs aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                                    <HousingImage
+                                        src={cameraImageInfo.src}
+                                        fallback={cameraImageInfo.fallback}
+                                        alt={`${camera.brand.name} ${camera.name}`}
+                                        className="object-cover"
+                                    />
+                                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-1.5">
+                                        <span className="text-white text-xs font-medium">📷 Camera</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Camera specs */}
+                        <div className="bg-white rounded-lg shadow-sm p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-3">Specifications</h3>
+                            <div className="space-y-2 text-sm">
+                                {camera.depthRating && (
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Depth rating (without housing)</span>
+                                        <span className="font-medium">{camera.depthRating} m</span>
+                                    </div>
+                                )}
+                                {camera.priceAmount && (
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Camera price</span>
+                                        <span className="font-medium">${Number(camera.priceAmount).toLocaleString()} {camera.priceCurrency ?? 'USD'}</span>
+                                    </div>
+                                )}
+                            </div>
+                            <p className="text-xs text-gray-400 mt-4">
+                                This camera is rated waterproof and can be used without a housing. Adding a compatible housing can increase the maximum depth rating.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="max-w-4xl mx-auto px-4 pb-8">
+                    <RigReviewsSection
+                        reviews={reviews}
+                        cameraId={camera.id}
+                        housingId={0}
+                        lensId={null}
+                        portId={null}
+                        userId={userId}
+                    />
+                </div>
+            </>
+        )
+    }
 
     const [components, session] = await Promise.all([
         getRigComponents(cameraSlug, housingSlug, lensSlug, portSlug),
