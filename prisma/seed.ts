@@ -309,6 +309,8 @@ async function main() {
             manufacturerId: omSystem.id,
             interchangeableLens: false,
             canBeUsedWithoutAHousing: true,
+            depthRating: 15,
+            priceAmount: 500,
             productPhotos: ['/cameras/tg7-front.jpg']
         }
     })
@@ -332,6 +334,8 @@ async function main() {
             manufacturerId: sealife.id,
             interchangeableLens: false,
             canBeUsedWithoutAHousing: true,
+            depthRating: 60,
+            priceAmount: 600,
             productPhotos: ['/cameras/sl550.webp']
         }
     })

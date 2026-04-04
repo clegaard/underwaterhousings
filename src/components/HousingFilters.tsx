@@ -193,6 +193,43 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
     const hasActiveFilters = !!(cameraBrand || cameraModel || lensName || housingName || portName)
 
+    // ── System summary computations ─────────────────────────────────────────
+    const maxDepth = useMemo(() => {
+        if (!selectedCamera) return null
+        if (!selectedHousing) {
+            // Using without housing — depth is limited by the camera itself
+            return selectedCamera.depthRating ?? null
+        }
+        const housingDepth: number | null = selectedHousing.depthRating ?? null
+        if (!selectedPort) return housingDepth
+        const portDepth: number | null = (selectedPort as any).depthRating ?? null
+        if (housingDepth === null && portDepth === null) return null
+        if (housingDepth === null) return portDepth
+        if (portDepth === null) return housingDepth
+        return Math.min(housingDepth, portDepth)
+    }, [selectedCamera, selectedHousing, selectedPort])
+
+    const depthSource = useMemo(() => {
+        if (!selectedHousing) return 'Rated for use without a housing'
+        if (!selectedPort) return 'Rated depth of the housing'
+        const hd: number | null = selectedHousing.depthRating ?? null
+        const pd: number | null = (selectedPort as any).depthRating ?? null
+        if (hd !== null && pd !== null) {
+            return hd <= pd ? 'Limited by housing' : 'Limited by port'
+        }
+        return 'Housing & port combination'
+    }, [selectedHousing, selectedPort])
+
+    const totalPrice = useMemo(() => {
+        let total = 0
+        if (selectedCamera?.priceAmount) total += Number(selectedCamera.priceAmount)
+        if (selectedLens?.priceAmount) total += Number(selectedLens.priceAmount)
+        if (selectedHousing?.priceAmount) total += Number(selectedHousing.priceAmount)
+        if (selectedPort?.priceAmount) total += Number(selectedPort.priceAmount)
+        return total
+    }, [selectedCamera, selectedLens, selectedHousing, selectedPort])
+    // ────────────────────────────────────────────────────────────────────────
+
     const clearFilters = () => {
         router.replace('/', { scroll: false })
     }
@@ -480,57 +517,154 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                         </div>
                     </div>
 
-                    {/* Footer — shown for cameras that can be used without a housing when no housing is selected */}
-                    {canUseWithoutHousing && cameraModel && !housingName && (
-                        <div className="px-6 py-4 bg-blue-50 border-t border-blue-100 flex flex-wrap items-center justify-between gap-3">
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                                <span className="font-medium text-gray-800">Camera can be used without a housing — select a housing above to increase depth rating</span>
-                            </div>
-                            <Link
-                                href={`/rigs?camera=${selectedCamera!.slug}`}
-                                className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-1.5"
-                            >
-                                View Full Details
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </Link>
-                        </div>
-                    )}
+                    {/* ── Summary section (inside card) ────────────────────── */}
+                    {selectedCamera && (
+                        <>
+                            <div className="border-t border-gray-100">
+                                <div className="px-6 pt-5 pb-1">
+                                    <h3 className="text-sm font-semibold text-gray-700">Summary</h3>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
 
-                    {/* Footer — shown when all required components are selected and a valid combination exists */}
-                    {cameraModel && (isFixedLens || lensName) && housingName && (isFixedPort || portName) && filteredCombinations.length > 0 && filteredCombinations[0] && (
-                        <div className="px-6 py-4 bg-blue-50 border-t border-blue-100 flex flex-wrap items-center justify-between gap-3">
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                                {filteredCombinations[0].housing.depthRating && (
-                                    <span><span className="font-medium text-gray-800">{filteredCombinations[0].housing.depthRating}m</span> depth rating</span>
-                                )}
-                                {filteredCombinations[0].housing.material && (
-                                    <span>{filteredCombinations[0].housing.material}</span>
-                                )}
-                                {filteredCombinations[0].totalPrice > 0 && (
-                                    <span className="font-semibold text-gray-900 text-base">
-                                        ${filteredCombinations[0].totalPrice.toLocaleString()} {filteredCombinations[0].currency}
-                                    </span>
-                                )}
+                                    {/* Left — Price Breakdown */}
+                                    <div className="px-6 pt-4 pb-5">
+                                        <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Price Breakdown</h4>
+                                        <div className="space-y-3">
+
+                                            {/* Camera */}
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></div>
+                                                    <span className="text-sm text-gray-600">Camera</span>
+                                                    <span className="text-xs text-gray-400 truncate">{selectedCamera.name}</span>
+                                                </div>
+                                                {selectedCamera.priceAmount
+                                                    ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4">${Number(selectedCamera.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                                    : <span className="text-xs text-gray-400 pl-4">&mdash;</span>
+                                                }
+                                            </div>
+
+                                            {/* Lens */}
+                                            {!isFixedLens && (
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2 min-w-0">
+                                                        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${selectedLens ? 'bg-blue-400' : 'bg-gray-200'}`}></div>
+                                                        <span className={`text-sm ${selectedLens ? 'text-gray-600' : 'text-gray-400'}`}>Lens</span>
+                                                        {selectedLens && <span className="text-xs text-gray-400 truncate">{selectedLens.name}</span>}
+                                                    </div>
+                                                    {selectedLens?.priceAmount
+                                                        ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4">${Number(selectedLens.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                                        : <span className="text-xs text-gray-400 pl-4">{selectedLens ? '\u2014' : 'Not selected'}</span>
+                                                    }
+                                                </div>
+                                            )}
+
+                                            {/* Housing */}
+                                            {!usingWithoutHousing && (
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2 min-w-0">
+                                                        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${selectedHousing ? 'bg-blue-400' : 'bg-gray-200'}`}></div>
+                                                        <span className={`text-sm ${selectedHousing ? 'text-gray-600' : 'text-gray-400'}`}>Housing</span>
+                                                        {selectedHousing && <span className="text-xs text-gray-400 truncate">{selectedHousing.name}</span>}
+                                                    </div>
+                                                    {selectedHousing?.priceAmount
+                                                        ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4">${Number(selectedHousing.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                                        : <span className="text-xs text-gray-400 pl-4">{selectedHousing ? '\u2014' : 'Not selected'}</span>
+                                                    }
+                                                </div>
+                                            )}
+
+                                            {/* Port */}
+                                            {!usingWithoutHousing && !isFixedPort && (
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2 min-w-0">
+                                                        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${selectedPort ? 'bg-blue-400' : 'bg-gray-200'}`}></div>
+                                                        <span className={`text-sm ${selectedPort ? 'text-gray-600' : 'text-gray-400'}`}>Port</span>
+                                                        {selectedPort && <span className="text-xs text-gray-400 truncate">{selectedPort.name}</span>}
+                                                    </div>
+                                                    {selectedPort?.priceAmount
+                                                        ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4">${Number(selectedPort.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                                        : <span className="text-xs text-gray-400 pl-4">{selectedPort ? '\u2014' : 'Not selected'}</span>
+                                                    }
+                                                </div>
+                                            )}
+
+                                            {/* Total */}
+                                            {totalPrice > 0 && (
+                                                <div className="pt-3 mt-1 border-t border-gray-100 flex items-center justify-between">
+                                                    <span className="text-sm font-semibold text-gray-900">Total</span>
+                                                    <span className="text-lg font-bold text-gray-900 tabular-nums">
+                                                        ${totalPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                                                        <span className="text-xs font-normal text-gray-400 ml-1">USD</span>
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Right — Max Depth */}
+                                    <div className="px-6 pt-4 pb-5 flex flex-col">
+                                        <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Max Depth</h4>
+                                        {maxDepth !== null ? (
+                                            <div className="flex flex-col items-center justify-center flex-1 gap-4">
+                                                <div className="flex items-end gap-1">
+                                                    <span className="text-6xl font-bold text-blue-700 tabular-nums leading-none">{maxDepth}</span>
+                                                    <span className="text-2xl font-semibold text-blue-400 mb-1">m</span>
+                                                </div>
+                                                <div className="w-full">
+                                                    <div className="w-full bg-blue-50 rounded-full h-2.5 overflow-hidden">
+                                                        <div
+                                                            className="h-2.5 rounded-full bg-gradient-to-r from-cyan-400 to-blue-700 transition-all duration-500"
+                                                            style={{ width: `${Math.min((maxDepth / 120) * 100, 100)}%` }}
+                                                        />
+                                                    </div>
+                                                    <div className="flex justify-between mt-1">
+                                                        <span className="text-xs text-gray-300">0 m</span>
+                                                        <span className="text-xs text-gray-300">120 m</span>
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs text-gray-400 text-center">{depthSource}</p>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center flex-1 gap-2 text-center">
+                                                <span className="text-4xl text-gray-200 font-light">&mdash;</span>
+                                                <p className="text-xs text-gray-400">No depth rating available</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                </div>
                             </div>
-                            <Link
-                                href={(() => {
-                                    const c = filteredCombinations[0]
-                                    const params = new URLSearchParams({ camera: c.camera.slug, housing: c.housing.slug })
-                                    if (c.lens?.slug) params.set('lens', c.lens.slug)
-                                    if (c.port?.slug) params.set('port', c.port.slug)
-                                    return `/rigs?${params.toString()}`
-                                })()}
-                                className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-1.5"
-                            >
-                                View Full Details
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </Link>
-                        </div>
+
+                            {/* View Full Details CTA */}
+                            {(usingWithoutHousing || (housingName && (isFixedPort || portName))) && (
+                                <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex flex-col gap-3">
+                                    {canUseWithoutHousing && usingWithoutHousing && (
+                                        <p className="text-xs text-gray-400 text-center">
+                                            This camera can be used without a housing. Add a compatible housing above to increase depth rating.
+                                        </p>
+                                    )}
+                                    <Link
+                                        href={(() => {
+                                            if (usingWithoutHousing) return `/rigs?camera=${selectedCamera.slug}`
+                                            const p = new URLSearchParams({ camera: selectedCamera.slug, housing: selectedHousing!.slug })
+                                            if (selectedLens?.slug) p.set('lens', selectedLens.slug)
+                                            if (selectedPort?.slug) p.set('port', selectedPort.slug)
+                                            return `/rigs?${p.toString()}`
+                                        })()}
+                                        className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-6 py-3 rounded-lg transition-colors"
+                                    >
+                                        View Full Details
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </Link>
+                                </div>
+                            )}
+                        </>
                     )}
+                    {/* ─────────────────────────────────────────────────────── */}
+
                 </div>
             </div>
         </div>
