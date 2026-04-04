@@ -57,7 +57,6 @@ model Camera {
     priceAmount              Decimal?       @db.Decimal(10, 2)
     productPhotos            String[]
     interchangeableLens      Boolean        @default(true)
-    canBeUsedWithoutAHousing Boolean        @default(false)
     exifId                   String?        @unique
     rigReviews               RigReview[]
     cameraMount              CameraMount?   @relation(fields: [cameraMountId], references: [id])
@@ -65,6 +64,8 @@ model Camera {
     galleryPhotos            GalleryPhoto[]
     housings                 Housing[]
     lens                     Lens[]
+    canBeUsedWithoutAHousing Boolean        @default(false)
+    depthRating              Int? // optional field for maximum depth rating of the camera without a housing
 
     @@map("cameras")
 }
@@ -104,6 +105,7 @@ model Port {
     priceCurrency   String?        @default("USD")
     isFlatPort      Boolean        @default(false) // True if it's a flat port, false if it's a dome port
     hemisphereWidth Float? // For dome ports, the width of the hemisphere in mm
+    depthRating     Int? // Maximum depth rating of the port in meters
     rigReviews      RigReview[]
     galleryPhotos   GalleryPhoto[]
     housingMount    HousingMount?  @relation(fields: [housingMountId], references: [id])

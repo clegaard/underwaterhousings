@@ -220,6 +220,7 @@ async function main() {
             slug: 'zv-e1',
             manufacturerId: sony.id,
             cameraMountId: sonyE.id
+
         }
     })
 
@@ -298,6 +299,17 @@ async function main() {
             name: 'OM-5 II',
             slug: 'om5-ii',
             manufacturerId: omSystem.id,
+        }
+    })
+
+    const omTg7 = await prisma.camera.create({
+        data: {
+            name: 'Tough TG-7',
+            slug: 'tg-7',
+            manufacturerId: omSystem.id,
+            interchangeableLens: false,
+            canBeUsedWithoutAHousing: true,
+            productPhotos: ['/cameras/tg7-front.jpg']
         }
     })
 
@@ -750,6 +762,21 @@ async function main() {
         }
     })
 
+    await prisma.housing.create({
+        data: {
+            name: 'SF-TG7',
+            slug: 'om-tg7',
+            description: 'Underwater housing for OM System Tough TG-7 compact camera, waterproof to 60m/130ft. Features dual O-ring seals, a large rear LCD window, and controls for all camera functions.',
+            priceAmount: 150,
+            priceCurrency: 'USD',
+            depthRating: 60,
+            material: 'ABS Plastic',
+            manufacturerId: seafrogs.id,
+            cameraId: omTg7.id,
+            interchangeablePort: false,
+            productPhotos: ['/housings/sf-tg-7.jpg']
+        }
+    })
 
 
     // Gallery photos

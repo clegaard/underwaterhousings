@@ -114,6 +114,9 @@ export default function CameraManufacturersClient({ manufacturers: initial, isSu
         }
     }
 
+    const withCameras = manufacturers.filter(m => m._count.cameras > 0)
+    const noCameras = manufacturers.filter(m => m._count.cameras === 0)
+
     return (
         <>
             <div className="mb-6 flex justify-between items-center">
@@ -136,10 +139,10 @@ export default function CameraManufacturersClient({ manufacturers: initial, isSu
                 </div>
             </div>
 
-            {manufacturers.length > 0 ? (
+            {withCameras.length > 0 ? (
                 <div className="flex justify-center">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl w-full">
-                        {manufacturers.map((manufacturer) => {
+                        {withCameras.map((manufacturer) => {
                             const totalHousings = manufacturer.cameras.reduce((acc, c) => acc + c.housings.length, 0)
                             return (
                                 <div key={manufacturer.id} className="relative group/card">
@@ -219,6 +222,39 @@ export default function CameraManufacturersClient({ manufacturers: initial, isSu
                         <div className="text-6xl mb-4">📷</div>
                         <h3 className="text-lg font-medium text-gray-900 mb-2">No camera manufacturers found</h3>
                         <p className="text-gray-600">No camera manufacturers are currently available.</p>
+                    </div>
+                </div>
+            )}
+
+            {noCameras.length > 0 && (
+                <div className="mt-10 border-t border-gray-200 pt-6">
+                    <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Other manufacturers</h3>
+                    <div className="flex justify-center">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 max-w-7xl w-full">
+                            {noCameras.map((manufacturer) => (
+                                <div key={manufacturer.id} className="relative group/card">
+                                    <Link href={`/cameras/${manufacturer.slug}`} className="flex items-center gap-2 bg-white rounded-lg border border-gray-200 p-3 hover:border-gray-300 transition-colors">
+                                        {manufacturer.logoPath && (
+                                            <div className="relative w-6 h-6 rounded overflow-hidden bg-gray-50 flex-shrink-0">
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img src={withBase(manufacturer.logoPath)} alt="" className="absolute inset-0 w-full h-full object-contain" />
+                                            </div>
+                                        )}
+                                        <span className="text-sm text-gray-500 truncate">{manufacturer.name}</span>
+                                    </Link>
+                                    {isSuperuser && (
+                                        <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                                            <button onClick={() => openEdit(manufacturer)} title="Edit" className="w-5 h-5 bg-white border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:text-blue-600">
+                                                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" /></svg>
+                                            </button>
+                                            <button onClick={() => openDelete(manufacturer)} title="Delete" className="w-5 h-5 bg-white border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:text-red-600">
+                                                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a1 1 0 00-1-1H8a1 1 0 00-1 1h10z" /></svg>
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}

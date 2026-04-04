@@ -41,7 +41,7 @@ export default async function CamerasPage() {
         auth(),
     ])
     const isSuperuser = !!(session?.user as { isSuperuser?: boolean } | undefined)?.isSuperuser
-    const visible = isSuperuser ? manufacturers : manufacturers.filter(m => m._count.cameras > 0)
+    const camerasCount = manufacturers.filter(m => m._count.cameras > 0).length
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
@@ -56,8 +56,8 @@ export default async function CamerasPage() {
                             </p>
                         </div>
                         <div className="text-right">
-                            <div className="text-3xl font-bold text-blue-600">{visible.length}</div>
-                            <div className="text-sm text-gray-600">Manufacturer{visible.length !== 1 ? 's' : ''}</div>
+                            <div className="text-3xl font-bold text-blue-600">{camerasCount}</div>
+                            <div className="text-sm text-gray-600">Manufacturer{camerasCount !== 1 ? 's' : ''}</div>
                         </div>
                     </div>
                 </div>
@@ -65,7 +65,7 @@ export default async function CamerasPage() {
 
             {/* Content */}
             <div className="max-w-6xl mx-auto px-4 py-8">
-                <CameraManufacturersClient manufacturers={visible} isSuperuser={isSuperuser} />
+                <CameraManufacturersClient manufacturers={manufacturers} isSuperuser={isSuperuser} />
             </div>
         </div>
     )

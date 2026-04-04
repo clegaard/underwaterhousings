@@ -31,7 +31,8 @@ export default async function HousingsPage() {
         auth(),
     ])
     const isSuperuser = !!(session?.user as { isSuperuser?: boolean } | undefined)?.isSuperuser
-    const visible = isSuperuser ? manufacturers : manufacturers.filter(m => m._count.housings > 0)
+    const withHousings = manufacturers.filter(m => m._count.housings > 0)
+    const noHousings = isSuperuser ? manufacturers.filter(m => m._count.housings === 0) : []
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
@@ -46,8 +47,8 @@ export default async function HousingsPage() {
                             </p>
                         </div>
                         <div className="text-right">
-                            <div className="text-3xl font-bold text-blue-600">{visible.length}</div>
-                            <div className="text-sm text-gray-600">Manufacturer{visible.length !== 1 ? 's' : ''}</div>
+                            <div className="text-3xl font-bold text-blue-600">{withHousings.length}</div>
+                            <div className="text-sm text-gray-600">Manufacturer{withHousings.length !== 1 ? 's' : ''}</div>
                         </div>
                     </div>
                 </div>
@@ -55,9 +56,9 @@ export default async function HousingsPage() {
 
             {/* Content */}
             <div className="max-w-6xl mx-auto px-4 py-8">
-                {visible.length > 0 ? (
+                {withHousings.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {visible.map((manufacturer) => (
+                        {withHousings.map((manufacturer) => (
                             <Link
                                 key={manufacturer.id}
                                 href={`/housings/${manufacturer.slug}`}
@@ -103,6 +104,27 @@ export default async function HousingsPage() {
                             <div className="text-6xl mb-4">🏠</div>
                             <h3 className="text-lg font-medium text-gray-900 mb-2">No housing manufacturers found</h3>
                             <p className="text-gray-600">No housing manufacturers are currently available.</p>
+                        </div>
+                    </div>
+                )}
+
+                {noHousings.length > 0 && (
+                    <div className="mt-10 border-t border-gray-200 pt-6">
+                        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Other manufacturers</h3>
+                        <div className="flex flex-wrap gap-2">
+                            {noHousings.map((m) => (
+                                <Link key={m.id} href={`/housings/${m.slug}`}
+                                    className="flex items-center gap-2 bg-white rounded-full border border-gray-200 px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-colors"
+                                >
+                                    {m.logoPath && (
+                                        <div className="relative w-4 h-4 overflow-hidden flex-shrink-0">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={withBase(m.logoPath)} alt="" className="absolute inset-0 w-full h-full object-contain" />
+                                        </div>
+                                    )}
+                                    {m.name}
+                                </Link>
+                            ))}
                         </div>
                     </div>
                 )}

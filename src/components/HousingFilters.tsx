@@ -86,6 +86,8 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
     const isFixedLens = selectedCamera?.interchangeableLens === false
     const isFullSystem = !!(selectedCamera?.canBeUsedWithoutAHousing && selectedCamera?.interchangeableLens === false)
+    const canUseWithoutHousing = selectedCamera?.canBeUsedWithoutAHousing === true
+    const usingWithoutHousing = canUseWithoutHousing && !housingName
 
     const availableLenses = useMemo(() =>
         selectedCamera?.cameraMount
@@ -356,7 +358,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                             >
                                 <div className={`relative w-full h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedHousing
                                     ? 'border-blue-400 bg-blue-50'
-                                    : (selectedCamera && (isFixedLens || selectedLens))
+                                    : (selectedCamera && (isFixedLens || selectedLens || canUseWithoutHousing))
                                         ? 'border-dashed border-gray-300 bg-gray-50'
                                         : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
                                     }`}>
@@ -374,11 +376,11 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                         </>
                                     ) : (
                                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${(selectedCamera && (isFixedLens || selectedLens)) ? 'bg-gray-200' : 'bg-gray-100'}`}>
-                                                <span className={`text-sm font-bold ${(selectedCamera && (isFixedLens || selectedLens)) ? 'text-gray-500' : 'text-gray-300'}`}>{isFixedLens ? 2 : 3}</span>
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${(selectedCamera && (isFixedLens || selectedLens || canUseWithoutHousing)) ? 'bg-gray-200' : 'bg-gray-100'}`}>
+                                                <span className={`text-sm font-bold ${(selectedCamera && (isFixedLens || selectedLens || canUseWithoutHousing)) ? 'text-gray-500' : 'text-gray-300'}`}>{isFixedLens ? 2 : 3}</span>
                                             </div>
-                                            <span className={`text-xs text-center px-2 ${(selectedCamera && (isFixedLens || selectedLens)) ? 'text-gray-400' : 'text-gray-300'}`}>
-                                                {(selectedCamera && (isFixedLens || selectedLens)) ? 'Choose housing' : isFixedLens ? 'Camera first' : 'Lens first'}
+                                            <span className={`text-xs text-center px-2 ${(selectedCamera && (isFixedLens || selectedLens || canUseWithoutHousing)) ? 'text-gray-400' : 'text-gray-300'}`}>
+                                                {(selectedCamera && (isFixedLens || selectedLens || canUseWithoutHousing)) ? 'Choose housing' : isFixedLens ? 'Camera first' : 'Lens first'}
                                             </span>
                                         </div>
                                     )}
@@ -387,14 +389,20 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 <select
                                     value={housingName}
                                     onChange={(e) => setParams({ housing: e.target.value })}
-                                    disabled={!cameraModel || (!isFixedLens && !lensName)}
-                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!cameraModel || (!isFixedLens && !lensName)
+                                    disabled={!cameraModel || (!isFixedLens && !lensName && !canUseWithoutHousing)}
+                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!cameraModel || (!isFixedLens && !lensName && !canUseWithoutHousing)
                                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                         : 'bg-white text-gray-900'
                                         }`}
                                 >
                                     <option value="">
-                                        {!cameraModel ? 'Select camera first' : (!isFixedLens && !lensName) ? 'Select lens first' : 'Housing…'}
+                                        {!cameraModel
+                                            ? 'Select camera first'
+                                            : (!isFixedLens && !lensName && !canUseWithoutHousing)
+                                                ? 'Select lens first'
+                                                : canUseWithoutHousing
+                                                    ? 'Use without housing'
+                                                    : 'Housing…'}
                                     </option>
                                     {availableHousings.map(housing => (
                                         <option key={housing.id} value={housing.name}>{housing.name}</option>
@@ -402,10 +410,10 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 </select>
                             </div>
 
-                            {/* Arrow 3→4 — hidden when fixed-port */}
+                            {/* Arrow 3→4 — hidden when fixed-port or using without housing */}
                             <div
                                 className="flex-none overflow-hidden transition-all duration-300 ease-in-out"
-                                style={{ maxWidth: isFixedPort ? 0 : '2rem', opacity: isFixedPort ? 0 : 1 }}
+                                style={{ maxWidth: (isFixedPort || usingWithoutHousing) ? 0 : '2rem', opacity: (isFixedPort || usingWithoutHousing) ? 0 : 1 }}
                             >
                                 <div className="flex items-center" style={{ paddingTop: 'calc(96px - 0.625rem)' }}>
                                     <svg className={`w-5 h-5 flex-shrink-0 ${selectedHousing ? 'text-blue-400' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -414,10 +422,10 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                 </div>
                             </div>
 
-                            {/* Step 4 — Port (slides away for fixed-port housings) */}
+                            {/* Step 4 — Port (slides away for fixed-port housings or when using without housing) */}
                             <div
                                 className="flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out"
-                                style={{ maxWidth: isFixedPort ? 0 : '500px', opacity: isFixedPort ? 0 : 1, pointerEvents: isFixedPort ? 'none' : undefined }}
+                                style={{ maxWidth: (isFixedPort || usingWithoutHousing) ? 0 : '500px', opacity: (isFixedPort || usingWithoutHousing) ? 0 : 1, pointerEvents: (isFixedPort || usingWithoutHousing) ? 'none' : undefined }}
                             >
                                 <div className="flex flex-col items-center">
                                     <div className={`relative w-full h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedPort
@@ -472,11 +480,11 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                         </div>
                     </div>
 
-                    {/* Footer — shown for waterproof full-system cameras when no housing is selected */}
-                    {isFullSystem && cameraModel && !housingName && (
+                    {/* Footer — shown for cameras that can be used without a housing when no housing is selected */}
+                    {canUseWithoutHousing && cameraModel && !housingName && (
                         <div className="px-6 py-4 bg-blue-50 border-t border-blue-100 flex flex-wrap items-center justify-between gap-3">
                             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                                <span className="font-medium text-gray-800">Camera is waterproof and fixed lens - housing is optional</span>
+                                <span className="font-medium text-gray-800">Camera can be used without a housing — select a housing above to increase depth rating</span>
                             </div>
                             <Link
                                 href={`/rigs?camera=${selectedCamera!.slug}`}
