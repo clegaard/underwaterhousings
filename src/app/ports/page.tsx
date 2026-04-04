@@ -30,7 +30,7 @@ export default async function PortsPage() {
         auth(),
     ])
     const isSuperuser = !!(session?.user as { isSuperuser?: boolean } | undefined)?.isSuperuser
-    const withPorts = manufacturers.filter(m => m._count.ports > 0)
+    const withPorts = isSuperuser ? manufacturers : manufacturers.filter(m => m._count.ports > 0)
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">

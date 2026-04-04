@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { Metadata } from 'next'
+import { auth } from '@/auth'
 import Link from 'next/link'
 import { withBase } from '@/lib/images'
 
@@ -25,7 +26,12 @@ async function getHousingManufacturers() {
 }
 
 export default async function HousingsPage() {
-    const manufacturers = await getHousingManufacturers()
+    const [manufacturers, session] = await Promise.all([
+        getHousingManufacturers(),
+        auth(),
+    ])
+    const isSuperuser = !!(session?.user as { isSuperuser?: boolean } | undefined)?.isSuperuser
+    const visible = isSuperuser ? manufacturers : manufacturers.filter(m => m._count.housings > 0)
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
@@ -40,8 +46,8 @@ export default async function HousingsPage() {
                             </p>
                         </div>
                         <div className="text-right">
-                            <div className="text-3xl font-bold text-blue-600">{manufacturers.length}</div>
-                            <div className="text-sm text-gray-600">Manufacturer{manufacturers.length !== 1 ? 's' : ''}</div>
+                            <div className="text-3xl font-bold text-blue-600">{visible.length}</div>
+                            <div className="text-sm text-gray-600">Manufacturer{visible.length !== 1 ? 's' : ''}</div>
                         </div>
                     </div>
                 </div>
@@ -49,9 +55,9 @@ export default async function HousingsPage() {
 
             {/* Content */}
             <div className="max-w-6xl mx-auto px-4 py-8">
-                {manufacturers.length > 0 ? (
+                {visible.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {manufacturers.map((manufacturer) => (
+                        {visible.map((manufacturer) => (
                             <Link
                                 key={manufacturer.id}
                                 href={`/housings/${manufacturer.slug}`}

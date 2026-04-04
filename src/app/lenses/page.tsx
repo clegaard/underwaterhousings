@@ -30,7 +30,7 @@ export default async function LensesPage() {
         auth(),
     ])
     const isSuperuser = !!(session?.user as { isSuperuser?: boolean } | undefined)?.isSuperuser
-    const withLenses = manufacturers.filter(m => m._count.lenses > 0)
+    const withLenses = isSuperuser ? manufacturers : manufacturers.filter(m => m._count.lenses > 0)
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
