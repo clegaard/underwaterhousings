@@ -244,7 +244,7 @@ export default function HousingManufacturerHousingsClient({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: nameInput.trim(),
-                    housingManufacturerId: manufacturer.id,
+                    manufacturerId: manufacturer.id,
                     cameraId,
                     housingMountId: mountId !== '' ? mountId : null,
                     depthRating: depthRating ? parseInt(depthRating) : undefined,
@@ -293,7 +293,7 @@ export default function HousingManufacturerHousingsClient({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: nameInput.trim(),
-                    housingManufacturerId: manufacturer.id,
+                    manufacturerId: manufacturer.id,
                     cameraId,
                     housingMountId: mountId !== '' ? mountId : null,
                     depthRating: depthRating ? parseInt(depthRating) : undefined,

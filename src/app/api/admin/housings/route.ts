@@ -57,14 +57,14 @@ export async function POST(request: NextRequest) {
             priceCurrency = 'USD',
             depthRating,
             material,
-            housingManufacturerId,
+            manufacturerId,
             cameraId,
             housingMountId,
             productPhotos,
             interchangeablePort = true,
         } = body
 
-        if (!name || !housingManufacturerId || !cameraId) {
+        if (!name || !manufacturerId || !cameraId) {
             return NextResponse.json(
                 { error: 'Model, name, housing manufacturer, and camera are required' },
                 { status: 400 }
@@ -73,8 +73,8 @@ export async function POST(request: NextRequest) {
 
         // Verify the manufacturer and camera exist
         const [manufacturer, camera] = await Promise.all([
-            prisma.housingManufacturer.findUnique({
-                where: { id: housingManufacturerId }
+            prisma.manufacturer.findUnique({
+                where: { id: manufacturerId }
             }),
             prisma.camera.findUnique({
                 where: { id: cameraId },
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
         const existingHousing = await prisma.housing.findFirst({
             where: {
                 slug,
-                housingManufacturerId
+                manufacturerId
             }
         })
 
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
                 priceCurrency,
                 depthRating: depthRating ? parseInt(depthRating) : 0,
                 material: material || null,
-                housingManufacturerId,
+                manufacturerId,
                 cameraId,
                 housingMountId: housingMountId ?? null,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
@@ -171,7 +171,7 @@ export async function PUT(request: NextRequest) {
             priceCurrency = 'USD',
             depthRating,
             material,
-            housingManufacturerId,
+            manufacturerId,
             cameraId,
             housingMountId,
             productPhotos,
@@ -179,7 +179,7 @@ export async function PUT(request: NextRequest) {
         } = body
 
         // Validate required fields
-        if (!name || !housingManufacturerId || !cameraId) {
+        if (!name || !manufacturerId || !cameraId) {
             return NextResponse.json(
                 { error: 'Model, name, housing manufacturer, and camera are required' },
                 { status: 400 }
@@ -187,8 +187,8 @@ export async function PUT(request: NextRequest) {
         }
 
         // Check if manufacturer exists
-        const manufacturer = await prisma.housingManufacturer.findUnique({
-            where: { id: housingManufacturerId }
+        const manufacturer = await prisma.manufacturer.findUnique({
+            where: { id: manufacturerId }
         })
 
         if (!manufacturer) {
@@ -216,7 +216,7 @@ export async function PUT(request: NextRequest) {
         const existingHousing = await prisma.housing.findFirst({
             where: {
                 slug,
-                housingManufacturerId,
+                manufacturerId,
                 NOT: { id: parseInt(id) }
             }
         })
@@ -238,7 +238,7 @@ export async function PUT(request: NextRequest) {
                 priceCurrency,
                 depthRating: depthRating ? parseInt(depthRating) : 0,
                 material: material || null,
-                housingManufacturerId,
+                manufacturerId,
                 cameraId,
                 housingMountId: housingMountId ?? null,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],

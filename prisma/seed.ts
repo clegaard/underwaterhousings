@@ -102,12 +102,12 @@ async function main() {
     await prisma.camera.deleteMany()
     await prisma.lens.deleteMany()
     await prisma.cameraMount.deleteMany()
-    await prisma.cameraManufacturer.deleteMany()
-    await prisma.housingManufacturer.deleteMany()
+    await prisma.manufacturer.deleteMany()
+    await prisma.rigReview.deleteMany()
     await prisma.user.deleteMany()
 
-    // Create housing manufacturers
-    const nauticam = await prisma.housingManufacturer.create({
+    // Create manufacturers
+    const nauticam = await prisma.manufacturer.create({
         data: {
             name: 'Nauticam',
             slug: 'nauticam',
@@ -115,7 +115,7 @@ async function main() {
         }
     })
 
-    const seafrogs = await prisma.housingManufacturer.create({
+    const seafrogs = await prisma.manufacturer.create({
         data: {
             name: 'SeaFrogs',
             slug: 'seafrogs',
@@ -123,7 +123,7 @@ async function main() {
         }
     })
 
-    const divevolk = await prisma.housingManufacturer.create({
+    const divevolk = await prisma.manufacturer.create({
         data: {
             name: 'DiveVolk',
             slug: 'divevolk',
@@ -131,36 +131,35 @@ async function main() {
         }
     })
 
-    // Create camera manufacturers
-    const sony = await prisma.cameraManufacturer.create({
+    const sony = await prisma.manufacturer.create({
         data: {
             name: 'Sony',
             slug: 'sony'
         }
     })
 
-    const canon = await prisma.cameraManufacturer.create({
+    const canon = await prisma.manufacturer.create({
         data: {
             name: 'Canon',
             slug: 'canon'
         }
     })
 
-    const nikon = await prisma.cameraManufacturer.create({
+    const nikon = await prisma.manufacturer.create({
         data: {
             name: 'Nikon',
             slug: 'nikon'
         }
     })
 
-    const omSystem = await prisma.cameraManufacturer.create({
+    const omSystem = await prisma.manufacturer.create({
         data: {
             name: 'OM System',
             slug: 'om-system'
         }
     })
 
-    const apple = await prisma.cameraManufacturer.create({
+    const apple = await prisma.manufacturer.create({
         data: {
             name: 'Apple',
             slug: 'apple'
@@ -190,7 +189,7 @@ async function main() {
         data: {
             name: 'ZV-E1',
             slug: 'zv-e1',
-            cameraManufacturerId: sony.id,
+            manufacturerId: sony.id,
             cameraMountId: sonyE.id
         }
     })
@@ -199,7 +198,7 @@ async function main() {
         data: {
             name: 'A7 III',
             slug: 'a7-iii',
-            cameraManufacturerId: sony.id,
+            manufacturerId: sony.id,
             cameraMountId: sonyE.id
         }
     })
@@ -355,7 +354,7 @@ async function main() {
         data: {
             name: 'A7R V',
             slug: 'ilce-7rm5',
-            cameraManufacturerId: sony.id,
+            manufacturerId: sony.id,
             cameraMountId: sonyE.id,
             productPhotos: ['/cameras/ilce-7m5-front.webp']
         }
@@ -366,7 +365,7 @@ async function main() {
             name: 'A7 IV',
             slug: 'ilce-7m4',
             exifId: 'ILCE-7M4',
-            cameraManufacturerId: sony.id,
+            manufacturerId: sony.id,
             cameraMountId: sonyE.id,
             productPhotos: ['/cameras/ilce-7m4-front.webp']
         }
@@ -376,7 +375,7 @@ async function main() {
         data: {
             name: 'A6700',
             slug: 'a6700',
-            cameraManufacturerId: sony.id,
+            manufacturerId: sony.id,
             cameraMountId: sonyE.id,
             productPhotos: ['/cameras/a6700.webp']
         }
@@ -386,7 +385,7 @@ async function main() {
         data: {
             name: 'FX3',
             slug: 'fx3',
-            cameraManufacturerId: sony.id,
+            manufacturerId: sony.id,
             cameraMountId: sonyE.id
         }
     })
@@ -396,7 +395,7 @@ async function main() {
         data: {
             name: 'EOS R6 Mark II',
             slug: 'r6-ii',
-            cameraManufacturerId: canon.id,
+            manufacturerId: canon.id,
             cameraMountId: canonRF.id,
             productPhotos: ['/cameras/r6-ii-front.webp']
         }
@@ -406,7 +405,7 @@ async function main() {
         data: {
             name: 'EOS R5',
             slug: 'r5',
-            cameraManufacturerId: canon.id,
+            manufacturerId: canon.id,
             cameraMountId: canonRF.id
         }
     })
@@ -416,7 +415,7 @@ async function main() {
         data: {
             name: 'OM-5 II',
             slug: 'om5-ii',
-            cameraManufacturerId: omSystem.id,
+            manufacturerId: omSystem.id,
         }
     })
 
@@ -425,7 +424,7 @@ async function main() {
         data: {
             name: 'Iphone 14 Pro',
             slug: 'iphone-14-pro',
-            cameraManufacturerId: apple.id,
+            manufacturerId: apple.id,
             interchangeableLens: false,
             productPhotos: ['/cameras/iphone-14-pro.jpg']
         }
@@ -437,7 +436,7 @@ async function main() {
             name: 'Nauticam N120',
             slug: 'nauticam-n120',
             description: 'Standard mount type for Nauticam N120 ports',
-            housingManufacturerId: nauticam.id
+            manufacturerId: nauticam.id
         }
     })
 
@@ -447,7 +446,7 @@ async function main() {
             name: 'SeaFrogs Polycarbonate',
             slug: 'polycarbonate',
             description: 'Standard mount type for polycarbonate SeaFrogs ports',
-            housingManufacturerId: seafrogs.id
+            manufacturerId: seafrogs.id
         }
     })
 
@@ -464,7 +463,7 @@ async function main() {
             priceCurrency: 'USD',
             depthRating: 100,
             material: 'Aluminum',
-            housingManufacturerId: nauticam.id,
+            manufacturerId: nauticam.id,
             cameraId: omOM5II.id,
             housingMountId: mountTypeNauticamN120.id,
             productPhotos: ['/housings/na-om5ii-front.webp', '/housings/na-om5ii-back.webp']
@@ -481,7 +480,7 @@ async function main() {
             priceCurrency: 'USD',
             depthRating: 60,
             material: 'ABS Plastic',
-            housingManufacturerId: divevolk.id,
+            manufacturerId: divevolk.id,
             cameraId: iphone14Pro.id,
             interchangeablePort: false,
             productPhotos: ['/housings/divevolk-seatouch-4-front.webp']
@@ -498,7 +497,7 @@ async function main() {
             priceCurrency: 'USD',
             depthRating: 40,
             material: 'ABS Plastic',
-            housingManufacturerId: seafrogs.id,
+            manufacturerId: seafrogs.id,
             cameraId: canonR6MarkII.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: ['/housings/sf-s-r6-ii-front.webp', '/housings/sf-s-r6-ii-back.webp']
@@ -514,7 +513,7 @@ async function main() {
             priceCurrency: 'USD',
             depthRating: 40,
             material: 'ABS Plastic',
-            housingManufacturerId: seafrogs.id,
+            manufacturerId: seafrogs.id,
             cameraId: sonyZVE1.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: ['/housings/sf-s-zv1-e1-front.webp']
@@ -530,7 +529,7 @@ async function main() {
             priceCurrency: 'USD',
             depthRating: 40,
             material: 'ABS Plastic',
-            housingManufacturerId: seafrogs.id,
+            manufacturerId: seafrogs.id,
             cameraId: sonyA7III.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: []
@@ -546,7 +545,7 @@ async function main() {
             priceCurrency: 'USD',
             depthRating: 40,
             material: 'ABS Plastic',
-            housingManufacturerId: seafrogs.id,
+            manufacturerId: seafrogs.id,
             cameraId: sonyA7IV.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: ['/housings/sf-a7iv-sl.jpg']
@@ -562,7 +561,7 @@ async function main() {
             priceCurrency: 'USD',
             depthRating: 40,
             material: 'ABS Plastic',
-            housingManufacturerId: seafrogs.id,
+            manufacturerId: seafrogs.id,
             cameraId: sonyA7RV.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: ['/housings/sf-s-a7rv-front.webp']
@@ -574,7 +573,7 @@ async function main() {
     const portFL100 = await prisma.port.create({
         data: {
             name: 'FL100',
-            housingManufacturerId: seafrogs.id,
+            manufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             lens: { connect: [{ id: lensFE90MacroGOSS.id }, { id: lensFE2470GMII.id }, { id: lensFE24105F4GOSS.id }, { id: lensSigma2470dgdnii.id }] },
             slug: 'fl100',
@@ -586,7 +585,7 @@ async function main() {
     await prisma.port.create({
         data: {
             name: 'WA000S-A',
-            housingManufacturerId: seafrogs.id,
+            manufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             lens: { connect: [{ id: lensFE24105F4GOSS.id }, { id: lensFE2470GM.id }, { id: lensFE2470GMII.id }] },
             slug: 'wa000s-a'
@@ -597,7 +596,7 @@ async function main() {
     await prisma.port.create({
         data: {
             name: 'FL1655',
-            housingManufacturerId: seafrogs.id,
+            manufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             lens: { connect: [{ id: lensFE2470F4ZAOSS.id }] },
             slug: 'fl1655'
@@ -609,7 +608,7 @@ async function main() {
     await prisma.port.create({
         data: {
             name: 'WA005-B',
-            housingManufacturerId: seafrogs.id,
+            manufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             lens: { connect: [{ id: lensFE1635GM.id }] },
             slug: 'wa005-b',
@@ -621,7 +620,7 @@ async function main() {
     await prisma.port.create({
         data: {
             name: 'WA005-F',
-            housingManufacturerId: seafrogs.id,
+            manufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             lens: { connect: [{ id: lensFE1224F4G.id }, { id: lensFEPZ1635F4G.id }] },
             slug: 'wa005-f',
@@ -633,7 +632,7 @@ async function main() {
     await prisma.port.create({
         data: {
             name: 'FL2870',
-            housingManufacturerId: seafrogs.id,
+            manufacturerId: seafrogs.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             lens: { connect: [{ id: lensEPZ18105F4GOSS.id }] },
             slug: 'fl2870',
@@ -650,7 +649,7 @@ async function main() {
             priceCurrency: 'USD',
             depthRating: 40,
             material: 'ABS Plastic',
-            housingManufacturerId: seafrogs.id,
+            manufacturerId: seafrogs.id,
             cameraId: sonyA6700.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: ['/housings/sf-s-a6700-front.jpg', '/housings/sf-s-a6700-back.jpg']
@@ -666,7 +665,7 @@ async function main() {
             priceCurrency: 'USD',
             depthRating: 40,
             material: 'ABS Plastic',
-            housingManufacturerId: seafrogs.id,
+            manufacturerId: seafrogs.id,
             cameraId: sonyFX3.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: ['/housings/sf-s-fx3.jpg']
@@ -682,7 +681,7 @@ async function main() {
             priceCurrency: 'USD',
             depthRating: 40,
             material: 'ABS Plastic',
-            housingManufacturerId: seafrogs.id,
+            manufacturerId: seafrogs.id,
             cameraId: canonR5.id,
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: ['/housings/sf-eosr5-np.webp']

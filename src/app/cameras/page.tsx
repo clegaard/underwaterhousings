@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 async function getCameraManufacturers() {
     try {
-        const manufacturers = await prisma.cameraManufacturer.findMany({
+        const manufacturers = await prisma.manufacturer.findMany({
             include: {
                 cameras: {
                     include: {

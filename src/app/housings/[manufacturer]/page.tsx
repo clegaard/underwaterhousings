@@ -12,7 +12,7 @@ interface ManufacturerPageProps {
 
 async function getManufacturerHousings(manufacturerSlug: string) {
     try {
-        const manufacturer = await prisma.housingManufacturer.findUnique({
+        const manufacturer = await prisma.manufacturer.findUnique({
             where: { slug: manufacturerSlug },
             include: {
                 housings: {

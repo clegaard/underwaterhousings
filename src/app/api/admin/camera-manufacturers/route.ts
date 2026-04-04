@@ -22,7 +22,7 @@ function createSlug(text: string): string {
 // GET - List all camera manufacturers
 export async function GET() {
     try {
-        const manufacturers = await prisma.cameraManufacturer.findMany({
+        const manufacturers = await prisma.manufacturer.findMany({
             orderBy: { name: 'asc' }
         })
         return NextResponse.json(manufacturers)
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
         const slug = createSlug(name)
 
         // Check if manufacturer with this slug already exists
-        const existingManufacturer = await prisma.cameraManufacturer.findUnique({
+        const existingManufacturer = await prisma.manufacturer.findUnique({
             where: { slug }
         })
 
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const manufacturer = await prisma.cameraManufacturer.create({
+        const manufacturer = await prisma.manufacturer.create({
             data: {
                 name,
                 slug
@@ -109,7 +109,7 @@ export async function PUT(request: NextRequest) {
         const slug = createSlug(name)
 
         // Check if manufacturer with this slug already exists (excluding current manufacturer)
-        const existingManufacturer = await prisma.cameraManufacturer.findFirst({
+        const existingManufacturer = await prisma.manufacturer.findFirst({
             where: {
                 slug,
                 NOT: { id: parseInt(id) }
@@ -123,7 +123,7 @@ export async function PUT(request: NextRequest) {
             )
         }
 
-        const manufacturer = await prisma.cameraManufacturer.update({
+        const manufacturer = await prisma.manufacturer.update({
             where: { id: parseInt(id) },
             data: {
                 name,
@@ -158,7 +158,7 @@ export async function DELETE(request: NextRequest) {
 
         // Check if manufacturer has any cameras
         const cameraCount = await prisma.camera.count({
-            where: { cameraManufacturerId: parseInt(id) }
+            where: { manufacturerId: parseInt(id) }
         })
 
         if (cameraCount > 0) {
@@ -169,7 +169,7 @@ export async function DELETE(request: NextRequest) {
         }
 
         // Delete the manufacturer
-        await prisma.cameraManufacturer.delete({
+        await prisma.manufacturer.delete({
             where: { id: parseInt(id) }
         })
 

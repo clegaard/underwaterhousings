@@ -12,7 +12,7 @@ interface CameraManufacturerPageProps {
 
 async function getCameraManufacturerCameras(manufacturerSlug: string) {
     try {
-        const manufacturer = await prisma.cameraManufacturer.findUnique({
+        const manufacturer = await prisma.manufacturer.findUnique({
             where: {
                 slug: manufacturerSlug
             },
@@ -59,6 +59,7 @@ export default async function CameraManufacturerPage({ params }: CameraManufactu
         housings: camera.housings,
         cameraMount: camera.cameraMount,
         interchangeableLens: camera.interchangeableLens,
+        canBeUsedWithoutAHousing: camera.canBeUsedWithoutAHousing,
         exifId: camera.exifId ?? null,
         productPhotos: camera.productPhotos,
         imageInfo: getCameraImagePathWithFallback(camera.productPhotos),

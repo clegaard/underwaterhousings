@@ -211,7 +211,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: nameInput.trim(),
-                    cameraManufacturerId: manufacturer.id,
+                    manufacturerId: manufacturer.id,
                     interchangeableLens,
                     canBeUsedWithoutAHousing,
                     cameraMountId: interchangeableLens && mountId !== '' ? mountId : null,
@@ -255,7 +255,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: nameInput.trim(),
-                    cameraManufacturerId: manufacturer.id,
+                    manufacturerId: manufacturer.id,
                     interchangeableLens,
                     canBeUsedWithoutAHousing,
                     cameraMountId: interchangeableLens && mountId !== '' ? mountId : null,

@@ -63,27 +63,8 @@ function StarRow({ value, max = 5 }: { value: number; max?: number }) {
     )
 }
 
-function initials(name: string | null): string {
-    if (!name) return '?'
-    return name
-        .split(' ')
-        .map(p => p[0] ?? '')
-        .slice(0, 2)
-        .join('')
-        .toUpperCase()
-}
-
 function formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-}
-
-const AVATAR_COLORS = [
-    'bg-blue-500', 'bg-purple-500', 'bg-teal-500', 'bg-rose-500',
-    'bg-amber-500', 'bg-green-600', 'bg-indigo-500',
-]
-
-function avatarColor(id: number) {
-    return AVATAR_COLORS[id % AVATAR_COLORS.length]
 }
 
 const defaultForm = {
@@ -152,6 +133,21 @@ export default function RigReviewsSection({
             setError(err instanceof Error ? err.message : 'Network error')
         } finally {
             setLoading(false)
+        }
+    }
+
+    async function handleDelete(id: number) {
+        if (!confirm('Are you sure you want to delete this review? This cannot be undone.')) return
+        try {
+            const res = await fetch(`/api/rig-reviews?id=${id}`, { method: 'DELETE' })
+            if (!res.ok) {
+                const data = await res.json()
+                alert(data.error ?? 'Failed to delete review')
+                return
+            }
+            setReviews(prev => prev.filter(r => r.id !== id))
+        } catch {
+            alert('Network error — please try again')
         }
     }
 
@@ -381,22 +377,33 @@ export default function RigReviewsSection({
                                 <div key={r.id} className="py-5 first:pt-0">
                                     <div className="flex items-start gap-3">
                                         {/* Avatar */}
-                                        <div className={`w-9 h-9 rounded-full ${avatarColor(r.user.id)} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
-                                            {initials(r.user.name)}
-                                        </div>
+                                        <Link href={`/users/${r.user.id}`} className="shrink-0">
+                                            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold hover:bg-blue-700 transition-colors">
+                                                {(r.user.name ?? '?')[0].toUpperCase()}
+                                            </div>
+                                        </Link>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between gap-2 mb-1">
-                                                <span className="font-medium text-gray-900 text-sm">{displayName}</span>
+                                                <Link href={`/users/${r.user.id}`} className="font-medium text-gray-900 text-sm hover:text-blue-600 hover:underline transition-colors">{displayName}</Link>
                                                 <div className="flex items-center gap-2 shrink-0">
                                                     <span className="text-xs text-gray-400">{formatDate(r.createdAt)}</span>
                                                     {userId && String(r.user.id) === userId && (
-                                                        <button
-                                                            onClick={() => openEdit(r)}
-                                                            title="Edit review"
-                                                            className="text-xs text-gray-400 hover:text-blue-600 transition-colors px-1.5 py-0.5 rounded hover:bg-blue-50"
-                                                        >
-                                                            Edit
-                                                        </button>
+                                                        <>
+                                                            <button
+                                                                onClick={() => openEdit(r)}
+                                                                title="Edit review"
+                                                                className="text-xs text-gray-400 hover:text-blue-600 transition-colors px-1.5 py-0.5 rounded hover:bg-blue-50"
+                                                            >
+                                                                Edit
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDelete(r.id)}
+                                                                title="Delete review"
+                                                                className="text-xs text-gray-400 hover:text-red-600 transition-colors px-1.5 py-0.5 rounded hover:bg-red-50"
+                                                            >
+                                                                Delete
+                                                            </button>
+                                                        </>
                                                     )}
                                                 </div>
                                             </div>

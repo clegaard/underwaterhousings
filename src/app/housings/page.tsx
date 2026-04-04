@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 async function getHousingManufacturers() {
     try {
-        return await prisma.housingManufacturer.findMany({
+        return await prisma.manufacturer.findMany({
             include: {
                 _count: {
                     select: { housings: true }

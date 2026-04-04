@@ -42,6 +42,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const userIdInt = parseInt(userId)
+    const userExists = await prisma.user.findUnique({ where: { id: userIdInt }, select: { id: true } })
+    if (!userExists) {
+        return NextResponse.json({ error: 'Session is stale, please log out and log back in' }, { status: 401 })
+    }
+
     try {
         const body = await request.json()
         const {
@@ -84,7 +90,7 @@ export async function POST(request: NextRequest) {
                 ratingEaseOfUse,
                 comment: comment?.trim() || null,
                 reviewPhotos: Array.isArray(reviewPhotos) ? reviewPhotos : [],
-                userId: parseInt(userId),
+                userId: userIdInt,
             },
             include: {
                 user: { select: { id: true, name: true } },
@@ -155,5 +161,36 @@ export async function PUT(request: NextRequest) {
     } catch (error) {
         console.error('Error updating rig review:', error)
         return NextResponse.json({ error: 'Failed to update review' }, { status: 500 })
+    }
+}
+
+// DELETE /api/rig-reviews?id=x
+export async function DELETE(request: NextRequest) {
+    const session = await auth()
+    const userId = (session?.user as { id?: string } | undefined)?.id
+    if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+    if (!id) {
+        return NextResponse.json({ error: 'Review ID is required' }, { status: 400 })
+    }
+
+    try {
+        const existing = await prisma.rigReview.findUnique({ where: { id: parseInt(id) } })
+        if (!existing) {
+            return NextResponse.json({ error: 'Review not found' }, { status: 404 })
+        }
+        if (existing.userId !== parseInt(userId)) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+        }
+
+        await prisma.rigReview.delete({ where: { id: parseInt(id) } })
+        return NextResponse.json({ success: true })
+    } catch (error) {
+        console.error('Error deleting rig review:', error)
+        return NextResponse.json({ error: 'Failed to delete review' }, { status: 500 })
     }
 }

@@ -7,156 +7,148 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model HousingManufacturer {
+model Manufacturer {
     id            Int            @id @default(autoincrement())
     name          String         @unique
     slug          String         @unique
     description   String?
-    housings      Housing[]
-    ports         Port[]
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
     housingMounts HousingMount[]
+    cameras       Camera[]
+    housings      Housing[]
+    lenses        Lens[]
+    ports         Port[]
 
-    @@map("housing_manufacturers")
-}
-
-model CameraManufacturer {
-    id        Int      @id @default(autoincrement())
-    name      String   @unique
-    slug      String   @unique
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    cameras   Camera[]
-
-    @@map("camera_manufacturers")
+    @@map("manufacturers")
 }
 
 model CameraMount {
-    id      Int      @id @default(autoincrement())
-    slug    String   @unique
-    name    String
-    cameras Camera[]
-    lens    Lens[]
+    id          Int      @id @default(autoincrement())
+    name        String
+    slug        String   @unique
+    description String?
+    cameras     Camera[]
+    lens        Lens[]
 
     @@map("camera_mounts")
 }
 
 model HousingMount {
-    id                    Int                 @id @default(autoincrement())
-    name                  String
-    description           String?
-    ports                 Port[]
-    housings              Housing[]
-    manufacturer          HousingManufacturer @relation(fields: [housingManufacturerId], references: [id])
-    housingManufacturerId Int
-    slug                  String              @unique
+    id             Int          @id @default(autoincrement())
+    name           String
+    description    String?
+    manufacturerId Int
+    slug           String       @unique
+    manufacturer   Manufacturer @relation(fields: [manufacturerId], references: [id])
+    housings       Housing[]
+    ports          Port[]
 }
 
 model Camera {
-    id                       Int                @id @default(autoincrement())
+    id                       Int            @id @default(autoincrement())
     name                     String
-    slug                     String             @unique
-    brand                    CameraManufacturer @relation(fields: [cameraManufacturerId], references: [id])
-    cameraManufacturerId     Int
-    cameraMount              CameraMount?       @relation(fields: [cameraMountId], references: [id])
+    slug                     String         @unique
+    description              String?
+    manufacturerId           Int
     cameraMountId            Int?
-    lens                     Lens[]
-    housings                 Housing[]
-    // For simplicity, we can store product photos as an array of strings (URLs or file paths)
+    priceCurrency            String?        @default("USD")
+    priceAmount              Decimal?       @db.Decimal(10, 2)
     productPhotos            String[]
-    interchangeableLens      Boolean            @default(true)
-    // Some cameras like GoPros, Osmo Actions and TG-6/7 can be used without a housing
-    // This distincition is necessary to allow images taken without a housing to be properly categorized in the gallery
-    canBeUsedWithoutAHousing Boolean            @default(false)
-    galleryPhotos            GalleryPhoto[]
-    // Identified by EXIF data when users upload photos without explicitly linking to a camera
-    exifId                   String?            @unique
-    productReviews           ProductReview[]
+    interchangeableLens      Boolean        @default(true)
+    canBeUsedWithoutAHousing Boolean        @default(false)
+    exifId                   String?        @unique
     rigReviews               RigReview[]
+    cameraMount              CameraMount?   @relation(fields: [cameraMountId], references: [id])
+    brand                    Manufacturer   @relation(fields: [manufacturerId], references: [id])
+    galleryPhotos            GalleryPhoto[]
+    housings                 Housing[]
+    lens                     Lens[]
 
     @@map("cameras")
 }
 
 model Housing {
-    id                    Int                 @id @default(autoincrement())
-    name                  String
-    slug                  String              @unique
-    description           String?
-    priceAmount           Decimal?            @db.Decimal(10, 2)
-    priceCurrency         String?             @default("USD")
-    depthRating           Int
-    material              String?
-    manufacturer          HousingManufacturer @relation(fields: [housingManufacturerId], references: [id])
-    housingManufacturerId Int
-    Camera                Camera              @relation(fields: [cameraId], references: [id])
-    cameraId              Int
-    housingMount          HousingMount?       @relation(fields: [housingMountId], references: [id])
-    housingMountId        Int?
-    productPhotos         String[]
-    interchangeablePort   Boolean             @default(true)
-    galleryPhotos         GalleryPhoto[]
-    productReviews        ProductReview[]
-    rigReviews            RigReview[]
+    id                  Int            @id @default(autoincrement())
+    name                String
+    slug                String         @unique
+    description         String?
+    priceAmount         Decimal?       @db.Decimal(10, 2)
+    priceCurrency       String?        @default("USD")
+    depthRating         Int
+    material            String?
+    manufacturerId      Int
+    cameraId            Int
+    housingMountId      Int?
+    productPhotos       String[]
+    interchangeablePort Boolean        @default(true)
+    rigReviews          RigReview[]
+    galleryPhotos       GalleryPhoto[]
+    Camera              Camera         @relation(fields: [cameraId], references: [id])
+    housingMount        HousingMount?  @relation(fields: [housingMountId], references: [id])
+    manufacturer        Manufacturer   @relation(fields: [manufacturerId], references: [id])
 
     @@map("housings")
 }
 
 model Port {
-    id                    Int                 @id @default(autoincrement())
-    slug                  String              @unique
-    manufacturer          HousingManufacturer @relation(fields: [housingManufacturerId], references: [id])
-    housingManufacturerId Int
-    name                  String
-    lens                  Lens[]
-    housingMount          HousingMount?       @relation(fields: [housingMountId], references: [id])
-    housingMountId        Int?
-    productPhotos         String[]
-    galleryPhotos         GalleryPhoto[]
-    productReviews        ProductReview[]
-    rigReviews            RigReview[]
+    id             Int            @id @default(autoincrement())
+    name           String
+    slug           String         @unique
+    description    String?
+    manufacturerId Int
+    housingMountId Int?
+    productPhotos  String[]
+    priceAmount    Decimal?       @db.Decimal(10, 2)
+    priceCurrency  String?        @default("USD")
+    rigReviews     RigReview[]
+    galleryPhotos  GalleryPhoto[]
+    housingMount   HousingMount?  @relation(fields: [housingMountId], references: [id])
+    manufacturer   Manufacturer   @relation(fields: [manufacturerId], references: [id])
+    lens           Lens[]         @relation("LensToPort")
 
     @@map("ports")
 }
 
 model Lens {
-    id             Int             @id @default(autoincrement())
-    name           String
-    slug           String          @unique
-    cameraMount    CameraMount     @relation(fields: [cameraMountId], references: [id])
-    cameraMountId  Int
-    ports          Port[]
-    camera         Camera?         @relation(fields: [cameraId], references: [id])
-    cameraId       Int?
-    productPhotos  String[]
-    galleryPhotos  GalleryPhoto[]
-    // Identified by EXIF data when users upload photos without explicitly linking to a lens
-    exifId         String?         @unique
-    productReviews ProductReview[]
-    rigReviews     RigReview[]
+    id                   Int            @id @default(autoincrement())
+    name                 String
+    slug                 String         @unique
+    description          String?
+    minimumFocusDistance Float?
+    priceAmount          Decimal?       @db.Decimal(10, 2)
+    priceCurrency        String?        @default("USD")
+    cameraMountId        Int
+    cameraId             Int?
+    productPhotos        String[]
+    manufacturerId       Int?
+    exifId               String?        @unique
+    rigReviews           RigReview[]
+    galleryPhotos        GalleryPhoto[]
+    camera               Camera?        @relation(fields: [cameraId], references: [id])
+    cameraMount          CameraMount    @relation(fields: [cameraMountId], references: [id])
+    manufacturer         Manufacturer?  @relation(fields: [manufacturerId], references: [id])
+    ports                Port[]         @relation("LensToPort")
 
     @@map("lenses")
 }
 
-// ============================= USERS & AUTH =============================
-
 model User {
-    id             Int             @id @default(autoincrement())
-    email          String          @unique
+    id             Int            @id @default(autoincrement())
+    email          String         @unique
     password       String
     name           String?
     bio            String?
     profilePicture String?
-    isSuperuser    Boolean         @default(false)
-    isUser         Boolean         @default(true)
-    createdAt      DateTime        @default(now())
-    updatedAt      DateTime        @updatedAt
-    galleryPhotos  GalleryPhoto[]
-    productReviews ProductReview[]
+    isSuperuser    Boolean        @default(false)
+    isUser         Boolean        @default(true)
+    createdAt      DateTime       @default(now())
+    updatedAt      DateTime       @updatedAt
     rigReviews     RigReview[]
+    galleryPhotos  GalleryPhoto[]
 
     @@map("users")
 }
-
-// ============================= PHOTO GALLERY =============================
 
 model GalleryPhoto {
     id           Int       @id @default(autoincrement())
@@ -171,73 +163,39 @@ model GalleryPhoto {
     shutterSpeed String?
     aperture     Float?
     createdAt    DateTime  @default(now())
-
-    camera    Camera?  @relation(fields: [cameraId], references: [id])
-    cameraId  Int?
-    lens      Lens?    @relation(fields: [lensId], references: [id])
-    lensId    Int?
-    housing   Housing? @relation(fields: [housingId], references: [id])
-    housingId Int?
-    port      Port?    @relation(fields: [portId], references: [id])
-    portId    Int?
-
-    user   User? @relation(fields: [userId], references: [id])
-    userId Int?
+    cameraId     Int?
+    lensId       Int?
+    housingId    Int?
+    portId       Int?
+    userId       Int?
+    camera       Camera?   @relation(fields: [cameraId], references: [id])
+    housing      Housing?  @relation(fields: [housingId], references: [id])
+    lens         Lens?     @relation(fields: [lensId], references: [id])
+    port         Port?     @relation(fields: [portId], references: [id])
+    user         User?     @relation(fields: [userId], references: [id])
 
     @@map("gallery_photos")
 }
 
-// =================== REVIEWS =========================
-
-model ProductReview {
-    id        Int      @id @default(autoincrement())
-    comment   String?
-    rating    Int
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    camera   Camera? @relation(fields: [cameraId], references: [id])
-    cameraId Int?
-
-    housing   Housing? @relation(fields: [housingId], references: [id])
-    housingId Int?
-
-    port   Port? @relation(fields: [portId], references: [id])
-    portId Int?
-
-    lens   Lens? @relation(fields: [lensId], references: [id])
-    lensId Int?
-
-    user   User @relation(fields: [userId], references: [id])
-    userId Int
-
-    @@map("product_reviews")
-}
-
 model RigReview {
-    id        Int      @id @default(autoincrement())
-    comment   String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    id                   Int      @id @default(autoincrement())
+    comment              String?
+    createdAt            DateTime @default(now())
+    updatedAt            DateTime @updatedAt
+    ratingOpticalQuality Int
+    ratingReliability    Int
+    ratingEaseOfUse      Int
+    cameraId             Int?
+    housingId            Int?
+    portId               Int?
+    lensId               Int?
+    userId               Int
+    reviewPhotos         String[]
+    camera               Camera?  @relation(fields: [cameraId], references: [id])
+    housing              Housing? @relation(fields: [housingId], references: [id])
+    lens                 Lens?    @relation(fields: [lensId], references: [id])
+    port                 Port?    @relation(fields: [portId], references: [id])
+    user                 User     @relation(fields: [userId], references: [id])
 
-    ratingOpticalQuality Int // Rating 1-5 of the percieved optical quality of the system (overall sharpness, vignetting, corner sharpness, etc.)
-    ratingReliability    Int // Rating 1-5 of the perceived reliability of the system (flooding, mechanical failures of buttons and levers)
-    ratingEaseOfUse      Int // Rating 1-5 of the perceived ease of use of the system (access to important buttons, weight and ergonomics, ease of changing ports)
-
-    camera   Camera? @relation(fields: [cameraId], references: [id])
-    cameraId Int?
-
-    housing   Housing? @relation(fields: [housingId], references: [id])
-    housingId Int?
-
-    port   Port? @relation(fields: [portId], references: [id])
-    portId Int?
-
-    lens   Lens? @relation(fields: [lensId], references: [id])
-    lensId Int?
-
-    user   User @relation(fields: [userId], references: [id])
-    userId Int
-
-    reviewPhotos String[] // Optional array of photo of the assembled rig, mechanical failures, flooded equipment, etc. Uploaded by the user when creating the review
+    @@map("rig_reviews")
 }

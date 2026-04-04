@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
     if (denied) return denied
     try {
         const body = await request.json()
-        const { name, cameraManufacturerId, interchangeableLens, canBeUsedWithoutAHousing, cameraMountId, productPhotos, exifId } = body
+        const { name, manufacturerId, interchangeableLens, canBeUsedWithoutAHousing, cameraMountId, productPhotos, exifId } = body
 
-        if (!name || !cameraManufacturerId) {
+        if (!name || !manufacturerId) {
             return NextResponse.json(
                 { error: 'Name and camera manufacturer are required' },
                 { status: 400 }
@@ -55,8 +55,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Verify the manufacturer exists
-        const manufacturer = await prisma.cameraManufacturer.findUnique({
-            where: { id: cameraManufacturerId }
+        const manufacturer = await prisma.manufacturer.findUnique({
+            where: { id: manufacturerId }
         })
 
         if (!manufacturer) {
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
             data: {
                 name,
                 slug,
-                cameraManufacturerId,
+                manufacturerId,
                 interchangeableLens: interchangeableLens ?? true,
                 canBeUsedWithoutAHousing: canBeUsedWithoutAHousing ?? false,
                 cameraMountId: interchangeableLens && cameraMountId ? cameraMountId : null,
@@ -123,9 +123,9 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { name, cameraManufacturerId, interchangeableLens, canBeUsedWithoutAHousing, cameraMountId, productPhotos, exifId } = body
+        const { name, manufacturerId, interchangeableLens, canBeUsedWithoutAHousing, cameraMountId, productPhotos, exifId } = body
 
-        if (!name || !cameraManufacturerId) {
+        if (!name || !manufacturerId) {
             return NextResponse.json(
                 { error: 'Name and camera manufacturer are required' },
                 { status: 400 }
@@ -133,8 +133,8 @@ export async function PUT(request: NextRequest) {
         }
 
         // Verify the manufacturer exists
-        const manufacturer = await prisma.cameraManufacturer.findUnique({
-            where: { id: cameraManufacturerId }
+        const manufacturer = await prisma.manufacturer.findUnique({
+            where: { id: manufacturerId }
         })
 
         if (!manufacturer) {
@@ -150,7 +150,7 @@ export async function PUT(request: NextRequest) {
         const existingCamera = await prisma.camera.findFirst({
             where: {
                 slug,
-                cameraManufacturerId: cameraManufacturerId,
+                manufacturerId: manufacturerId,
                 NOT: { id: parseInt(id) }
             }
         })
@@ -167,7 +167,7 @@ export async function PUT(request: NextRequest) {
             data: {
                 name,
                 slug,
-                cameraManufacturerId,
+                manufacturerId,
                 interchangeableLens: interchangeableLens ?? true,
                 canBeUsedWithoutAHousing: canBeUsedWithoutAHousing ?? false,
                 cameraMountId: interchangeableLens && cameraMountId ? cameraMountId : null,

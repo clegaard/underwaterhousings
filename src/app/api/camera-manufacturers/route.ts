@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
         if (simple) {
             // Return simplified data for navigation
-            const manufacturers = await prisma.cameraManufacturer.findMany({
+            const manufacturers = await prisma.manufacturer.findMany({
                 select: {
                     id: true,
                     name: true,
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Return full data with cameras for other uses
-        const manufacturers = await prisma.cameraManufacturer.findMany({
+        const manufacturers = await prisma.manufacturer.findMany({
             include: {
                 cameras: {
                     orderBy: {
