@@ -3,6 +3,7 @@
 import { useMemo, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import UserAvatar from '@/components/UserAvatar'
 import { HousingImage } from '@/components/HousingImage'
 
 // Client-side component for advanced filtering
@@ -1018,9 +1019,12 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                 return (
                                                     <>
                                                         <div className="flex items-start gap-2.5 mb-2">
-                                                            <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-semibold shrink-0">
-                                                                {(r.user?.name ?? '?')[0].toUpperCase()}
-                                                            </div>
+                                                            <UserAvatar
+                                                                picture={r.user?.profilePicture}
+                                                                name={r.user?.name ?? '?'}
+                                                                size="md"
+                                                                className="shrink-0"
+                                                            />
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="flex items-center justify-between gap-2 flex-wrap">
                                                                     <span className="text-xs font-medium text-gray-900">{r.user?.name ?? 'Anonymous'}</span>

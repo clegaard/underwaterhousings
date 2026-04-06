@@ -997,6 +997,7 @@ async function main() {
             name: 'Dev Admin',
             isSuperuser: true,
             bio: 'Administrator account for development and testing purposes.',
+            profilePicture: '/users/admin.jpeg',
         },
     })
 

@@ -3,10 +3,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { withBase } from '@/lib/images'
+import UserAvatar from '@/components/UserAvatar'
 
 interface ReviewUser {
     id: number
     name: string | null
+    profilePicture: string | null
 }
 
 export interface RigReviewData {
@@ -378,9 +380,12 @@ export default function RigReviewsSection({
                                     <div className="flex items-start gap-3">
                                         {/* Avatar */}
                                         <Link href={`/users/${r.user.id}`} className="shrink-0">
-                                            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold hover:bg-blue-700 transition-colors">
-                                                {(r.user.name ?? '?')[0].toUpperCase()}
-                                            </div>
+                                            <UserAvatar
+                                                picture={r.user.profilePicture ? withBase(r.user.profilePicture) : null}
+                                                name={r.user.name ?? '?'}
+                                                size="base"
+                                                className="hover:opacity-90 transition-opacity"
+                                            />
                                         </Link>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between gap-2 mb-1">

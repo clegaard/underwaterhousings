@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
+import UserAvatar from '@/components/UserAvatar'
 
 interface Manufacturer {
     id: string
@@ -20,6 +21,7 @@ interface NavigationProps {
 
 export default function Navigation({ manufacturers, cameraManufacturers, lensManufacturers, portManufacturers }: NavigationProps) {
     const { data: session } = useSession()
+    const [profilePicture, setProfilePicture] = useState<string | null>(null)
     const [isCamerasOpen, setIsCamerasOpen] = useState(false)
     const [isLensesOpen, setIsLensesOpen] = useState(false)
     const [isHousingsOpen, setIsHousingsOpen] = useState(false)
@@ -38,7 +40,19 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
         setIsPortsOpen(false)
     }
 
-    // Close dropdowns when clicking outside
+    // Fetch logged-in user's profile picture
+    useEffect(() => {
+        if (!session) { setProfilePicture(null); return }
+        function fetchAvatar() {
+            fetch('/api/users/me')
+                .then(r => r.ok ? r.json() : null)
+                .then(data => setProfilePicture(data?.profilePicture ?? null))
+                .catch(() => setProfilePicture(null))
+        }
+        fetchAvatar()
+        window.addEventListener('avatarUpdated', fetchAvatar)
+        return () => window.removeEventListener('avatarUpdated', fetchAvatar)
+    }, [session])
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (camerasDropdownRef.current && !camerasDropdownRef.current.contains(event.target as Node)) {
@@ -240,9 +254,11 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
                                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                                     className="flex items-center gap-2 text-gray-700 hover:text-blue-900 transition-colors"
                                 >
-                                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
-                                        {(session.user?.name ?? session.user?.email ?? '?')[0].toUpperCase()}
-                                    </div>
+                                    <UserAvatar
+                                        picture={profilePicture}
+                                        name={session.user?.name ?? session.user?.email ?? '?'}
+                                        size="base"
+                                    />
                                     <svg className={`w-4 h-4 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                     </svg>

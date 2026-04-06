@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { RowsPhotoAlbum } from 'react-photo-album'
 import type { Photo } from 'react-photo-album'
 import 'react-photo-album/rows.css'
+import UserAvatar from '@/components/UserAvatar'
 
 export interface GalleryPhotoData extends Photo {
     title?: string
@@ -146,17 +147,12 @@ function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUse
                                 onClick={(e) => e.stopPropagation()}
                                 className="flex items-center gap-1 group/user"
                             >
-                                {photo.userProfilePicture ? (
-                                    <img
-                                        src={photo.userProfilePicture}
-                                        alt={photo.userName}
-                                        className="w-4 h-4 rounded-full object-cover ring-1 ring-white/30"
-                                    />
-                                ) : (
-                                    <span className="w-4 h-4 rounded-full bg-blue-600 flex items-center justify-center text-white text-[9px] font-bold ring-1 ring-white/30 flex-shrink-0">
-                                        {photo.userName.charAt(0).toUpperCase()}
-                                    </span>
-                                )}
+                                <UserAvatar
+                                    picture={photo.userProfilePicture}
+                                    name={photo.userName}
+                                    size="xs"
+                                    className="ring-1 ring-white/30"
+                                />
                                 <span className="text-gray-400 text-xs group-hover/user:text-white transition-colors truncate">{photo.userName}</span>
                             </Link>
                         )}
@@ -303,17 +299,12 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                             onClick={(e) => e.stopPropagation()}
                                             className="flex items-center gap-1.5 group/user"
                                         >
-                                            {photos[lightboxIndex].userProfilePicture ? (
-                                                <img
-                                                    src={photos[lightboxIndex].userProfilePicture}
-                                                    alt={photos[lightboxIndex].userName!}
-                                                    className="w-5 h-5 rounded-full object-cover ring-1 ring-white/30"
-                                                />
-                                            ) : (
-                                                <span className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold ring-1 ring-white/30 flex-shrink-0">
-                                                    {photos[lightboxIndex].userName!.charAt(0).toUpperCase()}
-                                                </span>
-                                            )}
+                                            <UserAvatar
+                                                picture={photos[lightboxIndex].userProfilePicture}
+                                                name={photos[lightboxIndex].userName!}
+                                                size="sm"
+                                                className="ring-1 ring-white/30"
+                                            />
                                             <span className="text-gray-300 text-sm group-hover/user:text-white transition-colors">
                                                 {photos[lightboxIndex].userName}
                                             </span>

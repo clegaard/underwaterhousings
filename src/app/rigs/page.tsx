@@ -69,7 +69,7 @@ async function getRigReviews(
 ): Promise<RigReviewData[]> {
     const reviews = await prisma.rigReview.findMany({
         where: { cameraId, housingId, lensId, portId },
-        include: { user: { select: { id: true, name: true } } },
+        include: { user: { select: { id: true, name: true, profilePicture: true } } },
         orderBy: { createdAt: 'desc' },
     })
     return reviews.map(r => ({
@@ -89,7 +89,7 @@ async function getCameraOnly(cameraSlug: string) {
 async function getCameraOnlyReviews(cameraId: number): Promise<RigReviewData[]> {
     const reviews = await prisma.rigReview.findMany({
         where: { cameraId, housingId: null, lensId: null, portId: null },
-        include: { user: { select: { id: true, name: true } } },
+        include: { user: { select: { id: true, name: true, profilePicture: true } } },
         orderBy: { createdAt: 'desc' },
     })
     return reviews.map(r => ({ ...r, createdAt: r.createdAt.toISOString() }))

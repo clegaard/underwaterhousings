@@ -32,7 +32,7 @@ async function getHousingsData() {
                             comment: true,
                             reviewPhotos: true,
                             createdAt: true,
-                            user: { select: { id: true, name: true } },
+                            user: { select: { id: true, name: true, profilePicture: true } },
                         }
                     }
                 },
@@ -53,7 +53,7 @@ async function getHousingsData() {
                             comment: true,
                             reviewPhotos: true,
                             createdAt: true,
-                            user: { select: { id: true, name: true } },
+                            user: { select: { id: true, name: true, profilePicture: true } },
                         }
                     }
                 },
@@ -113,6 +113,7 @@ async function getHousingsData() {
                         ...r,
                         createdAt: r.createdAt.toISOString(),
                         reviewPhotos: r.reviewPhotos.map((p: string) => withBase(p)),
+                        user: { ...r.user, profilePicture: r.user.profilePicture ? withBase(r.user.profilePicture) : null },
                     })),
                 }
             }),
@@ -125,6 +126,7 @@ async function getHousingsData() {
                         ...r,
                         createdAt: r.createdAt.toISOString(),
                         reviewPhotos: r.reviewPhotos.map((p: string) => withBase(p)),
+                        user: { ...r.user, profilePicture: r.user.profilePicture ? withBase(r.user.profilePicture) : null },
                     })),
                 }
             }),

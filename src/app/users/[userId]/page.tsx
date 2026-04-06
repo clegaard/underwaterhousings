@@ -4,6 +4,8 @@ import { GalleryPhotoData } from '@/components/GalleryGrid'
 import GalleryGrid from '@/components/GalleryGrid'
 import { withBase } from '@/lib/images'
 import { Suspense } from 'react'
+import { auth } from '@/auth'
+import ProfilePictureUpload from '@/components/ProfilePictureUpload'
 
 interface UserProfilePageProps {
     params: Promise<{ userId: string }>
@@ -41,8 +43,13 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
     const id = parseInt(userId, 10)
     if (isNaN(id)) notFound()
 
-    const user = await getUserWithPhotos(id)
+    const [user, session] = await Promise.all([
+        getUserWithPhotos(id),
+        auth(),
+    ])
     if (!user) notFound()
+
+    const isOwnProfile = session?.user?.id === String(id)
 
     const photos: GalleryPhotoData[] = user.galleryPhotos.map((photo) => {
         const parts = [
@@ -87,17 +94,12 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
             <div className="max-w-7xl mx-auto px-4 py-8">
                 {/* Profile header */}
                 <div className="flex items-center gap-5 mb-8">
-                    {user.profilePicture ? (
-                        <img
-                            src={withBase(user.profilePicture)}
-                            alt={displayName}
-                            className="w-20 h-20 rounded-full object-cover ring-4 ring-white shadow-md"
-                        />
-                    ) : (
-                        <span className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-bold ring-4 ring-white shadow-md flex-shrink-0">
-                            {displayName.charAt(0).toUpperCase()}
-                        </span>
-                    )}
+                    <ProfilePictureUpload
+                        userId={user.id}
+                        isOwnProfile={isOwnProfile}
+                        currentPicture={user.profilePicture}
+                        displayName={displayName}
+                    />
                     <div>
                         <h1 className="text-3xl font-bold text-blue-900">{displayName}</h1>
                         {user.bio && (
