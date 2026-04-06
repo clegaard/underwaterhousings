@@ -360,6 +360,11 @@ async function main() {
             megapixels: 12.0,
             sensorWidth: 6.17,
             sensorHeight: 4.55,
+            focalLengthWide: 5,          // 25 mm equiv (native: ~4.5 mm on 1/2.3" sensor)
+            focalLengthTele: 18,         // 100 mm equiv (native: ~18 mm)
+            minimumFocusDistanceWide: 0.10,
+            minimumFocusDistanceTele: 0.20,
+            maximumMagnification: 4.0,   // Super-macro mode
         }
     })
 
@@ -393,6 +398,9 @@ async function main() {
             megapixels: 16.0,
             sensorWidth: 6.17,
             sensorHeight: 4.55,
+            focalLengthTele: 3,          // Prime wide-angle (~16 mm equiv on 1/2.3" sensor)
+            minimumFocusDistanceTele: 0.01,
+            maximumMagnification: 1.5,
         }
     })
 

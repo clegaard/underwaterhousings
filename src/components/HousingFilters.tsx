@@ -314,15 +314,18 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
     // ── Optical Summary ──────────────────────────────────────────────────────
     const opticalSummary = useMemo(() => {
-        if (!selectedLens) return null
+        // For fixed-lens cameras the optical properties live on the camera itself;
+        // for interchangeable-lens cameras they come from the selected lens.
+        const opticalSource: any = isFixedLens ? selectedCamera : selectedLens
+        if (!opticalSource?.focalLengthTele) return null
 
         const sensorW: number | null = (selectedCamera as any)?.sensorWidth ?? null
         const sensorH: number | null = (selectedCamera as any)?.sensorHeight ?? null
-        const isPrime: boolean = selectedLens.focalLengthWide == null
-        const fWide: number = isPrime ? selectedLens.focalLengthTele : selectedLens.focalLengthWide!
-        const fTele: number = selectedLens.focalLengthTele
-        const mfdWide: number | null = selectedLens.minimumFocusDistanceWide ?? null   // metres
-        const mfdTele: number | null = isPrime ? null : (selectedLens.minimumFocusDistanceTele ?? null)
+        const isPrime: boolean = opticalSource.focalLengthWide == null
+        const fWide: number = isPrime ? opticalSource.focalLengthTele : opticalSource.focalLengthWide!
+        const fTele: number = opticalSource.focalLengthTele
+        const mfdWide: number | null = opticalSource.minimumFocusDistanceWide ?? null   // metres
+        const mfdTele: number | null = isPrime ? null : (opticalSource.minimumFocusDistanceTele ?? null)
         const isFlatPort: boolean = !!(selectedPort as any)?.isFlatPort
 
         // FOV in degrees for a given sensor dimension (mm) and focal length (mm)
@@ -355,9 +358,9 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
             isFlatPort,
             mfdWide,
             mfdTele,
-            maximumMagnification: (selectedLens as any).maximumMagnification ?? null,
+            maximumMagnification: opticalSource.maximumMagnification ?? null,
         }
-    }, [selectedCamera, selectedLens, selectedPort])
+    }, [selectedCamera, selectedLens, selectedPort, isFixedLens])
     // ────────────────────────────────────────────────────────────────────────
 
     const clearFilters = () => {
@@ -940,11 +943,19 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                         )}
 
                                         {!opticalSummary && (
-                                            <p className="text-xs text-gray-400 italic">Select a lens to see FOV, focus distance, and magnification</p>
+                                            <p className="text-xs text-gray-400 italic">
+                                                {isFixedLens
+                                                    ? 'No optical data available for this camera'
+                                                    : 'Select a lens to see FOV, focus distance, and magnification'}
+                                            </p>
                                         )}
                                     </div>
                                 ) : (
-                                    <p className="text-xs text-gray-400 italic">Select a camera and lens to see optical details</p>
+                                    <p className="text-xs text-gray-400 italic">
+                                        {isFixedLens
+                                            ? 'Select a camera to see optical details'
+                                            : 'Select a camera and lens to see optical details'}
+                                    </p>
                                 )}
                             </div>
                             {/* ──────────────────────────────────────────────────────── */}
