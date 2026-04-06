@@ -346,16 +346,21 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         const fovWideV = sensorH ? fovDeg(sensorH, fWide) : null
         const fovTeleH = (!isPrime && sensorW) ? fovDeg(sensorW, fTele) : null
         const fovTeleV = (!isPrime && sensorH) ? fovDeg(sensorH, fTele) : null
+        const sensorD = (sensorW && sensorH) ? Math.sqrt(sensorW ** 2 + sensorH ** 2) : null
+        const fovWideD = sensorD ? fovDeg(sensorD, fWide) : null
+        const fovTeleD = (!isPrime && sensorD) ? fovDeg(sensorD, fTele) : null
 
         return {
             isPrime,
             fWide, fTele,
-            fovWideH, fovWideV,
-            fovTeleH, fovTeleV,
+            fovWideH, fovWideV, fovWideD,
+            fovTeleH, fovTeleV, fovTeleD,
             fovEffWideH: (isFlatPort && fovWideH !== null) ? fovEffective(fovWideH) : null,
             fovEffWideV: (isFlatPort && fovWideV !== null) ? fovEffective(fovWideV) : null,
+            fovEffWideD: (isFlatPort && fovWideD !== null) ? fovEffective(fovWideD) : null,
             fovEffTeleH: (isFlatPort && fovTeleH !== null) ? fovEffective(fovTeleH) : null,
             fovEffTeleV: (isFlatPort && fovTeleV !== null) ? fovEffective(fovTeleV) : null,
+            fovEffTeleD: (isFlatPort && fovTeleD !== null) ? fovEffective(fovTeleD) : null,
             isFlatPort,
             mfdWide,
             mfdTele,
@@ -850,14 +855,18 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                                     {opticalSummary.isPrime ? `${opticalSummary.fTele} mm` : `Wide  ${opticalSummary.fWide} mm`}
                                                                 </span>
                                                                 <span className="text-sm font-medium text-gray-700 tabular-nums">
-                                                                    {opticalSummary.fovWideH.toFixed(1)}° × {opticalSummary.fovWideV?.toFixed(1) ?? '—'}°
+                                                                    <abbr title="Horizontal field of view" className="no-underline text-gray-400 text-xs">H</abbr> {opticalSummary.fovWideH.toFixed(1)}°{' '}
+                                                                    <abbr title="Vertical field of view" className="no-underline text-gray-400 text-xs">V</abbr> {opticalSummary.fovWideV?.toFixed(1) ?? '—'}°{' '}
+                                                                    <abbr title="Diagonal field of view" className="no-underline text-gray-400 text-xs">D</abbr> {opticalSummary.fovWideD?.toFixed(1) ?? '—'}°
                                                                 </span>
                                                             </div>
                                                             {!opticalSummary.isPrime && opticalSummary.fovTeleH !== null && (
                                                                 <div className="flex items-center justify-between">
                                                                     <span className="text-xs text-gray-400">Tele  {opticalSummary.fTele} mm</span>
                                                                     <span className="text-sm font-medium text-gray-700 tabular-nums">
-                                                                        {opticalSummary.fovTeleH.toFixed(1)}° × {opticalSummary.fovTeleV?.toFixed(1) ?? '—'}°
+                                                                        <abbr title="Horizontal field of view" className="no-underline text-gray-400 text-xs">H</abbr> {opticalSummary.fovTeleH.toFixed(1)}°{' '}
+                                                                        <abbr title="Vertical field of view" className="no-underline text-gray-400 text-xs">V</abbr> {opticalSummary.fovTeleV?.toFixed(1) ?? '—'}°{' '}
+                                                                        <abbr title="Diagonal field of view" className="no-underline text-gray-400 text-xs">D</abbr> {opticalSummary.fovTeleD?.toFixed(1) ?? '—'}°
                                                                     </span>
                                                                 </div>
                                                             )}
@@ -882,14 +891,18 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                                         {opticalSummary.isPrime ? `${opticalSummary.fTele} mm` : `Wide  ${opticalSummary.fWide} mm`}
                                                                     </span>
                                                                     <span className="text-sm font-medium text-cyan-700 tabular-nums">
-                                                                        {opticalSummary.fovEffWideH.toFixed(1)}° × {opticalSummary.fovEffWideV?.toFixed(1) ?? '—'}°
+                                                                        <abbr title="Horizontal field of view" className="no-underline text-cyan-400 text-xs">H</abbr> {opticalSummary.fovEffWideH.toFixed(1)}°{' '}
+                                                                        <abbr title="Vertical field of view" className="no-underline text-cyan-400 text-xs">V</abbr> {opticalSummary.fovEffWideV?.toFixed(1) ?? '—'}°{' '}
+                                                                        <abbr title="Diagonal field of view" className="no-underline text-cyan-400 text-xs">D</abbr> {opticalSummary.fovEffWideD?.toFixed(1) ?? '—'}°
                                                                     </span>
                                                                 </div>
                                                                 {!opticalSummary.isPrime && opticalSummary.fovEffTeleH !== null && (
                                                                     <div className="flex items-center justify-between">
                                                                         <span className="text-xs text-gray-400">Tele  {opticalSummary.fTele} mm</span>
                                                                         <span className="text-sm font-medium text-cyan-700 tabular-nums">
-                                                                            {opticalSummary.fovEffTeleH.toFixed(1)}° × {opticalSummary.fovEffTeleV?.toFixed(1) ?? '—'}°
+                                                                            <abbr title="Horizontal field of view" className="no-underline text-cyan-400 text-xs">H</abbr> {opticalSummary.fovEffTeleH.toFixed(1)}°{' '}
+                                                                            <abbr title="Vertical field of view" className="no-underline text-cyan-400 text-xs">V</abbr> {opticalSummary.fovEffTeleV?.toFixed(1) ?? '—'}°{' '}
+                                                                            <abbr title="Diagonal field of view" className="no-underline text-cyan-400 text-xs">D</abbr> {opticalSummary.fovEffTeleD?.toFixed(1) ?? '—'}°
                                                                         </span>
                                                                     </div>
                                                                 )}

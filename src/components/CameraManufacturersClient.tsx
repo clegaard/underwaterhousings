@@ -24,17 +24,11 @@ export default function CameraManufacturersClient({ manufacturers: initial, isSu
     const [manufacturers, setManufacturers] = useState(initial)
 
     // Modal state
-    const [modal, setModal] = useState<'add' | 'edit' | 'delete' | null>(null)
+    const [modal, setModal] = useState<'edit' | 'delete' | null>(null)
     const [target, setTarget] = useState<Manufacturer | null>(null)
     const [nameInput, setNameInput] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-
-    function openAdd() {
-        setNameInput('')
-        setError(null)
-        setModal('add')
-    }
 
     function openEdit(m: Manufacturer) {
         setTarget(m)
@@ -53,27 +47,6 @@ export default function CameraManufacturersClient({ manufacturers: initial, isSu
         setModal(null)
         setTarget(null)
         setError(null)
-    }
-
-    async function handleAdd() {
-        if (!nameInput.trim()) return
-        setLoading(true)
-        setError(null)
-        try {
-            const res = await fetch('/api/admin/camera-manufacturers', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: nameInput.trim() }),
-            })
-            const data = await res.json()
-            if (!res.ok) { setError(data.error ?? 'Failed to create'); return }
-            router.refresh()
-            close()
-        } catch {
-            setError('Network error')
-        } finally {
-            setLoading(false)
-        }
     }
 
     async function handleEdit() {
@@ -122,17 +95,6 @@ export default function CameraManufacturersClient({ manufacturers: initial, isSu
             <div className="mb-6 flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-gray-900">All Camera Manufacturers</h2>
                 <div className="flex items-center gap-3">
-                    {isSuperuser && (
-                        <button
-                            onClick={openAdd}
-                            className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            Add brand
-                        </button>
-                    )}
                     <Link href="/" className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
                         ← Back to Search
                     </Link>
@@ -259,23 +221,21 @@ export default function CameraManufacturersClient({ manufacturers: initial, isSu
                 </div>
             )}
 
-            {/* Add / Edit modal */}
-            {(modal === 'add' || modal === 'edit') && (
+            {/* Edit modal */}
+            {modal === 'edit' && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
                     onClick={(e) => { if (e.target === e.currentTarget) close() }}
                 >
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                            {modal === 'add' ? 'Add camera brand' : 'Edit camera brand'}
-                        </h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit camera brand</h3>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                         <input
                             autoFocus
                             type="text"
                             value={nameInput}
                             onChange={e => setNameInput(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') modal === 'add' ? handleAdd() : handleEdit() }}
+                            onKeyDown={e => { if (e.key === 'Enter') handleEdit() }}
                             placeholder="e.g. Canon"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
@@ -283,11 +243,11 @@ export default function CameraManufacturersClient({ manufacturers: initial, isSu
                         <div className="flex justify-end gap-3">
                             <button onClick={close} className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900">Cancel</button>
                             <button
-                                onClick={modal === 'add' ? handleAdd : handleEdit}
+                                onClick={handleEdit}
                                 disabled={loading || !nameInput.trim()}
                                 className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                             >
-                                {loading ? 'Saving…' : modal === 'add' ? 'Add' : 'Save'}
+                                {loading ? 'Saving…' : 'Save'}
                             </button>
                         </div>
                     </div>

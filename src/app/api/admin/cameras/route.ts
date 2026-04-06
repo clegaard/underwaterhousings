@@ -45,7 +45,10 @@ export async function POST(request: NextRequest) {
     if (denied) return denied
     try {
         const body = await request.json()
-        const { name, manufacturerId, interchangeableLens, canBeUsedWithoutAHousing, cameraMountId, productPhotos, exifId } = body
+        const { name, description, manufacturerId, interchangeableLens, canBeUsedWithoutAHousing, cameraMountId, productPhotos, exifId,
+            priceAmount, priceCurrency, sensorWidth, sensorHeight, megapixels,
+            isZoomLens,
+            focalLengthTele, focalLengthWide, minimumFocusDistanceTele, minimumFocusDistanceWide, maximumMagnification, depthRating } = body
 
         if (!name || !manufacturerId) {
             return NextResponse.json(
@@ -85,12 +88,25 @@ export async function POST(request: NextRequest) {
             data: {
                 name,
                 slug,
+                description: description?.trim() || null,
                 manufacturerId,
                 interchangeableLens: interchangeableLens ?? true,
                 canBeUsedWithoutAHousing: canBeUsedWithoutAHousing ?? false,
                 cameraMountId: interchangeableLens && cameraMountId ? cameraMountId : null,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 exifId: exifId?.trim() || null,
+                priceAmount: priceAmount ?? null,
+                priceCurrency: priceCurrency ?? 'USD',
+                sensorWidth: sensorWidth ?? null,
+                sensorHeight: sensorHeight ?? null,
+                megapixels: megapixels ?? null,
+                isZoomLens: isZoomLens ?? false,
+                focalLengthTele: focalLengthTele ?? null,
+                focalLengthWide: focalLengthWide ?? null,
+                minimumFocusDistanceTele: minimumFocusDistanceTele ?? null,
+                minimumFocusDistanceWide: minimumFocusDistanceWide ?? null,
+                maximumMagnification: maximumMagnification ?? null,
+                depthRating: depthRating ?? null,
             },
             include: {
                 brand: true
@@ -123,7 +139,10 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { name, manufacturerId, interchangeableLens, canBeUsedWithoutAHousing, cameraMountId, productPhotos, exifId } = body
+        const { name, description, manufacturerId, interchangeableLens, canBeUsedWithoutAHousing, cameraMountId, productPhotos, exifId,
+            priceAmount, priceCurrency, sensorWidth, sensorHeight, megapixels,
+            isZoomLens,
+            focalLengthTele, focalLengthWide, minimumFocusDistanceTele, minimumFocusDistanceWide, maximumMagnification, depthRating } = body
 
         if (!name || !manufacturerId) {
             return NextResponse.json(
@@ -167,12 +186,25 @@ export async function PUT(request: NextRequest) {
             data: {
                 name,
                 slug,
+                description: description?.trim() || null,
                 manufacturerId,
                 interchangeableLens: interchangeableLens ?? true,
                 canBeUsedWithoutAHousing: canBeUsedWithoutAHousing ?? false,
                 cameraMountId: interchangeableLens && cameraMountId ? cameraMountId : null,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 exifId: exifId?.trim() || null,
+                priceAmount: priceAmount ?? null,
+                priceCurrency: priceCurrency ?? 'USD',
+                sensorWidth: sensorWidth ?? null,
+                sensorHeight: sensorHeight ?? null,
+                megapixels: megapixels ?? null,
+                isZoomLens: isZoomLens ?? false,
+                focalLengthTele: focalLengthTele ?? null,
+                focalLengthWide: focalLengthWide ?? null,
+                minimumFocusDistanceTele: minimumFocusDistanceTele ?? null,
+                minimumFocusDistanceWide: minimumFocusDistanceWide ?? null,
+                maximumMagnification: maximumMagnification ?? null,
+                depthRating: depthRating ?? null,
             },
             include: {
                 brand: true

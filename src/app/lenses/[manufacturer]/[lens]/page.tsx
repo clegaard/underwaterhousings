@@ -91,6 +91,12 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                                         {lens.cameraMount.name} mount
                                     </span>
                                 )}
+                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${lens.isZoomLens
+                                        ? 'bg-amber-50 text-amber-700'
+                                        : 'bg-emerald-50 text-emerald-700'
+                                    }`}>
+                                    {lens.isZoomLens ? 'Zoom' : 'Prime'}
+                                </span>
                             </div>
                         </div>
                         {price !== null && (
@@ -120,48 +126,90 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                     </div>
 
                     {/* Specs */}
-                    <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col gap-4">
+                    <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col gap-5">
                         <h2 className="text-lg font-semibold text-gray-900">Specifications</h2>
-                        <dl className="space-y-3 text-sm">
-                            {lens.manufacturer && (
+
+                        {/* Optics */}
+                        <div>
+                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">Optics</p>
+                            <dl className="space-y-2.5 text-sm">
                                 <div className="flex justify-between gap-4">
-                                    <dt className="text-gray-500">Manufacturer</dt>
-                                    <dd className="font-medium text-gray-900 text-right">{lens.manufacturer.name}</dd>
-                                </div>
-                            )}
-                            {lens.cameraMount && (
-                                <div className="flex justify-between gap-4">
-                                    <dt className="text-gray-500">Mount</dt>
-                                    <dd className="font-medium text-gray-900 text-right">{lens.cameraMount.name}</dd>
-                                </div>
-                            )}
-                            <div className="flex justify-between gap-4">
-                                <dt className="text-gray-500">Focal length</dt>
-                                <dd className="font-medium text-gray-900 text-right">
-                                    {lens.focalLengthWide != null ? `${lens.focalLengthWide}–${lens.focalLengthTele} mm` : `${lens.focalLengthTele} mm`}
-                                </dd>
-                            </div>
-                            {(lens.minimumFocusDistanceWide !== null && lens.minimumFocusDistanceWide !== undefined) && (
-                                <div className="flex justify-between gap-4">
-                                    <dt className="text-gray-500">Min. focus distance</dt>
+                                    <dt className="text-gray-500">Focal length</dt>
                                     <dd className="font-medium text-gray-900 text-right">
-                                        {lens.minimumFocusDistanceWide} m
-                                        {lens.minimumFocusDistanceTele !== null &&
-                                            lens.minimumFocusDistanceTele !== undefined &&
-                                            lens.minimumFocusDistanceTele !== lens.minimumFocusDistanceWide &&
-                                            ` – ${lens.minimumFocusDistanceTele} m`}
+                                        {lens.isZoomLens && lens.focalLengthWide != null
+                                            ? `${lens.focalLengthWide}–${lens.focalLengthTele} mm`
+                                            : `${lens.focalLengthTele} mm`}
                                     </dd>
                                 </div>
-                            )}
-                            {price !== null && (
-                                <div className="flex justify-between gap-4 pt-2 border-t border-gray-100">
-                                    <dt className="text-gray-500">Price</dt>
-                                    <dd className="font-semibold text-green-600 text-right">
-                                        ${price.toLocaleString()} <span className="text-xs font-normal text-gray-400">{lens.priceCurrency ?? 'USD'}</span>
-                                    </dd>
-                                </div>
-                            )}
-                        </dl>
+                                {lens.maximumMagnification != null && (
+                                    <div className="flex justify-between gap-4">
+                                        <dt className="text-gray-500">Max magnification</dt>
+                                        <dd className="font-medium text-gray-900 text-right">
+                                            {lens.maximumMagnification.toFixed(2)}×
+                                        </dd>
+                                    </div>
+                                )}
+                            </dl>
+                        </div>
+
+                        {/* Focus */}
+                        {(lens.minimumFocusDistanceWide != null || lens.minimumFocusDistanceTele != null) && (
+                            <div className="border-t border-gray-100 pt-4">
+                                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">Focus</p>
+                                <dl className="space-y-2.5 text-sm">
+                                    {lens.isZoomLens ? (
+                                        <>
+                                            {lens.minimumFocusDistanceWide != null && (
+                                                <div className="flex justify-between gap-4">
+                                                    <dt className="text-gray-500">Min. focus — wide</dt>
+                                                    <dd className="font-medium text-gray-900 text-right">{lens.minimumFocusDistanceWide} m</dd>
+                                                </div>
+                                            )}
+                                            {lens.minimumFocusDistanceTele != null && (
+                                                <div className="flex justify-between gap-4">
+                                                    <dt className="text-gray-500">Min. focus — tele</dt>
+                                                    <dd className="font-medium text-gray-900 text-right">{lens.minimumFocusDistanceTele} m</dd>
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="flex justify-between gap-4">
+                                            <dt className="text-gray-500">Min. focus distance</dt>
+                                            <dd className="font-medium text-gray-900 text-right">
+                                                {(lens.minimumFocusDistanceWide ?? lens.minimumFocusDistanceTele)} m
+                                            </dd>
+                                        </div>
+                                    )}
+                                </dl>
+                            </div>
+                        )}
+
+                        {/* Technical */}
+                        <div className="border-t border-gray-100 pt-4">
+                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">Technical</p>
+                            <dl className="space-y-2.5 text-sm">
+                                {lens.cameraMount && (
+                                    <div className="flex justify-between gap-4">
+                                        <dt className="text-gray-500">Mount</dt>
+                                        <dd className="font-medium text-gray-900 text-right">{lens.cameraMount.name}</dd>
+                                    </div>
+                                )}
+                                {lens.exifId && (
+                                    <div className="flex justify-between gap-4">
+                                        <dt className="text-gray-500">EXIF lens ID</dt>
+                                        <dd className="font-medium text-gray-900 text-right font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{lens.exifId}</dd>
+                                    </div>
+                                )}
+                                {price !== null && (
+                                    <div className="flex justify-between gap-4">
+                                        <dt className="text-gray-500">Price</dt>
+                                        <dd className="font-semibold text-green-600 text-right">
+                                            ${price.toLocaleString()} <span className="text-xs font-normal text-gray-400">{lens.priceCurrency ?? 'USD'}</span>
+                                        </dd>
+                                    </div>
+                                )}
+                            </dl>
+                        </div>
 
                         <div className="mt-auto pt-4 border-t border-gray-100 space-y-2">
                             <Link

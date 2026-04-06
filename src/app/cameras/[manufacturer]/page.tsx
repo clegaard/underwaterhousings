@@ -56,6 +56,7 @@ export default async function CameraManufacturerPage({ params }: CameraManufactu
         id: camera.id,
         name: camera.name,
         slug: camera.slug,
+        description: camera.description ?? null,
         housings: camera.housings,
         cameraMount: camera.cameraMount,
         interchangeableLens: camera.interchangeableLens,
@@ -63,6 +64,18 @@ export default async function CameraManufacturerPage({ params }: CameraManufactu
         exifId: camera.exifId ?? null,
         productPhotos: camera.productPhotos,
         imageInfo: getCameraImagePathWithFallback(camera.productPhotos),
+        priceAmount: camera.priceAmount ? camera.priceAmount.toString() : null,
+        priceCurrency: camera.priceCurrency ?? null,
+        sensorWidth: camera.sensorWidth ?? null,
+        sensorHeight: camera.sensorHeight ?? null,
+        megapixels: camera.megapixels ?? null,
+        isZoomLens: camera.isZoomLens,
+        focalLengthTele: camera.focalLengthTele ?? null,
+        focalLengthWide: camera.focalLengthWide ?? null,
+        minimumFocusDistanceTele: camera.minimumFocusDistanceTele ?? null,
+        minimumFocusDistanceWide: camera.minimumFocusDistanceWide ?? null,
+        maximumMagnification: camera.maximumMagnification ?? null,
+        depthRating: camera.depthRating ?? null,
     }))
 
     return (

@@ -75,6 +75,7 @@ model Camera {
 
     // ================ FIXED LENS FIELDS ================
     interchangeableLens      Boolean @default(true)
+    isZoomLens               Boolean @default(false) // True if it's a zoom lens, false if it's a prime lens
     focalLengthTele          Int? // Focal length at the tele end in mm (prime lenses: sole focal length)
     focalLengthWide          Int? // Focal length at the wide end in mm; null means prime lens
     minimumFocusDistanceTele Float? // Minimum focus distance at the tele end in metres
@@ -136,6 +137,7 @@ model Lens {
     description              String?
     minimumFocusDistanceTele Float? // Minimum focus distance at the tele end in metres
     minimumFocusDistanceWide Float? // Minimum focus distance at the wide end in metres
+    isZoomLens               Boolean        @default(false) // True if it's a zoom lens, false if it's a prime lens
     focalLengthTele          Int // Focal length at the tele end in mm (prime lenses: sole focal length)
     focalLengthWide          Int? // Focal length at the wide end in mm; null means prime lens
     maximumMagnification     Float? // Maximum reproduction ratio e.g. 0.30 for 0.30x; scraped from manufacturer specs

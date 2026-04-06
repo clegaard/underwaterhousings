@@ -10,6 +10,7 @@ interface Camera {
     id: number
     name: string
     slug: string
+    description: string | null
     housings: { id: number }[]
     cameraMount: { id: number; name: string; slug: string } | null
     interchangeableLens: boolean
@@ -17,6 +18,22 @@ interface Camera {
     exifId: string | null
     productPhotos: string[]
     imageInfo: { src: string; fallback: string }
+    // pricing
+    priceAmount: string | null
+    priceCurrency: string | null
+    // sensor
+    sensorWidth: number | null
+    sensorHeight: number | null
+    megapixels: number | null
+    // fixed-lens fields
+    isZoomLens: boolean
+    focalLengthTele: number | null
+    focalLengthWide: number | null
+    minimumFocusDistanceTele: number | null
+    minimumFocusDistanceWide: number | null
+    maximumMagnification: number | null
+    // waterproof-without-housing fields
+    depthRating: number | null
 }
 
 interface Manufacturer {
@@ -52,10 +69,27 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
 
     // Shared form state (add + edit)
     const [nameInput, setNameInput] = useState('')
+    const [descriptionInput, setDescriptionInput] = useState('')
     const [interchangeableLens, setInterchangeableLens] = useState(true)
     const [canBeUsedWithoutAHousing, setCanBeUsedWithoutAHousing] = useState(false)
     const [mountId, setMountId] = useState<number | ''>('')
     const [exifIdInput, setExifIdInput] = useState('')
+    // pricing
+    const [priceAmount, setPriceAmount] = useState<number | ''>('')
+    const [priceCurrency, setPriceCurrency] = useState('USD')
+    // sensor
+    const [sensorWidth, setSensorWidth] = useState<number | ''>('')
+    const [sensorHeight, setSensorHeight] = useState<number | ''>('')
+    const [megapixels, setMegapixels] = useState<number | ''>('')
+    // fixed-lens fields
+    const [isZoomLens, setIsZoomLens] = useState(false)
+    const [focalLengthTele, setFocalLengthTele] = useState<number | ''>('')
+    const [focalLengthWide, setFocalLengthWide] = useState<number | ''>('')
+    const [minFocusTele, setMinFocusTele] = useState<number | ''>('')
+    const [minFocusWide, setMinFocusWide] = useState<number | ''>('')
+    const [maxMagnification, setMaxMagnification] = useState<number | ''>('')
+    // waterproof depth
+    const [depthRating, setDepthRating] = useState<number | ''>('')
     const [photos, setPhotos] = useState<PhotoSlot[]>([])
     const [dragPhotoIdx, setDragPhotoIdx] = useState<number | null>(null)
 
@@ -64,10 +98,23 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
 
     function resetForm() {
         setNameInput('')
+        setDescriptionInput('')
         setInterchangeableLens(true)
         setCanBeUsedWithoutAHousing(false)
         setMountId('')
         setExifIdInput('')
+        setPriceAmount('')
+        setPriceCurrency('USD')
+        setSensorWidth('')
+        setSensorHeight('')
+        setMegapixels('')
+        setIsZoomLens(false)
+        setFocalLengthTele('')
+        setFocalLengthWide('')
+        setMinFocusTele('')
+        setMinFocusWide('')
+        setMaxMagnification('')
+        setDepthRating('')
         setPhotos(prev => {
             prev.forEach(p => { if (p.kind === 'new') URL.revokeObjectURL(p.previewUrl) })
             return []
@@ -84,10 +131,23 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
     function openEdit(c: Camera) {
         setTarget(c)
         setNameInput(c.name)
+        setDescriptionInput(c.description ?? '')
         setInterchangeableLens(c.interchangeableLens)
         setCanBeUsedWithoutAHousing(c.canBeUsedWithoutAHousing)
         setMountId(c.cameraMount?.id ?? '')
         setExifIdInput(c.exifId ?? '')
+        setPriceAmount(c.priceAmount !== null ? parseFloat(c.priceAmount) : '')
+        setPriceCurrency(c.priceCurrency ?? 'USD')
+        setSensorWidth(c.sensorWidth ?? '')
+        setSensorHeight(c.sensorHeight ?? '')
+        setMegapixels(c.megapixels ?? '')
+        setIsZoomLens(c.isZoomLens)
+        setFocalLengthTele(c.focalLengthTele ?? '')
+        setFocalLengthWide(c.focalLengthWide ?? '')
+        setMinFocusTele(c.minimumFocusDistanceTele ?? '')
+        setMinFocusWide(c.minimumFocusDistanceWide ?? '')
+        setMaxMagnification(c.maximumMagnification ?? '')
+        setDepthRating(c.depthRating ?? '')
         setPhotos(c.productPhotos.map(path => ({ kind: 'existing' as const, path })))
         setDragPhotoIdx(null)
         setError(null)
@@ -211,12 +271,25 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: nameInput.trim(),
+                    description: descriptionInput.trim() || null,
                     manufacturerId: manufacturer.id,
                     interchangeableLens,
                     canBeUsedWithoutAHousing,
                     cameraMountId: interchangeableLens && mountId !== '' ? mountId : null,
                     productPhotos,
                     exifId: exifIdInput.trim() || null,
+                    priceAmount: priceAmount !== '' ? priceAmount : null,
+                    priceCurrency: priceCurrency || 'USD',
+                    sensorWidth: sensorWidth !== '' ? sensorWidth : null,
+                    sensorHeight: sensorHeight !== '' ? sensorHeight : null,
+                    megapixels: megapixels !== '' ? megapixels : null,
+                    isZoomLens: !interchangeableLens && isZoomLens,
+                    focalLengthTele: !interchangeableLens && focalLengthTele !== '' ? focalLengthTele : null,
+                    focalLengthWide: !interchangeableLens && isZoomLens && focalLengthWide !== '' ? focalLengthWide : null,
+                    minimumFocusDistanceTele: !interchangeableLens && minFocusTele !== '' ? minFocusTele : null,
+                    minimumFocusDistanceWide: !interchangeableLens && minFocusWide !== '' ? minFocusWide : null,
+                    maximumMagnification: !interchangeableLens && maxMagnification !== '' ? maxMagnification : null,
+                    depthRating: canBeUsedWithoutAHousing && depthRating !== '' ? depthRating : null,
                 }),
             })
             const data = await res.json()
@@ -225,6 +298,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
             const newCamera: Camera = {
                 id: data.id,
                 name: nameInput.trim(),
+                description: descriptionInput.trim() || null,
                 slug: data.slug,
                 housings: [],
                 interchangeableLens,
@@ -233,6 +307,18 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                 exifId: exifIdInput.trim() || null,
                 productPhotos,
                 imageInfo: getCameraImagePathWithFallback(productPhotos),
+                priceAmount: priceAmount !== '' ? String(priceAmount) : null,
+                priceCurrency: priceCurrency || 'USD',
+                sensorWidth: sensorWidth !== '' ? sensorWidth : null,
+                sensorHeight: sensorHeight !== '' ? sensorHeight : null,
+                megapixels: megapixels !== '' ? megapixels : null,
+                isZoomLens: !interchangeableLens && isZoomLens,
+                focalLengthTele: !interchangeableLens && focalLengthTele !== '' ? focalLengthTele : null,
+                focalLengthWide: !interchangeableLens && isZoomLens && focalLengthWide !== '' ? focalLengthWide : null,
+                minimumFocusDistanceTele: !interchangeableLens && minFocusTele !== '' ? minFocusTele : null,
+                minimumFocusDistanceWide: !interchangeableLens && minFocusWide !== '' ? minFocusWide : null,
+                maximumMagnification: !interchangeableLens && maxMagnification !== '' ? maxMagnification : null,
+                depthRating: canBeUsedWithoutAHousing && depthRating !== '' ? depthRating : null,
             }
             setCameras(prev => [...prev, newCamera])
             router.refresh()
@@ -255,12 +341,25 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: nameInput.trim(),
+                    description: descriptionInput.trim() || null,
                     manufacturerId: manufacturer.id,
                     interchangeableLens,
                     canBeUsedWithoutAHousing,
                     cameraMountId: interchangeableLens && mountId !== '' ? mountId : null,
                     productPhotos,
                     exifId: exifIdInput.trim() || null,
+                    priceAmount: priceAmount !== '' ? priceAmount : null,
+                    priceCurrency: priceCurrency || 'USD',
+                    sensorWidth: sensorWidth !== '' ? sensorWidth : null,
+                    sensorHeight: sensorHeight !== '' ? sensorHeight : null,
+                    megapixels: megapixels !== '' ? megapixels : null,
+                    isZoomLens: !interchangeableLens && isZoomLens,
+                    focalLengthTele: !interchangeableLens && focalLengthTele !== '' ? focalLengthTele : null,
+                    focalLengthWide: !interchangeableLens && isZoomLens && focalLengthWide !== '' ? focalLengthWide : null,
+                    minimumFocusDistanceTele: !interchangeableLens && minFocusTele !== '' ? minFocusTele : null,
+                    minimumFocusDistanceWide: !interchangeableLens && minFocusWide !== '' ? minFocusWide : null,
+                    maximumMagnification: !interchangeableLens && maxMagnification !== '' ? maxMagnification : null,
+                    depthRating: canBeUsedWithoutAHousing && depthRating !== '' ? depthRating : null,
                 }),
             })
             const data = await res.json()
@@ -269,12 +368,25 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
             setCameras(prev => prev.map(c => c.id !== target.id ? c : {
                 ...c,
                 name: nameInput.trim(),
+                description: descriptionInput.trim() || null,
                 slug: data.slug,
                 interchangeableLens,
                 canBeUsedWithoutAHousing,
                 cameraMount: interchangeableLens && resolvedMount ? resolvedMount : null,
                 productPhotos,
                 exifId: exifIdInput.trim() || null,
+                priceAmount: priceAmount !== '' ? String(priceAmount) : null,
+                priceCurrency: priceCurrency || 'USD',
+                sensorWidth: sensorWidth !== '' ? sensorWidth : null,
+                sensorHeight: sensorHeight !== '' ? sensorHeight : null,
+                megapixels: megapixels !== '' ? megapixels : null,
+                isZoomLens: !interchangeableLens && isZoomLens,
+                focalLengthTele: !interchangeableLens && focalLengthTele !== '' ? focalLengthTele : null,
+                focalLengthWide: !interchangeableLens && isZoomLens && focalLengthWide !== '' ? focalLengthWide : null,
+                minimumFocusDistanceTele: !interchangeableLens && minFocusTele !== '' ? minFocusTele : null,
+                minimumFocusDistanceWide: !interchangeableLens && minFocusWide !== '' ? minFocusWide : null,
+                maximumMagnification: !interchangeableLens && maxMagnification !== '' ? maxMagnification : null,
+                depthRating: canBeUsedWithoutAHousing && depthRating !== '' ? depthRating : null,
             }))
             router.refresh()
             close()
@@ -442,44 +554,273 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 
-                        {/* Interchangeable lens */}
-                        <label className="flex items-center gap-2.5 mb-3 cursor-pointer select-none">
-                            <input
-                                type="checkbox"
-                                checked={interchangeableLens}
-                                onChange={e => {
-                                    setInterchangeableLens(e.target.checked)
-                                    if (!e.target.checked) setMountId('')
-                                }}
-                                className="w-4 h-4 accent-blue-600"
-                            />
-                            <span className="text-sm font-medium text-gray-700">Interchangeable lens camera</span>
+                        {/* Description */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Description <span className="text-gray-400 font-normal">(optional)</span>
                         </label>
+                        <textarea
+                            value={descriptionInput}
+                            onChange={e => setDescriptionInput(e.target.value)}
+                            placeholder="Short description of the camera..."
+                            rows={2}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4 resize-none"
+                        />
+
+                        {/* Interchangeable lens */}
+                        <div className="border border-gray-200 rounded-lg p-3 mb-3">
+                            <p className="text-xs font-medium text-gray-700 mb-2">Lens type</p>
+                            <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
+                                <button
+                                    type="button"
+                                    onClick={() => { setInterchangeableLens(false); setMountId('') }}
+                                    className={`flex-1 py-1.5 transition-colors ${!interchangeableLens ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                                >
+                                    Fixed
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setInterchangeableLens(true)}
+                                    className={`flex-1 py-1.5 border-l border-gray-200 transition-colors ${interchangeableLens ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                                >
+                                    Interchangeable
+                                </button>
+                            </div>
+                            {interchangeableLens ? (
+                                <div className="mt-3">
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Camera mount</label>
+                                    <select
+                                        value={mountId}
+                                        onChange={e => setMountId(e.target.value ? parseInt(e.target.value) : '')}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                    >
+                                        <option value="">— None —</option>
+                                        {cameraMounts.map(m => (
+                                            <option key={m.id} value={m.id}>{m.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : (
+                                <div className="mt-3 bg-gray-50 rounded-lg p-3">
+                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Fixed lens optics</p>
+
+                                    {/* Prime / Zoom selector */}
+                                    <div className="flex mb-3 rounded-lg border border-gray-200 overflow-hidden text-xs font-medium">
+                                        <button
+                                            type="button"
+                                            onClick={() => { setIsZoomLens(false); setFocalLengthWide(''); setMinFocusWide('') }}
+                                            className={`flex-1 py-1.5 transition-colors ${!isZoomLens ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                                        >
+                                            Prime
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsZoomLens(true)}
+                                            className={`flex-1 py-1.5 border-l border-gray-200 transition-colors ${isZoomLens ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                                        >
+                                            Zoom
+                                        </button>
+                                    </div>
+
+                                    {/* Focal length(s) */}
+                                    {isZoomLens ? (
+                                        <div className="grid grid-cols-2 gap-3 mb-3">
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1">Focal length — wide (mm)</label>
+                                                <input
+                                                    type="number"
+                                                    min={0}
+                                                    step={1}
+                                                    value={focalLengthWide}
+                                                    onChange={e => setFocalLengthWide(e.target.value !== '' ? parseInt(e.target.value) : '')}
+                                                    placeholder="e.g. 25"
+                                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1">Focal length — tele (mm)</label>
+                                                <input
+                                                    type="number"
+                                                    min={0}
+                                                    step={1}
+                                                    value={focalLengthTele}
+                                                    onChange={e => setFocalLengthTele(e.target.value !== '' ? parseInt(e.target.value) : '')}
+                                                    placeholder="e.g. 100"
+                                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="mb-3">
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">Focal length (mm)</label>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                step={1}
+                                                value={focalLengthTele}
+                                                onChange={e => setFocalLengthTele(e.target.value !== '' ? parseInt(e.target.value) : '')}
+                                                placeholder="e.g. 90"
+                                                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Minimum focus distance */}
+                                    {isZoomLens ? (
+                                        <div className="grid grid-cols-2 gap-3 mb-3">
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1">Min. focus — wide (m)</label>
+                                                <input
+                                                    type="number"
+                                                    min={0}
+                                                    step={0.01}
+                                                    value={minFocusWide}
+                                                    onChange={e => setMinFocusWide(e.target.value !== '' ? parseFloat(e.target.value) : '')}
+                                                    placeholder="e.g. 0.10"
+                                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1">Min. focus — tele (m)</label>
+                                                <input
+                                                    type="number"
+                                                    min={0}
+                                                    step={0.01}
+                                                    value={minFocusTele}
+                                                    onChange={e => setMinFocusTele(e.target.value !== '' ? parseFloat(e.target.value) : '')}
+                                                    placeholder="e.g. 0.20"
+                                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="mb-3">
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">Min. focus distance (m)</label>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                step={0.01}
+                                                value={minFocusTele}
+                                                onChange={e => setMinFocusTele(e.target.value !== '' ? parseFloat(e.target.value) : '')}
+                                                placeholder="e.g. 0.28"
+                                                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                            />
+                                        </div>
+                                    )}
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-700 mb-1">Max magnification (e.g. 4.0 for 4×)</label>
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            step={0.01}
+                                            value={maxMagnification}
+                                            onChange={e => setMaxMagnification(e.target.value !== '' ? parseFloat(e.target.value) : '')}
+                                            placeholder="e.g. 4.0"
+                                            className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
                         {/* Waterproof without housing */}
-                        <label className="flex items-center gap-2.5 mb-4 cursor-pointer select-none">
-                            <input
-                                type="checkbox"
-                                checked={canBeUsedWithoutAHousing}
-                                onChange={e => setCanBeUsedWithoutAHousing(e.target.checked)}
-                                className="w-4 h-4 accent-blue-600"
-                            />
-                            <span className="text-sm font-medium text-gray-700">Camera is waterproof without a housing</span>
-                        </label>
+                        <div className="border border-gray-200 rounded-lg p-3 mb-3">
+                            <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                                <input
+                                    type="checkbox"
+                                    checked={canBeUsedWithoutAHousing}
+                                    onChange={e => setCanBeUsedWithoutAHousing(e.target.checked)}
+                                    className="w-4 h-4 accent-blue-600"
+                                />
+                                <span className="text-sm font-medium text-gray-700">Camera is waterproof without a housing</span>
+                            </label>
+                            {canBeUsedWithoutAHousing && (
+                                <div className="mt-3">
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Depth rating (m)</label>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        step={1}
+                                        value={depthRating}
+                                        onChange={e => setDepthRating(e.target.value !== '' ? parseInt(e.target.value) : '')}
+                                        placeholder="e.g. 15"
+                                        className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                    />
+                                </div>
+                            )}
+                        </div>
 
-                        {/* Camera mount */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Camera mount</label>
-                        <select
-                            value={mountId}
-                            onChange={e => setMountId(e.target.value ? parseInt(e.target.value) : '')}
-                            disabled={!interchangeableLens}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-                        >
-                            <option value="">— None —</option>
-                            {cameraMounts.map(m => (
-                                <option key={m.id} value={m.id}>{m.name}</option>
-                            ))}
-                        </select>
+                        {/* Sensor */}
+                        <div className="border border-gray-200 rounded-lg p-3 mb-3">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Sensor</p>
+                            <div className="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Sensor width (mm)</label>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        step={0.01}
+                                        value={sensorWidth}
+                                        onChange={e => setSensorWidth(e.target.value !== '' ? parseFloat(e.target.value) : '')}
+                                        placeholder="e.g. 35.9"
+                                        className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Sensor height (mm)</label>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        step={0.01}
+                                        value={sensorHeight}
+                                        onChange={e => setSensorHeight(e.target.value !== '' ? parseFloat(e.target.value) : '')}
+                                        placeholder="e.g. 24.0"
+                                        className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Megapixels</label>
+                                <input
+                                    type="number"
+                                    min={0}
+                                    step={0.1}
+                                    value={megapixels}
+                                    onChange={e => setMegapixels(e.target.value !== '' ? parseFloat(e.target.value) : '')}
+                                    placeholder="e.g. 61"
+                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Pricing */}
+                        <div className="border border-gray-200 rounded-lg p-3 mb-3">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Pricing</p>
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="col-span-2">
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Price</label>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        step={0.01}
+                                        value={priceAmount}
+                                        onChange={e => setPriceAmount(e.target.value !== '' ? parseFloat(e.target.value) : '')}
+                                        placeholder="e.g. 3499"
+                                        className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Currency</label>
+                                    <input
+                                        type="text"
+                                        maxLength={3}
+                                        value={priceCurrency}
+                                        onChange={e => setPriceCurrency(e.target.value.toUpperCase())}
+                                        placeholder="USD"
+                                        className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 uppercase"
+                                    />
+                                </div>
+                            </div>
+                        </div>
 
                         {/* EXIF ID */}
                         <label className="block text-sm font-medium text-gray-700 mb-1">EXIF camera ID</label>
