@@ -316,7 +316,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl w-full">
                         {lenses.map((lens) => (
                             <div key={lens.id} className="relative group/card">
-                                <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group overflow-hidden">
+                                <Link href={`/lenses/${manufacturer.slug}/${lens.slug}`} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group overflow-hidden">
                                     <div className="relative w-full h-48 bg-gray-100">
                                         <HousingImage
                                             src={lens.imageInfo.src}
@@ -351,7 +351,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                                             )}
                                         </div>
                                     </div>
-                                </div>
+                                </Link>
 
                                 {isSuperuser && (
                                     <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">

@@ -7,7 +7,9 @@ export async function GET(request: NextRequest) {
         const simple = searchParams.get('simple') === 'true'
 
         if (simple) {
+            // Only manufacturers with at least one lens
             const manufacturers = await prisma.manufacturer.findMany({
+                where: { lenses: { some: {} } },
                 select: { id: true, name: true, slug: true },
                 orderBy: { name: 'asc' },
             })

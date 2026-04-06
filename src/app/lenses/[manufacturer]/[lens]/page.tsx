@@ -135,10 +135,22 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                                     <dd className="font-medium text-gray-900 text-right">{lens.cameraMount.name}</dd>
                                 </div>
                             )}
-                            {lens.minimumFocusDistance !== null && lens.minimumFocusDistance !== undefined && (
+                            <div className="flex justify-between gap-4">
+                                <dt className="text-gray-500">Focal length</dt>
+                                <dd className="font-medium text-gray-900 text-right">
+                                    {lens.focalLengthWide != null ? `${lens.focalLengthWide}–${lens.focalLengthTele} mm` : `${lens.focalLengthTele} mm`}
+                                </dd>
+                            </div>
+                            {(lens.minimumFocusDistanceWide !== null && lens.minimumFocusDistanceWide !== undefined) && (
                                 <div className="flex justify-between gap-4">
                                     <dt className="text-gray-500">Min. focus distance</dt>
-                                    <dd className="font-medium text-gray-900 text-right">{lens.minimumFocusDistance} m</dd>
+                                    <dd className="font-medium text-gray-900 text-right">
+                                        {lens.minimumFocusDistanceWide} m
+                                        {lens.minimumFocusDistanceTele !== null &&
+                                            lens.minimumFocusDistanceTele !== undefined &&
+                                            lens.minimumFocusDistanceTele !== lens.minimumFocusDistanceWide &&
+                                            ` – ${lens.minimumFocusDistanceTele} m`}
+                                    </dd>
                                 </div>
                             )}
                             {price !== null && (

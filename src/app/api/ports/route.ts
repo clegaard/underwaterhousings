@@ -7,7 +7,9 @@ export async function GET(request: NextRequest) {
         const simple = searchParams.get('simple') === 'true'
 
         if (simple) {
+            // Only manufacturers with at least one port
             const manufacturers = await prisma.manufacturer.findMany({
+                where: { ports: { some: {} } },
                 select: { id: true, name: true, slug: true },
                 orderBy: { name: 'asc' },
             })

@@ -312,6 +312,54 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
     }, [selectedCamera?.id, selectedHousing?.id])
     // ────────────────────────────────────────────────────────────────────────
 
+    // ── Optical Summary ──────────────────────────────────────────────────────
+    const opticalSummary = useMemo(() => {
+        if (!selectedLens) return null
+
+        const sensorW: number | null = (selectedCamera as any)?.sensorWidth ?? null
+        const sensorH: number | null = (selectedCamera as any)?.sensorHeight ?? null
+        const isPrime: boolean = selectedLens.focalLengthWide == null
+        const fWide: number = isPrime ? selectedLens.focalLengthTele : selectedLens.focalLengthWide!
+        const fTele: number = selectedLens.focalLengthTele
+        const mfdWide: number | null = selectedLens.minimumFocusDistanceWide ?? null   // metres
+        const mfdTele: number | null = isPrime ? null : (selectedLens.minimumFocusDistanceTele ?? null)
+        const isFlatPort: boolean = !!(selectedPort as any)?.isFlatPort
+
+        // FOV in degrees for a given sensor dimension (mm) and focal length (mm)
+        const fovDeg = (sensorDim: number, fl: number): number =>
+            2 * Math.atan(sensorDim / (2 * fl)) * (180 / Math.PI)
+
+        // Effective FOV through a flat port — Snell's law, n_water = 1.33
+        // n_water × sin(θ_water) = n_air × sin(θ_air)  →  θ_water = asin(sin(θ_air) / 1.33)
+        const fovEffective = (fovAirDeg: number): number => {
+            const halfRad = (fovAirDeg / 2) * (Math.PI / 180)
+            const sinWater = Math.sin(halfRad) / 1.33
+            if (sinWater >= 1) return fovAirDeg
+            return 2 * Math.asin(sinWater) * (180 / Math.PI)
+        }
+
+        const fovWideH = sensorW ? fovDeg(sensorW, fWide) : null
+        const fovWideV = sensorH ? fovDeg(sensorH, fWide) : null
+        const fovTeleH = (!isPrime && sensorW) ? fovDeg(sensorW, fTele) : null
+        const fovTeleV = (!isPrime && sensorH) ? fovDeg(sensorH, fTele) : null
+
+        return {
+            isPrime,
+            fWide, fTele,
+            fovWideH, fovWideV,
+            fovTeleH, fovTeleV,
+            fovEffWideH: (isFlatPort && fovWideH !== null) ? fovEffective(fovWideH) : null,
+            fovEffWideV: (isFlatPort && fovWideV !== null) ? fovEffective(fovWideV) : null,
+            fovEffTeleH: (isFlatPort && fovTeleH !== null) ? fovEffective(fovTeleH) : null,
+            fovEffTeleV: (isFlatPort && fovTeleV !== null) ? fovEffective(fovTeleV) : null,
+            isFlatPort,
+            mfdWide,
+            mfdTele,
+            maximumMagnification: (selectedLens as any).maximumMagnification ?? null,
+        }
+    }, [selectedCamera, selectedLens, selectedPort])
+    // ────────────────────────────────────────────────────────────────────────
+
     const clearFilters = () => {
         router.replace('/', { scroll: false })
     }
@@ -756,11 +804,155 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
                                 </div>
                             </div>
+                            {/* ── Optical ─────────────────────────────────────────────── */}
+                            <div className="border-t border-gray-100 px-6 py-5">
+                                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Optical</h4>
 
-                            {/* Community Reviews */}
+                                {(selectedCamera as any)?.megapixels || opticalSummary ? (
+                                    <div className="space-y-3.5">
+
+                                        {/* ── Sensor info ── */}
+                                        {(selectedCamera as any)?.megapixels && (
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0" />
+                                                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-36 shrink-0">Megapixels</span>
+                                                </div>
+                                                <div className="flex items-baseline gap-2 text-right">
+                                                    <span className="text-sm font-medium text-gray-800 tabular-nums">{(selectedCamera as any).megapixels} MP</span>
+                                                    {(selectedCamera as any).sensorWidth && (selectedCamera as any).sensorHeight && (
+                                                        <span className="text-xs text-gray-400">
+                                                            {(selectedCamera as any).sensorWidth} × {(selectedCamera as any).sensorHeight} mm
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {opticalSummary && (
+                                            <>
+                                                {(selectedCamera as any)?.megapixels && <div className="border-t border-gray-50 my-0.5" />}
+
+                                                {/* ── FOV in air ── */}
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-1.5">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0" />
+                                                        <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Field of view (air)</span>
+                                                    </div>
+                                                    {opticalSummary.fovWideH !== null ? (
+                                                        <div className="ml-5 space-y-1">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-xs text-gray-400">
+                                                                    {opticalSummary.isPrime ? `${opticalSummary.fTele} mm` : `Wide  ${opticalSummary.fWide} mm`}
+                                                                </span>
+                                                                <span className="text-sm font-medium text-gray-700 tabular-nums">
+                                                                    {opticalSummary.fovWideH.toFixed(1)}° × {opticalSummary.fovWideV?.toFixed(1) ?? '—'}°
+                                                                </span>
+                                                            </div>
+                                                            {!opticalSummary.isPrime && opticalSummary.fovTeleH !== null && (
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-xs text-gray-400">Tele  {opticalSummary.fTele} mm</span>
+                                                                    <span className="text-sm font-medium text-gray-700 tabular-nums">
+                                                                        {opticalSummary.fovTeleH.toFixed(1)}° × {opticalSummary.fovTeleV?.toFixed(1) ?? '—'}°
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="ml-5 text-xs text-gray-300 italic">No sensor dimensions — add them to see FOV</p>
+                                                    )}
+                                                </div>
+
+                                                {/* ── FOV effective through flat port ── */}
+                                                {opticalSummary.isFlatPort && (
+                                                    <div>
+                                                        <div className="flex items-center gap-2 mb-1.5">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0" />
+                                                            <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Field of view (water)</span>
+                                                            <span className="text-xs text-gray-300">flat port • n=1.33</span>
+                                                        </div>
+                                                        {opticalSummary.fovEffWideH !== null ? (
+                                                            <div className="ml-5 space-y-1">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-xs text-gray-400">
+                                                                        {opticalSummary.isPrime ? `${opticalSummary.fTele} mm` : `Wide  ${opticalSummary.fWide} mm`}
+                                                                    </span>
+                                                                    <span className="text-sm font-medium text-cyan-700 tabular-nums">
+                                                                        {opticalSummary.fovEffWideH.toFixed(1)}° × {opticalSummary.fovEffWideV?.toFixed(1) ?? '—'}°
+                                                                    </span>
+                                                                </div>
+                                                                {!opticalSummary.isPrime && opticalSummary.fovEffTeleH !== null && (
+                                                                    <div className="flex items-center justify-between">
+                                                                        <span className="text-xs text-gray-400">Tele  {opticalSummary.fTele} mm</span>
+                                                                        <span className="text-sm font-medium text-cyan-700 tabular-nums">
+                                                                            {opticalSummary.fovEffTeleH.toFixed(1)}° × {opticalSummary.fovEffTeleV?.toFixed(1) ?? '—'}°
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <p className="ml-5 text-xs text-gray-300 italic">No sensor dimensions available</p>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {/* ── Min. focus distance ── */}
+                                                {opticalSummary.mfdWide !== null && (
+                                                    <div>
+                                                        <div className="flex items-center gap-2 mb-1.5">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0" />
+                                                            <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Min. focus distance</span>
+                                                        </div>
+                                                        <div className="ml-5 space-y-1">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-xs text-gray-400">
+                                                                    {opticalSummary.isPrime ? `${opticalSummary.fTele} mm` : `Wide  ${opticalSummary.fWide} mm`}
+                                                                </span>
+                                                                <span className="text-sm font-medium text-gray-700 tabular-nums">
+                                                                    {opticalSummary.mfdWide.toFixed(2)} m
+                                                                </span>
+                                                            </div>
+                                                            {!opticalSummary.isPrime && opticalSummary.mfdTele !== null && (
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-xs text-gray-400">Tele  {opticalSummary.fTele} mm</span>
+                                                                    <span className="text-sm font-medium text-gray-700 tabular-nums">
+                                                                        {opticalSummary.mfdTele.toFixed(2)} m
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* ── Max magnification ── */}
+                                                {opticalSummary.maximumMagnification !== null && (
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0" />
+                                                            <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-36 shrink-0">Max magnification</span>
+                                                        </div>
+                                                        <span className="text-sm font-medium text-gray-800 tabular-nums">
+                                                            {opticalSummary.maximumMagnification.toFixed(2)}×
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+
+                                        {!opticalSummary && (
+                                            <p className="text-xs text-gray-400 italic">Select a lens to see FOV, focus distance, and magnification</p>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <p className="text-xs text-gray-400 italic">Select a camera and lens to see optical details</p>
+                                )}
+                            </div>
+                            {/* ──────────────────────────────────────────────────────── */}
+
+                            {/* Reviews */}
                             <div className="border-t border-gray-100 px-6 py-5">
                                 <div className="flex items-center justify-between mb-3">
-                                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Community Reviews</h4>
+                                    <h3 className="text-sm font-bold text-gray-700">Reviews</h3>
                                     {isRigComplete && selectedCamera && (
                                         <Link
                                             href={(() => {
@@ -879,7 +1071,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                             {/* Sample Photos */}
                             <div className="border-t border-gray-100 px-6 py-5">
                                 <div className="flex items-center justify-between mb-3">
-                                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Sample Photos</h4>
+                                    <h3 className="text-sm font-bold text-gray-700">Sample Photos</h3>
                                     {galleryUrl && (
                                         <Link href={galleryUrl} className="text-xs text-blue-500 hover:text-blue-700 transition-colors">
                                             View all →
@@ -924,6 +1116,8 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                     </div>
                                 )}
                             </div>
+
+
                         </>
                     )}
 

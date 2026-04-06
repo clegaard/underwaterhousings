@@ -218,9 +218,13 @@ async function main() {
         data: {
             name: 'ZV-E1',
             slug: 'zv-e1',
+            description: 'A content-creator-focused full-frame mirrorless camera with excellent video autofocus, AI background defocus, and vlog-optimised processing in a compact and lightweight body.',
             manufacturerId: sony.id,
             cameraMountId: sonyE.id,
             priceAmount: 2198,
+            megapixels: 12.1,
+            sensorWidth: 35.6,
+            sensorHeight: 23.8,
         }
     })
 
@@ -228,9 +232,13 @@ async function main() {
         data: {
             name: 'A7 III',
             slug: 'a7-iii',
+            description: "Sony's benchmark full-frame mirrorless camera featuring a 24.2 MP BSI-CMOS sensor, 693 phase-detect AF points, 10 fps continuous shooting, and class-leading low-light performance.",
             manufacturerId: sony.id,
             cameraMountId: sonyE.id,
             priceAmount: 1998,
+            megapixels: 24.2,
+            sensorWidth: 35.6,
+            sensorHeight: 23.8,
         }
     })
 
@@ -238,10 +246,14 @@ async function main() {
         data: {
             name: 'A7R V',
             slug: 'ilce-7rm5',
+            description: "Sony's highest-resolution full-frame camera, packing a 61 MP sensor with a dedicated AI Processing Unit for advanced subject recognition and autofocus. Ideal for capturing fine underwater detail.",
             manufacturerId: sony.id,
             cameraMountId: sonyE.id,
             priceAmount: 3498,
-            productPhotos: ['/cameras/ilce-7m5-front.webp']
+            productPhotos: ['/cameras/ilce-7m5-front.webp'],
+            megapixels: 61.0,
+            sensorWidth: 35.9,
+            sensorHeight: 24.0,
         }
     })
 
@@ -250,10 +262,14 @@ async function main() {
             name: 'A7 IV',
             slug: 'ilce-7m4',
             exifId: 'ILCE-7M4',
+            description: "Sony's fourth-generation A7 full-frame hybrid featuring a 33 MP sensor, 4K 60p video, improved real-time tracking autofocus, and the BIONZ XR image processor.",
             manufacturerId: sony.id,
             cameraMountId: sonyE.id,
             priceAmount: 2498,
-            productPhotos: ['/cameras/ilce-7m4-front.webp']
+            productPhotos: ['/cameras/ilce-7m4-front.webp'],
+            megapixels: 33.0,
+            sensorWidth: 35.9,
+            sensorHeight: 24.0,
         }
     })
 
@@ -261,10 +277,14 @@ async function main() {
         data: {
             name: 'A6700',
             slug: 'a6700',
+            description: "Sony's flagship APS-C mirrorless camera featuring a 26.0 MP sensor, AI-based autofocus with subject recognition, and 4K 120p video in a compact, weather-sealed body.",
             manufacturerId: sony.id,
             cameraMountId: sonyE.id,
             priceAmount: 1398,
-            productPhotos: ['/cameras/a6700.webp']
+            productPhotos: ['/cameras/a6700.webp'],
+            megapixels: 26.0,
+            sensorWidth: 23.5,
+            sensorHeight: 15.6,
         }
     })
 
@@ -272,9 +292,13 @@ async function main() {
         data: {
             name: 'FX3',
             slug: 'fx3',
+            description: "Sony's full-frame cinema camera designed for run-and-gun filmmaking. Shares the A7S III sensor in a cinema-style body with improved thermal management for unlimited 4K 120p recording and professional audio inputs.",
             manufacturerId: sony.id,
             cameraMountId: sonyE.id,
             priceAmount: 3498,
+            megapixels: 12.1,
+            sensorWidth: 35.6,
+            sensorHeight: 23.8,
         }
     })
 
@@ -283,10 +307,14 @@ async function main() {
         data: {
             name: 'EOS R6 Mark II',
             slug: 'r6-ii',
+            description: "Canon's versatile full-frame mirrorless camera featuring a 24.2 MP sensor, Dual Pixel CMOS AF II with subject detection, 40 fps RAW burst shooting, and 4K 60p video.",
             manufacturerId: canon.id,
             cameraMountId: canonRF.id,
             priceAmount: 2499,
-            productPhotos: ['/cameras/r6-ii-front.webp']
+            megapixels: 24.2,
+            sensorWidth: 35.9,
+            sensorHeight: 23.9,
+            productPhotos: ['/cameras/eosr6ii.png'],
         }
     })
 
@@ -294,9 +322,14 @@ async function main() {
         data: {
             name: 'EOS R5',
             slug: 'r5',
+            description: "Canon's professional full-frame mirrorless flagship featuring a 45 MP sensor, in-body image stabilization up to 8 stops, Cinema RAW Light recording, and 8K RAW video capture.",
             manufacturerId: canon.id,
             cameraMountId: canonRF.id,
             priceAmount: 3799,
+            megapixels: 45.0,
+            sensorWidth: 36.0,
+            sensorHeight: 24.0,
+            productPhotos: ['/cameras/eosr5.png'],
         }
     })
 
@@ -305,7 +338,11 @@ async function main() {
         data: {
             name: 'OM-5 II',
             slug: 'om5-ii',
+            description: 'A compact weather-sealed Micro Four Thirds camera with a 20.4 MP sensor, 5-axis in-body stabilization, and IP53 weather resistance. An excellent compact option for underwater housing setups.',
             manufacturerId: omSystem.id,
+            megapixels: 20.4,
+            sensorWidth: 17.4,
+            sensorHeight: 13.0,
         }
     })
 
@@ -313,12 +350,16 @@ async function main() {
         data: {
             name: 'Tough TG-7',
             slug: 'tg-7',
+            description: 'An indestructible compact camera rated to 15 m depth straight out of the box, with built-in macro modes, a built-in ring light, and shock, freeze and crush resistance — the go-to camera for underwater reef snaps without a dedicated housing.',
             manufacturerId: omSystem.id,
             interchangeableLens: false,
             canBeUsedWithoutAHousing: true,
             depthRating: 15,
             priceAmount: 500,
-            productPhotos: ['/cameras/tg7-front.jpg']
+            productPhotos: ['/cameras/tg7-front.jpg'],
+            megapixels: 12.0,
+            sensorWidth: 6.17,
+            sensorHeight: 4.55,
         }
     })
 
@@ -327,9 +368,13 @@ async function main() {
         data: {
             name: 'Iphone 14 Pro',
             slug: 'iphone-14-pro',
+            description: "Apple's professional smartphone featuring a 48 MP main camera, LiDAR scanner, ProRAW and ProRes capture, and an Action Mode for stabilized video — compatible with a range of underwater touchscreen housings.",
             manufacturerId: apple.id,
             interchangeableLens: false,
-            productPhotos: ['/cameras/iphone-14-pro.jpg']
+            productPhotos: ['/cameras/iphone-14-pro.jpg'],
+            megapixels: 48.0,
+            sensorWidth: 9.8,
+            sensorHeight: 7.3,
         }
     })
 
@@ -338,12 +383,16 @@ async function main() {
         data: {
             name: 'SeaLife Micro 3.0',
             slug: 'sl550',
+            description: 'A purpose-built underwater digital camera rated to 60 m depth with no housing required. Features a 16 MP sensor, built-in diffused flash, and a sealed, diver-friendly control layout designed for hassle-free shooting underwater.',
             manufacturerId: sealife.id,
             interchangeableLens: false,
             canBeUsedWithoutAHousing: true,
             depthRating: 60,
             priceAmount: 600,
-            productPhotos: ['/cameras/sl550.webp']
+            productPhotos: ['/cameras/sl550.webp'],
+            megapixels: 16.0,
+            sensorWidth: 6.17,
+            sensorHeight: 4.55,
         }
     })
 
@@ -356,9 +405,14 @@ async function main() {
         data: {
             name: 'Sigma 24-70mm f/2.8 DG DN Art II',
             slug: 'a024-24-70-28-ii',
+            description: 'A versatile standard zoom designed for Sony E-mount mirrorless cameras. The Art II version delivers improved optical performance and faster autofocus making it a popular choice for underwater photography where flexibility and image quality matter.',
             cameraMountId: sonyE.id,
             manufacturerId: sigma.id,
             priceAmount: 899,
+            focalLengthWide: 24,
+            focalLengthTele: 70,
+            minimumFocusDistanceWide: 0.19,
+            maximumMagnification: 0.30,
             productPhotos: ['/lenses/a024-24-70-28-ii.png']
         }
     })
@@ -367,9 +421,13 @@ async function main() {
         data: {
             name: 'Sony FE 90mm f/2.8 Macro G OSS',
             slug: 'sel90m28g',
+            description: 'A dedicated macro lens offering 1:1 reproduction at its closest focusing distance. The built-in optical stabilization and fast autofocus make it an excellent choice for underwater macro photography, capturing nudibranchs, shrimp, and other small subjects with precision.',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
             priceAmount: 1098,
+            focalLengthTele: 90,
+            minimumFocusDistanceWide: 0.28,
+            maximumMagnification: 1.00,
             productPhotos: ['/lenses/sel90m28g.avif']
         }
     })
@@ -378,10 +436,16 @@ async function main() {
         data: {
             name: 'Sony FE 24-70mm f/2.8 GM II',
             slug: 'sel2470gmii',
+            description: "Sony's flagship standard zoom, known for corner-to-corner sharpness and a fast f/2.8 aperture throughout the zoom range. The second generation is notably lighter while improving autofocus speed, making it a go-to lens for underwater wide-angle and mid-range shots.",
             exifId: 'FE 24-70mm F2.8 GM II',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
             priceAmount: 2298,
+            focalLengthWide: 24,
+            focalLengthTele: 70,
+            minimumFocusDistanceWide: 0.21,
+            minimumFocusDistanceTele: 0.30,
+            maximumMagnification: 0.32,
             productPhotos: ['/lenses/sel2470gmii.jpg']
         }
     })
@@ -390,9 +454,16 @@ async function main() {
         data: {
             name: 'Sony FE 16-35mm f/2.8 GM',
             slug: 'sony-fe-16-35mm-f28-gm',
+            description: 'A professional wide-angle zoom engineered to G Master standards. The large f/2.8 aperture and ultra-wide range make it ideal for capturing expansive reef scenes, schooling fish, and ambient light diving conditions.',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
             priceAmount: 2198,
+            focalLengthWide: 16,
+            focalLengthTele: 35,
+            minimumFocusDistanceWide: 0.28,
+            maximumMagnification: 0.19,
+            productPhotos: ['/lenses/sel1635gm.avif']
+
         }
     })
 
@@ -400,9 +471,15 @@ async function main() {
         data: {
             name: 'Sony FE 16-35mm f/2.8 GM II',
             slug: 'sel1635gmii',
+            description: 'The second-generation G Master ultra-wide zoom is significantly lighter than its predecessor while delivering sharper images. Improved close-focus performance and faster autofocus make it an outstanding underwater wide-angle option.',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
             priceAmount: 2298,
+            focalLengthWide: 16,
+            focalLengthTele: 35,
+            minimumFocusDistanceWide: 0.22,
+            maximumMagnification: 0.22,
+            productPhotos: ['/lenses/sel1635gm2.webp']
         }
     })
 
@@ -410,9 +487,16 @@ async function main() {
         data: {
             name: 'Sony FE 70-200mm f/2.8 GM OSS II',
             slug: 'sel70200gmii',
+            description: 'A professional telephoto zoom for capturing distant subjects. While rarely used for close-range underwater photography, this lens excels for surface and shallow-water wildlife photography where reach and subject isolation are key.',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
             priceAmount: 2798,
+            focalLengthWide: 70,
+            focalLengthTele: 200,
+            minimumFocusDistanceWide: 0.40,
+            minimumFocusDistanceTele: 0.82,
+            maximumMagnification: 0.30,
+            productPhotos: ['/lenses/sel70200gm2.webp']
         }
     })
 
@@ -421,9 +505,14 @@ async function main() {
         data: {
             name: 'Sony FE 24-105mm f/4 G OSS',
             slug: 'sel24105',
+            description: 'A versatile all-in-one zoom covering a useful range from wide to short telephoto. The constant f/4 aperture, built-in optical stabilization, and compact size make it a popular travel and underwater companion for varied shooting conditions.',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
             priceAmount: 1298,
+            focalLengthWide: 24,
+            focalLengthTele: 105,
+            minimumFocusDistanceWide: 0.38,
+            maximumMagnification: 0.31,
             productPhotos: ['/lenses/sel24105.avif']
         }
     })
@@ -432,9 +521,14 @@ async function main() {
         data: {
             name: 'Sony FE 28-70mm f/3.5-5.6 OSS',
             slug: 'sel28702',
+            description: 'The standard kit zoom bundled with many Sony full-frame cameras. Provides a useful zoom range at a compact size and accessible price point, with built-in optical stabilization.',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
             priceAmount: 298,
+            focalLengthWide: 28,
+            focalLengthTele: 70,
+            minimumFocusDistanceWide: 0.30,
+            maximumMagnification: 0.21,
             productPhotos: ['/lenses/sel28702.avif']
         }
     })
@@ -443,9 +537,15 @@ async function main() {
         data: {
             name: 'Sony FE 16-35mm f/4 ZA OSS',
             slug: 'sony-fe-16-35mm-f4-za-oss',
+            description: 'A wide-angle zoom from Sony\'s premium Zeiss-licensed ZA series, offering Zeiss-grade sharpness in a compact form factor. Built-in optical stabilization and an ultra-wide field of view make it well-suited for underwater environmental shooting.',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
             priceAmount: 1348,
+            focalLengthWide: 16,
+            focalLengthTele: 35,
+            minimumFocusDistanceWide: 0.24,
+            maximumMagnification: 0.20,
+            productPhotos: ['/lenses/sel1635z.avif']
         }
     })
 
@@ -453,9 +553,15 @@ async function main() {
         data: {
             name: 'Sony FE 24-70mm f/4 ZA OSS',
             slug: 'sony-fe-24-70mm-f4-za-oss',
+            description: "Sony's compact standard zoom from the Zeiss-licensed ZA series. A popular choice for travel and all-round underwater photography thanks to its sharp Zeiss-grade optics, modest size, and built-in stabilization.",
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
             priceAmount: 998,
+            focalLengthWide: 24,
+            focalLengthTele: 70,
+            minimumFocusDistanceWide: 0.40,
+            maximumMagnification: 0.20,
+            productPhotos: ['/lenses/sel2470f4za.avif']
         }
     })
 
@@ -463,9 +569,15 @@ async function main() {
         data: {
             name: 'Sony FE 12-24mm f/4 G',
             slug: 'sony-fe-12-24mm-f4-g',
+            description: 'An ultra-wide zoom with an impressively wide field of view at the short end. Popular for close-up wide-angle underwater shots, environmental portraits of large marine life, and creative perspective work in confined spaces.',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
             priceAmount: 1698,
+            focalLengthWide: 12,
+            focalLengthTele: 24,
+            minimumFocusDistanceWide: 0.28,
+            maximumMagnification: 0.14,
+            productPhotos: ['/lenses/sel1224g.avif']
         }
     })
 
@@ -473,9 +585,15 @@ async function main() {
         data: {
             name: 'Sony FE 24-70mm f/2.8 GM',
             slug: 'sony-fe-24-70mm-f28-gm',
+            description: 'The original G Master standard zoom, a benchmark professional lens known for outstanding sharpness across the frame. A proven choice that pairs well with underwater housings for versatile wide-to-standard shooting.',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
             priceAmount: 1798,
+            focalLengthWide: 24,
+            focalLengthTele: 70,
+            minimumFocusDistanceWide: 0.38,
+            maximumMagnification: 0.24,
+            productPhotos: ['/lenses/sel2470gm.avif']
         }
     })
 
@@ -483,9 +601,15 @@ async function main() {
         data: {
             name: 'Sony FE PZ 16-35mm f/4 G',
             slug: 'sony-fe-pz-16-35mm-f4-g',
+            description: 'A power zoom wide-angle lens with a smooth motorized focal-length mechanism. Useful for underwater video work where seamless zooming is needed without the jerkiness of manual zooming.',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
             priceAmount: 1498,
+            focalLengthWide: 16,
+            focalLengthTele: 35,
+            minimumFocusDistanceWide: 0.30,
+            maximumMagnification: 0.20,
+            productPhotos: ['/lenses/sel1635z.avif']
         }
     })
 
@@ -493,9 +617,14 @@ async function main() {
         data: {
             name: 'Sony E PZ 18-105mm f/4 G OSS',
             slug: 'selp18105g',
+            description: 'A versatile APS-C power zoom covering wide to telephoto range. The motorized zoom and optical stabilization make this a go-to lens for underwater video on Sony APS-C cameras, offering smooth focal-length transitions without housing controls.',
             cameraMountId: sonyE.id,
             manufacturerId: sony.id,
             priceAmount: 598,
+            focalLengthWide: 18,
+            focalLengthTele: 105,
+            minimumFocusDistanceWide: 0.45,
+            maximumMagnification: 0.24,
             productPhotos: ['/lenses/selp18105g.avif']
         }
     })
@@ -504,9 +633,15 @@ async function main() {
         data: {
             name: 'Canon RF 15-35mm f/2.8L IS USM',
             slug: 'canon-rf-15-35mm-f28l-is-usm',
+            description: "Canon's professional wide-angle zoom for the RF system. The fast f/2.8 aperture and excellent optical performance make it an ideal companion for underwater wide-angle photography with Canon housing systems.",
             cameraMountId: canonRF.id,
             manufacturerId: canon.id,
             priceAmount: 2299,
+            focalLengthWide: 15,
+            focalLengthTele: 35,
+            minimumFocusDistanceWide: 0.28,
+            maximumMagnification: 0.21,
+            productPhotos: ['/lenses/rf1535.png']
         }
     })
 
@@ -514,9 +649,15 @@ async function main() {
         data: {
             name: 'Canon RF 24-70mm f/2.8L IS USM',
             slug: 'canon-rf-24-70mm-f28l-is-usm',
+            description: "Canon's premium L-series standard zoom for the RF mount. Delivers outstanding sharpness and reliable autofocus performance for underwater portrait and mid-range work.",
             cameraMountId: canonRF.id,
             manufacturerId: canon.id,
             priceAmount: 2299,
+            focalLengthWide: 24,
+            focalLengthTele: 70,
+            minimumFocusDistanceWide: 0.21,
+            maximumMagnification: 0.30,
+            productPhotos: ['/lenses/rf2470.png']
         }
     })
 
@@ -524,9 +665,14 @@ async function main() {
         data: {
             name: 'Canon RF 100mm f/2.8L Macro IS USM',
             slug: 'canon-rf-100mm-f28l-macro-is-usm',
+            description: 'A macro lens with a unique spherical aberration control ring allowing creative bokeh effects. Designed for 1.4:1 maximum magnification, making it one of the most capable macro lenses available for the RF system.',
             cameraMountId: canonRF.id,
             manufacturerId: canon.id,
             priceAmount: 1499,
+            focalLengthTele: 100,
+            minimumFocusDistanceWide: 0.26,
+            maximumMagnification: 1.40,
+            productPhotos: ['/lenses/rf100.png']
         }
     })
 
@@ -682,6 +828,7 @@ async function main() {
             priceAmount: 189,
             priceCurrency: 'USD',
             depthRating: 40,
+            isFlatPort: true,
             productPhotos: ['/ports/fl100.png']
         }
     })
@@ -697,6 +844,8 @@ async function main() {
             priceAmount: 229,
             priceCurrency: 'USD',
             depthRating: 40,
+            isFlatPort: false,
+            productPhotos: ['/ports/wa000s-a.png']
         }
     })
 
@@ -711,6 +860,8 @@ async function main() {
             priceAmount: 159,
             priceCurrency: 'USD',
             depthRating: 40,
+            isFlatPort: true,
+            productPhotos: ['/ports/fl1655.png']
         }
     })
 
@@ -726,6 +877,7 @@ async function main() {
             priceAmount: 249,
             priceCurrency: 'USD',
             depthRating: 40,
+            isFlatPort: false,
             productPhotos: ['/ports/wa005-b.png']
         }
     })
@@ -741,6 +893,7 @@ async function main() {
             priceAmount: 249,
             priceCurrency: 'USD',
             depthRating: 40,
+            isFlatPort: false,
             productPhotos: ['/ports/wa005-f.png']
         }
     })
@@ -756,6 +909,7 @@ async function main() {
             priceAmount: 169,
             priceCurrency: 'USD',
             depthRating: 40,
+            isFlatPort: true,
             productPhotos: ['/ports/fl2870.png']
         }
     })

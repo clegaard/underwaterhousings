@@ -8,8 +8,9 @@ export async function GET(request: NextRequest) {
         const simple = searchParams.get('simple') === 'true'
 
         if (simple) {
-            // Return simplified data for navigation
+            // Return simplified data for navigation — only manufacturers with at least one camera
             const manufacturers = await prisma.manufacturer.findMany({
+                where: { cameras: { some: {} } },
                 select: {
                     id: true,
                     name: true,

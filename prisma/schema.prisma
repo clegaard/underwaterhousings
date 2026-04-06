@@ -47,25 +47,39 @@ model HousingMount {
 }
 
 model Camera {
-    id                       Int            @id @default(autoincrement())
-    name                     String
-    slug                     String         @unique
-    description              String?
-    manufacturerId           Int
-    cameraMountId            Int?
-    priceCurrency            String?        @default("USD")
-    priceAmount              Decimal?       @db.Decimal(10, 2)
-    productPhotos            String[]
-    interchangeableLens      Boolean        @default(true)
-    exifId                   String?        @unique
-    rigReviews               RigReview[]
-    cameraMount              CameraMount?   @relation(fields: [cameraMountId], references: [id])
-    brand                    Manufacturer   @relation(fields: [manufacturerId], references: [id])
-    galleryPhotos            GalleryPhoto[]
-    housings                 Housing[]
-    lens                     Lens[]
-    canBeUsedWithoutAHousing Boolean        @default(false)
+    id             Int      @id @default(autoincrement())
+    name           String
+    slug           String   @unique
+    description    String?
+    manufacturerId Int
+    cameraMountId  Int?
+    priceCurrency  String?  @default("USD")
+    priceAmount    Decimal? @db.Decimal(10, 2)
+    productPhotos  String[]
+
+    exifId        String?        @unique
+    rigReviews    RigReview[]
+    cameraMount   CameraMount?   @relation(fields: [cameraMountId], references: [id])
+    brand         Manufacturer   @relation(fields: [manufacturerId], references: [id])
+    galleryPhotos GalleryPhoto[]
+    housings      Housing[]
+    lens          Lens[]
+
+    sensorWidth  Float? // optional field for sensor width in mm, used for calculating crop factor
+    sensorHeight Float? // optional field for sensor height in mm, used for calculating crop factor
+    megapixels   Float? // optional field for megapixels, used for calculating pixel density
+
+    // ================ WATERPROOF CAMERA FIELDS ================
+    canBeUsedWithoutAHousing Boolean @default(false) // True if the camera can be used underwater without a housing, false if it always requires a housing
     depthRating              Int? // optional field for maximum depth rating of the camera without a housing
+
+    // ================ FIXED LENS FIELDS ================
+    interchangeableLens      Boolean @default(true)
+    focalLengthTele          Int? // Focal length at the tele end in mm (prime lenses: sole focal length)
+    focalLengthWide          Int? // Focal length at the wide end in mm; null means prime lens
+    minimumFocusDistanceTele Float? // Minimum focus distance at the tele end in metres
+    minimumFocusDistanceWide Float? // Minimum focus distance at the wide end in metres
+    maximumMagnification     Float? // Maximum reproduction ratio e.g. 0.30 for 0.30x; scraped from manufacturer specs
 
     @@map("cameras")
 }
@@ -116,24 +130,28 @@ model Port {
 }
 
 model Lens {
-    id                   Int            @id @default(autoincrement())
-    name                 String
-    slug                 String         @unique
-    description          String?
-    minimumFocusDistance Float?
-    priceAmount          Decimal?       @db.Decimal(10, 2)
-    priceCurrency        String?        @default("USD")
-    cameraMountId        Int
-    cameraId             Int?
-    productPhotos        String[]
-    manufacturerId       Int
-    exifId               String?        @unique
-    rigReviews           RigReview[]
-    galleryPhotos        GalleryPhoto[]
-    camera               Camera?        @relation(fields: [cameraId], references: [id])
-    cameraMount          CameraMount    @relation(fields: [cameraMountId], references: [id])
-    manufacturer         Manufacturer?  @relation(fields: [manufacturerId], references: [id])
-    ports                Port[]         @relation("LensToPort")
+    id                       Int            @id @default(autoincrement())
+    name                     String
+    slug                     String         @unique
+    description              String?
+    minimumFocusDistanceTele Float? // Minimum focus distance at the tele end in metres
+    minimumFocusDistanceWide Float? // Minimum focus distance at the wide end in metres
+    focalLengthTele          Int // Focal length at the tele end in mm (prime lenses: sole focal length)
+    focalLengthWide          Int? // Focal length at the wide end in mm; null means prime lens
+    maximumMagnification     Float? // Maximum reproduction ratio e.g. 0.30 for 0.30x; scraped from manufacturer specs
+    priceAmount              Decimal?       @db.Decimal(10, 2)
+    priceCurrency            String?        @default("USD")
+    cameraMountId            Int
+    cameraId                 Int?
+    productPhotos            String[]
+    manufacturerId           Int
+    exifId                   String?        @unique
+    rigReviews               RigReview[]
+    galleryPhotos            GalleryPhoto[]
+    camera                   Camera?        @relation(fields: [cameraId], references: [id])
+    cameraMount              CameraMount    @relation(fields: [cameraMountId], references: [id])
+    manufacturer             Manufacturer?  @relation(fields: [manufacturerId], references: [id])
+    ports                    Port[]         @relation("LensToPort")
 
     @@map("lenses")
 }
