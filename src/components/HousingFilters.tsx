@@ -6,6 +6,169 @@ import Link from 'next/link'
 import UserAvatar from '@/components/UserAvatar'
 import { HousingImage } from '@/components/HousingImage'
 
+// ─── FOV Fan Chart ────────────────────────────────────────────────────────────
+const FOV_REF_FL = [
+    { fl: 12, color: '#818cf8', label: true },
+    { fl: 16, color: '#38bdf8', label: false },
+    { fl: 24, color: '#34d399', label: true },
+    { fl: 35, color: '#a3e635', label: false },
+    { fl: 50, color: '#fbbf24', label: true },
+    { fl: 70, color: '#fb923c', label: false },
+    { fl: 90, color: '#f87171', label: false },
+    { fl: 100, color: '#e879f9', label: false },
+]
+
+function calcFovH(sensorW: number, fl: number): number {
+    return 2 * Math.atan(sensorW / (2 * fl)) * (180 / Math.PI)
+}
+
+function FovFanChart({
+    sensorW,
+    activeFovWideH,
+    activeFovTeleH,
+    effectiveFovH,
+}: {
+    sensorW: number
+    activeFovWideH: number | null
+    activeFovTeleH: number | null
+    effectiveFovH: number | null
+}) {
+    // Horizontal layout: camera on the LEFT, wedges fan out to the RIGHT.
+    // Each focal length gets its own radius scaled logarithmically so that
+    // telephoto lenses (narrow FOV) produce long thin beams and wide-angle
+    // lenses produce short fat wedges — matching the reference diagram style.
+    const W = 340, H = 180
+    const apexX = 22         // camera nodal point on the left
+    const apexY = H / 2      // vertically centred
+
+    const FL_MIN = 12, FL_MAX = 100
+    const R_MIN = 36   // min radius (widest FOV / shortest arm)
+
+    // R_MAX is chosen so the 100mm arm tip lands ~12px from the right edge.
+    // The tip's x is apexX + R*cos(h100), so R = (W - apexX - 12) / cos(h100).
+    // Also cap by vertical clearance so no arc tip overflows top/bottom.
+    const fovAtFlMax = calcFovH(sensorW, FL_MAX)
+    const hFlMax = (fovAtFlMax / 2) * (Math.PI / 180)
+    const R_MAX = Math.min(
+        (W - apexX - 12) / Math.cos(hFlMax),
+        (apexY - 8) / Math.sin(hFlMax)
+    )
+
+    // Log-scale: longer focal length → longer arm
+    function flToR(fl: number): number {
+        const t = Math.max(0, Math.min(1, Math.log10(fl / FL_MIN) / Math.log10(FL_MAX / FL_MIN)))
+        return R_MIN + (R_MAX - R_MIN) * t
+    }
+
+    function halfRad(fovDeg: number): number {
+        return (Math.min(fovDeg, 130) / 2) * (Math.PI / 180)
+    }
+
+    // Wedge path for a rightward fan:
+    //   apex → upper-right tip → arc (CW, sweep=1) → lower-right tip → Z
+    function wedgePath(fovDeg: number, R: number): string {
+        const h = halfRad(fovDeg)
+        const tx = apexX + R * Math.cos(h)
+        const uy = apexY - R * Math.sin(h)
+        const ly = apexY + R * Math.sin(h)
+        return `M ${apexX} ${apexY} L ${tx.toFixed(1)} ${uy.toFixed(1)} A ${R} ${R} 0 0 1 ${tx.toFixed(1)} ${ly.toFixed(1)} Z`
+    }
+
+    // Draw narrowest FOV (largest FL, longest arm) first so it sits behind,
+    // then progressively wider/shorter wedges paint over it — creating distinct bands.
+    const drawOrder = [...FOV_REF_FL].sort((a, b) => b.fl - a.fl)
+
+    // Pre-compute arm tip positions for all reference focal lengths
+    const allEntries = FOV_REF_FL.map(({ fl }) => {
+        const fov = calcFovH(sensorW, fl)
+        const h = halfRad(fov)
+        const R = flToR(fl)
+        const tx = apexX + R * Math.cos(h)
+        return { fl, fov, tx, uy: apexY - R * Math.sin(h), ly: apexY + R * Math.sin(h) }
+    })
+
+    // Label visibility: show a label only when its upper-tip Y is ≥ 7px below
+    // the previous shown label (prevents crowding at the tele end).
+    const labelable = new Set<number>()
+    let prevUY = -Infinity
+    for (const e of [...allEntries].sort((a, b) => a.uy - b.uy)) {
+        if (e.uy - prevUY >= 7) { labelable.add(e.fl); prevUY = e.uy }
+    }
+
+    // Active lens overlay: fit within the viewport on all sides.
+    const widestActiveFov = activeFovWideH ?? 0
+    const hActive = halfRad(widestActiveFov)
+    const R_OVL_x = W - apexX - 12
+    const R_OVL_y = hActive > 0.001 ? (apexY - 8) / Math.sin(hActive) : R_MAX
+    const R_OVL = Math.min(R_OVL_x, R_OVL_y, R_MAX)
+
+    return (
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block', overflow: 'hidden' }}>
+            {/* Rainbow reference wedges — narrowest first (behind), widest last (front) */}
+            {drawOrder.map(({ fl, color }) => (
+                <path key={fl} d={wedgePath(calcFovH(sensorW, fl), flToR(fl))} fill={color} opacity={0.85} />
+            ))}
+
+            {/* Active lens FOV overlay */}
+            {activeFovWideH !== null && (
+                activeFovTeleH !== null ? (
+                    <>
+                        <path d={wedgePath(activeFovWideH, R_OVL)} fill="#1e40af" opacity={0.20} />
+                        <path d={wedgePath(activeFovWideH, R_OVL)} fill="none" stroke="#1d4ed8" strokeWidth={1.8} />
+                        <path d={wedgePath(activeFovTeleH, R_OVL)} fill="none" stroke="#1d4ed8" strokeWidth={1.5} strokeDasharray="4 2" />
+                    </>
+                ) : (
+                    <>
+                        <path d={wedgePath(activeFovWideH, R_OVL)} fill="#1e40af" opacity={0.20} />
+                        <path d={wedgePath(activeFovWideH, R_OVL)} fill="none" stroke="#1d4ed8" strokeWidth={2} />
+                    </>
+                )
+            )}
+
+            {/* Effective FOV through flat port */}
+            {effectiveFovH !== null && (
+                <path d={wedgePath(effectiveFovH, R_OVL + 6)} fill="none" stroke="#0e7490" strokeWidth={1.5} strokeDasharray="5 3" opacity={0.9} />
+            )}
+
+            {/* Focal length labels — above upper arm tip */}
+            {allEntries.map(e => !labelable.has(e.fl) ? null : (
+                <text key={`fl-${e.fl}`}
+                    x={e.tx.toFixed(1)} y={(e.uy - 3).toFixed(1)}
+                    fontSize={7} fill="#374151" textAnchor="middle" dominantBaseline="auto"
+                    fontFamily="ui-sans-serif, system-ui, sans-serif" fontWeight="600">
+                    {e.fl} mm
+                </text>
+            ))}
+
+            {/* Angle labels — below lower arm tip */}
+            {allEntries.map(e => !labelable.has(e.fl) ? null : (
+                <text key={`ang-${e.fl}`}
+                    x={e.tx.toFixed(1)} y={(e.ly + 8).toFixed(1)}
+                    fontSize={7} fill="#374151" textAnchor="middle" dominantBaseline="hanging"
+                    fontFamily="ui-sans-serif, system-ui, sans-serif" fontWeight="600">
+                    {Math.round(e.fov)}°
+                </text>
+            ))}
+
+            {/* Active FOV readout — bottom-right */}
+            {activeFovWideH !== null && (
+                <text x={W - 8} y={H - 5} fontSize={8} fill="#1d4ed8" textAnchor="end" dominantBaseline="auto"
+                    fontFamily="ui-sans-serif, system-ui, sans-serif" fontWeight="700">
+                    {activeFovTeleH !== null
+                        ? `${activeFovTeleH.toFixed(1)}°\u2013${activeFovWideH.toFixed(1)}°`
+                        : `${activeFovWideH.toFixed(1)}°`}
+                </text>
+            )}
+
+            {/* Camera body icon at the apex (left side) */}
+            <rect x={apexX - 18} y={apexY - 9} width={16} height={13} rx={2} fill="#374151" />
+            <rect x={apexX - 15} y={apexY - 13} width={6} height={4} rx={1} fill="#374151" />
+            <circle cx={apexX - 10} cy={apexY - 3} r={3.5} fill="#6b7280" />
+        </svg>
+    )
+}
+// ──────────────────────────────────────────────────────────────────────────────
+
 // Client-side component for advanced filtering
 export default function HousingFilters({ initialHousings, cameras, manufacturers, lenses, ports }: {
     initialHousings: any[],
@@ -873,6 +1036,18 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                         </div>
                                                     ) : (
                                                         <p className="ml-5 text-xs text-gray-300 italic">No sensor dimensions — add them to see FOV</p>
+                                                    )}
+
+                                                    {/* ── FOV fan chart ── */}
+                                                    {opticalSummary.fovWideH !== null && (
+                                                        <div className="mt-2 rounded-lg overflow-hidden bg-gray-50">
+                                                            <FovFanChart
+                                                                sensorW={(selectedCamera as any)?.sensorWidth ?? 36}
+                                                                activeFovWideH={opticalSummary.fovWideH}
+                                                                activeFovTeleH={!opticalSummary.isPrime ? (opticalSummary.fovTeleH ?? null) : null}
+                                                                effectiveFovH={opticalSummary.isFlatPort ? (opticalSummary.fovEffWideH ?? null) : null}
+                                                            />
+                                                        </div>
                                                     )}
                                                 </div>
 
