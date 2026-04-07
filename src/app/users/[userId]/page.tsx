@@ -6,6 +6,7 @@ import { withBase } from '@/lib/images'
 import { Suspense } from 'react'
 import { auth } from '@/auth'
 import ProfilePictureUpload from '@/components/ProfilePictureUpload'
+import CameraRigsSection from '@/components/CameraRigsSection'
 
 interface UserProfilePageProps {
     params: Promise<{ userId: string }>
@@ -111,10 +112,19 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
                     </div>
                 </div>
 
+                {/* Camera Rigs */}
+                <CameraRigsSection userId={user.id} isOwnProfile={isOwnProfile} />
+
+                {/* Divider */}
+                <hr className="my-10 border-blue-200" />
+
                 {/* Gallery */}
-                <Suspense>
-                    <GalleryGrid photos={photos} />
-                </Suspense>
+                <div>
+                    <h2 className="text-lg font-semibold text-gray-800 mb-4">Photos</h2>
+                    <Suspense>
+                        <GalleryGrid photos={photos} />
+                    </Suspense>
+                </div>
             </div>
         </main>
     )

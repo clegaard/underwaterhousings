@@ -59,6 +59,7 @@ model Camera {
 
     exifId        String?        @unique
     rigReviews    RigReview[]
+    cameraRigs    CameraRig[]
     cameraMount   CameraMount?   @relation(fields: [cameraMountId], references: [id])
     brand         Manufacturer   @relation(fields: [manufacturerId], references: [id])
     galleryPhotos GalleryPhoto[]
@@ -101,6 +102,7 @@ model Housing {
     interchangeablePort Boolean        @default(true)
     rigReviews          RigReview[]
     galleryPhotos       GalleryPhoto[]
+    cameraRigs          CameraRig[]
     Camera              Camera         @relation(fields: [cameraId], references: [id])
     housingMount        HousingMount?  @relation(fields: [housingMountId], references: [id])
     manufacturer        Manufacturer   @relation(fields: [manufacturerId], references: [id])
@@ -123,6 +125,7 @@ model Port {
     depthRating     Int? // Maximum depth rating of the port in meters
     rigReviews      RigReview[]
     galleryPhotos   GalleryPhoto[]
+    cameraRigs      CameraRig[]
     housingMount    HousingMount?  @relation(fields: [housingMountId], references: [id])
     manufacturer    Manufacturer   @relation(fields: [manufacturerId], references: [id])
     lens            Lens[]         @relation("LensToPort")
@@ -150,6 +153,7 @@ model Lens {
     exifId                   String?        @unique
     rigReviews               RigReview[]
     galleryPhotos            GalleryPhoto[]
+    cameraRigs               CameraRig[]
     camera                   Camera?        @relation(fields: [cameraId], references: [id])
     cameraMount              CameraMount    @relation(fields: [cameraMountId], references: [id])
     manufacturer             Manufacturer?  @relation(fields: [manufacturerId], references: [id])
@@ -167,12 +171,34 @@ model User {
     profilePicture String?
     isSuperuser    Boolean        @default(false)
     isUser         Boolean        @default(true)
+    defaultRigId   Int?
     createdAt      DateTime       @default(now())
     updatedAt      DateTime       @updatedAt
     rigReviews     RigReview[]
     galleryPhotos  GalleryPhoto[]
+    cameraRigs     CameraRig[]
 
     @@map("users")
+}
+
+model CameraRig {
+    id        Int      @id @default(autoincrement())
+    name      String
+    imagePath String?
+    userId    Int
+    cameraId  Int
+    lensId    Int?
+    housingId Int?
+    portId    Int?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    user      User     @relation(fields: [userId], references: [id])
+    camera    Camera   @relation(fields: [cameraId], references: [id])
+    lens      Lens?    @relation(fields: [lensId], references: [id])
+    housing   Housing? @relation(fields: [housingId], references: [id])
+    port      Port?    @relation(fields: [portId], references: [id])
+
+    @@map("camera_rigs")
 }
 
 model GalleryPhoto {

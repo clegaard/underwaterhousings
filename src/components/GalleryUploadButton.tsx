@@ -28,6 +28,15 @@ interface Port {
     name: string
 }
 
+interface UserRig {
+    id: number
+    name: string
+    camera: { id: number; name: string; brand: { name: string }; exifId: string | null }
+    lens: { id: number; name: string; exifId: string | null } | null
+    housing: { id: number; name: string; manufacturer: { name: string } } | null
+    port: { id: number; name: string } | null
+}
+
 interface Equipment {
     cameras: Camera[]
     housings: Housing[]
@@ -86,6 +95,8 @@ export default function GalleryUploadButton() {
     const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null)
     const [form, setForm] = useState<UploadForm>(EMPTY_FORM)
     const [equipment, setEquipment] = useState<Equipment>({ cameras: [], housings: [], lenses: [], ports: [] })
+    const [userRigs, setUserRigs] = useState<UserRig[]>([])
+    const [selectedRigId, setSelectedRigId] = useState('')
     const [exifCameraModel, setExifCameraModel] = useState<string | null>(null)
     const [exifLensModel, setExifLensModel] = useState<string | null>(null)
     const [isUploading, setIsUploading] = useState(false)
@@ -94,13 +105,46 @@ export default function GalleryUploadButton() {
     const fileInputRef = useRef<HTMLInputElement>(null)
     const previewUrlRef = useRef<string | null>(null)
 
+    const applyRigToForm = useCallback((rig: UserRig) => {
+        setForm(prev => ({
+            ...prev,
+            cameraId: String(rig.camera.id),
+            lensId: rig.lens ? String(rig.lens.id) : '',
+            housingId: rig.housing ? String(rig.housing.id) : '',
+            portId: rig.port ? String(rig.port.id) : '',
+        }))
+    }, [])
+
+    function handleRigChange(rigId: string) {
+        setSelectedRigId(rigId)
+        if (!rigId) return
+        const rig = userRigs.find(r => String(r.id) === rigId)
+        if (rig) applyRigToForm(rig)
+    }
+
     useEffect(() => {
         if (!isOpen) return
-        fetch('/api/camera-rigs')
-            .then(r => r.json())
-            .then(data => setEquipment(data.data ?? { cameras: [], housings: [], lenses: [], ports: [] }))
+        const userId = session?.user?.id
+        const fetches: Promise<Response>[] = [fetch('/api/camera-rigs')]
+        if (userId) fetches.push(fetch(`/api/camera-rigs?userId=${userId}`))
+        Promise.all(fetches)
+            .then(responses => Promise.all(responses.map(r => r.json())))
+            .then(([equipJson, rigsJson]) => {
+                setEquipment(equipJson.data ?? { cameras: [], housings: [], lenses: [], ports: [] })
+                if (rigsJson?.success) {
+                    const { rigs, defaultRigId } = rigsJson.data
+                    setUserRigs(rigs)
+                    if (defaultRigId) {
+                        const def = rigs.find((r: UserRig) => r.id === defaultRigId)
+                        if (def) {
+                            setSelectedRigId(String(def.id))
+                            applyRigToForm(def)
+                        }
+                    }
+                }
+            })
             .catch(() => { })
-    }, [isOpen])
+    }, [isOpen, session, applyRigToForm])
 
     // Cleanup preview URL on unmount
     useEffect(() => {
@@ -109,7 +153,21 @@ export default function GalleryUploadButton() {
         }
     }, [])
 
-    // Auto-select camera/lens dropdowns when EXIF model strings are matched against loaded equipment
+    // Auto-select rig when EXIF camera/lens matches a saved rig
+    useEffect(() => {
+        if (!exifCameraModel || userRigs.length === 0 || selectedRigId) return
+        const matches = userRigs.filter(r => r.camera.exifId === exifCameraModel)
+        if (matches.length === 0) return
+        let best = matches[0]
+        if (exifLensModel) {
+            const withLens = matches.find(r => r.lens?.exifId === exifLensModel)
+            if (withLens) best = withLens
+        }
+        setSelectedRigId(String(best.id))
+        applyRigToForm(best)
+    }, [exifCameraModel, exifLensModel, userRigs, selectedRigId, applyRigToForm])
+
+    // Auto-select camera/lens from EXIF when no rig covers them
     useEffect(() => {
         if (!exifCameraModel && !exifLensModel) return
         setForm(prev => {
@@ -223,6 +281,8 @@ export default function GalleryUploadButton() {
         setError(null)
         setExifCameraModel(null)
         setExifLensModel(null)
+        setUserRigs([])
+        setSelectedRigId('')
         if (previewUrlRef.current) {
             URL.revokeObjectURL(previewUrlRef.current)
             previewUrlRef.current = null
@@ -368,6 +428,35 @@ export default function GalleryUploadButton() {
                                     {/* Equipment */}
                                     <div>
                                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Equipment (optional)</p>
+                                        {/* Rig selector */}
+                                        <div className="mb-3">
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">Camera rig</label>
+                                            {userRigs.length === 0 ? (
+                                                <p className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                                                    No rigs set up yet.{' '}
+                                                    <a
+                                                        href={`/users/${session?.user?.id}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-blue-600 hover:underline"
+                                                    >
+                                                        Create one on your profile
+                                                    </a>{' '}
+                                                    to quickly pre-fill your equipment.
+                                                </p>
+                                            ) : (
+                                                <select
+                                                    value={selectedRigId}
+                                                    onChange={e => handleRigChange(e.target.value)}
+                                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                                                >
+                                                    <option value="">Select a rig (optional)</option>
+                                                    {userRigs.map(r => (
+                                                        <option key={r.id} value={String(r.id)}>{r.name}</option>
+                                                    ))}
+                                                </select>
+                                            )}
+                                        </div>
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
                                                 <label className="block text-xs font-medium text-gray-700 mb-1">Camera</label>
