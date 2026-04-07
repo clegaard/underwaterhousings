@@ -38,10 +38,10 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json()
-        const { name, manufacturerId, cameraMountId, exifId, productPhotos } = body
+        const { name, manufacturerId, cameraMountId, exifId, productPhotos, focalLengthTele, focalLengthWide, isZoomLens } = body
 
-        if (!name || !manufacturerId || !cameraMountId) {
-            return NextResponse.json({ error: 'Name, manufacturer and camera mount are required' }, { status: 400 })
+        if (!name || !manufacturerId || !cameraMountId || focalLengthTele === undefined || focalLengthTele === null) {
+            return NextResponse.json({ error: 'Name, manufacturer, camera mount and focal length are required' }, { status: 400 })
         }
 
         const manufacturer = await prisma.manufacturer.findUnique({ where: { id: manufacturerId } })
@@ -62,6 +62,9 @@ export async function POST(request: NextRequest) {
                 slug,
                 manufacturerId,
                 cameraMountId,
+                focalLengthTele: Number(focalLengthTele),
+                focalLengthWide: focalLengthWide != null ? Number(focalLengthWide) : null,
+                isZoomLens: Boolean(isZoomLens),
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 exifId: exifId?.trim() || null,
             },

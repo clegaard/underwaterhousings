@@ -4,7 +4,7 @@ import { auth } from '@/auth'
 import CameraManufacturersClient from '@/components/CameraManufacturersClient'
 
 export const metadata: Metadata = {
-    title: 'Camera Manufacturers - UW Housings',
+    title: 'Cameras - UW Housings',
     description: 'Browse cameras by manufacturer and find compatible underwater housings',
 }
 
@@ -14,20 +14,17 @@ async function getCameraManufacturers() {
             include: {
                 cameras: {
                     include: {
-                        housings: true
-                    }
+                        housings: true,
+                        cameraMount: true,
+                    },
+                    orderBy: { name: 'asc' },
                 },
                 _count: {
-                    select: {
-                        cameras: true
-                    }
+                    select: { cameras: true }
                 }
             },
-            orderBy: {
-                name: 'asc'
-            }
+            orderBy: { name: 'asc' }
         })
-
         return manufacturers
     } catch (error) {
         console.error('Error fetching camera manufacturers:', error)
@@ -35,13 +32,22 @@ async function getCameraManufacturers() {
     }
 }
 
+async function getCameraMounts() {
+    try {
+        return await prisma.cameraMount.findMany({ orderBy: { name: 'asc' } })
+    } catch {
+        return []
+    }
+}
+
 export default async function CamerasPage() {
-    const [manufacturers, session] = await Promise.all([
+    const [manufacturers, cameraMounts, session] = await Promise.all([
         getCameraManufacturers(),
+        getCameraMounts(),
         auth(),
     ])
     const isSuperuser = !!(session?.user as { isSuperuser?: boolean } | undefined)?.isSuperuser
-    const camerasCount = manufacturers.filter(m => m._count.cameras > 0).length
+    const totalCameras = manufacturers.reduce((s, m) => s + m._count.cameras, 0)
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
@@ -50,14 +56,14 @@ export default async function CamerasPage() {
                 <div className="max-w-6xl mx-auto px-4 py-6">
                     <div className="flex justify-between items-center">
                         <div>
-                            <h1 className="text-4xl font-bold text-blue-900 mb-2">Camera Manufacturers</h1>
+                            <h1 className="text-4xl font-bold text-blue-900 mb-2">Cameras</h1>
                             <p className="text-xl text-gray-700">
                                 Browse cameras by manufacturer and find compatible underwater housings
                             </p>
                         </div>
                         <div className="text-right">
-                            <div className="text-3xl font-bold text-blue-600">{camerasCount}</div>
-                            <div className="text-sm text-gray-600">Manufacturer{camerasCount !== 1 ? 's' : ''}</div>
+                            <div className="text-3xl font-bold text-blue-600">{totalCameras}</div>
+                            <div className="text-sm text-gray-600">Camera{totalCameras !== 1 ? 's' : ''}</div>
                         </div>
                     </div>
                 </div>
@@ -65,7 +71,17 @@ export default async function CamerasPage() {
 
             {/* Content */}
             <div className="max-w-6xl mx-auto px-4 py-8">
-                <CameraManufacturersClient manufacturers={manufacturers} isSuperuser={isSuperuser} />
+                <CameraManufacturersClient
+                    manufacturers={manufacturers.map(m => ({
+                        ...m,
+                        cameras: m.cameras.map(c => ({
+                            ...c,
+                            priceAmount: c.priceAmount ? Number(c.priceAmount) : null,
+                        }))
+                    }))}
+                    cameraMounts={cameraMounts}
+                    isSuperuser={isSuperuser}
+                />
             </div>
         </div>
     )

@@ -420,103 +420,86 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                 <h2 className="text-2xl font-bold text-gray-900">
                     All {manufacturer.name} Camera Models
                 </h2>
-                <div className="flex items-center gap-3">
+                <Link
+                    href="/cameras"
+                    className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                >
+                    ← Back to Cameras
+                </Link>
+            </div>
+
+            {cameras.length > 0 || isSuperuser ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                    {cameras.map((camera) => (
+                        <div key={camera.id} className="group/card relative">
+                            <Link
+                                href={`/cameras/${manufacturer.slug}/${camera.slug}`}
+                                className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all overflow-hidden block"
+                            >
+                                <div className="relative h-28 bg-gray-50">
+                                    <HousingImage
+                                        src={camera.imageInfo.src}
+                                        fallback={camera.imageInfo.fallback}
+                                        alt={camera.name}
+                                        className="object-contain p-3 w-full h-full"
+                                    />
+                                    {camera.housings.length > 0 && (
+                                        <span className="absolute top-1.5 right-1.5 text-[10px] bg-blue-100 text-blue-700 font-medium px-1.5 py-0.5 rounded-full">
+                                            {camera.housings.length} housing{camera.housings.length !== 1 ? 's' : ''}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="px-2.5 py-2">
+                                    <p className="text-xs font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-snug line-clamp-2">
+                                        {camera.name}
+                                    </p>
+                                    {camera.cameraMount && (
+                                        <p className="text-[10px] text-gray-400 mt-0.5 truncate">{camera.cameraMount.name}</p>
+                                    )}
+                                    {camera.priceAmount && (
+                                        <p className="text-xs font-medium text-green-600 mt-1">
+                                            ${parseFloat(camera.priceAmount).toLocaleString()}
+                                        </p>
+                                    )}
+                                </div>
+                            </Link>
+                            {isSuperuser && (
+                                <div className="absolute top-1.5 left-1.5 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity z-10">
+                                    <button
+                                        onClick={() => openEdit(camera)}
+                                        title="Edit camera"
+                                        className="w-6 h-6 bg-white border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 shadow-sm"
+                                    >
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={() => openDelete(camera)}
+                                        title="Delete camera"
+                                        className="w-6 h-6 bg-white border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:text-red-600 hover:border-red-300 shadow-sm"
+                                    >
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a1 1 0 00-1-1H8a1 1 0 00-1 1h10z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+
+                    {/* Add camera card — superuser only */}
                     {isSuperuser && (
                         <button
                             onClick={openAdd}
-                            className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                            className="min-h-[9rem] flex flex-col items-center justify-center gap-2 bg-white rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all text-gray-400 hover:text-blue-500"
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                             </svg>
-                            Add camera
+                            <span className="text-xs font-medium">Add camera</span>
                         </button>
                     )}
-                    <Link
-                        href="/cameras"
-                        className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                    >
-                        ← Back to Cameras
-                    </Link>
-                </div>
-            </div>
-
-            {cameras.length > 0 ? (
-                <div className="flex justify-center">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl w-full">
-                        {cameras.map((camera) => (
-                            <div key={camera.id} className="relative group/card">
-                                <Link
-                                    href={`/cameras/${manufacturer.slug}/${camera.slug}`}
-                                    className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group overflow-hidden"
-                                >
-                                    <div className="relative w-full h-48 bg-gray-100">
-                                        <HousingImage
-                                            src={camera.imageInfo.src}
-                                            fallback={camera.imageInfo.fallback}
-                                            alt={camera.name}
-                                            className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                    </div>
-                                    <div className="p-5">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
-                                                {camera.name}
-                                            </h3>
-                                            {camera.cameraMount && (
-                                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded flex-shrink-0 ml-2">
-                                                    {camera.cameraMount.slug.toUpperCase()}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="space-y-1 text-sm mb-4">
-                                            {camera.cameraMount && (
-                                                <div className="flex justify-between">
-                                                    <span className="text-gray-600">Mount:</span>
-                                                    <span className="font-medium">{camera.cameraMount.name}</span>
-                                                </div>
-                                            )}
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-600">Housings:</span>
-                                                <span className="font-medium text-green-700">{camera.housings.length} available</span>
-                                            </div>
-                                        </div>
-                                        <div className="pt-3 border-t border-gray-100">
-                                            <div className="flex items-center justify-between text-xs text-gray-500 group-hover:text-blue-600 transition-colors">
-                                                <span>View details</span>
-                                                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                                </svg>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Link>
-
-                                {isSuperuser && (
-                                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
-                                        <button
-                                            onClick={() => openEdit(camera)}
-                                            title="Edit"
-                                            className="w-7 h-7 bg-white border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-blue-600 hover:border-blue-300 shadow-sm transition-colors"
-                                        >
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
-                                            </svg>
-                                        </button>
-                                        <button
-                                            onClick={() => openDelete(camera)}
-                                            title="Delete"
-                                            className="w-7 h-7 bg-white border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-red-600 hover:border-red-300 shadow-sm transition-colors"
-                                        >
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a1 1 0 00-1-1H8a1 1 0 00-1 1h10z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
                 </div>
             ) : (
                 <div className="text-center py-12 bg-white rounded-lg shadow-sm">

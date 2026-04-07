@@ -349,118 +349,96 @@ export default function HousingManufacturerHousingsClient({
         <>
             <div className="mb-6 flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-gray-900">
-                    All {manufacturer.name} Housings
+                    {manufacturer.name} Housings
                 </h2>
-                <div className="flex items-center gap-3">
-                    {isSuperuser && (
-                        <button
-                            onClick={openAdd}
-                            className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            Add housing
-                        </button>
-                    )}
-                    <Link
-                        href="/"
-                        className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                    >
-                        ← Back to Search
-                    </Link>
-                </div>
+                <Link
+                    href="/housings"
+                    className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                >
+                    ← Back to Housings
+                </Link>
             </div>
 
-            {housings.length > 0 ? (
-                <div className="flex justify-center">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl">
-                        {housings.map((housing) => (
-                            <div key={housing.id} className="relative group/card">
-                                <Link
-                                    href={`/housings/${manufacturer.slug}/${housing.slug}`}
-                                    className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 block group overflow-hidden"
-                                >
-                                    <div className="relative w-full h-48 bg-gray-100">
-                                        <HousingImage
-                                            src={housing.imageInfo.src}
-                                            fallback={housing.imageInfo.fallback}
-                                            alt={housing.name}
-                                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                    </div>
-                                    <div className="p-6">
-                                        <div className="flex justify-between items-start mb-3">
-                                            <h3 className="text-lg font-semibold text-blue-900 group-hover:text-blue-700 transition-colors">
-                                                {housing.name}
-                                            </h3>
-                                            {housing.camera && (
-                                                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded flex-shrink-0 ml-2">
-                                                    {housing.camera.brand.name} {housing.camera.name}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="space-y-2 text-sm">
-                                            {housing.depthRating != null && (
-                                                <div className="flex justify-between">
-                                                    <span className="text-gray-600">Depth Rating:</span>
-                                                    <span className="font-medium text-green-700">{housing.depthRating}m</span>
-                                                </div>
-                                            )}
-                                            {housing.priceAmount != null && (
-                                                <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                                                    <span className="text-gray-600">Price:</span>
-                                                    <span className="font-bold text-green-600 text-lg">
-                                                        ${housing.priceAmount.toLocaleString()} {housing.priceCurrency}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="mt-4 pt-3 border-t border-gray-100">
-                                            <div className="flex items-center justify-between text-xs text-gray-500 group-hover:text-blue-600 transition-colors">
-                                                <span>View details</span>
-                                                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                                </svg>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Link>
-
-                                {isSuperuser && (
-                                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
-                                        <button
-                                            onClick={() => openEdit(housing)}
-                                            title="Edit"
-                                            className="w-7 h-7 bg-white border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-blue-600 hover:border-blue-300 shadow-sm transition-colors"
-                                        >
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
-                                            </svg>
-                                        </button>
-                                        <button
-                                            onClick={() => openDelete(housing)}
-                                            title="Delete"
-                                            className="w-7 h-7 bg-white border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-red-600 hover:border-red-300 shadow-sm transition-colors"
-                                        >
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a1 1 0 00-1-1H8a1 1 0 00-1 1h10z" />
-                                            </svg>
-                                        </button>
-                                    </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                {housings.map((housing) => (
+                    <div key={housing.id} className="group/card relative">
+                        <Link
+                            href={`/housings/${manufacturer.slug}/${housing.slug}`}
+                            className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all overflow-hidden block"
+                        >
+                            <div className="relative h-28 bg-gray-50">
+                                <HousingImage
+                                    src={housing.imageInfo.src}
+                                    fallback={housing.imageInfo.fallback}
+                                    alt={housing.name}
+                                    className="object-contain p-3 w-full h-full"
+                                />
+                                {housing.depthRating != null && (
+                                    <span className="absolute top-1.5 right-1.5 text-[10px] bg-blue-100 text-blue-700 font-medium px-1.5 py-0.5 rounded-full">
+                                        {housing.depthRating}m
+                                    </span>
                                 )}
                             </div>
-                        ))}
+                            <div className="px-2.5 py-2">
+                                <p className="text-xs font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-snug line-clamp-2">
+                                    {housing.name}
+                                </p>
+                                {housing.camera && (
+                                    <p className="text-[10px] text-gray-400 mt-0.5 truncate">
+                                        {housing.camera.brand.name} {housing.camera.name}
+                                    </p>
+                                )}
+                                {housing.priceAmount != null && (
+                                    <p className="text-xs font-medium text-green-600 mt-1">
+                                        ${housing.priceAmount.toLocaleString()}
+                                    </p>
+                                )}
+                            </div>
+                        </Link>
+                        {isSuperuser && (
+                            <div className="absolute top-1.5 left-1.5 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity z-10">
+                                <button
+                                    onClick={() => openEdit(housing)}
+                                    title="Edit housing"
+                                    className="w-6 h-6 bg-white border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 shadow-sm"
+                                >
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
+                                    </svg>
+                                </button>
+                                <button
+                                    onClick={() => openDelete(housing)}
+                                    title="Delete housing"
+                                    className="w-6 h-6 bg-white border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:text-red-600 hover:border-red-300 shadow-sm"
+                                >
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a1 1 0 00-1-1H8a1 1 0 00-1 1h10z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
                     </div>
-                </div>
-            ) : (
-                <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                ))}
+                {isSuperuser && (
+                    <button
+                        onClick={openAdd}
+                        className="min-h-[9rem] flex flex-col items-center justify-center gap-2 bg-white rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all text-gray-400 hover:text-blue-500"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span className="text-xs font-medium">Add housing</span>
+                    </button>
+                )}
+            </div>
+            {housings.length === 0 && !isSuperuser && (
+                <div className="text-center py-12 bg-white rounded-lg shadow-sm mt-4">
                     <div className="text-6xl mb-4">🤿</div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No housings found</h3>
                     <p className="text-gray-600 mb-4">
                         No housings are currently available from {manufacturer.name}.
                     </p>
-                    <Link href="/" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    <Link href="/housings" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                         Browse all manufacturers
                     </Link>
                 </div>

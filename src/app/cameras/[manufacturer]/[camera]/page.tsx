@@ -335,23 +335,31 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
                             <span className="ml-2 text-sm font-normal text-gray-400">({camera.lens.length})</span>
                         </h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {camera.lens.map((lens) => (
-                                <Link
-                                    key={lens.id}
-                                    href={`/lenses/${lens.manufacturer.slug}/${lens.slug}`}
-                                    className="flex items-center justify-between p-4 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors group"
-                                >
-                                    <div>
-                                        <p className="font-medium text-gray-900 text-sm group-hover:text-blue-700">{lens.name}</p>
-                                        <p className="text-xs text-gray-500 mt-0.5">{lens.manufacturer.name}</p>
+                            {camera.lens.map((lens) => {
+                                const lensHref = lens.manufacturer
+                                    ? `/lenses/${lens.manufacturer.slug}/${lens.slug}`
+                                    : null
+                                const inner = (
+                                    <div className="flex items-center justify-between p-4 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors group w-full">
+                                        <div>
+                                            <p className="font-medium text-gray-900 text-sm group-hover:text-blue-700">{lens.name}</p>
+                                            {lens.manufacturer && (
+                                                <p className="text-xs text-gray-500 mt-0.5">{lens.manufacturer.name}</p>
+                                            )}
+                                        </div>
+                                        <span className="text-xs text-gray-400 ml-4 flex-shrink-0">
+                                            {lens.isZoomLens && lens.focalLengthWide != null
+                                                ? `${lens.focalLengthWide}–${lens.focalLengthTele} mm`
+                                                : `${lens.focalLengthTele} mm`}
+                                        </span>
                                     </div>
-                                    <span className="text-xs text-gray-400 ml-4 flex-shrink-0">
-                                        {lens.isZoomLens && lens.focalLengthWide != null
-                                            ? `${lens.focalLengthWide}–${lens.focalLengthTele} mm`
-                                            : `${lens.focalLengthTele} mm`}
-                                    </span>
-                                </Link>
-                            ))}
+                                )
+                                return lensHref ? (
+                                    <Link key={lens.id} href={lensHref}>{inner}</Link>
+                                ) : (
+                                    <div key={lens.id}>{inner}</div>
+                                )
+                            })}
                         </div>
                     </div>
                 )}
