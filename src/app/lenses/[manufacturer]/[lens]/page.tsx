@@ -48,7 +48,7 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
         getLensDetail(params.manufacturer, params.lens),
         prisma.galleryPhoto.findMany({
             where: {
-                lens: { slug: params.lens },
+                rig: { lens: { slug: params.lens } },
             },
             orderBy: { takenAt: 'desc' },
             take: 12,

@@ -62,7 +62,6 @@ model Camera {
     cameraRigs    CameraRig[]
     cameraMount   CameraMount?   @relation(fields: [cameraMountId], references: [id])
     brand         Manufacturer   @relation(fields: [manufacturerId], references: [id])
-    galleryPhotos GalleryPhoto[]
     housings      Housing[]
     lens          Lens[]
 
@@ -101,7 +100,6 @@ model Housing {
     productPhotos       String[]
     interchangeablePort Boolean        @default(true)
     rigReviews          RigReview[]
-    galleryPhotos       GalleryPhoto[]
     cameraRigs          CameraRig[]
     Camera              Camera         @relation(fields: [cameraId], references: [id])
     housingMount        HousingMount?  @relation(fields: [housingMountId], references: [id])
@@ -124,7 +122,6 @@ model Port {
     hemisphereWidth Float? // For dome ports, the width of the hemisphere in mm
     depthRating     Int? // Maximum depth rating of the port in meters
     rigReviews      RigReview[]
-    galleryPhotos   GalleryPhoto[]
     cameraRigs      CameraRig[]
     housingMount    HousingMount?  @relation(fields: [housingMountId], references: [id])
     manufacturer    Manufacturer   @relation(fields: [manufacturerId], references: [id])
@@ -152,7 +149,6 @@ model Lens {
     manufacturerId           Int
     exifId                   String?        @unique
     rigReviews               RigReview[]
-    galleryPhotos            GalleryPhoto[]
     cameraRigs               CameraRig[]
     camera                   Camera?        @relation(fields: [cameraId], references: [id])
     cameraMount              CameraMount    @relation(fields: [cameraMountId], references: [id])
@@ -196,13 +192,14 @@ model CameraRig {
     camera    Camera   @relation(fields: [cameraId], references: [id])
     lens      Lens?    @relation(fields: [lensId], references: [id])
     housing   Housing? @relation(fields: [housingId], references: [id])
-    port      Port?    @relation(fields: [portId], references: [id])
+    port          Port?          @relation(fields: [portId], references: [id])
+    galleryPhotos GalleryPhoto[]
 
     @@map("camera_rigs")
 }
 
 model GalleryPhoto {
-    id           Int       @id @default(autoincrement())
+    id           Int        @id @default(autoincrement())
     title        String?
     description  String?
     imagePath    String
@@ -213,17 +210,11 @@ model GalleryPhoto {
     focalLength  Float?
     shutterSpeed String?
     aperture     Float?
-    createdAt    DateTime  @default(now())
-    cameraId     Int?
-    lensId       Int?
-    housingId    Int?
-    portId       Int?
+    createdAt    DateTime   @default(now())
+    rigId        Int?
     userId       Int?
-    camera       Camera?   @relation(fields: [cameraId], references: [id])
-    housing      Housing?  @relation(fields: [housingId], references: [id])
-    lens         Lens?     @relation(fields: [lensId], references: [id])
-    port         Port?     @relation(fields: [portId], references: [id])
-    user         User?     @relation(fields: [userId], references: [id])
+    rig          CameraRig? @relation(fields: [rigId], references: [id])
+    user         User?      @relation(fields: [userId], references: [id])
 
     @@map("gallery_photos")
 }

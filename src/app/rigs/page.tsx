@@ -50,10 +50,12 @@ async function getRigComponents(cameraSlug: string, housingSlug: string, lensSlu
     // Fetch gallery photos that belong to these components
     const galleryPhotos = await prisma.galleryPhoto.findMany({
         where: {
-            cameraId: camera.id,
-            housingId: housing.id,
-            lensId: lens?.id ?? null,
-            portId: port?.id ?? null,
+            rig: {
+                cameraId: camera.id,
+                housingId: housing.id,
+                lensId: lens?.id ?? null,
+                portId: port?.id ?? null,
+            },
         },
         orderBy: { takenAt: 'desc' },
     })

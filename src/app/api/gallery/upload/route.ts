@@ -68,10 +68,7 @@ export async function POST(request: NextRequest) {
     const focalLengthStr = (formData.get('focalLength') as string)?.trim()
     const apertureStr = (formData.get('aperture') as string)?.trim()
     const shutterSpeed = (formData.get('shutterSpeed') as string)?.trim() || null
-    const cameraIdStr = (formData.get('cameraId') as string)?.trim()
-    const lensIdStr = (formData.get('lensId') as string)?.trim()
-    const housingIdStr = (formData.get('housingId') as string)?.trim()
-    const portIdStr = (formData.get('portId') as string)?.trim()
+    const rigIdStr = (formData.get('rigId') as string)?.trim()
 
     const photo = await prisma.galleryPhoto.create({
         data: {
@@ -85,10 +82,7 @@ export async function POST(request: NextRequest) {
             focalLength: focalLengthStr ? parseFloat(focalLengthStr) : null,
             aperture: apertureStr ? parseFloat(apertureStr) : null,
             shutterSpeed,
-            cameraId: cameraIdStr ? parseInt(cameraIdStr) : null,
-            lensId: lensIdStr ? parseInt(lensIdStr) : null,
-            housingId: housingIdStr ? parseInt(housingIdStr) : null,
-            portId: portIdStr ? parseInt(portIdStr) : null,
+            rigId: rigIdStr ? parseInt(rigIdStr) : null,
             userId: dbUser.id,
         },
     })

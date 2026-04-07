@@ -4,30 +4,6 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
-interface Camera {
-    id: number
-    name: string
-    brand: { name: string }
-    exifId: string | null
-}
-
-interface Housing {
-    id: number
-    name: string
-    manufacturer: { name: string }
-}
-
-interface Lens {
-    id: number
-    name: string
-    exifId: string | null
-}
-
-interface Port {
-    id: number
-    name: string
-}
-
 interface UserRig {
     id: number
     name: string
@@ -35,13 +11,6 @@ interface UserRig {
     lens: { id: number; name: string; exifId: string | null } | null
     housing: { id: number; name: string; manufacturer: { name: string } } | null
     port: { id: number; name: string } | null
-}
-
-interface Equipment {
-    cameras: Camera[]
-    housings: Housing[]
-    lenses: Lens[]
-    ports: Port[]
 }
 
 interface UploadForm {
@@ -52,10 +21,6 @@ interface UploadForm {
     focalLength: string
     aperture: string
     shutterSpeed: string
-    cameraId: string
-    lensId: string
-    housingId: string
-    portId: string
 }
 
 const EMPTY_FORM: UploadForm = {
@@ -66,10 +31,6 @@ const EMPTY_FORM: UploadForm = {
     focalLength: '',
     aperture: '',
     shutterSpeed: '',
-    cameraId: '',
-    lensId: '',
-    housingId: '',
-    portId: '',
 }
 
 function formatShutterSpeed(exposureTime: number): string {
@@ -94,7 +55,6 @@ export default function GalleryUploadButton() {
     const [preview, setPreview] = useState<string | null>(null)
     const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null)
     const [form, setForm] = useState<UploadForm>(EMPTY_FORM)
-    const [equipment, setEquipment] = useState<Equipment>({ cameras: [], housings: [], lenses: [], ports: [] })
     const [userRigs, setUserRigs] = useState<UserRig[]>([])
     const [selectedRigId, setSelectedRigId] = useState('')
     const [exifCameraModel, setExifCameraModel] = useState<string | null>(null)
@@ -105,46 +65,24 @@ export default function GalleryUploadButton() {
     const fileInputRef = useRef<HTMLInputElement>(null)
     const previewUrlRef = useRef<string | null>(null)
 
-    const applyRigToForm = useCallback((rig: UserRig) => {
-        setForm(prev => ({
-            ...prev,
-            cameraId: String(rig.camera.id),
-            lensId: rig.lens ? String(rig.lens.id) : '',
-            housingId: rig.housing ? String(rig.housing.id) : '',
-            portId: rig.port ? String(rig.port.id) : '',
-        }))
-    }, [])
-
-    function handleRigChange(rigId: string) {
-        setSelectedRigId(rigId)
-        if (!rigId) return
-        const rig = userRigs.find(r => String(r.id) === rigId)
-        if (rig) applyRigToForm(rig)
-    }
-
     useEffect(() => {
         if (!isOpen) return
         const userId = session?.user?.id
-        const fetches: Promise<Response>[] = [fetch('/api/camera-rigs')]
-        if (userId) fetches.push(fetch(`/api/camera-rigs?userId=${userId}`))
-        Promise.all(fetches)
-            .then(responses => Promise.all(responses.map(r => r.json())))
-            .then(([equipJson, rigsJson]) => {
-                setEquipment(equipJson.data ?? { cameras: [], housings: [], lenses: [], ports: [] })
+        if (!userId) return
+        fetch(`/api/camera-rigs?userId=${userId}`)
+            .then(r => r.json())
+            .then(rigsJson => {
                 if (rigsJson?.success) {
                     const { rigs, defaultRigId } = rigsJson.data
                     setUserRigs(rigs)
                     if (defaultRigId) {
                         const def = rigs.find((r: UserRig) => r.id === defaultRigId)
-                        if (def) {
-                            setSelectedRigId(String(def.id))
-                            applyRigToForm(def)
-                        }
+                        if (def) setSelectedRigId(String(def.id))
                     }
                 }
             })
             .catch(() => { })
-    }, [isOpen, session, applyRigToForm])
+    }, [isOpen, session])
 
     // Cleanup preview URL on unmount
     useEffect(() => {
@@ -164,25 +102,7 @@ export default function GalleryUploadButton() {
             if (withLens) best = withLens
         }
         setSelectedRigId(String(best.id))
-        applyRigToForm(best)
-    }, [exifCameraModel, exifLensModel, userRigs, selectedRigId, applyRigToForm])
-
-    // Auto-select camera/lens from EXIF when no rig covers them
-    useEffect(() => {
-        if (!exifCameraModel && !exifLensModel) return
-        setForm(prev => {
-            const updates: Partial<UploadForm> = {}
-            if (exifCameraModel && !prev.cameraId) {
-                const match = equipment.cameras.find(c => c.exifId === exifCameraModel)
-                if (match) updates.cameraId = String(match.id)
-            }
-            if (exifLensModel && !prev.lensId) {
-                const match = equipment.lenses.find(l => l.exifId === exifLensModel)
-                if (match) updates.lensId = String(match.id)
-            }
-            return Object.keys(updates).length ? { ...prev, ...updates } : prev
-        })
-    }, [equipment, exifCameraModel, exifLensModel])
+    }, [exifCameraModel, exifLensModel, userRigs, selectedRigId])
 
     const extractExif = useCallback(async (f: File) => {
         setExifLoading(true)
@@ -254,10 +174,7 @@ export default function GalleryUploadButton() {
             if (form.focalLength) fd.append('focalLength', form.focalLength)
             if (form.aperture) fd.append('aperture', form.aperture)
             if (form.shutterSpeed) fd.append('shutterSpeed', form.shutterSpeed)
-            if (form.cameraId) fd.append('cameraId', form.cameraId)
-            if (form.lensId) fd.append('lensId', form.lensId)
-            if (form.housingId) fd.append('housingId', form.housingId)
-            if (form.portId) fd.append('portId', form.portId)
+            if (selectedRigId) fd.append('rigId', selectedRigId)
 
             const res = await fetch('/api/gallery/upload', { method: 'POST', body: fd })
             const data = await res.json().catch(() => ({}))
@@ -283,6 +200,7 @@ export default function GalleryUploadButton() {
         setExifLensModel(null)
         setUserRigs([])
         setSelectedRigId('')
+
         if (previewUrlRef.current) {
             URL.revokeObjectURL(previewUrlRef.current)
             previewUrlRef.current = null
@@ -427,90 +345,32 @@ export default function GalleryUploadButton() {
 
                                     {/* Equipment */}
                                     <div>
-                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Equipment (optional)</p>
-                                        {/* Rig selector */}
-                                        <div className="mb-3">
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">Camera rig</label>
-                                            {userRigs.length === 0 ? (
-                                                <p className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-                                                    No rigs set up yet.{' '}
-                                                    <a
-                                                        href={`/users/${session?.user?.id}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-blue-600 hover:underline"
-                                                    >
-                                                        Create one on your profile
-                                                    </a>{' '}
-                                                    to quickly pre-fill your equipment.
-                                                </p>
-                                            ) : (
-                                                <select
-                                                    value={selectedRigId}
-                                                    onChange={e => handleRigChange(e.target.value)}
-                                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Camera rig (optional)</p>
+                                        {userRigs.length === 0 ? (
+                                            <p className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                                                No rigs set up yet.{' '}
+                                                <a
+                                                    href={`/users/${session?.user?.id}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:underline"
                                                 >
-                                                    <option value="">Select a rig (optional)</option>
-                                                    {userRigs.map(r => (
-                                                        <option key={r.id} value={String(r.id)}>{r.name}</option>
-                                                    ))}
-                                                </select>
-                                            )}
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div>
-                                                <label className="block text-xs font-medium text-gray-700 mb-1">Camera</label>
-                                                <select
-                                                    value={form.cameraId}
-                                                    onChange={e => setForm(prev => ({ ...prev, cameraId: e.target.value }))}
-                                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                                                >
-                                                    <option value="">None</option>
-                                                    {equipment.cameras.map(c => (
-                                                        <option key={c.id} value={String(c.id)}>{c.brand.name} {c.name}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-medium text-gray-700 mb-1">Housing</label>
-                                                <select
-                                                    value={form.housingId}
-                                                    onChange={e => setForm(prev => ({ ...prev, housingId: e.target.value }))}
-                                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                                                >
-                                                    <option value="">None</option>
-                                                    {equipment.housings.map(h => (
-                                                        <option key={h.id} value={String(h.id)}>{h.manufacturer.name} {h.name}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-medium text-gray-700 mb-1">Lens</label>
-                                                <select
-                                                    value={form.lensId}
-                                                    onChange={e => setForm(prev => ({ ...prev, lensId: e.target.value }))}
-                                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                                                >
-                                                    <option value="">None</option>
-                                                    {equipment.lenses.map(l => (
-                                                        <option key={l.id} value={String(l.id)}>{l.name}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-medium text-gray-700 mb-1">Port</label>
-                                                <select
-                                                    value={form.portId}
-                                                    onChange={e => setForm(prev => ({ ...prev, portId: e.target.value }))}
-                                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                                                >
-                                                    <option value="">None</option>
-                                                    {equipment.ports.map(p => (
-                                                        <option key={p.id} value={String(p.id)}>{p.name}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </div>
+                                                    Create one on your profile
+                                                </a>{' '}
+                                                to tag photos with your equipment.
+                                            </p>
+                                        ) : (
+                                            <select
+                                                value={selectedRigId}
+                                                onChange={e => setSelectedRigId(e.target.value)}
+                                                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                                            >
+                                                <option value="">Select a rig (optional)</option>
+                                                {userRigs.map(r => (
+                                                    <option key={r.id} value={String(r.id)}>{r.name}</option>
+                                                ))}
+                                            </select>
+                                        )}
                                     </div>
                                 </>
                             )}

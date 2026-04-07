@@ -59,7 +59,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
             : null
 
     const galleryPhotos = await prisma.galleryPhoto.findMany({
-        where: { cameraId: camera.id },
+        where: { rig: { cameraId: camera.id } },
         orderBy: { takenAt: 'desc' },
         take: 12,
     })
