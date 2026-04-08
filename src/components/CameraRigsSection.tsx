@@ -124,16 +124,14 @@ function RigCard({
                     </div>
                 </div>
             )}            {/* Rig cover photo */}
-            {rig.imagePath && (
-                <div className="relative w-full h-40 bg-gray-100">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                        src={`/api/media${rig.imagePath}`}
-                        alt={`${rig.name} assembled`}
-                        className="w-full h-full object-cover"
-                    />
-                </div>
-            )}
+            <div className="relative w-full h-40 bg-blue-50">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src={rig.imagePath ? `/api/media${rig.imagePath}` : '/housings/rig-placeholder.png'}
+                    alt={`${rig.name} assembled`}
+                    className={`w-full h-full ${rig.imagePath ? 'object-cover' : 'object-contain p-2'}`}
+                />
+            </div>
             <div className="p-4">
                 <div className="flex items-start justify-between gap-2 mb-3">
                     <h4 className="font-semibold text-gray-800 text-sm">{rig.name}</h4>
