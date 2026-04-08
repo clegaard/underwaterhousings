@@ -5,6 +5,24 @@ This is a Next.js 14 catalog application for underwater camera housings from man
 
 ## Key Architecture Patterns
 
+### Scraping
+- Scrapers should extract prices in USD per default
+- Data sourced from manufacturer websites such as Nauticam and Sea Frogs
+- Scrapers are in `automations/` and use Cheerio for HTML parsing
+- Output is structured JSON for easy Prisma seeding
+- Scrapers include logic to determine features like interchangeable ports based on title keywords and spec tables
+- Scraping is a one-time operation per manufacturer, with manual review of output before seeding
+- Scrapers are designed to be idempotent and can be re-run if needed without affecting existing data
+- Scraping logic is tightly coupled to the specific HTML structure of each manufacturer's site, so changes to those sites may require scraper updates
+- Scrapers also extract camera compatibility information to populate the many-to-many relationships in the database
+- Scrapers include error handling and logging to identify issues during data extraction
+- Scrapers are run locally and the output JSON is committed to the repository for transparency and version control
+- Scrapers are not part of the regular development workflow and are only used when adding new manufacturers or updating existing data
+- Scrapers are documented with comments to explain the logic and assumptions made during data extraction
+- Scrapers are designed to minimize the number of HTTP requests by extracting all necessary data from a single page when possible, rather than following multiple links
+
+
+
 ### Database Schema (Prisma)
 - **Core entities**: `HousingManufacturer`, `CameraManufacturer`, `Camera`, `Housing`
 - **Relationships**: Housings belong to manufacturers and are compatible with specific cameras
