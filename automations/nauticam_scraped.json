@@ -1,5 +1,5 @@
 {
-  "scrapedAt": "2026-04-08T09:07:28.397Z",
+  "scrapedAt": "2026-04-08T10:05:33.714Z",
   "sourceBaseUrl": "https://www.nauticam.com",
   "_notes": [
     "Prices are in USD (fetched via Shopify products.json from a US IP; geo-based pricing).",
@@ -107,7 +107,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N100",
-      "cameraName": "α7 V",
+      "cameraName": "A7V",
       "cameraBrand": "Sony",
       "interchangeablePort": true,
       "productPhotos": [
@@ -143,7 +143,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N120",
-      "cameraName": "EOS R6III",
+      "cameraName": "R6III",
       "cameraBrand": "Canon",
       "interchangeablePort": true,
       "productPhotos": [
@@ -249,7 +249,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N85",
-      "cameraName": "OM-5II",
+      "cameraName": "OM5II",
       "cameraBrand": "OM System",
       "interchangeablePort": true,
       "productPhotos": [
@@ -317,7 +317,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N50",
-      "cameraName": "PowerShot V1 Digital",
+      "cameraName": "CV1",
       "cameraBrand": "Canon",
       "interchangeablePort": true,
       "productPhotos": [
@@ -404,7 +404,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "a1II and a9III",
+      "cameraName": "α1II",
       "cameraBrand": "Sony",
       "interchangeablePort": false,
       "productPhotos": [
@@ -440,7 +440,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N120",
-      "cameraName": "Lumix S1R II / S1II / S1IIE",
+      "cameraName": "S1RII",
       "cameraBrand": "Panasonic",
       "interchangeablePort": true,
       "productPhotos": [
@@ -476,7 +476,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "Z 50 II",
+      "cameraName": "Z50II",
       "cameraBrand": "Nikon",
       "interchangeablePort": false,
       "productPhotos": [
@@ -507,7 +507,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "Shinobi II 5.2\" Monitor with HDMI 1.4 input",
+      "cameraName": "Shinobi",
       "cameraBrand": "Atomos",
       "interchangeablePort": false,
       "productPhotos": [
@@ -606,7 +606,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "EOS R1",
+      "cameraName": "R1",
       "cameraBrand": "Canon",
       "interchangeablePort": false,
       "productPhotos": [
@@ -642,7 +642,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N120",
-      "cameraName": "EOS R5II",
+      "cameraName": "R5II",
       "cameraBrand": "Canon",
       "interchangeablePort": true,
       "productPhotos": [
@@ -679,7 +679,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "Tough TG 6 / 7 Camera (M52)",
+      "cameraName": "TG7",
       "cameraBrand": "OM System",
       "interchangeablePort": false,
       "productPhotos": [
@@ -710,7 +710,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "Tough TG 6 / 7 Camera (BM)",
+      "cameraName": "TG7",
       "cameraBrand": "OM System",
       "interchangeablePort": false,
       "productPhotos": [
@@ -777,7 +777,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N100",
-      "cameraName": "A7CII / R",
+      "cameraName": "A7CII",
       "cameraBrand": "Sony",
       "interchangeablePort": true,
       "productPhotos": [
@@ -910,7 +910,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "EOS R50",
+      "cameraName": "R50",
       "cameraBrand": "Canon",
       "interchangeablePort": false,
       "productPhotos": [
@@ -981,7 +981,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "Ultra 5",
+      "cameraName": "Ultra5",
       "cameraBrand": "SmallHD",
       "interchangeablePort": false,
       "productPhotos": [
@@ -1010,7 +1010,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N120",
-      "cameraName": "Lumix S5II/X",
+      "cameraName": "S5II",
       "cameraBrand": "Panasonic",
       "interchangeablePort": true,
       "productPhotos": [
@@ -1057,7 +1057,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "Fixed Flat Port with Bayonet Mount",
-      "cameraName": "EOS R50 with RF-S 18-45mm F4.5-6.3 IS STM Lens",
+      "cameraName": "R50",
       "cameraBrand": "Canon",
       "interchangeablePort": true,
       "productPhotos": [
@@ -1089,7 +1089,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N120",
-      "cameraName": "EOS R6 II",
+      "cameraName": "R6II",
       "cameraBrand": "Canon",
       "interchangeablePort": true,
       "productPhotos": [
@@ -1125,7 +1125,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "α7R V",
+      "cameraName": "A7RV",
       "cameraBrand": "Sony",
       "interchangeablePort": false,
       "productPhotos": [
@@ -1224,7 +1224,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N100",
-      "cameraName": "EOS R7",
+      "cameraName": "R7",
       "cameraBrand": "Canon",
       "interchangeablePort": true,
       "productPhotos": [
@@ -1262,7 +1262,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N85",
-      "cameraName": "OM-1 and OM-1 Mark II",
+      "cameraName": "OM1",
       "cameraBrand": "OM System",
       "interchangeablePort": true,
       "productPhotos": [
@@ -1298,7 +1298,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N120 Cinema",
-      "cameraName": "EOS R5 C",
+      "cameraName": "R5C",
       "cameraBrand": "Canon",
       "interchangeablePort": true,
       "productPhotos": [
@@ -1405,7 +1405,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "Lumix GH6 and GH7",
+      "cameraName": "GH6",
       "cameraBrand": "Panasonic",
       "interchangeablePort": false,
       "productPhotos": [
@@ -1441,7 +1441,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "503 UltraBright On-Camera Monitor (with 3G-SDI input support)",
+      "cameraName": "503-S",
       "cameraBrand": "SmallHD",
       "interchangeablePort": false,
       "productPhotos": [
@@ -1609,7 +1609,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N120",
-      "cameraName": "EOS R5",
+      "cameraName": "R5",
       "cameraBrand": "Canon",
       "interchangeablePort": true,
       "productPhotos": [
@@ -1644,7 +1644,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N120",
-      "cameraName": "E2-S6/F6/F8/M4",
+      "cameraName": "E2F",
       "cameraBrand": "Z CAM",
       "interchangeablePort": true,
       "productPhotos": [
@@ -1673,7 +1673,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N100",
-      "cameraName": "Z 50",
+      "cameraName": "Z50",
       "cameraBrand": "Nikon",
       "interchangeablePort": true,
       "productPhotos": [
@@ -1716,7 +1716,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N100",
-      "cameraName": "A9II/A7RIV Camera (with HDMI 2.0 support)",
+      "cameraName": "α2020",
       "cameraBrand": "Sony",
       "interchangeablePort": true,
       "productPhotos": [
@@ -1750,7 +1750,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "DSC-RX100 VII Digital",
+      "cameraName": "RX100VII",
       "cameraBrand": "Sony",
       "interchangeablePort": false,
       "productPhotos": [
@@ -1802,7 +1802,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "PowerShot G7X Mark III",
+      "cameraName": "G7XIII",
       "cameraBrand": "Canon",
       "interchangeablePort": false,
       "productPhotos": [
@@ -1860,7 +1860,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N85 for Olympus and Panasonic Micro Four Thirds",
-      "cameraName": "Lumix GH5/GH5S/GH5II Cameras with HDMI 2.0 Support",
+      "cameraName": "GH5SV",
       "cameraBrand": "Panasonic",
       "interchangeablePort": true,
       "productPhotos": [
@@ -2070,7 +2070,7 @@
       "depthRating": 40,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "iPhone6",
+      "cameraName": "IP6",
       "cameraBrand": "Apple",
       "interchangeablePort": false,
       "productPhotos": [
@@ -2088,7 +2088,7 @@
       "depthRating": 40,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "iPhone6",
+      "cameraName": "IP6",
       "cameraBrand": "Apple",
       "interchangeablePort": false,
       "productPhotos": [
@@ -2106,7 +2106,7 @@
       "depthRating": 70,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "H4D /H3D",
+      "cameraName": "H4D",
       "cameraBrand": "Hasselblad",
       "interchangeablePort": false,
       "productPhotos": [
@@ -2124,7 +2124,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "Cyber-shot DSC-RX100 II Digital Camera (HDMI bulkhead included)",
+      "cameraName": "RX100IIV",
       "cameraBrand": "Sony",
       "interchangeablePort": false,
       "productPhotos": [],
@@ -2140,7 +2140,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "X-T1",
+      "cameraName": "XT1",
       "cameraBrand": "Fujifilm",
       "interchangeablePort": false,
       "productPhotos": [
@@ -2158,7 +2158,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": null,
-      "cameraName": "A7/A7R Cameras",
+      "cameraName": "A7",
       "cameraBrand": "Sony",
       "interchangeablePort": false,
       "productPhotos": [
@@ -2195,7 +2195,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N120",
-      "cameraName": "EOS 5DS/5DSR/5DMKIII Cameras",
+      "cameraName": "5DSR",
       "cameraBrand": "Canon",
       "interchangeablePort": true,
       "productPhotos": [
@@ -2248,7 +2248,7 @@
       "depthRating": 100,
       "material": "Aluminum",
       "housingMount": "N120",
-      "cameraName": "D4/D4s",
+      "cameraName": "D4s",
       "cameraBrand": "Nikon",
       "interchangeablePort": true,
       "productPhotos": [

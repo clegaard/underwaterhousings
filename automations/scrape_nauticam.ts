@@ -142,6 +142,21 @@ const CAMERA_BRAND_PATTERNS: CameraBrandPattern[] = [
 ];
 
 function extractCameraInfo(title: string): { brandName: string | null; cameraName: string | null } {
+    // Nauticam housings are named "NA-{CameraCode} Housing for {Brand} …"
+    // Using the product code (e.g. "NA-α1II") is more precise than parsing the
+    // "for …" suffix because housings sometimes list multiple cameras there
+    // (e.g. "NA-α1II Housing for Sony a1II and a9III Camera").
+    const naCodeMatch = /^NA-([^\s(]+)/i.exec(title);
+    if (naCodeMatch) {
+        const modelFromCode = naCodeMatch[1]; // e.g. "α1II", "A7V", "R6III"
+        for (const { brandName, pattern } of CAMERA_BRAND_PATTERNS) {
+            if (pattern.test(title)) {
+                return { brandName, cameraName: modelFromCode };
+            }
+        }
+    }
+
+    // Fall back to parsing "for Brand Model" from the title suffix.
     for (const { brandName, pattern } of CAMERA_BRAND_PATTERNS) {
         const m = pattern.exec(title);
         if (m) {
