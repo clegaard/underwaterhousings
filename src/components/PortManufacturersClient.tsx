@@ -16,13 +16,37 @@ interface Port {
     priceCurrency: string | null
 }
 
+interface ExtensionRing {
+    id: number
+    name: string
+    slug: string
+    housingMount: { id: number; name: string; slug: string } | null
+    productPhotos: string[]
+    priceAmount: number | null
+    priceCurrency: string | null
+    lengthMm: number | null
+}
+
+interface PortAdapter {
+    id: number
+    name: string
+    slug: string
+    inputHousingMount: { id: number; name: string; slug: string } | null
+    outputHousingMount: { id: number; name: string; slug: string } | null
+    productPhotos: string[]
+    priceAmount: number | null
+    priceCurrency: string | null
+}
+
 interface Manufacturer {
     id: number
     name: string
     slug: string
     logoPath: string | null
-    _count: { ports: number }
+    _count: { ports: number; extensionRings: number; portAdapters: number }
     ports: Port[]
+    extensionRings: ExtensionRing[]
+    portAdapters: PortAdapter[]
 }
 
 interface HousingMount {
@@ -222,7 +246,7 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
                 priceAmount: null, priceCurrency: null,
             }
             setManufacturers(prev => prev.map(m => m.id === portTargetMfr.id
-                ? { ...m, ports: [...m.ports, newPort], _count: { ports: m._count.ports + 1 } }
+                ? { ...m, ports: [...m.ports, newPort], _count: { ports: m._count.ports + 1, extensionRings: m._count.extensionRings, portAdapters: m._count.portAdapters } }
                 : m
             ))
             router.refresh()
@@ -268,14 +292,16 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
             setManufacturers(prev => prev.map(m => m.id !== portTargetMfr.id ? m : {
                 ...m,
                 ports: m.ports.filter(p => p.id !== portTarget.id),
-                _count: { ports: m._count.ports - 1 },
+                _count: { ports: m._count.ports - 1, extensionRings: m._count.extensionRings, portAdapters: m._count.portAdapters },
             }))
             closePortModal()
         } catch { setPortError('Network error') }
         finally { setPortLoading(false) }
     }
 
-    const visibleManufacturers = manufacturers.filter(m => m._count.ports > 0 || isSuperuser)
+    const visibleManufacturers = manufacturers.filter(m =>
+        m._count.ports > 0 || m._count.extensionRings > 0 || m._count.portAdapters > 0 || isSuperuser
+    )
 
     if (visibleManufacturers.length === 0) {
         return (
@@ -307,7 +333,7 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
                             </Link>
                             <div className="flex-1 h-px bg-gray-200" />
                             <span className="text-xs text-gray-400 flex-shrink-0">
-                                {manufacturer._count.ports} port{manufacturer._count.ports !== 1 ? 's' : ''}
+                                {manufacturer._count.ports + manufacturer._count.extensionRings + manufacturer._count.portAdapters} item{manufacturer._count.ports + manufacturer._count.extensionRings + manufacturer._count.portAdapters !== 1 ? 's' : ''}
                             </span>
                             {isSuperuser && (
                                 <div className="flex gap-1 opacity-0 group-hover/mfr:opacity-100 transition-opacity">
@@ -333,7 +359,7 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
                                 const imageInfo = getPortImagePathWithFallback(port.productPhotos)
                                 const price = port.priceAmount ? Number(port.priceAmount) : null
                                 return (
-                                    <div key={port.id} className="group/card relative">
+                                    <div key={`port-${port.id}`} className="group/card relative">
                                         <Link
                                             href={`/ports/${manufacturer.slug}/${port.slug}`}
                                             className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all overflow-hidden block"
@@ -387,6 +413,85 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
                                                 </button>
                                             </div>
                                         )}
+                                    </div>
+                                )
+                            })}
+
+                            {/* Extension ring cards */}
+                            {manufacturer.extensionRings.map(ring => {
+                                const imageInfo = getPortImagePathWithFallback(ring.productPhotos)
+                                const price = ring.priceAmount ? Number(ring.priceAmount) : null
+                                return (
+                                    <div key={`ring-${ring.id}`} className="group/card relative">
+                                        <div className="bg-white rounded-xl border border-amber-200 hover:border-amber-400 hover:shadow-md transition-all overflow-hidden block">
+                                            <div className="relative h-28 bg-gray-50">
+                                                <HousingImage
+                                                    src={imageInfo.src}
+                                                    fallback={imageInfo.fallback}
+                                                    alt={ring.name}
+                                                    className="object-contain p-3 w-full h-full"
+                                                />
+                                                <span className="absolute top-1.5 left-1.5 text-[10px] bg-amber-100 text-amber-700 font-medium px-1.5 py-0.5 rounded-full">
+                                                    Ext. Ring
+                                                </span>
+                                                {ring.housingMount && (
+                                                    <span className="absolute top-1.5 right-1.5 text-[10px] bg-gray-100 text-gray-600 font-medium px-1.5 py-0.5 rounded-full">
+                                                        {ring.housingMount.slug.toUpperCase()}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="px-2.5 py-2">
+                                                <p className="text-xs font-semibold text-gray-900 leading-snug line-clamp-2">
+                                                    {ring.name}
+                                                </p>
+                                                {ring.lengthMm !== null && (
+                                                    <p className="text-[10px] text-amber-600 mt-0.5">{ring.lengthMm} mm</p>
+                                                )}
+                                                {price !== null && (
+                                                    <p className="text-xs font-medium text-green-600 mt-1">
+                                                        ${price.toLocaleString()}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+
+                            {/* Port adapter cards */}
+                            {manufacturer.portAdapters.map(adapter => {
+                                const imageInfo = getPortImagePathWithFallback(adapter.productPhotos)
+                                const price = adapter.priceAmount ? Number(adapter.priceAmount) : null
+                                return (
+                                    <div key={`adapter-${adapter.id}`} className="group/card relative">
+                                        <div className="bg-white rounded-xl border border-purple-200 hover:border-purple-400 hover:shadow-md transition-all overflow-hidden block">
+                                            <div className="relative h-28 bg-gray-50">
+                                                <HousingImage
+                                                    src={imageInfo.src}
+                                                    fallback={imageInfo.fallback}
+                                                    alt={adapter.name}
+                                                    className="object-contain p-3 w-full h-full"
+                                                />
+                                                <span className="absolute top-1.5 left-1.5 text-[10px] bg-purple-100 text-purple-700 font-medium px-1.5 py-0.5 rounded-full">
+                                                    Adapter
+                                                </span>
+                                            </div>
+                                            <div className="px-2.5 py-2">
+                                                <p className="text-xs font-semibold text-gray-900 leading-snug line-clamp-2">
+                                                    {adapter.name}
+                                                </p>
+                                                {(adapter.inputHousingMount || adapter.outputHousingMount) && (
+                                                    <p className="text-[10px] text-purple-600 mt-0.5 truncate">
+                                                        {adapter.inputHousingMount?.slug.toUpperCase() ?? '?'} → {adapter.outputHousingMount?.slug.toUpperCase() ?? '?'}
+                                                    </p>
+                                                )}
+                                                {price !== null && (
+                                                    <p className="text-xs font-medium text-green-600 mt-1">
+                                                        ${price.toLocaleString()}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 )
                             })}

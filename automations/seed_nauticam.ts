@@ -191,11 +191,39 @@ interface ScrapedPort {
     sourceUrl: string;
 }
 
+interface ScrapedExtensionRing {
+    name: string;
+    slug: string;
+    sku: string;
+    description: string;
+    priceAmount: number | null;
+    priceCurrency: string;
+    lengthMm: number | null;
+    housingMount: string | null;
+    productPhotos: string[];
+    sourceUrl: string;
+}
+
+interface ScrapedPortAdapter {
+    name: string;
+    slug: string;
+    sku: string;
+    description: string;
+    priceAmount: number | null;
+    priceCurrency: string;
+    inputHousingMount: string | null;
+    outputHousingMount: string | null;
+    productPhotos: string[];
+    sourceUrl: string;
+}
+
 interface ScraperOutput {
     manufacturer: { name: string; slug: string };
     housingMounts: ScrapedMount[];
     housings: ScrapedHousing[];
     ports: ScrapedPort[];
+    extensionRings: ScrapedExtensionRing[];
+    portAdapters: ScrapedPortAdapter[];
 }
 
 // ---------------------------------------------------------------------------
@@ -251,6 +279,8 @@ async function main(): Promise<void> {
     console.log(`  ${data.housingMounts.length} housing mounts`);
     console.log(`  ${data.housings.length} housings`);
     console.log(`  ${data.ports.length} ports`);
+    console.log(`  ${(data.extensionRings ?? []).length} extension rings`);
+    console.log(`  ${(data.portAdapters ?? []).length} port adapters`);
 
     if (s3Configured) {
         console.log("  S3 configured ✅ — product photos will be downloaded and uploaded");
@@ -483,6 +513,102 @@ async function main(): Promise<void> {
     }
 
     console.log(`✅ Ports: ${portOk} upserted`);
+
+    // ------------------------------------------------------------------
+    // 7. Upsert extension rings
+    // ------------------------------------------------------------------
+    let ringOk = 0;
+    for (const r of (data.extensionRings ?? [])) {
+        const housingMountId =
+            r.housingMount && mountMap.has(r.housingMount)
+                ? mountMap.get(r.housingMount)!
+                : null;
+
+        if (r.housingMount && !mountMap.has(r.housingMount)) {
+            console.warn(`  ⚠ Unknown mount "${r.housingMount}" for extension ring: ${r.name}`);
+        }
+
+        process.stdout.write(`  Uploading photos for ${r.slug} `);
+        const productPhotos = await uploadProductPhotos(
+            r.productPhotos,
+            `extension-rings/nauticam/${r.slug}`,
+        );
+        process.stdout.write(" ✓\n");
+
+        await prisma.extensionRing.upsert({
+            where: { slug: r.slug },
+            update: {
+                name: r.name,
+                description: r.description || null,
+                priceAmount: r.priceAmount,
+                priceCurrency: r.priceCurrency,
+                lengthMm: r.lengthMm,
+                housingMountId,
+                productPhotos,
+            },
+            create: {
+                name: r.name,
+                slug: r.slug,
+                description: r.description || null,
+                priceAmount: r.priceAmount,
+                priceCurrency: r.priceCurrency,
+                lengthMm: r.lengthMm,
+                manufacturerId: nauticam.id,
+                housingMountId,
+                productPhotos,
+            },
+        });
+        ringOk++;
+    }
+    console.log(`✅ Extension rings: ${ringOk} upserted`);
+
+    // ------------------------------------------------------------------
+    // 8. Upsert port adapters
+    // ------------------------------------------------------------------
+    let adapterOk = 0;
+    for (const a of (data.portAdapters ?? [])) {
+        const inputHousingMountId =
+            a.inputHousingMount && mountMap.has(a.inputHousingMount)
+                ? mountMap.get(a.inputHousingMount)!
+                : null;
+        const outputHousingMountId =
+            a.outputHousingMount && mountMap.has(a.outputHousingMount)
+                ? mountMap.get(a.outputHousingMount)!
+                : null;
+
+        process.stdout.write(`  Uploading photos for ${a.slug} `);
+        const productPhotos = await uploadProductPhotos(
+            a.productPhotos,
+            `port-adapters/nauticam/${a.slug}`,
+        );
+        process.stdout.write(" ✓\n");
+
+        await prisma.portAdapter.upsert({
+            where: { slug: a.slug },
+            update: {
+                name: a.name,
+                description: a.description || null,
+                priceAmount: a.priceAmount,
+                priceCurrency: a.priceCurrency,
+                inputHousingMountId,
+                outputHousingMountId,
+                productPhotos,
+            },
+            create: {
+                name: a.name,
+                slug: a.slug,
+                description: a.description || null,
+                priceAmount: a.priceAmount,
+                priceCurrency: a.priceCurrency,
+                manufacturerId: nauticam.id,
+                inputHousingMountId,
+                outputHousingMountId,
+                productPhotos,
+            },
+        });
+        adapterOk++;
+    }
+    console.log(`✅ Port adapters: ${adapterOk} upserted`);
     console.log("\n✅ Done.");
 }
 

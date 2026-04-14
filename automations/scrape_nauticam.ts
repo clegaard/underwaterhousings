@@ -101,6 +101,32 @@ interface ScrapedPort {
     sourceUrl: string;
 }
 
+interface ScrapedExtensionRing {
+    name: string;
+    slug: string;
+    sku: string;
+    description: string;
+    priceAmount: number | null;
+    priceCurrency: string;
+    lengthMm: number | null;
+    housingMount: string | null;
+    productPhotos: string[];
+    sourceUrl: string;
+}
+
+interface ScrapedPortAdapter {
+    name: string;
+    slug: string;
+    sku: string;
+    description: string;
+    priceAmount: number | null;
+    priceCurrency: string;
+    inputHousingMount: string | null;
+    outputHousingMount: string | null;
+    productPhotos: string[];
+    sourceUrl: string;
+}
+
 interface ScraperOutput {
     scrapedAt: string;
     sourceBaseUrl: string;
@@ -109,6 +135,8 @@ interface ScraperOutput {
     housingMounts: HousingMount[];
     housings: ScrapedHousing[];
     ports: ScrapedPort[];
+    extensionRings: ScrapedExtensionRing[];
+    portAdapters: ScrapedPortAdapter[];
 }
 
 // ---------------------------------------------------------------------------
@@ -271,6 +299,38 @@ function isFlatPort(name: string): boolean {
     for (const kw of flatKeywords) if (lower.includes(kw)) return true;
     for (const kw of domeKeywords) if (lower.includes(kw)) return false;
     return true; // default: flat
+}
+
+// ---------------------------------------------------------------------------
+// Port-type classification helpers
+// ---------------------------------------------------------------------------
+
+type PortKind = "port" | "extensionRing" | "portAdapter";
+
+function classifyPortProduct(title: string): PortKind {
+    const lower = title.toLowerCase();
+    if (lower.includes("extension ring") || lower.includes("extension tube")) {
+        return "extensionRing";
+    }
+    if (lower.includes("adapter") || lower.includes("adaptor")) {
+        // Dome/flat ports that mention an adapter in their description are still ports
+        const isActualPort = lower.includes("dome port") || lower.includes("flat port") || lower.includes("wide-angle") || lower.includes("wide angle");
+        if (!isActualPort) return "portAdapter";
+    }
+    return "port";
+}
+
+/** Extract extension ring length from the product name, e.g. "N120 Extension Ring 50" → 50 */
+function extractExtensionRingLength(name: string): number | null {
+    const m = /extension\s+(?:ring|tube)\s+(\d+)/i.exec(name);
+    return m ? parseInt(m[1], 10) : null;
+}
+
+/** Parse "N85 to N120" or "N100 to N200" from an adapter product name. */
+function extractAdapterMounts(name: string): { inputMount: string | null; outputMount: string | null } {
+    const m = /(N\d+)\s+to\s+(N\d+)/i.exec(name);
+    if (m) return { inputMount: m[1].toUpperCase(), outputMount: m[2].toUpperCase() };
+    return { inputMount: null, outputMount: null };
 }
 
 // ---------------------------------------------------------------------------
@@ -443,19 +503,81 @@ function transformPort(product: ShopifyProduct): ScrapedPort {
     };
 }
 
+function transformExtensionRing(product: ShopifyProduct): ScrapedExtensionRing {
+    const { title, handle, body_html, variants, images } = product;
+    const bodyHtml = body_html ?? "";
+    const specs = parseSpecTable(bodyHtml);
+
+    const sku = variants[0]?.sku ?? "";
+    const priceAmount = variants[0]?.price ? parseFloat(variants[0].price) : null;
+    const portSystem = specs.get("port system")?.trim() || null;
+    const photos = images.map((img) => img.src).filter(Boolean);
+    const description = extractDescription(bodyHtml);
+
+    return {
+        name: title,
+        slug: handle,
+        sku,
+        description,
+        priceAmount,
+        priceCurrency: "USD",
+        lengthMm: extractExtensionRingLength(title),
+        housingMount: portSystem,
+        productPhotos: photos,
+        sourceUrl: `${BASE_URL}/collections/ports/products/${handle}`,
+    };
+}
+
+function transformPortAdapter(product: ShopifyProduct): ScrapedPortAdapter {
+    const { title, handle, body_html, variants, images } = product;
+    const bodyHtml = body_html ?? "";
+    const specs = parseSpecTable(bodyHtml);
+
+    const sku = variants[0]?.sku ?? "";
+    const priceAmount = variants[0]?.price ? parseFloat(variants[0].price) : null;
+    const portSystem = specs.get("port system")?.trim() || null;
+    const photos = images.map((img) => img.src).filter(Boolean);
+    const description = extractDescription(bodyHtml);
+
+    const { inputMount, outputMount } = extractAdapterMounts(title);
+
+    return {
+        name: title,
+        slug: handle,
+        sku,
+        description,
+        priceAmount,
+        priceCurrency: "USD",
+        // Prefer parsed mounts from name; fall back to portSystem for input
+        inputHousingMount: inputMount ?? portSystem,
+        outputHousingMount: outputMount,
+        productPhotos: photos,
+        sourceUrl: `${BASE_URL}/collections/ports/products/${handle}`,
+    };
+}
+
 // ---------------------------------------------------------------------------
 // Collect unique housing mounts
 // ---------------------------------------------------------------------------
 
 function collectHousingMounts(
     housings: ScrapedHousing[],
-    ports: ScrapedPort[]
+    ports: ScrapedPort[],
+    extensionRings: ScrapedExtensionRing[],
+    portAdapters: ScrapedPortAdapter[],
 ): HousingMount[] {
     const seen = new Set<string>();
     const mounts: HousingMount[] = [];
 
-    for (const item of [...housings, ...ports]) {
-        const name = item.housingMount;
+    const allMountNames: Array<string | null> = [
+        ...housings.map((h) => h.housingMount),
+        ...ports.map((p) => p.housingMount),
+        ...extensionRings.map((r) => r.housingMount),
+        ...portAdapters.map((a) => a.inputHousingMount),
+        ...portAdapters.map((a) => a.outputHousingMount),
+    ];
+
+    for (const name of allMountNames) {
         if (name && !seen.has(name)) {
             seen.add(name);
             mounts.push({ name, slug: slugify(name), manufacturer: "Nauticam" });
@@ -507,9 +629,17 @@ async function main(): Promise<void> {
     console.log("Fetching ports …");
     const rawPorts = await fetchCollectionProducts("ports", delayMs);
     console.log(`  Total raw port products: ${rawPorts.length}`);
-    const ports = rawPorts.map(transformPort);
+    const ports: ScrapedPort[] = [];
+    const extensionRings: ScrapedExtensionRing[] = [];
+    const portAdapters: ScrapedPortAdapter[] = [];
+    for (const p of rawPorts) {
+        const kind = classifyPortProduct(p.title);
+        if (kind === "extensionRing") extensionRings.push(transformExtensionRing(p));
+        else if (kind === "portAdapter") portAdapters.push(transformPortAdapter(p));
+        else ports.push(transformPort(p));
+    }
 
-    const housingMounts = collectHousingMounts(housings, ports);
+    const housingMounts = collectHousingMounts(housings, ports, extensionRings, portAdapters);
 
     const cameraSet = new Set(
         housings
@@ -520,6 +650,8 @@ async function main(): Promise<void> {
     console.log();
     console.log(`  Housings scraped      : ${housings.length}`);
     console.log(`  Ports scraped         : ${ports.length}`);
+    console.log(`  Extension rings       : ${extensionRings.length}`);
+    console.log(`  Port adapters         : ${portAdapters.length}`);
     console.log(`  Housing mounts found  : ${housingMounts.length}`);
     console.log(`  Unique cameras found  : ${cameraSet.size}`);
 
@@ -537,11 +669,15 @@ async function main(): Promise<void> {
             "housingMount / portSystem fields are string references to HousingMount.name.",
             "cameraName / cameraBrand are string hints; exact DB IDs must be resolved during seeding.",
             "depthRating is in metres.",
+            "extensionRings.lengthMm is the ring length in millimetres.",
+            "portAdapters.inputHousingMount is the housing-side mount; outputHousingMount is the port-side mount.",
         ],
         manufacturer: { name: "Nauticam", slug: "nauticam" },
         housingMounts,
         housings,
         ports,
+        extensionRings,
+        portAdapters,
     };
 
     writeFileSync(output, JSON.stringify(result, null, 2), "utf-8");

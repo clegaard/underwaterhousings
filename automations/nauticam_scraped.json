@@ -1,11 +1,13 @@
 {
-  "scrapedAt": "2026-04-08T10:05:33.714Z",
+  "scrapedAt": "2026-04-14T06:14:49.363Z",
   "sourceBaseUrl": "https://www.nauticam.com",
   "_notes": [
     "Prices are in USD (fetched via Shopify products.json from a US IP; geo-based pricing).",
     "housingMount / portSystem fields are string references to HousingMount.name.",
     "cameraName / cameraBrand are string hints; exact DB IDs must be resolved during seeding.",
-    "depthRating is in metres."
+    "depthRating is in metres.",
+    "extensionRings.lengthMm is the ring length in millimetres.",
+    "portAdapters.inputHousingMount is the housing-side mount; outputHousingMount is the port-side mount."
   ],
   "manufacturer": {
     "name": "Nauticam",
@@ -20,11 +22,6 @@
     {
       "name": "N100",
       "slug": "n100",
-      "manufacturer": "Nauticam"
-    },
-    {
-      "name": "N100 to N120 Conversion",
-      "slug": "n100-to-n120-conversion",
       "manufacturer": "Nauticam"
     },
     {
@@ -55,16 +52,6 @@
     {
       "name": "N85 for Olympus and Panasonic Micro Four Thirds",
       "slug": "n85-for-olympus-and-panasonic-micro-four-thirds",
-      "manufacturer": "Nauticam"
-    },
-    {
-      "name": "N85 to N100 Conversion",
-      "slug": "n85-to-n100-conversion",
-      "manufacturer": "Nauticam"
-    },
-    {
-      "name": "N85 to N120 Conversion",
-      "slug": "n85-to-n120-conversion",
       "manufacturer": "Nauticam"
     }
   ],
@@ -2357,38 +2344,6 @@
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/n200-macro-port-40-with-m67-thread"
     },
     {
-      "name": "N200 Extension Ring 50",
-      "slug": "n200-extension-ring-50",
-      "sku": "16404",
-      "description": "The N200 Extension Ring 50 is part of the N200 Port System and can be used to add 50mm effective length to an N200 Port setup.",
-      "priceAmount": 1300,
-      "priceCurrency": "USD",
-      "depthRating": 100,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N200",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/DSC_5561-e1483435993682-1024x500_5fe40e5b-8e6b-4a9b-8985-503deedaa328.jpg?v=1507152462"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n200-extension-ring-50"
-    },
-    {
-      "name": "N200 Extension Ring 40",
-      "slug": "n200-extension-ring-40",
-      "sku": "16403",
-      "description": "The N200 Extension Ring 40 is part of the N200 Port System and can be used to add 40mm effective length to an N200 Port setup.",
-      "priceAmount": 1200,
-      "priceCurrency": "USD",
-      "depthRating": 100,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N200",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/DSC_5561-e1483435993682-1024x500_a6e5870f-db4e-40ff-bb16-ccfd9e497f93.jpg?v=1507152419"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n200-extension-ring-40"
-    },
-    {
       "name": "230mm Optical-Glass Wide Angle Port II",
       "slug": "230mm-optical-glass-fisheye-dome-port-ii",
       "sku": "18812",
@@ -2439,59 +2394,6 @@
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-140mm-optical-glass-fisheye-port-with-removable-shade"
     },
     {
-      "name": "N120 to N200 Port Adaptor ~for Cinema Lenses on N120 Cinema and DSLR Housings",
-      "slug": "n120-to-n200-port-adaptor-for-epic-weapon-lt-housings",
-      "sku": "16410",
-      "description": "The N200 Port System features larger port opening than N120, and allows many large diameter cinema styled lenses to be used underwater. This part was created specifically to expand the lens support options available for our N120 \"LT\" Housings for RED DSMC1 and DSMC2 cameras, but it also provides a path to use these lenses on DSLR systems, or even a Sony A7 via a combination of adaptors.",
-      "priceAmount": 3100,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/16410_correct_008.jpg?v=1592513089",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9815.jpg?v=1596815743",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9819.jpg?v=1596815743",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9826.jpg?v=1596815743",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9828.jpg?v=1596815743",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9830.jpg?v=1596815743",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9832.jpg?v=1596815743",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9833.jpg?v=1596815743",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9834.jpg?v=1596815743",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9836.jpg?v=1596815743",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9839.jpg?v=1596815743"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-to-n200-port-adaptor-for-epic-weapon-lt-housings"
-    },
-    {
-      "name": "N120 Adapter for Nikon-R UW Nikonos RS Lenses ~with RED DSMC Lens Mount",
-      "slug": "n120-adaptor-for-nikon-r-uw-nikonos-rs-lenses-with-red-dsmc-lens-mount",
-      "sku": "16409",
-      "description": "Ready to mount your Nikonos RS lenses on your RED? With this adapter you can mount Nikon-R Nikonos RS lenses to RED DSMC2 cameras when used with supported N120 RED Cinema Camera housings.",
-      "priceAmount": 7200,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/Weapon_RS_Mount-8.jpg?v=1592513436",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9754.jpg?v=1596815755",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9755.jpg?v=1596815755",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9756.jpg?v=1596815755",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9772.jpg?v=1596815755",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9776.jpg?v=1596815755",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9782.jpg?v=1596815755",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9783.jpg?v=1596815755",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9785.jpg?v=1596815755",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9784.jpg?v=1596815755",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9788.jpg?v=1596815755",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9789.jpg?v=1596815755"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-adaptor-for-nikon-r-uw-nikonos-rs-lenses-with-red-dsmc-lens-mount"
-    },
-    {
       "name": "N100 180mm Optical-Glass Wide-Angle Dome Port",
       "slug": "n100-180mm-optical-glass-wide-angle-port",
       "sku": "37129",
@@ -2522,22 +2424,6 @@
         "https://cdn.shopify.com/s/files/1/2305/1013/products/18802-1024x683.jpg?v=1507155297"
       ],
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/8-5-acrylic-dome-port-for-hasselblad-hcd-4-28mm"
-    },
-    {
-      "name": "N200 Extension Ring 30",
-      "slug": "n200-extension-ring-30",
-      "sku": "16402",
-      "description": "The N200 Extension Ring 30 is part of the N200 Port System and can be used to add 30mm effective length to an N200 Port setup.",
-      "priceAmount": 1000,
-      "priceCurrency": "USD",
-      "depthRating": 100,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N200",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/DSC_5561-e1483435993682-1024x500.jpg?v=1507152365"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n200-extension-ring-30"
     },
     {
       "name": "4.33\" Acrylic Wide-Angle Dome Port ~for Canon EF-EOS M Adapter and EF 8-15mm f/4L Fisheye USM",
@@ -2571,22 +2457,6 @@
         "https://cdn.shopify.com/s/files/1/2305/1013/products/18802-1.jpg?v=1642710743"
       ],
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/8-5-acrylic-dome-port-with-shade-and-neoprene-cover"
-    },
-    {
-      "name": "Insect-Eye Port Adapter N60-MR130 ~for Nikkor AF-D 60mm Macro Lens",
-      "slug": "insect-eye-port-adaptor-n60-mr130-for-nikkor-af-d-60mm-macro-lens",
-      "sku": "18722",
-      "description": "This port adapter is specifically designed to support the use of the INON UFL-MR130 EFS60 Underwater Micro Semifisheye Relay Lens on an N120 port system housing with the Canon AF-D 60mm Macro Lens.",
-      "priceAmount": 780,
-      "priceCurrency": "USD",
-      "depthRating": 100,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N120",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/18722_Insect_eye_port_adaptor_N60-MR130_for_Nikkor_AF-D_60mm_macro_lens.jpg?v=1562429086"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/insect-eye-port-adaptor-n60-mr130-for-nikkor-af-d-60mm-macro-lens"
     },
     {
       "name": "N85 140mm Optical-Glass Fisheye Dome Port",
@@ -2845,22 +2715,6 @@
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-flat-port-66-with-m77-thread-for-sony-fe-28-70mm-f3-5-5-6-oss-for-na-a7ii-a9"
     },
     {
-      "name": "Adapter for Olympus 4/3 Port and Gear System",
-      "slug": "adaptor-for-olympus-4-3-port-and-gear-system",
-      "sku": "36051",
-      "description": "Allows for the use of Olympus Evolt 4/3 Lenses and Ports on Nauticam MFT systems.",
-      "priceAmount": 900,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/nau.36051_1.jpg?v=1562429095"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/adaptor-for-olympus-4-3-port-and-gear-system"
-    },
-    {
       "name": "N100 Flat Port 74 With M77 Thread ~For Sony FE 28-70mm F3.5-5.6 OSS (For NA-A7)",
       "slug": "n100-flat-port-74-with-m77-thread-for-sony-fe-28-70mm-f3-5-5-6-oss-for-na-a7",
       "sku": "37121",
@@ -2891,342 +2745,6 @@
         "https://cdn.shopify.com/s/files/1/2305/1013/products/37127-N100-Flat-Port-32-1024x739.jpg?v=1562429115"
       ],
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-flat-port-32-for-sony-fe-28mm-f2-to-use-with-83201-wwl-1-for-na-a7ii-a9"
-    },
-    {
-      "name": "N100 to N120 40mm Port Adapter ~with Zoom/Focus knob (for NA-A7)",
-      "slug": "n100-to-n120-40mm-port-adaptor-with-zoom-focus-knob-for-na-a7",
-      "sku": "37301",
-      "description": "An adapter to convert from an N100 port opening to N120 port opening for the Sony A7 system. The extension also has an integrated focus/zoom gear knob.",
-      "priceAmount": 860,
-      "priceCurrency": "USD",
-      "depthRating": 150,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N100 to N120 Conversion",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/37301_N100_to_N120_40mm_port_adaptor_with_zoom_focus_knob.jpg?v=1562429096"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-to-n120-40mm-port-adaptor-with-zoom-focus-knob-for-na-a7"
-    },
-    {
-      "name": "N85 to N120 55mm Port Adapter ~with Lens Control Knob",
-      "slug": "n85-to-n120-55mm-port-adaptor",
-      "sku": "36401",
-      "description": "An adapter to convert from an N85 port opening to N120 port opening to allow for the use of N120 ports on N85 Port System housings.",
-      "priceAmount": 740,
-      "priceCurrency": "USD",
-      "depthRating": 100,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N85 to N120 Conversion",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/36401_1.JPG?v=1562429090"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n85-to-n120-55mm-port-adaptor"
-    },
-    {
-      "name": "N85 to N120 47mm Port Adapter ~with Knob for M4/3 System",
-      "slug": "n85-to-n120-47mm-port-adaptor-with-knob-for-m4-3-system",
-      "sku": "36052",
-      "description": "An adapter to convert from an N85 port opening to N120 port opening to allow the use of N120 ports on N85 housings for Micro Four Thirds Camera systems.",
-      "priceAmount": 740,
-      "priceCurrency": "USD",
-      "depthRating": 100,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N85 to N120 Conversion",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/36052-1-1024x682.jpg?v=1507202454"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n85-to-n120-47mm-port-adaptor-with-knob-for-m4-3-system"
-    },
-    {
-      "name": "N85 to N120 60mm Port Adapter ~for Sony E-mount System",
-      "slug": "n85-to-n120-60mm-port-adaptor-for-sony-e-mount-system",
-      "sku": "36204",
-      "description": "An adapter to convert from an N85 port opening to N120 port opening to use with N85 Sony housings with Metabones EF Lens to NEX Smart Adapter to use the Tokina 10-17mm fisheye lens.",
-      "priceAmount": 650,
-      "priceCurrency": "USD",
-      "depthRating": 100,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N85 to N120 Conversion",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/36204_N85_to_N120_60mm_port_adaptor_for_Sony_E-mount_System.jpg?v=1562429106"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n85-to-n120-60mm-port-adaptor-for-sony-e-mount-system"
-    },
-    {
-      "name": "N85 to N120 41.5mm Port Adapter ~with Zoom/Focus Knob",
-      "slug": "n85-to-n120-41-5mm-port-adaptor-with-zoom-focus-knob",
-      "sku": "36184",
-      "description": "An adapter to convert from an N85 port opening to N120 port opening for use with the NA-EOSM5 with Canon EF-EOS M adaptor and Canon EF mount lenses .",
-      "priceAmount": 760,
-      "priceCurrency": "USD",
-      "depthRating": 100,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N85 to N120 Conversion",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/36184-3.jpg?v=1572971479"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n85-to-n120-41-5mm-port-adaptor-with-zoom-focus-knob"
-    },
-    {
-      "name": "N85 to N100 65mm Port Adapter",
-      "slug": "n85-to-n100-65mm-port-adaptor",
-      "sku": "36205",
-      "description": "An adapter to convert from an N85 port opening to N100 port opening to use with N85 Port System housings.",
-      "priceAmount": 650,
-      "priceCurrency": "USD",
-      "depthRating": 100,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N85 to N100 Conversion",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/36205-02-e1484557934591-1024x683.jpg?v=1507154941"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n85-to-n100-65mm-port-adaptor"
-    },
-    {
-      "name": "N120 Extension Ring 80 ~with Lock",
-      "slug": "extension-ring-80-with-lock",
-      "sku": "21180",
-      "description": "The Nauticam Extension Ring 80 with Lock is part of the N120 Port System and can be used to add 80mm effective length to an N120 Port setup.",
-      "priceAmount": 460,
-      "priceCurrency": "USD",
-      "depthRating": 150,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N120",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/21180-Extension-ring-80-with-lock-e1487226505516-1024x685.jpg?v=1507153926"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-80-with-lock"
-    },
-    {
-      "name": "N120 Extension Ring 70 ~with Lock",
-      "slug": "extension-ring-70-with-lock",
-      "sku": "21170",
-      "description": "The Nauticam Extension Ring 70 with Lock is part of the N120 Port System and can be used to add 70mm effective length to an N120 Port setup.",
-      "priceAmount": 450,
-      "priceCurrency": "USD",
-      "depthRating": 150,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N120",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/21170-Extension-ring-70-with-lock-e1486371686193-1024x683.jpg?v=1507154009"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-70-with-lock"
-    },
-    {
-      "name": "N120 Extension Ring 60 ~with Lock",
-      "slug": "extension-ring-60-with-lock",
-      "sku": "21160",
-      "description": "The Nauticam Extension Ring 60 with Lock is part of the N120 Port System and can be used to add 60mm effective length to an N120 Port setup.",
-      "priceAmount": 440,
-      "priceCurrency": "USD",
-      "depthRating": 150,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N120",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/21160-Extension-ring-60-with-lock-e1486360166795-1024x685.jpg?v=1507154044"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-60-with-lock"
-    },
-    {
-      "name": "N120 Extension Ring 50 ~with Lock",
-      "slug": "extension-ring-50-with-lock",
-      "sku": "21150",
-      "description": "The Nauticam Extension Ring 50 with Lock is part of the N120 Port System and can be used to add 50mm effective length to an N120 Port setup.",
-      "priceAmount": 430,
-      "priceCurrency": "USD",
-      "depthRating": 150,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N120",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/21150-Extension-ring-50-with-lock-e1486359855812-1024x685.jpg?v=1507154100"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-50-with-lock"
-    },
-    {
-      "name": "N120 Extension Ring 40 ~with Lock",
-      "slug": "extension-ring-40-with-lock",
-      "sku": "21140",
-      "description": "The Nauticam Extension Ring 40 with Lock is part of the N120 Port System and can be used to add 40mm effective length to an N120 Port setup.",
-      "priceAmount": 430,
-      "priceCurrency": "USD",
-      "depthRating": 150,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N120",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/21140-Extension-ring-40-with-lock-e1486358721421-1024x682.jpg?v=1507154139"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-40-with-lock"
-    },
-    {
-      "name": "N120 Extension Ring 35 ~with Lock",
-      "slug": "n120-extension-ring-35-with-lock",
-      "sku": "21135",
-      "description": "The N120 Extension Ring 35 with Lock is part of the N120 Port System and can be used to add 35mm effective length to an N120 Port setup.",
-      "priceAmount": 420,
-      "priceCurrency": "USD",
-      "depthRating": 100,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N120",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/Juan_21135Nauticam.jpg?v=1562429121"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-35-with-lock"
-    },
-    {
-      "name": "N120 Extension Ring 30 ~with Lock",
-      "slug": "extension-ring-30-with-lock",
-      "sku": "21130",
-      "description": "The Nauticam Extension Ring 30 with Lock is part of the N120 Port System and can be used to add 30mm effective length to an N120 Port setup.",
-      "priceAmount": 410,
-      "priceCurrency": "USD",
-      "depthRating": 150,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N120",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/21130-Extension-ring-30-with-lock-e1486358478559-1024x683.jpg?v=1507154168"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-30-with-lock"
-    },
-    {
-      "name": "N120 Extension Ring 20 ~with Lock",
-      "slug": "extension-ring-20-with-lock",
-      "sku": "21120",
-      "description": "The Nauticam Extension Ring 20 with Lock is part of the N120 Port System and can be used to add 20mm effective length to an N120 Port setup.",
-      "priceAmount": 390,
-      "priceCurrency": "USD",
-      "depthRating": 150,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N120",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/21120-Extension-ring-20-with-lock-e1486358107266-1024x682.jpg?v=1507154242"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-20-with-lock"
-    },
-    {
-      "name": "N120 Extension Ring 10",
-      "slug": "extension-ring-10-with-screws",
-      "sku": "21110",
-      "description": "The Nauticam Extension Ring 10 with screws is part of the N120 Port System and can be used to add 10mm effective length to an N120 Port setup.",
-      "priceAmount": 226,
-      "priceCurrency": "USD",
-      "depthRating": 150,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N120",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/21110-Extension-ring-10-with-screws-e1486357351448-1024x682.jpg?v=1507154356"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-10-with-screws"
-    },
-    {
-      "name": "N100 Extension Ring 50",
-      "slug": "n100-extension-ring-50",
-      "sku": "37403",
-      "description": "The N100 Extension Ring 50 is part of the N100 Port System and can be used to add 50mm effective length to an N100 Port setup.",
-      "priceAmount": 420,
-      "priceCurrency": "USD",
-      "depthRating": 150,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N100",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/37403_Extension_Ring_50_-3.JPG?v=1562429124"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-extension-ring-50"
-    },
-    {
-      "name": "N100 Extension Ring 40",
-      "slug": "n100-extension-ring-40",
-      "sku": "37402",
-      "description": "The N100 Extension Ring 40 is part of the N100 Port System and can be used to add 40mm effective length to an N100 Port setup.",
-      "priceAmount": 380,
-      "priceCurrency": "USD",
-      "depthRating": 150,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N100",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/37402_Extension_Ring_40_-2.JPG?v=1562429126"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-extension-ring-40"
-    },
-    {
-      "name": "N100 Extension Ring 30",
-      "slug": "n100-extension-ring-30",
-      "sku": "37401",
-      "description": "The N100 Extension Ring 30 is part of the N100 Port System and can be used to add 30mm effective length to an N100 Port setup.",
-      "priceAmount": 380,
-      "priceCurrency": "USD",
-      "depthRating": 150,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N100",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/37401_Extension_Ring_30_-2.JPG?v=1562429127"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-extension-ring-30"
-    },
-    {
-      "name": "N85 Extension Ring",
-      "slug": "mini-extension-ring-30",
-      "sku": "36630",
-      "description": "The Nauticam N85 Extension Ring 30 can be used to add 30mm effective length to an N85 Port System.",
-      "priceAmount": 300,
-      "priceCurrency": "USD",
-      "depthRating": 100,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N85",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/36630_8b0af784-d3f1-4818-b399-18c03cf3bf4d.jpg?v=1562429152"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/mini-extension-ring-30"
-    },
-    {
-      "name": "N85 Extension Ring 20",
-      "slug": "mini-extension-ring-20",
-      "sku": "36620",
-      "description": "The Nauticam N85 Extension Ring 20 can be used to add 20mm effective length to an N85 Port System.",
-      "priceAmount": 290,
-      "priceCurrency": "USD",
-      "depthRating": 100,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N85",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/36620.jpg?v=1562429180"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/mini-extension-ring-20"
-    },
-    {
-      "name": "Mini Extension Ring 17",
-      "slug": "mini-extension-ring-17",
-      "sku": "36617",
-      "description": "The Nauticam Mini Extension Ring 17 can be used to add 17mm effective length to an N85 Port System.",
-      "priceAmount": 290,
-      "priceCurrency": "USD",
-      "depthRating": 100,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N85",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/36617-Mini-Extension-Ring-17-e1483434983596-1024x713.jpg?v=1507155160"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/mini-extension-ring-17"
     },
     {
       "name": "N85 Macro Port 65 ~with M67 Threaded Front",
@@ -3373,22 +2891,6 @@
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/n50-3-5-acrylic-dome-port"
     },
     {
-      "name": "Nikonos Adapter for NA-A7II//A9/A7RIII/A7RIV/a2020/A7C",
-      "slug": "nikonos-adaptor-for-na-a7ii-a9",
-      "sku": "37202",
-      "description": "Ready to reuse those Nikonos lenses with your new Sony mirrorless? This adapter allows the use of supported Nikonos lenses on the NA-A7II/A9 housing.",
-      "priceAmount": 680,
-      "priceCurrency": "USD",
-      "depthRating": 100,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": "N100",
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/37202_break_down.JPG?v=1562429096"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nikonos-adaptor-for-na-a7ii-a9"
-    },
-    {
       "name": "C60 Port for Canon EF-S 60mm and Inon UFL MR130",
       "slug": "nauticam-c60-port-for-canon-ef-s-60mm-and-inon-ufl-mr130",
       "sku": "18721",
@@ -3435,38 +2937,6 @@
         "https://cdn.shopify.com/s/files/1/2305/1013/products/coming_soon_383764e9-3bc6-4dd4-97c1-00bb1ff60832.jpg?v=1562429105"
       ],
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/m67-double-flip-holder-for-m77-macro-ports"
-    },
-    {
-      "name": "N100 to N85 20mm Port Adapter",
-      "slug": "n100-to-n85-20mm-port-adapter",
-      "sku": "36471",
-      "description": "Port adapter that allows the use of N85 port system ports on N100 housings. Features an effective extension of 20mm.",
-      "priceAmount": 420,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/36471.png?v=1596817585"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-to-n85-20mm-port-adapter"
-    },
-    {
-      "name": "N100 to N120 55mm Port Adapter ~with Zoom/Focus Knob",
-      "slug": "n100-to-n120-55mm-port-adapter-with-zoom-focus-knob",
-      "sku": "37304",
-      "description": "Port adapter that allows for use of N120 ports on N100 system housings that features an effective extension length of 55mm and a zoom/focus knob.",
-      "priceAmount": 720,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/37304-1.jpg?v=1562429094"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-to-n120-55mm-port-adapter-with-zoom-focus-knob"
     },
     {
       "name": "N50 Short Port with Bayonet Mount ~To use with WWL-1",
@@ -3665,214 +3135,6 @@
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-macro-port-80"
     },
     {
-      "name": "N120 Extension Ring 10 II",
-      "slug": "n120-extension-ring-10-ii",
-      "sku": "22110",
-      "description": "Compatible with 18812 serial number A522451 onwards and all \"Extension Ring II.\"",
-      "priceAmount": 280,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/files/22110N120ExtensionRing10II.jpg?v=1749739445"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-10-ii"
-    },
-    {
-      "name": "N120 Extension Ring 20 II",
-      "slug": "n120-extension-ring-20-ii",
-      "sku": "22120",
-      "description": "N120 Extension Ring 20 II Instruction Manual PDF Download",
-      "priceAmount": 660,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22120_2.jpg?v=1668186081",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22120.jpg?v=1668186084"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-20-ii"
-    },
-    {
-      "name": "N120 Extension Ring 25 II",
-      "slug": "n120-extension-ring-25-ii",
-      "sku": "22125",
-      "description": "N120 Extension Ring 25 II Instruction Manual PDF Download",
-      "priceAmount": 680,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22125_2.jpg?v=1668186035",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22125.jpg?v=1668186039"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-25-ii"
-    },
-    {
-      "name": "N120 Extension Ring 30 II",
-      "slug": "n120-extension-ring-30-ii",
-      "sku": "22130",
-      "description": "N120 Extension Ring 30 II Instruction Manual PDF Download",
-      "priceAmount": 700,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22130_3.jpg?v=1668185969",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22130_2.jpg?v=1668185973",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22130.jpg?v=1668185974"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-30-ii"
-    },
-    {
-      "name": "N120 Extension Ring 35 II",
-      "slug": "n120-extension-ring-35-ii",
-      "sku": "22135",
-      "description": "N120 Extension Ring 35 II Instruction Manual PDF Download",
-      "priceAmount": 720,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22135_3.jpg?v=1668185922",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22135_2.jpg?v=1668185925",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22135.jpg?v=1668185930"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-35-ii"
-    },
-    {
-      "name": "N120 Extension Ring 40 II",
-      "slug": "n120-extension-ring-40-ii",
-      "sku": "22140",
-      "description": "N120 Extension Ring 40 II Instruction Manual PDF Download",
-      "priceAmount": 740,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22140_3.jpg?v=1668185704",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22140_2.jpg?v=1668185706",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22140.jpg?v=1668185712"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-40-ii"
-    },
-    {
-      "name": "N120 Extension Ring 50 II",
-      "slug": "n120-extension-ring-50-ii",
-      "sku": "22150",
-      "description": "N120 Extension Ring 50 II",
-      "priceAmount": 760,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22150_3.jpg?v=1668185647",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22150_2.jpg?v=1668185649",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22150.jpg?v=1668185687"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-50-ii"
-    },
-    {
-      "name": "N120 Extension Ring 55 II",
-      "slug": "n120-extension-ring-55-ii",
-      "sku": "22155",
-      "description": "N120 Extension Ring 55 II",
-      "priceAmount": 780,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22155_2.jpg?v=1668185561",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22155.jpg?v=1668185563"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-55-ii"
-    },
-    {
-      "name": "N120 Extension Ring 60 II",
-      "slug": "n120-extension-ring-60-ii",
-      "sku": "22160",
-      "description": "N120 Extension Ring 60 II Instruction Manual PDF Download",
-      "priceAmount": 800,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22160_2.jpg?v=1668185521",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22160.jpg?v=1668185529"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-60-ii"
-    },
-    {
-      "name": "N120 Extension Ring 70 II",
-      "slug": "n120-extension-ring-70-ii",
-      "sku": "22170",
-      "description": "N120 Extension Ring 70 II Instruction Manual PDF Download",
-      "priceAmount": 820,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22170_3.jpg?v=1672525785",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22170.jpg?v=1672525785",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22170_2.jpg?v=1672525785"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-70-ii"
-    },
-    {
-      "name": "N120 Extension Ring 80 II",
-      "slug": "n120-extension-ring-80-ii",
-      "sku": "22180",
-      "description": "N120 Extension Ring 80 II Instruction Manual PDF Download",
-      "priceAmount": 840,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22180-2.jpg?v=1668532409",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22180-1.jpg?v=1668532412"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-80-ii"
-    },
-    {
-      "name": "N120 Extension Ring 90 II",
-      "slug": "n120-extension-ring-90-ii",
-      "sku": "22190",
-      "description": "N120 Extension Ring 90 II Instruction Manual PDF Download",
-      "priceAmount": 850,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22190_2.jpg?v=1668184007",
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/22190.jpg?v=1668184010"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-90-ii"
-    },
-    {
       "name": "N120 Macro Port 6",
       "slug": "n120-macro-port-6",
       "sku": "18707",
@@ -3956,15 +3218,467 @@
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-flat-port-27-for-canon-rf-24-50mm-f4-5-6-3-is-stm"
     },
     {
+      "name": "N100 Macro Port 125 for Sony FE 100mm F2.8",
+      "slug": "n100-macro-port-125-for-sony-fe-100mm-f2-8",
+      "sku": "37180",
+      "description": "N100 Macro Port 125 for Sony FE 100mm F2.8",
+      "priceAmount": 610,
+      "priceCurrency": "USD",
+      "depthRating": null,
+      "isFlatPort": true,
+      "hemisphereWidth": null,
+      "housingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/37180N100MacroPort125forSonyFE100mmF2.8.jpg?v=1762280334"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-macro-port-125-for-sony-fe-100mm-f2-8"
+    }
+  ],
+  "extensionRings": [
+    {
+      "name": "N200 Extension Ring 50",
+      "slug": "n200-extension-ring-50",
+      "sku": "16404",
+      "description": "The N200 Extension Ring 50 is part of the N200 Port System and can be used to add 50mm effective length to an N200 Port setup.",
+      "priceAmount": 1300,
+      "priceCurrency": "USD",
+      "lengthMm": 50,
+      "housingMount": "N200",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/DSC_5561-e1483435993682-1024x500_5fe40e5b-8e6b-4a9b-8985-503deedaa328.jpg?v=1507152462"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n200-extension-ring-50"
+    },
+    {
+      "name": "N200 Extension Ring 40",
+      "slug": "n200-extension-ring-40",
+      "sku": "16403",
+      "description": "The N200 Extension Ring 40 is part of the N200 Port System and can be used to add 40mm effective length to an N200 Port setup.",
+      "priceAmount": 1200,
+      "priceCurrency": "USD",
+      "lengthMm": 40,
+      "housingMount": "N200",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/DSC_5561-e1483435993682-1024x500_a6e5870f-db4e-40ff-bb16-ccfd9e497f93.jpg?v=1507152419"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n200-extension-ring-40"
+    },
+    {
+      "name": "N200 Extension Ring 30",
+      "slug": "n200-extension-ring-30",
+      "sku": "16402",
+      "description": "The N200 Extension Ring 30 is part of the N200 Port System and can be used to add 30mm effective length to an N200 Port setup.",
+      "priceAmount": 1000,
+      "priceCurrency": "USD",
+      "lengthMm": 30,
+      "housingMount": "N200",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/DSC_5561-e1483435993682-1024x500.jpg?v=1507152365"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n200-extension-ring-30"
+    },
+    {
+      "name": "N120 Extension Ring 80 ~with Lock",
+      "slug": "extension-ring-80-with-lock",
+      "sku": "21180",
+      "description": "The Nauticam Extension Ring 80 with Lock is part of the N120 Port System and can be used to add 80mm effective length to an N120 Port setup.",
+      "priceAmount": 460,
+      "priceCurrency": "USD",
+      "lengthMm": 80,
+      "housingMount": "N120",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/21180-Extension-ring-80-with-lock-e1487226505516-1024x685.jpg?v=1507153926"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-80-with-lock"
+    },
+    {
+      "name": "N120 Extension Ring 70 ~with Lock",
+      "slug": "extension-ring-70-with-lock",
+      "sku": "21170",
+      "description": "The Nauticam Extension Ring 70 with Lock is part of the N120 Port System and can be used to add 70mm effective length to an N120 Port setup.",
+      "priceAmount": 450,
+      "priceCurrency": "USD",
+      "lengthMm": 70,
+      "housingMount": "N120",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/21170-Extension-ring-70-with-lock-e1486371686193-1024x683.jpg?v=1507154009"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-70-with-lock"
+    },
+    {
+      "name": "N120 Extension Ring 60 ~with Lock",
+      "slug": "extension-ring-60-with-lock",
+      "sku": "21160",
+      "description": "The Nauticam Extension Ring 60 with Lock is part of the N120 Port System and can be used to add 60mm effective length to an N120 Port setup.",
+      "priceAmount": 440,
+      "priceCurrency": "USD",
+      "lengthMm": 60,
+      "housingMount": "N120",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/21160-Extension-ring-60-with-lock-e1486360166795-1024x685.jpg?v=1507154044"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-60-with-lock"
+    },
+    {
+      "name": "N120 Extension Ring 50 ~with Lock",
+      "slug": "extension-ring-50-with-lock",
+      "sku": "21150",
+      "description": "The Nauticam Extension Ring 50 with Lock is part of the N120 Port System and can be used to add 50mm effective length to an N120 Port setup.",
+      "priceAmount": 430,
+      "priceCurrency": "USD",
+      "lengthMm": 50,
+      "housingMount": "N120",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/21150-Extension-ring-50-with-lock-e1486359855812-1024x685.jpg?v=1507154100"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-50-with-lock"
+    },
+    {
+      "name": "N120 Extension Ring 40 ~with Lock",
+      "slug": "extension-ring-40-with-lock",
+      "sku": "21140",
+      "description": "The Nauticam Extension Ring 40 with Lock is part of the N120 Port System and can be used to add 40mm effective length to an N120 Port setup.",
+      "priceAmount": 430,
+      "priceCurrency": "USD",
+      "lengthMm": 40,
+      "housingMount": "N120",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/21140-Extension-ring-40-with-lock-e1486358721421-1024x682.jpg?v=1507154139"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-40-with-lock"
+    },
+    {
+      "name": "N120 Extension Ring 35 ~with Lock",
+      "slug": "n120-extension-ring-35-with-lock",
+      "sku": "21135",
+      "description": "The N120 Extension Ring 35 with Lock is part of the N120 Port System and can be used to add 35mm effective length to an N120 Port setup.",
+      "priceAmount": 420,
+      "priceCurrency": "USD",
+      "lengthMm": 35,
+      "housingMount": "N120",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/Juan_21135Nauticam.jpg?v=1562429121"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-35-with-lock"
+    },
+    {
+      "name": "N120 Extension Ring 30 ~with Lock",
+      "slug": "extension-ring-30-with-lock",
+      "sku": "21130",
+      "description": "The Nauticam Extension Ring 30 with Lock is part of the N120 Port System and can be used to add 30mm effective length to an N120 Port setup.",
+      "priceAmount": 410,
+      "priceCurrency": "USD",
+      "lengthMm": 30,
+      "housingMount": "N120",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/21130-Extension-ring-30-with-lock-e1486358478559-1024x683.jpg?v=1507154168"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-30-with-lock"
+    },
+    {
+      "name": "N120 Extension Ring 20 ~with Lock",
+      "slug": "extension-ring-20-with-lock",
+      "sku": "21120",
+      "description": "The Nauticam Extension Ring 20 with Lock is part of the N120 Port System and can be used to add 20mm effective length to an N120 Port setup.",
+      "priceAmount": 390,
+      "priceCurrency": "USD",
+      "lengthMm": 20,
+      "housingMount": "N120",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/21120-Extension-ring-20-with-lock-e1486358107266-1024x682.jpg?v=1507154242"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-20-with-lock"
+    },
+    {
+      "name": "N120 Extension Ring 10",
+      "slug": "extension-ring-10-with-screws",
+      "sku": "21110",
+      "description": "The Nauticam Extension Ring 10 with screws is part of the N120 Port System and can be used to add 10mm effective length to an N120 Port setup.",
+      "priceAmount": 226,
+      "priceCurrency": "USD",
+      "lengthMm": 10,
+      "housingMount": "N120",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/21110-Extension-ring-10-with-screws-e1486357351448-1024x682.jpg?v=1507154356"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/extension-ring-10-with-screws"
+    },
+    {
+      "name": "N100 Extension Ring 50",
+      "slug": "n100-extension-ring-50",
+      "sku": "37403",
+      "description": "The N100 Extension Ring 50 is part of the N100 Port System and can be used to add 50mm effective length to an N100 Port setup.",
+      "priceAmount": 420,
+      "priceCurrency": "USD",
+      "lengthMm": 50,
+      "housingMount": "N100",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37403_Extension_Ring_50_-3.JPG?v=1562429124"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-extension-ring-50"
+    },
+    {
+      "name": "N100 Extension Ring 40",
+      "slug": "n100-extension-ring-40",
+      "sku": "37402",
+      "description": "The N100 Extension Ring 40 is part of the N100 Port System and can be used to add 40mm effective length to an N100 Port setup.",
+      "priceAmount": 380,
+      "priceCurrency": "USD",
+      "lengthMm": 40,
+      "housingMount": "N100",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37402_Extension_Ring_40_-2.JPG?v=1562429126"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-extension-ring-40"
+    },
+    {
+      "name": "N100 Extension Ring 30",
+      "slug": "n100-extension-ring-30",
+      "sku": "37401",
+      "description": "The N100 Extension Ring 30 is part of the N100 Port System and can be used to add 30mm effective length to an N100 Port setup.",
+      "priceAmount": 380,
+      "priceCurrency": "USD",
+      "lengthMm": 30,
+      "housingMount": "N100",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37401_Extension_Ring_30_-2.JPG?v=1562429127"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-extension-ring-30"
+    },
+    {
+      "name": "N85 Extension Ring",
+      "slug": "mini-extension-ring-30",
+      "sku": "36630",
+      "description": "The Nauticam N85 Extension Ring 30 can be used to add 30mm effective length to an N85 Port System.",
+      "priceAmount": 300,
+      "priceCurrency": "USD",
+      "lengthMm": null,
+      "housingMount": "N85",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36630_8b0af784-d3f1-4818-b399-18c03cf3bf4d.jpg?v=1562429152"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/mini-extension-ring-30"
+    },
+    {
+      "name": "N85 Extension Ring 20",
+      "slug": "mini-extension-ring-20",
+      "sku": "36620",
+      "description": "The Nauticam N85 Extension Ring 20 can be used to add 20mm effective length to an N85 Port System.",
+      "priceAmount": 290,
+      "priceCurrency": "USD",
+      "lengthMm": 20,
+      "housingMount": "N85",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36620.jpg?v=1562429180"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/mini-extension-ring-20"
+    },
+    {
+      "name": "Mini Extension Ring 17",
+      "slug": "mini-extension-ring-17",
+      "sku": "36617",
+      "description": "The Nauticam Mini Extension Ring 17 can be used to add 17mm effective length to an N85 Port System.",
+      "priceAmount": 290,
+      "priceCurrency": "USD",
+      "lengthMm": 17,
+      "housingMount": "N85",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36617-Mini-Extension-Ring-17-e1483434983596-1024x713.jpg?v=1507155160"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/mini-extension-ring-17"
+    },
+    {
+      "name": "N120 Extension Ring 10 II",
+      "slug": "n120-extension-ring-10-ii",
+      "sku": "22110",
+      "description": "Compatible with 18812 serial number A522451 onwards and all \"Extension Ring II.\"",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "lengthMm": 10,
+      "housingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/22110N120ExtensionRing10II.jpg?v=1749739445"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-10-ii"
+    },
+    {
+      "name": "N120 Extension Ring 20 II",
+      "slug": "n120-extension-ring-20-ii",
+      "sku": "22120",
+      "description": "N120 Extension Ring 20 II Instruction Manual PDF Download",
+      "priceAmount": 660,
+      "priceCurrency": "USD",
+      "lengthMm": 20,
+      "housingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22120_2.jpg?v=1668186081",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22120.jpg?v=1668186084"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-20-ii"
+    },
+    {
+      "name": "N120 Extension Ring 25 II",
+      "slug": "n120-extension-ring-25-ii",
+      "sku": "22125",
+      "description": "N120 Extension Ring 25 II Instruction Manual PDF Download",
+      "priceAmount": 680,
+      "priceCurrency": "USD",
+      "lengthMm": 25,
+      "housingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22125_2.jpg?v=1668186035",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22125.jpg?v=1668186039"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-25-ii"
+    },
+    {
+      "name": "N120 Extension Ring 30 II",
+      "slug": "n120-extension-ring-30-ii",
+      "sku": "22130",
+      "description": "N120 Extension Ring 30 II Instruction Manual PDF Download",
+      "priceAmount": 700,
+      "priceCurrency": "USD",
+      "lengthMm": 30,
+      "housingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22130_3.jpg?v=1668185969",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22130_2.jpg?v=1668185973",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22130.jpg?v=1668185974"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-30-ii"
+    },
+    {
+      "name": "N120 Extension Ring 35 II",
+      "slug": "n120-extension-ring-35-ii",
+      "sku": "22135",
+      "description": "N120 Extension Ring 35 II Instruction Manual PDF Download",
+      "priceAmount": 720,
+      "priceCurrency": "USD",
+      "lengthMm": 35,
+      "housingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22135_3.jpg?v=1668185922",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22135_2.jpg?v=1668185925",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22135.jpg?v=1668185930"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-35-ii"
+    },
+    {
+      "name": "N120 Extension Ring 40 II",
+      "slug": "n120-extension-ring-40-ii",
+      "sku": "22140",
+      "description": "N120 Extension Ring 40 II Instruction Manual PDF Download",
+      "priceAmount": 740,
+      "priceCurrency": "USD",
+      "lengthMm": 40,
+      "housingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22140_3.jpg?v=1668185704",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22140_2.jpg?v=1668185706",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22140.jpg?v=1668185712"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-40-ii"
+    },
+    {
+      "name": "N120 Extension Ring 50 II",
+      "slug": "n120-extension-ring-50-ii",
+      "sku": "22150",
+      "description": "N120 Extension Ring 50 II",
+      "priceAmount": 760,
+      "priceCurrency": "USD",
+      "lengthMm": 50,
+      "housingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22150_3.jpg?v=1668185647",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22150_2.jpg?v=1668185649",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22150.jpg?v=1668185687"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-50-ii"
+    },
+    {
+      "name": "N120 Extension Ring 55 II",
+      "slug": "n120-extension-ring-55-ii",
+      "sku": "22155",
+      "description": "N120 Extension Ring 55 II",
+      "priceAmount": 780,
+      "priceCurrency": "USD",
+      "lengthMm": 55,
+      "housingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22155_2.jpg?v=1668185561",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22155.jpg?v=1668185563"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-55-ii"
+    },
+    {
+      "name": "N120 Extension Ring 60 II",
+      "slug": "n120-extension-ring-60-ii",
+      "sku": "22160",
+      "description": "N120 Extension Ring 60 II Instruction Manual PDF Download",
+      "priceAmount": 800,
+      "priceCurrency": "USD",
+      "lengthMm": 60,
+      "housingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22160_2.jpg?v=1668185521",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22160.jpg?v=1668185529"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-60-ii"
+    },
+    {
+      "name": "N120 Extension Ring 70 II",
+      "slug": "n120-extension-ring-70-ii",
+      "sku": "22170",
+      "description": "N120 Extension Ring 70 II Instruction Manual PDF Download",
+      "priceAmount": 820,
+      "priceCurrency": "USD",
+      "lengthMm": 70,
+      "housingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22170_3.jpg?v=1672525785",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22170.jpg?v=1672525785",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22170_2.jpg?v=1672525785"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-70-ii"
+    },
+    {
+      "name": "N120 Extension Ring 80 II",
+      "slug": "n120-extension-ring-80-ii",
+      "sku": "22180",
+      "description": "N120 Extension Ring 80 II Instruction Manual PDF Download",
+      "priceAmount": 840,
+      "priceCurrency": "USD",
+      "lengthMm": 80,
+      "housingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22180-2.jpg?v=1668532409",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22180-1.jpg?v=1668532412"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-80-ii"
+    },
+    {
+      "name": "N120 Extension Ring 90 II",
+      "slug": "n120-extension-ring-90-ii",
+      "sku": "22190",
+      "description": "N120 Extension Ring 90 II Instruction Manual PDF Download",
+      "priceAmount": 850,
+      "priceCurrency": "USD",
+      "lengthMm": 90,
+      "housingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22190_2.jpg?v=1668184007",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/22190.jpg?v=1668184010"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-extension-ring-90-ii"
+    },
+    {
       "name": "N85 Extension Ring 26 for OM M.Zuiko Digital 2X Teleconverter MC-20",
       "slug": "n85-extension-ring-26-for-om-m-zuiko-digital-2x-teleconverter-mc-20",
       "sku": "36626",
       "description": "N85 Extension Ring 26 for OM M.Zuiko Digital 2X Teleconverter MC-20",
       "priceAmount": 300,
       "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
+      "lengthMm": 26,
       "housingMount": null,
       "productPhotos": [
         "https://cdn.shopify.com/s/files/1/2305/1013/products/36626-1.jpg?v=1680873907",
@@ -3980,9 +3694,7 @@
       "description": "N100 Extension Ring 35 PDF Instruction Manual Download",
       "priceAmount": 400,
       "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
+      "lengthMm": 35,
       "housingMount": null,
       "productPhotos": [
         "https://cdn.shopify.com/s/files/1/2305/1013/files/coming_soon_1024x1024_b52a012c-ed8f-4487-8a34-5f6794afa5f4.webp?v=1706654104"
@@ -3996,9 +3708,7 @@
       "description": "N100 Extension Ring 50 II PDF User Manual",
       "priceAmount": 610,
       "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
+      "lengthMm": 50,
       "housingMount": null,
       "productPhotos": [
         "https://cdn.shopify.com/s/files/1/2305/1013/files/coming_soon_1024x1024_c95ee639-8f9e-4e4f-a25f-08ee9134a8f2.webp?v=1721761648"
@@ -4012,9 +3722,7 @@
       "description": "N100 Extension Ring 40 II PDF User Manual",
       "priceAmount": 590,
       "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
+      "lengthMm": 40,
       "housingMount": null,
       "productPhotos": [
         "https://cdn.shopify.com/s/files/1/2305/1013/files/Nauticam_N100_Extension_Ring_40_II_front.jpg?v=1730213524",
@@ -4029,9 +3737,7 @@
       "description": "N100 Extension Ring 35 II PDF User Manual",
       "priceAmount": 570,
       "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
+      "lengthMm": 35,
       "housingMount": null,
       "productPhotos": [
         "https://cdn.shopify.com/s/files/1/2305/1013/files/coming_soon_1024x1024_6cec8b0c-2e2a-40e7-afa6-5e1feae6b462.webp?v=1721761104"
@@ -4045,31 +3751,218 @@
       "description": "N100 Extension Ring 30 II PDF User Manual",
       "priceAmount": 550,
       "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
+      "lengthMm": 30,
       "housingMount": null,
       "productPhotos": [
         "https://cdn.shopify.com/s/files/1/2305/1013/files/37430.jpg?v=1731527015",
         "https://cdn.shopify.com/s/files/1/2305/1013/files/37430-2.jpg?v=1731527014"
       ],
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-extension-ring-30-ii"
+    }
+  ],
+  "portAdapters": [
+    {
+      "name": "N120 to N200 Port Adaptor ~for Cinema Lenses on N120 Cinema and DSLR Housings",
+      "slug": "n120-to-n200-port-adaptor-for-epic-weapon-lt-housings",
+      "sku": "16410",
+      "description": "The N200 Port System features larger port opening than N120, and allows many large diameter cinema styled lenses to be used underwater. This part was created specifically to expand the lens support options available for our N120 \"LT\" Housings for RED DSMC1 and DSMC2 cameras, but it also provides a path to use these lenses on DSLR systems, or even a Sony A7 via a combination of adaptors.",
+      "priceAmount": 3100,
+      "priceCurrency": "USD",
+      "inputHousingMount": "N120",
+      "outputHousingMount": "N200",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16410_correct_008.jpg?v=1592513089",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9815.jpg?v=1596815743",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9819.jpg?v=1596815743",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9826.jpg?v=1596815743",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9828.jpg?v=1596815743",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9830.jpg?v=1596815743",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9832.jpg?v=1596815743",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9833.jpg?v=1596815743",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9834.jpg?v=1596815743",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9836.jpg?v=1596815743",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9839.jpg?v=1596815743"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-to-n200-port-adaptor-for-epic-weapon-lt-housings"
     },
     {
-      "name": "N100 Macro Port 125 for Sony FE 100mm F2.8",
-      "slug": "n100-macro-port-125-for-sony-fe-100mm-f2-8",
-      "sku": "37180",
-      "description": "N100 Macro Port 125 for Sony FE 100mm F2.8",
-      "priceAmount": 610,
+      "name": "N120 Adapter for Nikon-R UW Nikonos RS Lenses ~with RED DSMC Lens Mount",
+      "slug": "n120-adaptor-for-nikon-r-uw-nikonos-rs-lenses-with-red-dsmc-lens-mount",
+      "sku": "16409",
+      "description": "Ready to mount your Nikonos RS lenses on your RED? With this adapter you can mount Nikon-R Nikonos RS lenses to RED DSMC2 cameras when used with supported N120 RED Cinema Camera housings.",
+      "priceAmount": 7200,
       "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
+      "inputHousingMount": null,
+      "outputHousingMount": null,
       "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/files/37180N100MacroPort125forSonyFE100mmF2.8.jpg?v=1762280334"
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/Weapon_RS_Mount-8.jpg?v=1592513436",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9754.jpg?v=1596815755",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9755.jpg?v=1596815755",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9756.jpg?v=1596815755",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9772.jpg?v=1596815755",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9776.jpg?v=1596815755",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9782.jpg?v=1596815755",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9783.jpg?v=1596815755",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9785.jpg?v=1596815755",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9784.jpg?v=1596815755",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9788.jpg?v=1596815755",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_9789.jpg?v=1596815755"
       ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-macro-port-125-for-sony-fe-100mm-f2-8"
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-adaptor-for-nikon-r-uw-nikonos-rs-lenses-with-red-dsmc-lens-mount"
+    },
+    {
+      "name": "Insect-Eye Port Adapter N60-MR130 ~for Nikkor AF-D 60mm Macro Lens",
+      "slug": "insect-eye-port-adaptor-n60-mr130-for-nikkor-af-d-60mm-macro-lens",
+      "sku": "18722",
+      "description": "This port adapter is specifically designed to support the use of the INON UFL-MR130 EFS60 Underwater Micro Semifisheye Relay Lens on an N120 port system housing with the Canon AF-D 60mm Macro Lens.",
+      "priceAmount": 780,
+      "priceCurrency": "USD",
+      "inputHousingMount": "N120",
+      "outputHousingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/18722_Insect_eye_port_adaptor_N60-MR130_for_Nikkor_AF-D_60mm_macro_lens.jpg?v=1562429086"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/insect-eye-port-adaptor-n60-mr130-for-nikkor-af-d-60mm-macro-lens"
+    },
+    {
+      "name": "Adapter for Olympus 4/3 Port and Gear System",
+      "slug": "adaptor-for-olympus-4-3-port-and-gear-system",
+      "sku": "36051",
+      "description": "Allows for the use of Olympus Evolt 4/3 Lenses and Ports on Nauticam MFT systems.",
+      "priceAmount": 900,
+      "priceCurrency": "USD",
+      "inputHousingMount": null,
+      "outputHousingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/nau.36051_1.jpg?v=1562429095"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/adaptor-for-olympus-4-3-port-and-gear-system"
+    },
+    {
+      "name": "N100 to N120 40mm Port Adapter ~with Zoom/Focus knob (for NA-A7)",
+      "slug": "n100-to-n120-40mm-port-adaptor-with-zoom-focus-knob-for-na-a7",
+      "sku": "37301",
+      "description": "An adapter to convert from an N100 port opening to N120 port opening for the Sony A7 system. The extension also has an integrated focus/zoom gear knob.",
+      "priceAmount": 860,
+      "priceCurrency": "USD",
+      "inputHousingMount": "N100",
+      "outputHousingMount": "N120",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37301_N100_to_N120_40mm_port_adaptor_with_zoom_focus_knob.jpg?v=1562429096"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-to-n120-40mm-port-adaptor-with-zoom-focus-knob-for-na-a7"
+    },
+    {
+      "name": "N85 to N120 55mm Port Adapter ~with Lens Control Knob",
+      "slug": "n85-to-n120-55mm-port-adaptor",
+      "sku": "36401",
+      "description": "An adapter to convert from an N85 port opening to N120 port opening to allow for the use of N120 ports on N85 Port System housings.",
+      "priceAmount": 740,
+      "priceCurrency": "USD",
+      "inputHousingMount": "N85",
+      "outputHousingMount": "N120",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36401_1.JPG?v=1562429090"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n85-to-n120-55mm-port-adaptor"
+    },
+    {
+      "name": "N85 to N120 47mm Port Adapter ~with Knob for M4/3 System",
+      "slug": "n85-to-n120-47mm-port-adaptor-with-knob-for-m4-3-system",
+      "sku": "36052",
+      "description": "An adapter to convert from an N85 port opening to N120 port opening to allow the use of N120 ports on N85 housings for Micro Four Thirds Camera systems.",
+      "priceAmount": 740,
+      "priceCurrency": "USD",
+      "inputHousingMount": "N85",
+      "outputHousingMount": "N120",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36052-1-1024x682.jpg?v=1507202454"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n85-to-n120-47mm-port-adaptor-with-knob-for-m4-3-system"
+    },
+    {
+      "name": "N85 to N120 60mm Port Adapter ~for Sony E-mount System",
+      "slug": "n85-to-n120-60mm-port-adaptor-for-sony-e-mount-system",
+      "sku": "36204",
+      "description": "An adapter to convert from an N85 port opening to N120 port opening to use with N85 Sony housings with Metabones EF Lens to NEX Smart Adapter to use the Tokina 10-17mm fisheye lens.",
+      "priceAmount": 650,
+      "priceCurrency": "USD",
+      "inputHousingMount": "N85",
+      "outputHousingMount": "N120",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36204_N85_to_N120_60mm_port_adaptor_for_Sony_E-mount_System.jpg?v=1562429106"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n85-to-n120-60mm-port-adaptor-for-sony-e-mount-system"
+    },
+    {
+      "name": "N85 to N120 41.5mm Port Adapter ~with Zoom/Focus Knob",
+      "slug": "n85-to-n120-41-5mm-port-adaptor-with-zoom-focus-knob",
+      "sku": "36184",
+      "description": "An adapter to convert from an N85 port opening to N120 port opening for use with the NA-EOSM5 with Canon EF-EOS M adaptor and Canon EF mount lenses .",
+      "priceAmount": 760,
+      "priceCurrency": "USD",
+      "inputHousingMount": "N85",
+      "outputHousingMount": "N120",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36184-3.jpg?v=1572971479"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n85-to-n120-41-5mm-port-adaptor-with-zoom-focus-knob"
+    },
+    {
+      "name": "N85 to N100 65mm Port Adapter",
+      "slug": "n85-to-n100-65mm-port-adaptor",
+      "sku": "36205",
+      "description": "An adapter to convert from an N85 port opening to N100 port opening to use with N85 Port System housings.",
+      "priceAmount": 650,
+      "priceCurrency": "USD",
+      "inputHousingMount": "N85",
+      "outputHousingMount": "N100",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36205-02-e1484557934591-1024x683.jpg?v=1507154941"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n85-to-n100-65mm-port-adaptor"
+    },
+    {
+      "name": "Nikonos Adapter for NA-A7II//A9/A7RIII/A7RIV/a2020/A7C",
+      "slug": "nikonos-adaptor-for-na-a7ii-a9",
+      "sku": "37202",
+      "description": "Ready to reuse those Nikonos lenses with your new Sony mirrorless? This adapter allows the use of supported Nikonos lenses on the NA-A7II/A9 housing.",
+      "priceAmount": 680,
+      "priceCurrency": "USD",
+      "inputHousingMount": "N100",
+      "outputHousingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37202_break_down.JPG?v=1562429096"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nikonos-adaptor-for-na-a7ii-a9"
+    },
+    {
+      "name": "N100 to N85 20mm Port Adapter",
+      "slug": "n100-to-n85-20mm-port-adapter",
+      "sku": "36471",
+      "description": "Port adapter that allows the use of N85 port system ports on N100 housings. Features an effective extension of 20mm.",
+      "priceAmount": 420,
+      "priceCurrency": "USD",
+      "inputHousingMount": "N100",
+      "outputHousingMount": "N85",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36471.png?v=1596817585"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-to-n85-20mm-port-adapter"
+    },
+    {
+      "name": "N100 to N120 55mm Port Adapter ~with Zoom/Focus Knob",
+      "slug": "n100-to-n120-55mm-port-adapter-with-zoom-focus-knob",
+      "sku": "37304",
+      "description": "Port adapter that allows for use of N120 ports on N100 system housings that features an effective extension length of 55mm and a zoom/focus knob.",
+      "priceAmount": 720,
+      "priceCurrency": "USD",
+      "inputHousingMount": "N100",
+      "outputHousingMount": "N120",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37304-1.jpg?v=1562429094"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-to-n120-55mm-port-adapter-with-zoom-focus-knob"
     }
   ]
 }

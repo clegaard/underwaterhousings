@@ -106,6 +106,8 @@ async function main() {
     await prisma.camera.deleteMany()
     await prisma.lens.deleteMany()
     await prisma.cameraMount.deleteMany()
+    await prisma.extensionRing.deleteMany()
+    await prisma.portAdapter.deleteMany()
     await prisma.manufacturer.deleteMany()
 
     // Create manufacturers

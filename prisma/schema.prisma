@@ -8,18 +8,20 @@ datasource db {
 }
 
 model Manufacturer {
-    id            Int            @id @default(autoincrement())
-    name          String         @unique
-    slug          String         @unique
-    description   String?
-    createdAt     DateTime       @default(now())
-    updatedAt     DateTime       @updatedAt
-    housingMounts HousingMount[]
-    cameras       Camera[]
-    housings      Housing[]
-    lenses        Lens[]
-    ports         Port[]
-    logoPath      String?
+    id             Int             @id @default(autoincrement())
+    name           String          @unique
+    slug           String          @unique
+    description    String?
+    createdAt      DateTime        @default(now())
+    updatedAt      DateTime        @updatedAt
+    housingMounts  HousingMount[]
+    cameras        Camera[]
+    housings       Housing[]
+    lenses         Lens[]
+    ports          Port[]
+    extensionRings ExtensionRing[]
+    portAdapters   PortAdapter[]
+    logoPath       String?
 
     @@map("manufacturers")
 }
@@ -36,14 +38,17 @@ model CameraMount {
 }
 
 model HousingMount {
-    id             Int          @id @default(autoincrement())
+    id             Int             @id @default(autoincrement())
     name           String
     description    String?
     manufacturerId Int
-    slug           String       @unique
-    manufacturer   Manufacturer @relation(fields: [manufacturerId], references: [id])
+    slug           String          @unique
+    manufacturer   Manufacturer    @relation(fields: [manufacturerId], references: [id])
     housings       Housing[]
     ports          Port[]
+    extensionRings ExtensionRing[]
+    inputAdapters  PortAdapter[]   @relation("AdapterInputMount")
+    outputAdapters PortAdapter[]   @relation("AdapterOutputMount")
 }
 
 model Camera {
@@ -57,13 +62,13 @@ model Camera {
     priceAmount    Decimal? @db.Decimal(10, 2)
     productPhotos  String[]
 
-    exifId        String?        @unique
-    rigReviews    RigReview[]
-    cameraRigs    CameraRig[]
-    cameraMount   CameraMount?   @relation(fields: [cameraMountId], references: [id])
-    brand         Manufacturer   @relation(fields: [manufacturerId], references: [id])
-    housings      Housing[]
-    lens          Lens[]
+    exifId      String?      @unique
+    rigReviews  RigReview[]
+    cameraRigs  CameraRig[]
+    cameraMount CameraMount? @relation(fields: [cameraMountId], references: [id])
+    brand       Manufacturer @relation(fields: [manufacturerId], references: [id])
+    housings    Housing[]
+    lens        Lens[]
 
     sensorWidth  Float? // optional field for sensor width in mm, used for calculating crop factor
     sensorHeight Float? // optional field for sensor height in mm, used for calculating crop factor
@@ -86,74 +91,109 @@ model Camera {
 }
 
 model Housing {
-    id                  Int            @id @default(autoincrement())
+    id                  Int           @id @default(autoincrement())
     name                String
-    slug                String         @unique
+    slug                String        @unique
     description         String?
-    priceAmount         Decimal?       @db.Decimal(10, 2)
-    priceCurrency       String?        @default("USD")
+    priceAmount         Decimal?      @db.Decimal(10, 2)
+    priceCurrency       String?       @default("USD")
     depthRating         Int
     material            String?
     manufacturerId      Int
     cameraId            Int
     housingMountId      Int?
     productPhotos       String[]
-    interchangeablePort Boolean        @default(true)
+    interchangeablePort Boolean       @default(true)
     rigReviews          RigReview[]
     cameraRigs          CameraRig[]
-    Camera              Camera         @relation(fields: [cameraId], references: [id])
-    housingMount        HousingMount?  @relation(fields: [housingMountId], references: [id])
-    manufacturer        Manufacturer   @relation(fields: [manufacturerId], references: [id])
+    Camera              Camera        @relation(fields: [cameraId], references: [id])
+    housingMount        HousingMount? @relation(fields: [housingMountId], references: [id])
+    manufacturer        Manufacturer  @relation(fields: [manufacturerId], references: [id])
 
     @@map("housings")
 }
 
 model Port {
-    id              Int            @id @default(autoincrement())
+    id              Int           @id @default(autoincrement())
     name            String
-    slug            String         @unique
+    slug            String        @unique
     description     String?
     manufacturerId  Int
     housingMountId  Int?
     productPhotos   String[]
-    priceAmount     Decimal?       @db.Decimal(10, 2)
-    priceCurrency   String?        @default("USD")
-    isFlatPort      Boolean        @default(false) // True if it's a flat port, false if it's a dome port
+    priceAmount     Decimal?      @db.Decimal(10, 2)
+    priceCurrency   String?       @default("USD")
+    isFlatPort      Boolean       @default(false) // True if it's a flat port, false if it's a dome port
     hemisphereWidth Float? // For dome ports, the width of the hemisphere in mm
     depthRating     Int? // Maximum depth rating of the port in meters
     rigReviews      RigReview[]
     cameraRigs      CameraRig[]
-    housingMount    HousingMount?  @relation(fields: [housingMountId], references: [id])
-    manufacturer    Manufacturer   @relation(fields: [manufacturerId], references: [id])
-    lens            Lens[]         @relation("LensToPort")
+    housingMount    HousingMount? @relation(fields: [housingMountId], references: [id])
+    manufacturer    Manufacturer  @relation(fields: [manufacturerId], references: [id])
+    lens            Lens[]        @relation("LensToPort")
 
     @@map("ports")
 }
 
+model ExtensionRing {
+    id             Int           @id @default(autoincrement())
+    name           String
+    slug           String        @unique
+    description    String?
+    manufacturerId Int
+    housingMountId Int? // The port mount system it fits
+    lengthMm       Int? // Length in millimeters
+    priceAmount    Decimal?      @db.Decimal(10, 2)
+    priceCurrency  String?       @default("USD")
+    productPhotos  String[]
+    manufacturer   Manufacturer  @relation(fields: [manufacturerId], references: [id])
+    housingMount   HousingMount? @relation(fields: [housingMountId], references: [id])
+
+    @@map("extension_rings")
+}
+
+model PortAdapter {
+    id                   Int           @id @default(autoincrement())
+    name                 String
+    slug                 String        @unique
+    description          String?
+    manufacturerId       Int
+    inputHousingMountId  Int? // The mount on the housing side
+    outputHousingMountId Int? // The mount on the port side
+    priceAmount          Decimal?      @db.Decimal(10, 2)
+    priceCurrency        String?       @default("USD")
+    productPhotos        String[]
+    manufacturer         Manufacturer  @relation(fields: [manufacturerId], references: [id])
+    inputHousingMount    HousingMount? @relation("AdapterInputMount", fields: [inputHousingMountId], references: [id])
+    outputHousingMount   HousingMount? @relation("AdapterOutputMount", fields: [outputHousingMountId], references: [id])
+
+    @@map("port_adapters")
+}
+
 model Lens {
-    id                       Int            @id @default(autoincrement())
+    id                       Int           @id @default(autoincrement())
     name                     String
-    slug                     String         @unique
+    slug                     String        @unique
     description              String?
     minimumFocusDistanceTele Float? // Minimum focus distance at the tele end in metres
     minimumFocusDistanceWide Float? // Minimum focus distance at the wide end in metres
-    isZoomLens               Boolean        @default(false) // True if it's a zoom lens, false if it's a prime lens
+    isZoomLens               Boolean       @default(false) // True if it's a zoom lens, false if it's a prime lens
     focalLengthTele          Int // Focal length at the tele end in mm (prime lenses: sole focal length)
     focalLengthWide          Int? // Focal length at the wide end in mm; null means prime lens
     maximumMagnification     Float? // Maximum reproduction ratio e.g. 0.30 for 0.30x; scraped from manufacturer specs
-    priceAmount              Decimal?       @db.Decimal(10, 2)
-    priceCurrency            String?        @default("USD")
+    priceAmount              Decimal?      @db.Decimal(10, 2)
+    priceCurrency            String?       @default("USD")
     cameraMountId            Int
     cameraId                 Int?
     productPhotos            String[]
     manufacturerId           Int
-    exifId                   String?        @unique
+    exifId                   String?       @unique
     rigReviews               RigReview[]
     cameraRigs               CameraRig[]
-    camera                   Camera?        @relation(fields: [cameraId], references: [id])
-    cameraMount              CameraMount    @relation(fields: [cameraMountId], references: [id])
-    manufacturer             Manufacturer?  @relation(fields: [manufacturerId], references: [id])
-    ports                    Port[]         @relation("LensToPort")
+    camera                   Camera?       @relation(fields: [cameraId], references: [id])
+    cameraMount              CameraMount   @relation(fields: [cameraMountId], references: [id])
+    manufacturer             Manufacturer? @relation(fields: [manufacturerId], references: [id])
+    ports                    Port[]        @relation("LensToPort")
 
     @@map("lenses")
 }
@@ -178,20 +218,20 @@ model User {
 }
 
 model CameraRig {
-    id        Int      @id @default(autoincrement())
-    name      String
-    imagePath String?
-    userId    Int
-    cameraId  Int
-    lensId    Int?
-    housingId Int?
-    portId    Int?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    user      User     @relation(fields: [userId], references: [id])
-    camera    Camera   @relation(fields: [cameraId], references: [id])
-    lens      Lens?    @relation(fields: [lensId], references: [id])
-    housing   Housing? @relation(fields: [housingId], references: [id])
+    id            Int            @id @default(autoincrement())
+    name          String
+    imagePath     String?
+    userId        Int
+    cameraId      Int
+    lensId        Int?
+    housingId     Int?
+    portId        Int?
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+    user          User           @relation(fields: [userId], references: [id])
+    camera        Camera         @relation(fields: [cameraId], references: [id])
+    lens          Lens?          @relation(fields: [lensId], references: [id])
+    housing       Housing?       @relation(fields: [housingId], references: [id])
     port          Port?          @relation(fields: [portId], references: [id])
     galleryPhotos GalleryPhoto[]
 

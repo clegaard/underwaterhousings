@@ -16,7 +16,15 @@ export default async function PortsPage() {
                     include: { housingMount: true },
                     orderBy: { name: 'asc' },
                 },
-                _count: { select: { ports: true } },
+                extensionRings: {
+                    include: { housingMount: true },
+                    orderBy: { name: 'asc' },
+                },
+                portAdapters: {
+                    include: { inputHousingMount: true, outputHousingMount: true },
+                    orderBy: { name: 'asc' },
+                },
+                _count: { select: { ports: true, extensionRings: true, portAdapters: true } },
             },
             orderBy: { name: 'asc' },
         }),
@@ -35,6 +43,26 @@ export default async function PortsPage() {
             priceAmount: p.priceAmount ? parseFloat(p.priceAmount.toString()) : null,
             priceCurrency: p.priceCurrency,
             housingMount: p.housingMount,
+        })),
+        extensionRings: m.extensionRings.map(r => ({
+            id: r.id,
+            name: r.name,
+            slug: r.slug,
+            productPhotos: r.productPhotos,
+            priceAmount: r.priceAmount ? parseFloat(r.priceAmount.toString()) : null,
+            priceCurrency: r.priceCurrency,
+            lengthMm: r.lengthMm,
+            housingMount: r.housingMount,
+        })),
+        portAdapters: m.portAdapters.map(a => ({
+            id: a.id,
+            name: a.name,
+            slug: a.slug,
+            productPhotos: a.productPhotos,
+            priceAmount: a.priceAmount ? parseFloat(a.priceAmount.toString()) : null,
+            priceCurrency: a.priceCurrency,
+            inputHousingMount: a.inputHousingMount,
+            outputHousingMount: a.outputHousingMount,
         })),
     }))
 
