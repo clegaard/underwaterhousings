@@ -167,20 +167,20 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
                             )}
                         </div>
 
-                        {/* Housings Dropdown */}
+                        {/* Gear Dropdown */}
                         <div className="relative" ref={housingsDropdownRef}>
                             <div className="flex items-center">
                                 <Link
-                                    href="/housings"
+                                    href="/gear"
                                     className="text-gray-700 hover:text-blue-900 transition-colors font-medium"
                                     onClick={() => setIsHousingsOpen(false)}
                                 >
-                                    Housings
+                                    Gear
                                 </Link>
                                 <button
                                     onClick={() => { closeAll(); setIsHousingsOpen(v => !v) }}
                                     className="ml-1 p-0.5 text-gray-700 hover:text-blue-900 transition-colors"
-                                    aria-label="Browse housing manufacturers"
+                                    aria-label="Browse gear manufacturers"
                                 >
                                     <svg className={`h-4 w-4 transition-transform ${isHousingsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -191,45 +191,11 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
                                 <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
                                     <div className="py-1">
                                         {manufacturers.map((m) => (
-                                            <Link key={m.id} href={`/housings/${m.slug}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-900 transition-colors" onClick={() => setIsHousingsOpen(false)}>
+                                            <Link key={m.id} href={`/gear/${m.slug}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-900 transition-colors" onClick={() => setIsHousingsOpen(false)}>
                                                 {m.name}
                                             </Link>
                                         ))}
                                         {manufacturers.length === 0 && <div className="px-4 py-2 text-sm text-gray-500">No manufacturers available</div>}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Ports Dropdown */}
-                        <div className="relative" ref={portsDropdownRef}>
-                            <div className="flex items-center">
-                                <Link
-                                    href="/ports"
-                                    className="text-gray-700 hover:text-blue-900 transition-colors font-medium"
-                                    onClick={() => setIsPortsOpen(false)}
-                                >
-                                    Ports
-                                </Link>
-                                <button
-                                    onClick={() => { closeAll(); setIsPortsOpen(v => !v) }}
-                                    className="ml-1 p-0.5 text-gray-700 hover:text-blue-900 transition-colors"
-                                    aria-label="Browse port manufacturers"
-                                >
-                                    <svg className={`h-4 w-4 transition-transform ${isPortsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-                            </div>
-                            {isPortsOpen && (
-                                <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
-                                    <div className="py-1">
-                                        {portManufacturers.map((m) => (
-                                            <Link key={m.id} href={`/ports/${m.slug}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-900 transition-colors" onClick={() => setIsPortsOpen(false)}>
-                                                {m.name}
-                                            </Link>
-                                        ))}
-                                        {portManufacturers.length === 0 && <div className="px-4 py-2 text-sm text-gray-500">No manufacturers available</div>}
                                     </div>
                                 </div>
                             )}

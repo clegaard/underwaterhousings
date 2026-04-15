@@ -352,10 +352,10 @@ export default function HousingManufacturerHousingsClient({
                     {manufacturer.name} Housings
                 </h2>
                 <Link
-                    href="/housings"
+                    href="/gear"
                     className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                 >
-                    ← Back to Housings
+                    ← Back to Gear
                 </Link>
             </div>
 
@@ -438,7 +438,7 @@ export default function HousingManufacturerHousingsClient({
                     <p className="text-gray-600 mb-4">
                         No housings are currently available from {manufacturer.name}.
                     </p>
-                    <Link href="/housings" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    <Link href="/gear" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                         Browse all manufacturers
                     </Link>
                 </div>

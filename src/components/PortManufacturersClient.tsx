@@ -326,7 +326,7 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
                                 </div>
                             )}
                             <Link
-                                href={`/ports/${manufacturer.slug}`}
+                                href={`/gear/${manufacturer.slug}`}
                                 className="text-lg font-semibold text-gray-900 hover:text-blue-700 transition-colors"
                             >
                                 {manufacturer.name}

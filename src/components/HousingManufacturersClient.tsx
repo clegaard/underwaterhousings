@@ -360,7 +360,7 @@ export default function HousingManufacturersClient({ manufacturers: initial, cam
                                 </div>
                             )}
                             <Link
-                                href={`/housings/${manufacturer.slug}`}
+                                href={`/gear/${manufacturer.slug}`}
                                 className="text-lg font-semibold text-gray-900 hover:text-blue-700 transition-colors"
                             >
                                 {manufacturer.name}

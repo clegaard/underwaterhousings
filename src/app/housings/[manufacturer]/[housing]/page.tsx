@@ -79,7 +79,7 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                             </Link>
                             <span>→</span>
                             <Link
-                                href={`/housings/${params.manufacturer}`}
+                                href={`/gear/${params.manufacturer}`}
                                 className="hover:text-blue-600 transition-colors capitalize"
                             >
                                 {housing.manufacturer.name}

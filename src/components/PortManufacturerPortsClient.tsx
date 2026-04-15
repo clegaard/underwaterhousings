@@ -214,79 +214,60 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
 
     return (
         <>
-            <div className="mb-6 flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900">All {manufacturer.name} Port Models</h2>
-                <div className="flex items-center gap-3">
-                    {isSuperuser && (
-                        <button onClick={openAdd} className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            Add port
-                        </button>
-                    )}
-                    <Link href="/ports" className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
-                        ← Back to Ports
-                    </Link>
-                </div>
-            </div>
-
-            {ports.length > 0 ? (
-                <div className="flex justify-center">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl w-full">
-                        {ports.map((port) => (
-                            <div key={port.id} className="relative group/card">
-                                <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 overflow-hidden">
-                                    <div className="relative w-full h-48 bg-gray-100">
-                                        <HousingImage
-                                            src={port.imageInfo.src}
-                                            fallback={port.imageInfo.fallback}
-                                            alt={port.name}
-                                            className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                    </div>
-                                    <div className="p-5">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h3 className="text-lg font-semibold text-blue-900">{port.name}</h3>
-                                            {port.housingMount && (
-                                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded flex-shrink-0 ml-2">{port.housingMount.slug.toUpperCase()}</span>
-                                            )}
-                                        </div>
-                                        {port.housingMount && (
-                                            <div className="text-sm flex justify-between">
-                                                <span className="text-gray-600">Mount:</span>
-                                                <span className="font-medium">{port.housingMount.name}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {isSuperuser && (
-                                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
-                                        <button onClick={() => openEdit(port)} title="Edit" className="w-7 h-7 bg-white border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-blue-600 hover:border-blue-300 shadow-sm transition-colors">
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
-                                            </svg>
-                                        </button>
-                                        <button onClick={() => openDelete(port)} title="Delete" className="w-7 h-7 bg-white border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-red-600 hover:border-red-300 shadow-sm transition-colors">
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a1 1 0 00-1-1H8a1 1 0 00-1 1h10z" />
-                                            </svg>
-                                        </button>
-                                    </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                {ports.map((port) => (
+                    <div key={port.id} className="group/card relative">
+                        <Link
+                            href={`/gear/${manufacturer.slug}/${port.slug}`}
+                            className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all overflow-hidden block"
+                        >
+                            <div className="relative h-28 bg-gray-50">
+                                <HousingImage
+                                    src={port.imageInfo.src}
+                                    fallback={port.imageInfo.fallback}
+                                    alt={port.name}
+                                    className="object-contain p-3 w-full h-full"
+                                />
+                            </div>
+                            <div className="px-2.5 py-2">
+                                <p className="text-xs font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-snug line-clamp-2">
+                                    {port.name}
+                                </p>
+                                {port.housingMount && (
+                                    <p className="text-[10px] text-gray-400 mt-0.5 truncate">
+                                        {port.housingMount.name}
+                                    </p>
                                 )}
                             </div>
-                        ))}
+                        </Link>
+                        {isSuperuser && (
+                            <div className="absolute top-1.5 left-1.5 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity z-10">
+                                <button onClick={() => openEdit(port)} title="Edit port" className="w-6 h-6 bg-white border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 shadow-sm">
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
+                                    </svg>
+                                </button>
+                                <button onClick={() => openDelete(port)} title="Delete port" className="w-6 h-6 bg-white border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:text-red-600 hover:border-red-300 shadow-sm">
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a1 1 0 00-1-1H8a1 1 0 00-1 1h10z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
                     </div>
-                </div>
-            ) : (
-                <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                    <div className="text-6xl mb-4">🔌</div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No ports found</h3>
-                    <p className="text-gray-600 mb-4">No port models are currently available for {manufacturer.name}.</p>
-                    <Link href="/ports" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Browse all manufacturers</Link>
-                </div>
-            )}
+                ))}
+                {isSuperuser && (
+                    <button
+                        onClick={openAdd}
+                        className="min-h-[9rem] flex flex-col items-center justify-center gap-2 bg-white rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all text-gray-400 hover:text-blue-500"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span className="text-xs font-medium">Add port</span>
+                    </button>
+                )}
+            </div>
 
             {/* Add / Edit modal */}
             {(modal === 'add' || modal === 'edit') && (

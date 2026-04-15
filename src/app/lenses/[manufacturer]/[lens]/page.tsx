@@ -92,8 +92,8 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                                     </span>
                                 )}
                                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${lens.isZoomLens
-                                        ? 'bg-amber-50 text-amber-700'
-                                        : 'bg-emerald-50 text-emerald-700'
+                                    ? 'bg-amber-50 text-amber-700'
+                                    : 'bg-emerald-50 text-emerald-700'
                                     }`}>
                                     {lens.isZoomLens ? 'Zoom' : 'Prime'}
                                 </span>
@@ -267,7 +267,7 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                                             </span>
                                         )}
                                         <Link
-                                            href={`/ports/${port.manufacturer?.slug ?? ''}`}
+                                            href={`/gear/${port.manufacturer?.slug ?? ''}`}
                                             className="text-xs text-blue-500 hover:text-blue-700 transition-colors"
                                         >
                                             View →
