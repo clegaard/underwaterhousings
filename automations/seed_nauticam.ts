@@ -217,6 +217,15 @@ interface ScrapedPortAdapter {
     sourceUrl: string;
 }
 
+interface ScrapedPortChartEntry {
+    /** Lens name as extracted from the port product name. Used for fuzzy DB matching. */
+    lensHint: string;
+    /** Slug of the compatible Nauticam port. */
+    portSlug: string;
+    /** Housing restriction notes extracted from the port name, if any. */
+    notes: string | null;
+}
+
 interface ScraperOutput {
     manufacturer: { name: string; slug: string };
     housingMounts: ScrapedMount[];
@@ -224,6 +233,7 @@ interface ScraperOutput {
     ports: ScrapedPort[];
     extensionRings: ScrapedExtensionRing[];
     portAdapters: ScrapedPortAdapter[];
+    portChartEntries?: ScrapedPortChartEntry[];
 }
 
 // ---------------------------------------------------------------------------
@@ -281,6 +291,7 @@ async function main(): Promise<void> {
     console.log(`  ${data.ports.length} ports`);
     console.log(`  ${(data.extensionRings ?? []).length} extension rings`);
     console.log(`  ${(data.portAdapters ?? []).length} port adapters`);
+    console.log(`  ${(data.portChartEntries ?? []).length} port chart entries`);
 
     if (s3Configured) {
         console.log("  S3 configured ✅ — product photos will be downloaded and uploaded");
@@ -609,6 +620,98 @@ async function main(): Promise<void> {
         adapterOk++;
     }
     console.log(`✅ Port adapters: ${adapterOk} upserted`);
+
+    // ------------------------------------------------------------------
+    // 9. Seed port chart entries
+    //    Derived from port product names in the scraped data.
+    //    Each entry represents a direct lens → port pairing with no
+    //    intermediate steps (extension rings must be added via admin UI).
+    //    Entries are matched to DB lenses by fuzzy name search and are
+    //    skipped gracefully if no match is found.
+    // ------------------------------------------------------------------
+    const rawEntries = data.portChartEntries ?? [];
+
+    if (rawEntries.length === 0) {
+        console.log("ℹ Port chart entries: none in scraped data (re-run scraper to generate)");
+    } else {
+        // Build a normalised lens-name index: normalisedName → lens DB record
+        // Normalise: lowercase, collapse whitespace, remove non-alphanumeric
+        const normaliseName = (s: string): string =>
+            s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+        const allLenses = await prisma.lens.findMany({ select: { id: true, name: true } });
+        // Map from normalised name → lens id (keep first hit on collision)
+        const lensNormMap = new Map<string, number>();
+        for (const l of allLenses) {
+            lensNormMap.set(normaliseName(l.name), l.id);
+        }
+
+        // Build a port slug → port id map
+        const allPorts = await prisma.port.findMany({ select: { id: true, slug: true } });
+        const portSlugMap = new Map(allPorts.map((p) => [p.slug, p.id]));
+
+        let chartOk = 0;
+        let chartSkippedNoLens = 0;
+        let chartSkippedNoPort = 0;
+        let chartSkippedDupe = 0;
+
+        for (const entry of rawEntries) {
+            const portId = portSlugMap.get(entry.portSlug);
+            if (!portId) {
+                chartSkippedNoPort++;
+                continue;
+            }
+
+            // Fuzzy lens matching: try exact normalised match first, then
+            // check whether the normalised hint is a substring of any lens name.
+            const normHint = normaliseName(entry.lensHint);
+            let lensId = lensNormMap.get(normHint);
+
+            if (!lensId) {
+                // Substring search: find the lens whose normalised name contains the hint
+                for (const [normName, id] of Array.from(lensNormMap)) {
+                    if (normName.includes(normHint) || normHint.includes(normName)) {
+                        lensId = id;
+                        break;
+                    }
+                }
+            }
+
+            if (!lensId) {
+                console.warn(`  ⚠ Port chart: no lens match for hint "${entry.lensHint}" (port: ${entry.portSlug})`);
+                chartSkippedNoLens++;
+                continue;
+            }
+
+            // Check for an existing identical entry (idempotency)
+            const existing = await prisma.portChartEntry.findFirst({
+                where: { manufacturerId: nauticam.id, lensId, portId },
+            });
+            if (existing) {
+                chartSkippedDupe++;
+                continue;
+            }
+
+            await prisma.portChartEntry.create({
+                data: {
+                    manufacturerId: nauticam.id,
+                    lensId,
+                    portId,
+                    notes: entry.notes ?? null,
+                    // No steps — extension ring chains must be added via admin UI
+                },
+            });
+            chartOk++;
+        }
+
+        console.log(
+            `✅ Port chart entries: ${chartOk} created, ` +
+            `${chartSkippedNoLens} skipped (no lens), ` +
+            `${chartSkippedNoPort} skipped (no port), ` +
+            `${chartSkippedDupe} skipped (duplicate)`,
+        );
+    }
+
     console.log("\n✅ Done.");
 }
 

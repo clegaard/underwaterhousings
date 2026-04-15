@@ -127,6 +127,23 @@ interface ScrapedPortAdapter {
     sourceUrl: string;
 }
 
+/**
+ * A port chart entry derived from port product naming conventions.
+ * Encodes a lens → port relationship (no extension ring steps — those must be
+ * added manually via the admin UI or from a separate data source).
+ */
+interface ScrapedPortChartEntry {
+    /** Lens name as extracted from the port product name. Used for fuzzy DB matching during seeding. */
+    lensHint: string;
+    /** Slug of the compatible Nauticam port. */
+    portSlug: string;
+    /**
+     * Any housing restrictions found in the port name (e.g. "for NA-A7II/A9").
+     * Stored as a note on the PortChartEntry.
+     */
+    notes: string | null;
+}
+
 interface ScraperOutput {
     scrapedAt: string;
     sourceBaseUrl: string;
@@ -137,6 +154,12 @@ interface ScraperOutput {
     ports: ScrapedPort[];
     extensionRings: ScrapedExtensionRing[];
     portAdapters: ScrapedPortAdapter[];
+    /**
+     * Lens → port combinations inferred from port product names.
+     * Extension ring steps are not included here because that information is
+     * not available in the Shopify product data and must be added manually.
+     */
+    portChartEntries: ScrapedPortChartEntry[];
 }
 
 // ---------------------------------------------------------------------------
@@ -588,6 +611,73 @@ function collectHousingMounts(
 }
 
 // ---------------------------------------------------------------------------
+// Port chart entry extraction from port product names
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse the "for {lens description}" section of a port product name.
+ *
+ * Nauticam port names follow patterns like:
+ *   "N100 Macro Port 105 ~For Sony FE 90mm F2.8 Macro G OSS (For NA-A7II/A9)"
+ *   "N120 Flat Port 27 for Canon RF 24-50mm F4.5-6.3 IS STM"
+ *   "N85 Macro Port 45 with Focus/Zoom Knob ~for Sony E 30mm f/3.5 Macro & Sony E PZ 16-50mm"
+ *
+ * Returns an array of { lensHint, notes } — one per lens mentioned in the name.
+ */
+function parseLensHintsFromPortName(
+    portName: string,
+): { lensHint: string; notes: string | null }[] {
+    // The "for …" section appears either after a "~" separator or inline.
+    const tildeIdx = portName.indexOf("~");
+    // Prefer the part after "~"; fall back to the full name.
+    const searchIn = tildeIdx >= 0 ? portName.slice(tildeIdx + 1).trim() : portName;
+
+    // Match "for {lens description}" — allow optional leading article/preposition.
+    const forMatch = /^(?:for|designed for)\s+(.+)/i.exec(searchIn)
+        ?? /\s(?:for|designed for)\s+(.+)/i.exec(portName.slice(Math.min(20, portName.length)));
+    if (!forMatch) return [];
+
+    let section = forMatch[1].trim();
+
+    // Extract housing restriction notes like "(for NA-A7II/A9)", "(For NA-A7)"
+    const housingNoteRe = /\((?:for\s+)?(?:NA[-\s][^)]+|use\s+with[^)]+)\)/gi;
+    const housingNotes: string[] = [];
+    section = section.replace(housingNoteRe, (m) => {
+        housingNotes.push(m.replace(/^\(|\)$/g, "").trim());
+        return "";
+    });
+    // Strip remaining parenthetical content (e.g. "(with 67mm Thread)")
+    section = section.replace(/\([^)]*\)/g, "").replace(/\s{2,}/g, " ").trim();
+
+    const notes = housingNotes.length > 0 ? housingNotes.join("; ") : null;
+
+    // Split on "&" or " and " to handle "LensA & LensB" in the same port name.
+    const parts = section
+        .split(/\s*&\s*|\s+and\s+/i)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 4); // discard empty/too-short fragments
+
+    return parts.map((lensHint) => ({ lensHint, notes }));
+}
+
+/**
+ * Build the portChartEntries array from the scraped ports.
+ * Only ports whose names contain an explicit lens reference are included.
+ */
+function buildPortChartEntries(ports: ScrapedPort[]): ScrapedPortChartEntry[] {
+    const entries: ScrapedPortChartEntry[] = [];
+
+    for (const port of ports) {
+        const hints = parseLensHintsFromPortName(port.name);
+        for (const { lensHint, notes } of hints) {
+            entries.push({ lensHint, portSlug: port.slug, notes });
+        }
+    }
+
+    return entries;
+}
+
+// ---------------------------------------------------------------------------
 // CLI argument parsing
 // ---------------------------------------------------------------------------
 
@@ -640,6 +730,7 @@ async function main(): Promise<void> {
     }
 
     const housingMounts = collectHousingMounts(housings, ports, extensionRings, portAdapters);
+    const portChartEntries = buildPortChartEntries(ports);
 
     const cameraSet = new Set(
         housings
@@ -654,6 +745,7 @@ async function main(): Promise<void> {
     console.log(`  Port adapters         : ${portAdapters.length}`);
     console.log(`  Housing mounts found  : ${housingMounts.length}`);
     console.log(`  Unique cameras found  : ${cameraSet.size}`);
+    console.log(`  Port chart entries    : ${portChartEntries.length}`);
 
     const unmapped = housings.filter((h) => !h.cameraName).map((h) => h.name);
     if (unmapped.length > 0) {
@@ -671,6 +763,8 @@ async function main(): Promise<void> {
             "depthRating is in metres.",
             "extensionRings.lengthMm is the ring length in millimetres.",
             "portAdapters.inputHousingMount is the housing-side mount; outputHousingMount is the port-side mount.",
+            "portChartEntries are derived from port product names. lensHint is a fuzzy lens name for DB matching.",
+            "portChartEntries do NOT include extension ring steps — those must be added via the admin UI.",
         ],
         manufacturer: { name: "Nauticam", slug: "nauticam" },
         housingMounts,
@@ -678,6 +772,7 @@ async function main(): Promise<void> {
         ports,
         extensionRings,
         portAdapters,
+        portChartEntries,
     };
 
     writeFileSync(output, JSON.stringify(result, null, 2), "utf-8");

@@ -1,5 +1,5 @@
 {
-  "scrapedAt": "2026-04-14T06:14:49.363Z",
+  "scrapedAt": "2026-04-15T05:14:53.857Z",
   "sourceBaseUrl": "https://www.nauticam.com",
   "_notes": [
     "Prices are in USD (fetched via Shopify products.json from a US IP; geo-based pricing).",
@@ -7,7 +7,9 @@
     "cameraName / cameraBrand are string hints; exact DB IDs must be resolved during seeding.",
     "depthRating is in metres.",
     "extensionRings.lengthMm is the ring length in millimetres.",
-    "portAdapters.inputHousingMount is the housing-side mount; outputHousingMount is the port-side mount."
+    "portAdapters.inputHousingMount is the housing-side mount; outputHousingMount is the port-side mount.",
+    "portChartEntries are derived from port product names. lensHint is a fuzzy lens name for DB matching.",
+    "portChartEntries do NOT include extension ring steps — those must be added via the admin UI."
   ],
   "manufacturer": {
     "name": "Nauticam",
@@ -3963,6 +3965,78 @@
         "https://cdn.shopify.com/s/files/1/2305/1013/products/37304-1.jpg?v=1562429094"
       ],
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-to-n120-55mm-port-adapter-with-zoom-focus-knob"
+    }
+  ],
+  "portChartEntries": [
+    {
+      "lensHint": "Hasselblad HCD 4/28mm",
+      "portSlug": "8-5-acrylic-dome-port-for-hasselblad-hcd-4-28mm",
+      "notes": null
+    },
+    {
+      "lensHint": "Canon EF-EOS M Adapter",
+      "portSlug": "4-33-dome-port-for-canon-ef-eos-m-adaptor-and-ef-8-15mm-f-4l-fisheye-usm",
+      "notes": null
+    },
+    {
+      "lensHint": "EF 8-15mm f/4L Fisheye USM",
+      "portSlug": "4-33-dome-port-for-canon-ef-eos-m-adaptor-and-ef-8-15mm-f-4l-fisheye-usm",
+      "notes": null
+    },
+    {
+      "lensHint": "SEL16F28 with Fisheye Converter VCL-ECF1",
+      "portSlug": "e-mount-4-33-fisheye-port-for-sel16f28-with-fisheye-converter-vcl-ecf1",
+      "notes": null
+    },
+    {
+      "lensHint": "Sony E mount 30mm f/3.5 Macro",
+      "portSlug": "macro-port-45-with-focus-zoom-knob-for-sony-e-mount-30mm-f-3-5-macro-sony-e-mount-pz-16-50mm-f3-5-5-6-oss",
+      "notes": null
+    },
+    {
+      "lensHint": "Sony E mount PZ 16-50mm F3.5-5.6 OSS",
+      "portSlug": "macro-port-45-with-focus-zoom-knob-for-sony-e-mount-30mm-f-3-5-macro-sony-e-mount-pz-16-50mm-f3-5-5-6-oss",
+      "notes": null
+    },
+    {
+      "lensHint": "Sony FE 90mm F2.8 Macro G OSS",
+      "portSlug": "n100-macro-port-105-for-sony-fe-90mm-f2-8-macro-g-oss-for-na-a7ii-a9",
+      "notes": "For NA-A7II/A9"
+    },
+    {
+      "lensHint": "for Sigma 105mm f/2.8 DG DN Macro Art",
+      "portSlug": "n100-macro-port-110-for-sony-fe-90mm-f2-8-macro-g-oss-for-a7-r-s",
+      "notes": null
+    },
+    {
+      "lensHint": "Sony FE 28-70MM F3.5-5.6 OSS",
+      "portSlug": "n100-flat-port-66-with-m77-thread-for-sony-fe-28-70mm-f3-5-5-6-oss-for-na-a7ii-a9",
+      "notes": "for NA-A7II/A9"
+    },
+    {
+      "lensHint": "Sony FE 28-70mm F3.5-5.6 OSS",
+      "portSlug": "n100-flat-port-74-with-m77-thread-for-sony-fe-28-70mm-f3-5-5-6-oss-for-na-a7",
+      "notes": "For NA-A7"
+    },
+    {
+      "lensHint": "Sony FE 28mm F2",
+      "portSlug": "n100-flat-port-32-for-sony-fe-28mm-f2-to-use-with-83201-wwl-1-for-na-a7ii-a9",
+      "notes": null
+    },
+    {
+      "lensHint": "Nikon 1 NIKKOR 10mm f/2.8",
+      "portSlug": "n10-pancake-port-for-nikon-1-nikkor-10mm-f-2-8-with-67mm-thread",
+      "notes": null
+    },
+    {
+      "lensHint": "Wet Wide Angle Lenses",
+      "portSlug": "n50-short-port-with-m67-thread-for-wet-wide-angle-lenses-widest-focal-length-only",
+      "notes": null
+    },
+    {
+      "lensHint": "M77 Macro Ports",
+      "portSlug": "m67-double-flip-holder-for-m77-macro-ports",
+      "notes": null
     }
   ]
 }

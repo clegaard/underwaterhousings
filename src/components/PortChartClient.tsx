@@ -349,7 +349,7 @@ interface DraftChain {
    Tree Branch — recursive horizontal tree renderer
    ═══════════════════════════════════════════════ */
 
-function TreeBranch({ nodes, isSuperuser, onDeleteEntry, pickerKey, onOpenPicker, pickerMode, pickerProps, pathPrefix, lensId, draftChain, suppressPicker }: {
+function TreeBranch({ nodes, isSuperuser, onDeleteEntry, pickerKey, onOpenPicker, pickerMode, pickerProps, pathPrefix, lensId, draftChain }: {
     nodes: TrieNode[]
     isSuperuser: boolean
     onDeleteEntry: (entryId: number) => void
@@ -365,9 +365,9 @@ function TreeBranch({ nodes, isSuperuser, onDeleteEntry, pickerKey, onOpenPicker
     pathPrefix: string[]
     lensId: number
     draftChain: DraftChain | null
-    suppressPicker: boolean
 }) {
     const draftPath = pathPrefix.join('/')
+    const branchPickerKey = `branch:L${lensId}/${draftPath}`
     const isDraftBranch = draftChain && draftChain.lensId === lensId && draftChain.branchPath === draftPath
     const draftSteps = isDraftBranch ? draftChain.steps : []
     const totalRows = nodes.length + draftSteps.length + (isSuperuser ? 1 : 0)
@@ -380,9 +380,10 @@ function TreeBranch({ nodes, isSuperuser, onDeleteEntry, pickerKey, onOpenPicker
             )}
 
             {nodes.map((node, i) => {
-                const nodeKey = [...pathPrefix, node.key].join('/')
+                const nodePath = [...pathPrefix, node.key].join('/')
+                const nodePickerKey = `L${lensId}/${nodePath}`
                 const hasMore = i < nodes.length - 1 || draftSteps.length > 0 || isSuperuser
-                const nodeDraftSteps = draftChain?.branchPath === nodeKey ? draftChain.steps : []
+                const nodeDraftSteps = draftChain?.branchPath === nodePath ? draftChain.steps : []
 
                 return (
                     <div key={node.key} className="flex items-stretch">
@@ -440,7 +441,6 @@ function TreeBranch({ nodes, isSuperuser, onDeleteEntry, pickerKey, onOpenPicker
                                     pathPrefix={[...pathPrefix, node.key]}
                                     lensId={lensId}
                                     draftChain={draftChain}
-                                    suppressPicker={suppressPicker}
                                 />
                             ) : node.type !== 'port' && isSuperuser ? (
                                 /* + button to extend this chain, with accumulated draft steps */
@@ -457,8 +457,8 @@ function TreeBranch({ nodes, isSuperuser, onDeleteEntry, pickerKey, onOpenPicker
                                     ))}
                                     {nodeDraftSteps.length > 0 && <div className="w-4 h-0.5 bg-gray-400" />}
                                     <div className="relative">
-                                        <AddButton onClick={() => onOpenPicker(nodeKey)} size="sm" />
-                                        {pickerKey === nodeKey && pickerMode && !suppressPicker && (
+                                        <AddButton onClick={() => onOpenPicker(nodePickerKey)} size="sm" />
+                                        {pickerKey === nodePickerKey && pickerMode && (
                                             <InlinePicker
                                                 mode={pickerMode}
                                                 recomputeKey={nodeDraftSteps.length}
@@ -492,8 +492,8 @@ function TreeBranch({ nodes, isSuperuser, onDeleteEntry, pickerKey, onOpenPicker
                         ))}
                         {draftSteps.length > 0 && <div className="w-4 h-0.5 bg-gray-400" />}
                         <div className="relative">
-                            <AddButton onClick={() => onOpenPicker(`branch:${draftPath}`)} size="sm" />
-                            {pickerKey === `branch:${draftPath}` && pickerMode && !suppressPicker && (
+                            <AddButton onClick={() => onOpenPicker(branchPickerKey)} size="sm" />
+                            {pickerKey === branchPickerKey && pickerMode && (
                                 <InlinePicker mode={pickerMode} recomputeKey={draftSteps.length} {...pickerProps} />
                             )}
                         </div>
@@ -546,6 +546,17 @@ export default function PortChartClient({
     const trees = buildLensTrees(entries, allPorts, allExtensionRings, allPortAdapters)
 
     /* ─── Open picker from + buttons ─── */
+
+    /**
+     * Parse a lens-prefixed key like "L42/adapter:3/ring:5" or "branch:L42/adapter:3".
+     * Returns { lensId, innerPath } or null if the key doesn't match.
+     */
+    function parseLensPrefixedKey(raw: string): { lensId: number; innerPath: string } | null {
+        const m = raw.match(/^L(\d+)\/(.*)$/)
+        if (!m) return null
+        return { lensId: parseInt(m[1], 10), innerPath: m[2] }
+    }
+
     function handleOpenPicker(key: string) {
         if (key === 'root') {
             setPickerKey(key); setPickerMode('lens')
@@ -558,13 +569,15 @@ export default function PortChartClient({
             setPickerContext({ lensId, branchPath: '', sharedStepKeys: [] })
             return
         }
-        if (key.startsWith('branch:')) {
-            const path = key.replace('branch:', '')
-            const parts = path.split('/').filter(Boolean)
-            const lensId = findLensIdFromPath(parts)
-            setPickerKey(key); setPickerMode('step-type')
-            setPickerContext({ lensId, branchPath: path, sharedStepKeys: parts })
-            return
+        // Branch + button inside a lens tree: "branch:L{id}/{path}"
+        if (key.startsWith('branch:L')) {
+            const parsed = parseLensPrefixedKey(key.replace('branch:', ''))
+            if (parsed) {
+                const parts = parsed.innerPath.split('/').filter(Boolean)
+                setPickerKey(key); setPickerMode('step-type')
+                setPickerContext({ lensId: parsed.lensId, branchPath: parsed.innerPath, sharedStepKeys: parts })
+                return
+            }
         }
         if (key.startsWith('draft:')) {
             setPickerKey(key); setPickerMode('step-type')
@@ -577,25 +590,14 @@ export default function PortChartClient({
             }
             return
         }
-        // Node key: continue chain from this node
-        const parts = key.split('/').filter(Boolean)
-        const lensId = findLensIdFromPath(parts)
-        setPickerKey(key); setPickerMode('step-type')
-        setPickerContext({ lensId, branchPath: key, sharedStepKeys: parts })
-    }
-
-    function findLensIdFromPath(parts: string[]): number | undefined {
-        for (const tree of trees) {
-            let nodes = tree.roots
-            let matched = true
-            for (const part of parts) {
-                const node = nodes.find(n => n.key === part)
-                if (!node) { matched = false; break }
-                nodes = node.children
-            }
-            if (matched) return tree.lens.id
+        // Node-extend key inside a lens tree: "L{id}/{step-path}"
+        const parsed = parseLensPrefixedKey(key)
+        if (parsed) {
+            const parts = parsed.innerPath.split('/').filter(Boolean)
+            setPickerKey(key); setPickerMode('step-type')
+            setPickerContext({ lensId: parsed.lensId, branchPath: parsed.innerPath, sharedStepKeys: parts })
+            return
         }
-        return undefined
     }
 
     /* ─── Selection handlers ─── */
@@ -782,7 +784,6 @@ export default function PortChartClient({
                                             pathPrefix={[]}
                                             lensId={tree.lens.id}
                                             draftChain={draftChain}
-                                            suppressPicker={isActiveLensDraft}
                                         />
                                     ) : isSuperuser ? (
                                         <div className="flex items-center relative ml-2" style={{ height: NC * 2 + 8 }}>
