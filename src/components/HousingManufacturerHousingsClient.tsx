@@ -347,18 +347,6 @@ export default function HousingManufacturerHousingsClient({
 
     return (
         <>
-            <div className="mb-6 flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900">
-                    {manufacturer.name} Housings
-                </h2>
-                <Link
-                    href="/gear"
-                    className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                >
-                    ← Back to Gear
-                </Link>
-            </div>
-
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                 {housings.map((housing) => (
                     <div key={housing.id} className="group/card relative">

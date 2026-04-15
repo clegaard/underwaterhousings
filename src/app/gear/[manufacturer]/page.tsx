@@ -3,9 +3,10 @@ import { notFound } from 'next/navigation'
 import { auth } from '@/auth'
 import Link from 'next/link'
 import { getHousingImagePathWithFallback, getPortImagePathWithFallback } from '@/lib/images'
-import { HousingImage } from '@/components/HousingImage'
 import HousingManufacturerHousingsClient from '@/components/HousingManufacturerHousingsClient'
 import PortManufacturerPortsClient from '@/components/PortManufacturerPortsClient'
+import ExtensionRingsClient from '@/components/ExtensionRingsClient'
+import PortAdaptersClient from '@/components/PortAdaptersClient'
 
 interface GearManufacturerPageProps {
     params: { manufacturer: string }
@@ -120,7 +121,7 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
         { id: 'ports', label: 'Ports', count: manufacturer._count.ports },
         { id: 'rings', label: 'Extension Rings', count: manufacturer._count.extensionRings },
         { id: 'adapters', label: 'Port Adapters', count: manufacturer._count.portAdapters },
-    ].filter(t => t.count > 0)
+    ].filter(t => t.count > 0 || isSuperuser)
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
@@ -140,6 +141,15 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
                             <p className="text-gray-600">
                                 {manufacturer.description ?? `Underwater camera gear from ${manufacturer.name}`}
                             </p>
+                            <Link
+                                href={`/gear/${manufacturer.slug}/port-chart`}
+                                className="inline-flex items-center gap-1.5 mt-3 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                View Port Chart
+                            </Link>
                         </div>
                         <div className="flex gap-4 text-center">
                             {manufacturer._count.housings > 0 && (
@@ -193,7 +203,7 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
 
             <div className="max-w-7xl mx-auto px-4 py-8 space-y-16">
                 {/* Housings section */}
-                {housingsData.length > 0 && (
+                {(housingsData.length > 0 || isSuperuser) && (
                     <section id="housings">
                         <h2 className="text-2xl font-bold text-blue-900 mb-6">Housings</h2>
                         <HousingManufacturerHousingsClient
@@ -207,7 +217,7 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
                 )}
 
                 {/* Ports section */}
-                {portsData.length > 0 && (
+                {(portsData.length > 0 || isSuperuser) && (
                     <section id="ports">
                         <h2 className="text-2xl font-bold text-blue-900 mb-6">Ports</h2>
                         <PortManufacturerPortsClient
@@ -220,89 +230,28 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
                 )}
 
                 {/* Extension Rings section */}
-                {extensionRingsData.length > 0 && (
+                {(extensionRingsData.length > 0 || isSuperuser) && (
                     <section id="rings">
                         <h2 className="text-2xl font-bold text-blue-900 mb-6">Extension Rings</h2>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                            {extensionRingsData.map(r => (
-                                <div key={r.id} className="group/card relative">
-                                    <Link
-                                        href={`/gear/${params.manufacturer}/${r.slug}`}
-                                        className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all overflow-hidden block"
-                                    >
-                                        <div className="relative h-28 bg-gray-50">
-                                            <HousingImage
-                                                src={r.imageInfo.src}
-                                                fallback={r.imageInfo.fallback}
-                                                alt={r.name}
-                                                className="object-contain p-3 w-full h-full"
-                                            />
-                                        </div>
-                                        <div className="px-2.5 py-2">
-                                            <p className="text-xs font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-snug line-clamp-2">
-                                                {r.name}
-                                            </p>
-                                            {r.housingMount && (
-                                                <p className="text-[10px] text-gray-400 mt-0.5 truncate">
-                                                    {r.housingMount.name}
-                                                </p>
-                                            )}
-                                            {r.lengthMm != null && (
-                                                <p className="text-[10px] text-gray-400 truncate">{r.lengthMm} mm</p>
-                                            )}
-                                            {r.priceAmount != null && (
-                                                <p className="text-xs font-medium text-green-600 mt-1">
-                                                    ${r.priceAmount.toFixed(2)}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </Link>
-                                </div>
-                            ))}
-                        </div>
+                        <ExtensionRingsClient
+                            rings={extensionRingsData}
+                            manufacturer={{ id: manufacturer.id, name: manufacturer.name, slug: manufacturer.slug }}
+                            housingMounts={allHousingMounts}
+                            isSuperuser={isSuperuser}
+                        />
                     </section>
                 )}
 
                 {/* Port Adapters section */}
-                {portAdaptersData.length > 0 && (
+                {(portAdaptersData.length > 0 || isSuperuser) && (
                     <section id="adapters">
                         <h2 className="text-2xl font-bold text-blue-900 mb-6">Port Adapters</h2>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                            {portAdaptersData.map(a => (
-                                <div key={a.id} className="group/card relative">
-                                    <Link
-                                        href={`/gear/${params.manufacturer}/${a.slug}`}
-                                        className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all overflow-hidden block"
-                                    >
-                                        <div className="relative h-28 bg-gray-50">
-                                            <HousingImage
-                                                src={a.imageInfo.src}
-                                                fallback={a.imageInfo.fallback}
-                                                alt={a.name}
-                                                className="object-contain p-3 w-full h-full"
-                                            />
-                                        </div>
-                                        <div className="px-2.5 py-2">
-                                            <p className="text-xs font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-snug line-clamp-2">
-                                                {a.name}
-                                            </p>
-                                            {(a.inputHousingMount || a.outputHousingMount) && (
-                                                <p className="text-[10px] text-gray-400 mt-0.5 truncate">
-                                                    {a.inputHousingMount?.slug.toUpperCase() ?? '?'}
-                                                    {' → '}
-                                                    {a.outputHousingMount?.slug.toUpperCase() ?? '?'}
-                                                </p>
-                                            )}
-                                            {a.priceAmount != null && (
-                                                <p className="text-xs font-medium text-green-600 mt-1">
-                                                    ${a.priceAmount.toFixed(2)}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </Link>
-                                </div>
-                            ))}
-                        </div>
+                        <PortAdaptersClient
+                            adapters={portAdaptersData}
+                            manufacturer={{ id: manufacturer.id, name: manufacturer.name, slug: manufacturer.slug }}
+                            housingMounts={allHousingMounts}
+                            isSuperuser={isSuperuser}
+                        />
                     </section>
                 )}
             </div>

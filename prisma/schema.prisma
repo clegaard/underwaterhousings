@@ -8,20 +8,21 @@ datasource db {
 }
 
 model Manufacturer {
-    id             Int             @id @default(autoincrement())
-    name           String          @unique
-    slug           String          @unique
-    description    String?
-    createdAt      DateTime        @default(now())
-    updatedAt      DateTime        @updatedAt
-    housingMounts  HousingMount[]
-    cameras        Camera[]
-    housings       Housing[]
-    lenses         Lens[]
-    ports          Port[]
-    extensionRings ExtensionRing[]
-    portAdapters   PortAdapter[]
-    logoPath       String?
+    id               Int              @id @default(autoincrement())
+    name             String           @unique
+    slug             String           @unique
+    description      String?
+    createdAt        DateTime         @default(now())
+    updatedAt        DateTime         @updatedAt
+    housingMounts    HousingMount[]
+    cameras          Camera[]
+    housings         Housing[]
+    lenses           Lens[]
+    ports            Port[]
+    extensionRings   ExtensionRing[]
+    portAdapters     PortAdapter[]
+    portChartEntries PortChartEntry[]
+    logoPath         String?
 
     @@map("manufacturers")
 }
@@ -114,40 +115,42 @@ model Housing {
 }
 
 model Port {
-    id              Int           @id @default(autoincrement())
-    name            String
-    slug            String        @unique
-    description     String?
-    manufacturerId  Int
-    housingMountId  Int?
-    productPhotos   String[]
-    priceAmount     Decimal?      @db.Decimal(10, 2)
-    priceCurrency   String?       @default("USD")
-    isFlatPort      Boolean       @default(false) // True if it's a flat port, false if it's a dome port
-    hemisphereWidth Float? // For dome ports, the width of the hemisphere in mm
-    depthRating     Int? // Maximum depth rating of the port in meters
-    rigReviews      RigReview[]
-    cameraRigs      CameraRig[]
-    housingMount    HousingMount? @relation(fields: [housingMountId], references: [id])
-    manufacturer    Manufacturer  @relation(fields: [manufacturerId], references: [id])
-    lens            Lens[]        @relation("LensToPort")
+    id               Int              @id @default(autoincrement())
+    name             String
+    slug             String           @unique
+    description      String?
+    manufacturerId   Int
+    housingMountId   Int?
+    productPhotos    String[]
+    priceAmount      Decimal?         @db.Decimal(10, 2)
+    priceCurrency    String?          @default("USD")
+    isFlatPort       Boolean          @default(false) // True if it's a flat port, false if it's a dome port
+    hemisphereWidth  Float? // For dome ports, the width of the hemisphere in mm
+    depthRating      Int? // Maximum depth rating of the port in meters
+    rigReviews       RigReview[]
+    cameraRigs       CameraRig[]
+    housingMount     HousingMount?    @relation(fields: [housingMountId], references: [id])
+    manufacturer     Manufacturer     @relation(fields: [manufacturerId], references: [id])
+    lens             Lens[]           @relation("LensToPort")
+    portChartEntries PortChartEntry[]
 
     @@map("ports")
 }
 
 model ExtensionRing {
-    id             Int           @id @default(autoincrement())
+    id             Int                  @id @default(autoincrement())
     name           String
-    slug           String        @unique
+    slug           String               @unique
     description    String?
     manufacturerId Int
     housingMountId Int? // The port mount system it fits
     lengthMm       Int? // Length in millimeters
-    priceAmount    Decimal?      @db.Decimal(10, 2)
-    priceCurrency  String?       @default("USD")
+    priceAmount    Decimal?             @db.Decimal(10, 2)
+    priceCurrency  String?              @default("USD")
     productPhotos  String[]
-    manufacturer   Manufacturer  @relation(fields: [manufacturerId], references: [id])
-    housingMount   HousingMount? @relation(fields: [housingMountId], references: [id])
+    manufacturer   Manufacturer         @relation(fields: [manufacturerId], references: [id])
+    housingMount   HousingMount?        @relation(fields: [housingMountId], references: [id])
+    portChartRings PortChartEntryRing[]
 
     @@map("extension_rings")
 }
@@ -171,29 +174,30 @@ model PortAdapter {
 }
 
 model Lens {
-    id                       Int           @id @default(autoincrement())
+    id                       Int              @id @default(autoincrement())
     name                     String
-    slug                     String        @unique
+    slug                     String           @unique
     description              String?
     minimumFocusDistanceTele Float? // Minimum focus distance at the tele end in metres
     minimumFocusDistanceWide Float? // Minimum focus distance at the wide end in metres
-    isZoomLens               Boolean       @default(false) // True if it's a zoom lens, false if it's a prime lens
+    isZoomLens               Boolean          @default(false) // True if it's a zoom lens, false if it's a prime lens
     focalLengthTele          Int // Focal length at the tele end in mm (prime lenses: sole focal length)
     focalLengthWide          Int? // Focal length at the wide end in mm; null means prime lens
     maximumMagnification     Float? // Maximum reproduction ratio e.g. 0.30 for 0.30x; scraped from manufacturer specs
-    priceAmount              Decimal?      @db.Decimal(10, 2)
-    priceCurrency            String?       @default("USD")
+    priceAmount              Decimal?         @db.Decimal(10, 2)
+    priceCurrency            String?          @default("USD")
     cameraMountId            Int
     cameraId                 Int?
     productPhotos            String[]
     manufacturerId           Int
-    exifId                   String?       @unique
+    exifId                   String?          @unique
     rigReviews               RigReview[]
     cameraRigs               CameraRig[]
-    camera                   Camera?       @relation(fields: [cameraId], references: [id])
-    cameraMount              CameraMount   @relation(fields: [cameraMountId], references: [id])
-    manufacturer             Manufacturer? @relation(fields: [manufacturerId], references: [id])
-    ports                    Port[]        @relation("LensToPort")
+    camera                   Camera?          @relation(fields: [cameraId], references: [id])
+    cameraMount              CameraMount      @relation(fields: [cameraMountId], references: [id])
+    manufacturer             Manufacturer?    @relation(fields: [manufacturerId], references: [id])
+    ports                    Port[]           @relation("LensToPort")
+    portChartEntries         PortChartEntry[]
 
     @@map("lenses")
 }
@@ -280,4 +284,30 @@ model RigReview {
     user                 User     @relation(fields: [userId], references: [id])
 
     @@map("rig_reviews")
+}
+
+model PortChartEntry {
+    id             Int                  @id @default(autoincrement())
+    manufacturerId Int
+    lensId         Int
+    portId         Int?
+    notes          String?
+    createdAt      DateTime             @default(now())
+    manufacturer   Manufacturer         @relation(fields: [manufacturerId], references: [id])
+    lens           Lens                 @relation(fields: [lensId], references: [id])
+    port           Port?                @relation(fields: [portId], references: [id])
+    rings          PortChartEntryRing[]
+
+    @@map("port_chart_entries")
+}
+
+model PortChartEntryRing {
+    id               Int            @id @default(autoincrement())
+    portChartEntryId Int
+    extensionRingId  Int
+    order            Int            @default(0)
+    portChartEntry   PortChartEntry @relation(fields: [portChartEntryId], references: [id], onDelete: Cascade)
+    extensionRing    ExtensionRing  @relation(fields: [extensionRingId], references: [id])
+
+    @@map("port_chart_entry_rings")
 }
