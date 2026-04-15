@@ -376,23 +376,28 @@ function TreeBranch({ nodes, isSuperuser, onDeleteEntry, pickerKey, onOpenPicker
         <div className="flex flex-col relative">
             {/* Vertical connector — spans from center of first child to center of last */}
             {totalRows > 1 && (
-                <div className="absolute w-0.5 bg-gray-300 left-0" style={{ top: NC, bottom: NC }} />
+                <div className="absolute w-0.5 bg-gray-500 left-0" style={{ top: NC, bottom: NC }} />
             )}
 
             {nodes.map((node, i) => {
                 const nodeKey = [...pathPrefix, node.key].join('/')
                 const hasMore = i < nodes.length - 1 || draftSteps.length > 0 || isSuperuser
+                const nodeDraftSteps = draftChain?.branchPath === nodeKey ? draftChain.steps : []
 
                 return (
                     <div key={node.key} className="flex items-stretch">
                         {/* Connector cell */}
                         <div className="relative w-8 shrink-0 self-stretch">
                             {/* Horizontal line */}
-                            <div className="absolute left-0 right-0 h-0.5 bg-gray-300" style={{ top: NC }} />
+                            <div className="absolute left-0 right-0 h-0.5 bg-gray-500" style={{ top: NC }} />
                             {/* Vertical: top half */}
-                            {i > 0 && <div className="absolute left-0 w-0.5 bg-gray-300 top-0" style={{ height: NC }} />}
+                            {i > 0 && <div className="absolute left-0 w-0.5 bg-gray-500 top-0" style={{ height: NC }} />}
                             {/* Vertical: bottom half */}
-                            {hasMore && <div className="absolute left-0 w-0.5 bg-gray-300 bottom-0" style={{ top: NC }} />}
+                            {hasMore && <div className="absolute left-0 w-0.5 bg-gray-500 bottom-0" style={{ top: NC }} />}
+                            {/* Junction dot at fork */}
+                            {totalRows > 1 && (
+                                <div className="absolute w-[5px] h-[5px] rounded-full bg-gray-500" style={{ left: -1, top: NC - 2 }} />
+                            )}
                         </div>
 
                         {/* Node + children */}
@@ -438,12 +443,28 @@ function TreeBranch({ nodes, isSuperuser, onDeleteEntry, pickerKey, onOpenPicker
                                     suppressPicker={suppressPicker}
                                 />
                             ) : node.type !== 'port' && isSuperuser ? (
-                                /* + button to extend this chain */
-                                <div className="flex items-center relative ml-1" style={{ height: NC * 2 }}>
-                                    <div className="w-6 h-0.5 bg-gray-300" />
+                                /* + button to extend this chain, with accumulated draft steps */
+                                <div className="flex items-center ml-1 self-center">
+                                    <div className="w-6 h-0.5 bg-gray-500" />
+                                    {nodeDraftSteps.map((s, idx) => (
+                                        <div key={idx} className="flex items-center">
+                                            {idx > 0 && <div className="w-4 h-0.5 bg-gray-400" />}
+                                            <div className={`flex items-center gap-1 rounded-lg border-2 border-dashed px-2 py-1 text-xs shrink-0 opacity-80 ${nodeStyles[s.type]}`}>
+                                                <p className="font-semibold leading-tight">{s.label}</p>
+                                                {s.detail && <p className="text-[9px] opacity-60">{s.detail}</p>}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {nodeDraftSteps.length > 0 && <div className="w-4 h-0.5 bg-gray-400" />}
                                     <div className="relative">
                                         <AddButton onClick={() => onOpenPicker(nodeKey)} size="sm" />
-                                        {pickerKey === nodeKey && pickerMode && !suppressPicker && <InlinePicker mode={pickerMode} {...pickerProps} />}
+                                        {pickerKey === nodeKey && pickerMode && !suppressPicker && (
+                                            <InlinePicker
+                                                mode={pickerMode}
+                                                recomputeKey={nodeDraftSteps.length}
+                                                {...pickerProps}
+                                            />
+                                        )}
                                     </div>
                                 </div>
                             ) : null}
@@ -452,18 +473,30 @@ function TreeBranch({ nodes, isSuperuser, onDeleteEntry, pickerKey, onOpenPicker
                 )
             })}
 
-            {/* Branch + button (add alternative sibling) */}
+            {/* Branch + button (add alternative sibling) — with inline draft steps */}
             {isSuperuser && nodes.length > 0 && (
                 <div className="flex items-stretch">
                     <div className="relative w-8 shrink-0" style={{ height: NC * 2 + 8 }}>
-                        <div className="absolute left-0 right-0 h-0.5 bg-gray-300 opacity-40" style={{ top: NC }} />
-                        <div className="absolute left-0 w-0.5 bg-gray-300 opacity-40 top-0" style={{ height: NC }} />
+                        <div className="absolute left-0 right-0 h-0.5 bg-gray-500 opacity-30" style={{ top: NC }} />
+                        <div className="absolute left-0 w-0.5 bg-gray-500 opacity-30 top-0" style={{ height: NC }} />
                     </div>
-                    <div className="py-1 relative">
-                        <AddButton onClick={() => onOpenPicker(`branch:${draftPath}`)} size="sm" />
-                        {pickerKey === `branch:${draftPath}` && pickerMode && !suppressPicker && (
-                            <InlinePicker mode={pickerMode} recomputeKey={0} {...pickerProps} />
-                        )}
+                    <div className="py-1 flex items-center">
+                        {draftSteps.map((s, idx) => (
+                            <div key={idx} className="flex items-center">
+                                {idx > 0 && <div className="w-4 h-0.5 bg-gray-400" />}
+                                <div className={`flex items-center gap-1 rounded-lg border-2 border-dashed px-2 py-1 text-xs shrink-0 opacity-80 ${nodeStyles[s.type]}`}>
+                                    <p className="font-semibold leading-tight">{s.label}</p>
+                                    {s.detail && <p className="text-[9px] opacity-60">{s.detail}</p>}
+                                </div>
+                            </div>
+                        ))}
+                        {draftSteps.length > 0 && <div className="w-4 h-0.5 bg-gray-400" />}
+                        <div className="relative">
+                            <AddButton onClick={() => onOpenPicker(`branch:${draftPath}`)} size="sm" />
+                            {pickerKey === `branch:${draftPath}` && pickerMode && !suppressPicker && (
+                                <InlinePicker mode={pickerMode} recomputeKey={draftSteps.length} {...pickerProps} />
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
@@ -703,13 +736,19 @@ export default function PortChartClient({
             )}
 
             {/* Tree — pickers use portals so overflow-x-auto is safe here */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 overflow-x-auto">
-                <div className="flex flex-col gap-6 min-w-fit">
+            <div className="bg-white rounded-xl border border-gray-200 p-6 overflow-x-auto min-h-64">
+                <div className="flex flex-col gap-6 min-w-fit min-h-full">
                     {trees.map(tree => {
                         const lensPK = `lens:${tree.lens.id}`
                         const isLensPickerOpen = pickerKey === lensPK
                         // Show draft row when pickerContext targets this lens (moves picker out of the tree)
-                        const isActiveLensDraft = !!(pickerContext?.lensId === tree.lens.id && pickerMode && pickerMode !== 'lens')
+                        // Only activate draft row for root-level or lens-level entry points (building a new chain from scratch).
+                        // Branch/node + buttons inside the tree should keep their picker in-place.
+                        const isActiveLensDraft = !!(
+                            (pickerKey === 'root' || pickerKey === lensPK) &&
+                            pickerContext?.lensId === tree.lens.id &&
+                            pickerMode && pickerMode !== 'lens'
+                        )
                         const showDraftRow = isActiveLensDraft && !isNewPendingLens
                         const draftStepsForRow = showDraftRow && draftChain?.lensId === tree.lens.id ? draftChain.steps : []
 
@@ -747,7 +786,7 @@ export default function PortChartClient({
                                         />
                                     ) : isSuperuser ? (
                                         <div className="flex items-center relative ml-2" style={{ height: NC * 2 + 8 }}>
-                                            <div className="w-8 h-0.5 bg-gray-300" />
+                                            <div className="w-8 h-0.5 bg-gray-500" />
                                             <div className="relative">
                                                 <AddButton onClick={() => handleOpenPicker(lensPK)} />
                                                 {isLensPickerOpen && pickerMode && !isActiveLensDraft && <InlinePicker key={pickerMode} mode={pickerMode} {...sharedPickerProps} />}
@@ -762,7 +801,7 @@ export default function PortChartClient({
                                         <span className="text-[10px] text-gray-400 mr-1.5 font-mono">└─</span>
                                         {draftStepsForRow.map((s, i) => (
                                             <div key={i} className="flex items-center">
-                                                {i > 0 && <div className="w-4 h-0.5 bg-gray-300" />}
+                                                {i > 0 && <div className="w-4 h-0.5 bg-gray-400" />}
                                                 <div className={`flex items-center gap-1 rounded-lg border-2 border-dashed px-2 py-1 text-xs shrink-0 opacity-80 ${nodeStyles[s.type]}`}>
                                                     <p className="font-semibold leading-tight">{s.label}</p>
                                                     {s.detail && <p className="text-[9px] opacity-60">{s.detail}</p>}
@@ -770,7 +809,7 @@ export default function PortChartClient({
                                             </div>
                                         ))}
                                         <div className="flex items-center">
-                                            {draftStepsForRow.length > 0 && <div className="w-4 h-0.5 bg-gray-300" />}
+                                            {draftStepsForRow.length > 0 && <div className="w-4 h-0.5 bg-gray-400" />}
                                             <div className="relative">
                                                 <div className="w-5 h-5 rounded-full border-2 border-dashed border-blue-400 bg-blue-50 flex items-center justify-center">
                                                     <svg className="w-2.5 h-2.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -809,7 +848,7 @@ export default function PortChartClient({
                             {/* Draft steps accumulated so far */}
                             {(draftChain?.steps ?? []).map((s, i) => (
                                 <div key={i} className="flex items-center">
-                                    <div className="w-6 h-0.5 bg-gray-300" />
+                                    <div className="w-6 h-0.5 bg-gray-500" />
                                     <div className={`flex items-center gap-1.5 rounded-lg border-2 border-dashed px-2.5 py-1.5 text-xs shrink-0 opacity-75 ${nodeStyles[s.type]}`}>
                                         <p className="font-semibold leading-tight">{s.label}</p>
                                         <p className="text-[10px] opacity-60">{s.detail}</p>
@@ -818,7 +857,7 @@ export default function PortChartClient({
                             ))}
                             {/* Connector to current picker */}
                             <div className="flex items-center">
-                                <div className="w-6 h-0.5 bg-gray-300" />
+                                <div className="w-6 h-0.5 bg-gray-500" />
                                 <div className="relative">
                                     {/* Visual indicator dot where picker is attached */}
                                     <div className="w-5 h-5 rounded-full border-2 border-dashed border-blue-400 bg-blue-50 flex items-center justify-center">
