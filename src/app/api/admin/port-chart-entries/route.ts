@@ -12,10 +12,15 @@ function requireSuperuser(session: Awaited<ReturnType<typeof auth>>) {
 const include = {
     lens: { include: { manufacturer: true, cameraMount: true } },
     port: true,
-    rings: {
-        include: { extensionRing: true },
+    steps: {
+        include: { extensionRing: true, portAdapter: true },
         orderBy: { order: 'asc' as const },
     },
+}
+
+interface StepInput {
+    extensionRingId?: number
+    portAdapterId?: number
 }
 
 export async function GET(req: NextRequest) {
@@ -37,7 +42,7 @@ export async function POST(req: NextRequest) {
     if (denied) return denied
 
     const body = await req.json()
-    const { manufacturerId, lensId, portId, ringIds, notes } = body
+    const { manufacturerId, lensId, portId, steps, notes } = body
 
     if (!manufacturerId || !lensId) {
         return NextResponse.json({ error: 'manufacturerId and lensId are required' }, { status: 400 })
@@ -49,9 +54,10 @@ export async function POST(req: NextRequest) {
             lensId,
             portId: portId || null,
             notes: notes || null,
-            rings: {
-                create: (ringIds as number[] ?? []).map((id: number, idx: number) => ({
-                    extensionRingId: id,
+            steps: {
+                create: ((steps ?? []) as StepInput[]).map((s, idx) => ({
+                    extensionRingId: s.extensionRingId ?? null,
+                    portAdapterId: s.portAdapterId ?? null,
                     order: idx,
                 })),
             },
@@ -70,10 +76,9 @@ export async function PUT(req: NextRequest) {
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
     const body = await req.json()
-    const { lensId, portId, ringIds, notes } = body
+    const { lensId, portId, steps, notes } = body
 
-    // Delete existing rings then recreate in correct order
-    await prisma.portChartEntryRing.deleteMany({ where: { portChartEntryId: id } })
+    await prisma.portChartEntryStep.deleteMany({ where: { portChartEntryId: id } })
 
     const entry = await prisma.portChartEntry.update({
         where: { id },
@@ -81,9 +86,10 @@ export async function PUT(req: NextRequest) {
             lensId,
             portId: portId || null,
             notes: notes || null,
-            rings: {
-                create: (ringIds as number[] ?? []).map((rid: number, idx: number) => ({
-                    extensionRingId: rid,
+            steps: {
+                create: ((steps ?? []) as StepInput[]).map((s, idx) => ({
+                    extensionRingId: s.extensionRingId ?? null,
+                    portAdapterId: s.portAdapterId ?? null,
                     order: idx,
                 })),
             },

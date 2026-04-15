@@ -150,25 +150,26 @@ model ExtensionRing {
     productPhotos  String[]
     manufacturer   Manufacturer         @relation(fields: [manufacturerId], references: [id])
     housingMount   HousingMount?        @relation(fields: [housingMountId], references: [id])
-    portChartRings PortChartEntryRing[]
+    portChartSteps PortChartEntryStep[]
 
     @@map("extension_rings")
 }
 
 model PortAdapter {
-    id                   Int           @id @default(autoincrement())
+    id                   Int                  @id @default(autoincrement())
     name                 String
-    slug                 String        @unique
+    slug                 String               @unique
     description          String?
     manufacturerId       Int
     inputHousingMountId  Int? // The mount on the housing side
     outputHousingMountId Int? // The mount on the port side
-    priceAmount          Decimal?      @db.Decimal(10, 2)
-    priceCurrency        String?       @default("USD")
+    priceAmount          Decimal?             @db.Decimal(10, 2)
+    priceCurrency        String?              @default("USD")
     productPhotos        String[]
-    manufacturer         Manufacturer  @relation(fields: [manufacturerId], references: [id])
-    inputHousingMount    HousingMount? @relation("AdapterInputMount", fields: [inputHousingMountId], references: [id])
-    outputHousingMount   HousingMount? @relation("AdapterOutputMount", fields: [outputHousingMountId], references: [id])
+    manufacturer         Manufacturer         @relation(fields: [manufacturerId], references: [id])
+    inputHousingMount    HousingMount?        @relation("AdapterInputMount", fields: [inputHousingMountId], references: [id])
+    outputHousingMount   HousingMount?        @relation("AdapterOutputMount", fields: [outputHousingMountId], references: [id])
+    portChartSteps       PortChartEntryStep[]
 
     @@map("port_adapters")
 }
@@ -296,18 +297,20 @@ model PortChartEntry {
     manufacturer   Manufacturer         @relation(fields: [manufacturerId], references: [id])
     lens           Lens                 @relation(fields: [lensId], references: [id])
     port           Port?                @relation(fields: [portId], references: [id])
-    rings          PortChartEntryRing[]
+    steps          PortChartEntryStep[]
 
     @@map("port_chart_entries")
 }
 
-model PortChartEntryRing {
+model PortChartEntryStep {
     id               Int            @id @default(autoincrement())
     portChartEntryId Int
-    extensionRingId  Int
+    extensionRingId  Int?
+    portAdapterId    Int?
     order            Int            @default(0)
     portChartEntry   PortChartEntry @relation(fields: [portChartEntryId], references: [id], onDelete: Cascade)
-    extensionRing    ExtensionRing  @relation(fields: [extensionRingId], references: [id])
+    extensionRing    ExtensionRing? @relation(fields: [extensionRingId], references: [id])
+    portAdapter      PortAdapter?   @relation(fields: [portAdapterId], references: [id])
 
-    @@map("port_chart_entry_rings")
+    @@map("port_chart_entry_steps")
 }

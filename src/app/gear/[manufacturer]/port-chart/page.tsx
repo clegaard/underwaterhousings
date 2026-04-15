@@ -10,7 +10,7 @@ interface PageProps {
 }
 
 async function getData(slug: string) {
-    const [manufacturer, allLenses, allExtensionRings] = await Promise.all([
+    const [manufacturer, allLenses, allExtensionRings, allPortAdapters] = await Promise.all([
         prisma.manufacturer.findUnique({
             where: { slug },
             include: {
@@ -20,8 +20,8 @@ async function getData(slug: string) {
                     include: {
                         lens: { include: { manufacturer: true, cameraMount: true } },
                         port: true,
-                        rings: {
-                            include: { extensionRing: true },
+                        steps: {
+                            include: { extensionRing: true, portAdapter: true },
                             orderBy: { order: 'asc' },
                         },
                     },
@@ -37,8 +37,12 @@ async function getData(slug: string) {
             include: { housingMount: true },
             orderBy: [{ housingMount: { name: 'asc' } }, { lengthMm: 'asc' }],
         }),
+        prisma.portAdapter.findMany({
+            include: { inputHousingMount: true, outputHousingMount: true },
+            orderBy: { name: 'asc' },
+        }),
     ])
-    return { manufacturer, allLenses, allExtensionRings }
+    return { manufacturer, allLenses, allExtensionRings, allPortAdapters }
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -51,7 +55,7 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export default async function PortChartPage({ params }: PageProps) {
-    const [{ manufacturer, allLenses, allExtensionRings }, session] = await Promise.all([
+    const [{ manufacturer, allLenses, allExtensionRings, allPortAdapters }, session] = await Promise.all([
         getData(params.manufacturer),
         auth(),
     ])
@@ -82,15 +86,20 @@ export default async function PortChartPage({ params }: PageProps) {
             productPhotos: e.port.productPhotos,
             imageInfo: getPortImagePathWithFallback(e.port.productPhotos),
         } : null,
-        rings: e.rings.map(r => ({
-            id: r.id,
-            order: r.order,
-            extensionRing: {
-                id: r.extensionRing.id,
-                name: r.extensionRing.name,
-                slug: r.extensionRing.slug,
-                lengthMm: r.extensionRing.lengthMm,
-            },
+        steps: e.steps.map(s => ({
+            id: s.id,
+            order: s.order,
+            extensionRing: s.extensionRing ? {
+                id: s.extensionRing.id,
+                name: s.extensionRing.name,
+                slug: s.extensionRing.slug,
+                lengthMm: s.extensionRing.lengthMm,
+            } : null,
+            portAdapter: s.portAdapter ? {
+                id: s.portAdapter.id,
+                name: s.portAdapter.name,
+                slug: s.portAdapter.slug,
+            } : null,
         })),
         notes: e.notes,
     }))
@@ -111,6 +120,16 @@ export default async function PortChartPage({ params }: PageProps) {
         slug: r.slug,
         lengthMm: r.lengthMm,
         housingMount: r.housingMount,
+        imageInfo: getPortImagePathWithFallback(r.productPhotos ?? []),
+    }))
+
+    const portAdaptersData = allPortAdapters.map(a => ({
+        id: a.id,
+        name: a.name,
+        slug: a.slug,
+        inputHousingMount: a.inputHousingMount,
+        outputHousingMount: a.outputHousingMount,
+        imageInfo: getPortImagePathWithFallback(a.productPhotos ?? []),
     }))
 
     const lensesData = allLenses.map(l => ({
@@ -164,6 +183,7 @@ export default async function PortChartPage({ params }: PageProps) {
                     allLenses={lensesData}
                     allPorts={portsData}
                     allExtensionRings={extensionRingsData}
+                    allPortAdapters={portAdaptersData}
                     isSuperuser={isSuperuser}
                 />
             </div>

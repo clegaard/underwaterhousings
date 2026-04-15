@@ -1,52 +1,51 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { HousingImage } from '@/components/HousingImage'
 
-/* ─────────────── Types ─────────────── */
+/* ═══════════════════════════════════════════════
+   Types
+   ═══════════════════════════════════════════════ */
 
 interface LensData {
-    id: number
-    name: string
-    slug: string
-    manufacturer: { name: string }
-    cameraMount: { name: string }
-    focalLengthTele: number
-    focalLengthWide: number | null
-    isZoomLens: boolean
-    productPhotos: string[]
-    imageInfo: { src: string; fallback: string }
+    id: number; name: string; slug: string
+    manufacturer: { name: string }; cameraMount: { name: string }
+    focalLengthTele: number; focalLengthWide: number | null; isZoomLens: boolean
+    productPhotos: string[]; imageInfo: { src: string; fallback: string }
 }
 
 interface PortData {
-    id: number
-    name: string
-    slug: string
-    isFlatPort: boolean
+    id: number; name: string; slug: string; isFlatPort: boolean
     productPhotos: string[]
     housingMount: { id: number; name: string; slug: string } | null
     imageInfo: { src: string; fallback: string }
 }
 
 interface RingData {
-    id: number
-    name: string
-    slug: string
-    lengthMm: number | null
+    id: number; name: string; slug: string; lengthMm: number | null
     housingMount: { id: number; name: string; slug: string } | null
+    imageInfo: { src: string; fallback: string }
 }
 
-interface EntryRing {
-    id: number
-    order: number
-    extensionRing: { id: number; name: string; slug: string; lengthMm: number | null }
+interface AdapterData {
+    id: number; name: string; slug: string
+    inputHousingMount: { id: number; name: string; slug: string } | null
+    outputHousingMount: { id: number; name: string; slug: string } | null
+    imageInfo: { src: string; fallback: string }
+}
+
+interface EntryStep {
+    id: number; order: number
+    extensionRing: { id: number; name: string; slug: string; lengthMm: number | null } | null
+    portAdapter: { id: number; name: string; slug: string } | null
 }
 
 interface Entry {
     id: number
     lens: LensData
-    port: (Omit<PortData, 'housingMount'>) | null
-    rings: EntryRing[]
+    port: Omit<PortData, 'housingMount'> | null
+    steps: EntryStep[]
     notes: string | null
 }
 
@@ -58,487 +57,804 @@ interface Props {
     allLenses: LensData[]
     allPorts: PortData[]
     allExtensionRings: RingData[]
+    allPortAdapters: AdapterData[]
     isSuperuser: boolean
 }
 
-/* ─────────────── Focal length helper ─────────────── */
-function focalLabel(lens: { focalLengthTele: number; focalLengthWide: number | null; isZoomLens: boolean }) {
-    if (lens.focalLengthWide) return `${lens.focalLengthWide}–${lens.focalLengthTele}mm`
-    return `${lens.focalLengthTele}mm`
+/* ═══════════════════════════════════════════════
+   Helpers
+   ═══════════════════════════════════════════════ */
+
+function focalLabel(l: { focalLengthTele: number; focalLengthWide: number | null }) {
+    return l.focalLengthWide ? `${l.focalLengthWide}–${l.focalLengthTele}mm` : `${l.focalLengthTele}mm`
 }
 
-/* ─────────────── Chain node component ─────────────── */
-function ChainArrow() {
+/* ═══════════════════════════════════════════════
+   Trie builder — converts flat entries into a tree
+   ═══════════════════════════════════════════════ */
+
+interface TrieNode {
+    key: string
+    type: 'ring' | 'adapter' | 'port'
+    itemId: number
+    label: string
+    detail: string
+    imageInfo: { src: string; fallback: string }
+    entryIds: number[]
+    terminalEntryId?: number
+    notes?: string
+    children: TrieNode[]
+}
+
+interface LensTree {
+    lens: LensData
+    roots: TrieNode[]
+    entryIds: number[]
+}
+
+function buildLensTrees(entries: Entry[], allPorts: PortData[], allRings: RingData[], allAdapters: AdapterData[]): LensTree[] {
+    const lensMap = new Map<number, { lens: LensData; entries: Entry[] }>()
+    for (const e of entries) {
+        if (!lensMap.has(e.lens.id)) lensMap.set(e.lens.id, { lens: e.lens, entries: [] })
+        lensMap.get(e.lens.id)!.entries.push(e)
+    }
+
+    const trees: LensTree[] = []
+    for (const [, group] of lensMap) {
+        const roots: TrieNode[] = []
+
+        for (const entry of group.entries) {
+            const path: { key: string; type: 'ring' | 'adapter' | 'port'; itemId: number; label: string; detail: string; imageInfo: { src: string; fallback: string } }[] = []
+
+            for (const s of entry.steps) {
+                if (s.extensionRing) {
+                    const ring = allRings.find(r => r.id === s.extensionRing!.id)
+                    path.push({
+                        key: `ring:${s.extensionRing.id}`,
+                        type: 'ring',
+                        itemId: s.extensionRing.id,
+                        label: s.extensionRing.lengthMm != null ? `${s.extensionRing.lengthMm}mm` : s.extensionRing.name,
+                        detail: s.extensionRing.name,
+                        imageInfo: ring?.imageInfo ?? { src: '', fallback: '/housings/fallback.png' },
+                    })
+                } else if (s.portAdapter) {
+                    const ada = allAdapters.find(a => a.id === s.portAdapter!.id)
+                    path.push({
+                        key: `adapter:${s.portAdapter.id}`,
+                        type: 'adapter',
+                        itemId: s.portAdapter.id,
+                        label: s.portAdapter.name,
+                        detail: ada ? `${ada.inputHousingMount?.slug.toUpperCase() ?? '?'} → ${ada.outputHousingMount?.slug.toUpperCase() ?? '?'}` : '',
+                        imageInfo: ada?.imageInfo ?? { src: '', fallback: '/housings/fallback.png' },
+                    })
+                }
+            }
+
+            if (entry.port) {
+                const port = allPorts.find(p => p.id === entry.port!.id)
+                path.push({
+                    key: `port:${entry.port.id}`,
+                    type: 'port',
+                    itemId: entry.port.id,
+                    label: entry.port.name,
+                    detail: entry.port.isFlatPort ? 'Flat port' : 'Dome port',
+                    imageInfo: port?.imageInfo ?? entry.port.imageInfo,
+                })
+            }
+
+            // Insert path into trie
+            let nodes = roots
+            for (let i = 0; i < path.length; i++) {
+                const step = path[i]
+                let existing = nodes.find(n => n.key === step.key)
+                if (!existing) {
+                    existing = {
+                        key: step.key, type: step.type, itemId: step.itemId,
+                        label: step.label, detail: step.detail, imageInfo: step.imageInfo,
+                        entryIds: [], children: [],
+                    }
+                    nodes.push(existing)
+                }
+                existing.entryIds.push(entry.id)
+                if (i === path.length - 1) {
+                    existing.terminalEntryId = entry.id
+                    existing.notes = entry.notes ?? undefined
+                }
+                nodes = existing.children
+            }
+        }
+
+        trees.push({ lens: group.lens, roots, entryIds: group.entries.map(e => e.id) })
+    }
+
+    trees.sort((a, b) => a.lens.name.localeCompare(b.lens.name))
+    return trees
+}
+
+/* ═══════════════════════════════════════════════
+   Inline Picker Popover
+   ═══════════════════════════════════════════════ */
+
+type PickerMode = 'lens' | 'step-type' | 'ring' | 'adapter' | 'port'
+
+/* ─── PickerPortal: renders picker via portal so no overflow ancestor can clip it ─── */
+function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensionRings, allPortAdapters, onSelectLens, onSelectStepType, onSelectRing, onSelectAdapter, onSelectPort, onClose }: {
+    mode: PickerMode
+    recomputeKey?: number
+    allLenses: LensData[]
+    allPorts: PortData[]
+    allExtensionRings: RingData[]
+    allPortAdapters: AdapterData[]
+    onSelectLens: (id: number) => void
+    onSelectStepType: (type: 'ring' | 'adapter' | 'port') => void
+    onSelectRing: (id: number) => void
+    onSelectAdapter: (id: number) => void
+    onSelectPort: (id: number) => void
+    onClose: () => void
+}) {
+    const [search, setSearch] = useState('')
+    // Placeholder span stays in original DOM position so we can read its coords
+    const placeholderRef = useRef<HTMLSpanElement>(null)
+    const pickerRef = useRef<HTMLDivElement>(null)
+    const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+
+    useLayoutEffect(() => {
+        if (!placeholderRef.current) return
+        const rect = placeholderRef.current.getBoundingClientRect()
+        setPos({ top: rect.bottom + 4, left: rect.left })
+    }, [recomputeKey, mode])
+
+    useEffect(() => {
+        function handleClick(e: MouseEvent) {
+            const t = e.target as Node
+            if (!pickerRef.current?.contains(t)) onClose()
+        }
+        document.addEventListener('mousedown', handleClick)
+        return () => document.removeEventListener('mousedown', handleClick)
+    }, [onClose])
+
+    const q = search.toLowerCase().trim()
+
+    const pickerStyle: React.CSSProperties = pos
+        ? { position: 'fixed', top: pos.top, left: pos.left, zIndex: 9999 }
+        : { position: 'fixed', visibility: 'hidden' }
+
+    let pickerEl: React.ReactNode = null
+    if (mode === 'step-type') {
+        pickerEl = (
+            <div ref={pickerRef} style={pickerStyle} className="bg-white rounded-xl shadow-xl border border-gray-200 p-1.5 w-44">
+                <button onClick={() => onSelectStepType('ring')} className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-purple-50 text-gray-800 flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-purple-200 border border-purple-400" />
+                    Extension ring
+                </button>
+                <button onClick={() => onSelectStepType('adapter')} className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-amber-50 text-gray-800 flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-amber-200 border border-amber-400" />
+                    Adapter
+                </button>
+                <button onClick={() => onSelectStepType('port')} className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-emerald-50 text-gray-800 flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-200 border border-emerald-400" />
+                    Port
+                </button>
+            </div>
+        )
+    } else {
+        let items: { id: number; primary: string; secondary: string }[] = []
+        if (mode === 'lens') {
+            items = allLenses.filter(l => !q || `${l.manufacturer.name} ${l.name}`.toLowerCase().includes(q))
+                .map(l => ({ id: l.id, primary: l.name, secondary: `${l.manufacturer.name} · ${focalLabel(l)}` }))
+        } else if (mode === 'ring') {
+            items = allExtensionRings.filter(r => !q || r.name.toLowerCase().includes(q))
+                .map(r => ({ id: r.id, primary: r.lengthMm != null ? `${r.lengthMm}mm — ${r.name}` : r.name, secondary: r.housingMount?.name ?? '' }))
+        } else if (mode === 'adapter') {
+            items = allPortAdapters.filter(a => !q || a.name.toLowerCase().includes(q))
+                .map(a => ({ id: a.id, primary: a.name, secondary: `${a.inputHousingMount?.slug.toUpperCase() ?? '?'} → ${a.outputHousingMount?.slug.toUpperCase() ?? '?'}` }))
+        } else if (mode === 'port') {
+            items = allPorts.filter(p => !q || p.name.toLowerCase().includes(q))
+                .map(p => ({ id: p.id, primary: p.name, secondary: `${p.isFlatPort ? 'Flat' : 'Dome'}${p.housingMount ? ` · ${p.housingMount.slug.toUpperCase()}` : ''}` }))
+        }
+        const handleSelect = (id: number) => {
+            if (mode === 'lens') onSelectLens(id)
+            else if (mode === 'ring') onSelectRing(id)
+            else if (mode === 'adapter') onSelectAdapter(id)
+            else if (mode === 'port') onSelectPort(id)
+        }
+
+        pickerEl = (
+            <div ref={pickerRef} style={pickerStyle} className="bg-white rounded-xl shadow-xl border border-gray-200 w-72">
+                <div className="p-2 border-b border-gray-100">
+                    <input
+                        autoFocus
+                        type="text"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder={`Search ${mode === 'lens' ? 'lenses' : mode === 'ring' ? 'extension rings' : mode === 'adapter' ? 'adapters' : 'ports'}…`}
+                        className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                    />
+                </div>
+                <div className="max-h-64 overflow-y-auto divide-y divide-gray-50">
+                    {items.slice(0, 40).map(item => (
+                        <button key={item.id} onClick={() => handleSelect(item.id)} className="w-full text-left px-3 py-2 hover:bg-blue-50 transition-colors">
+                            <p className="text-xs font-medium text-gray-900 leading-tight">{item.primary}</p>
+                            {item.secondary && <p className="text-[10px] text-gray-400">{item.secondary}</p>}
+                        </button>
+                    ))}
+                    {items.length === 0 && <p className="px-3 py-3 text-xs text-gray-400 text-center">No results</p>}
+                </div>
+            </div>
+        )
+    }
+
+    // Render: invisible placeholder in original DOM position + picker in a body portal
     return (
-        <svg className="shrink-0 w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
+        <>
+            <span ref={placeholderRef} />
+            {createPortal(pickerEl, document.body)}
+        </>
     )
 }
 
-/* ─────────────── Main Component ─────────────── */
+/* ═══════════════════════════════════════════════
+   Add Button (the + circle)
+   ═══════════════════════════════════════════════ */
+
+function AddButton({ onClick, size = 'md', className = '' }: { onClick: () => void; size?: 'sm' | 'md'; className?: string }) {
+    const sz = size === 'sm' ? 'w-5 h-5' : 'w-7 h-7'
+    const icon = size === 'sm' ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5'
+    return (
+        <button
+            onClick={onClick}
+            className={`${sz} rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-all shrink-0 ${className}`}
+            title="Add"
+        >
+            <svg className={icon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            </svg>
+        </button>
+    )
+}
+
+/* ═══════════════════════════════════════════════
+   Node styles per type (color coding)
+   ═══════════════════════════════════════════════ */
+
+const nodeStyles: Record<string, string> = {
+    lens: 'bg-blue-50 border-blue-200 text-blue-900',
+    ring: 'bg-purple-50 border-purple-200 text-purple-900',
+    adapter: 'bg-amber-50 border-amber-200 text-amber-900',
+    port: 'bg-emerald-50 border-emerald-200 text-emerald-900',
+}
+
+/* NODE_CENTER: vertical center of a node card for connector positioning */
+const NC = 22
+
+/* ═══════════════════════════════════════════════
+   DraftStep — step being built (not yet saved)
+   ═══════════════════════════════════════════════ */
+
+interface DraftStep {
+    type: 'ring' | 'adapter' | 'port'
+    itemId: number
+    label: string
+    detail: string
+}
+
+interface DraftChain {
+    lensId: number
+    branchPath: string
+    sharedStepKeys: string[]
+    steps: DraftStep[]
+}
+
+/* ═══════════════════════════════════════════════
+   Tree Branch — recursive horizontal tree renderer
+   ═══════════════════════════════════════════════ */
+
+function TreeBranch({ nodes, isSuperuser, onDeleteEntry, pickerKey, onOpenPicker, pickerMode, pickerProps, pathPrefix, lensId, draftChain, suppressPicker }: {
+    nodes: TrieNode[]
+    isSuperuser: boolean
+    onDeleteEntry: (entryId: number) => void
+    pickerKey: string | null
+    onOpenPicker: (key: string) => void
+    pickerMode: PickerMode | null
+    pickerProps: {
+        allLenses: LensData[]; allPorts: PortData[]; allExtensionRings: RingData[]; allPortAdapters: AdapterData[]
+        onSelectLens: (id: number) => void; onSelectStepType: (type: 'ring' | 'adapter' | 'port') => void
+        onSelectRing: (id: number) => void; onSelectAdapter: (id: number) => void; onSelectPort: (id: number) => void
+        onClose: () => void
+    }
+    pathPrefix: string[]
+    lensId: number
+    draftChain: DraftChain | null
+    suppressPicker: boolean
+}) {
+    const draftPath = pathPrefix.join('/')
+    const isDraftBranch = draftChain && draftChain.lensId === lensId && draftChain.branchPath === draftPath
+    const draftSteps = isDraftBranch ? draftChain.steps : []
+    const totalRows = nodes.length + draftSteps.length + (isSuperuser ? 1 : 0)
+
+    return (
+        <div className="flex flex-col relative">
+            {/* Vertical connector — spans from center of first child to center of last */}
+            {totalRows > 1 && (
+                <div className="absolute w-0.5 bg-gray-300 left-0" style={{ top: NC, bottom: NC }} />
+            )}
+
+            {nodes.map((node, i) => {
+                const nodeKey = [...pathPrefix, node.key].join('/')
+                const hasMore = i < nodes.length - 1 || draftSteps.length > 0 || isSuperuser
+
+                return (
+                    <div key={node.key} className="flex items-stretch">
+                        {/* Connector cell */}
+                        <div className="relative w-8 shrink-0 self-stretch">
+                            {/* Horizontal line */}
+                            <div className="absolute left-0 right-0 h-0.5 bg-gray-300" style={{ top: NC }} />
+                            {/* Vertical: top half */}
+                            {i > 0 && <div className="absolute left-0 w-0.5 bg-gray-300 top-0" style={{ height: NC }} />}
+                            {/* Vertical: bottom half */}
+                            {hasMore && <div className="absolute left-0 w-0.5 bg-gray-300 bottom-0" style={{ top: NC }} />}
+                        </div>
+
+                        {/* Node + children */}
+                        <div className="py-1 flex items-start relative">
+                            {/* Node card */}
+                            <div className={`group/node relative flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs shrink-0 ${nodeStyles[node.type]}`}>
+                                <div className="relative w-7 h-7 rounded overflow-hidden shrink-0" style={{ background: 'rgba(255,255,255,0.5)' }}>
+                                    <HousingImage src={node.imageInfo.src} fallback={node.imageInfo.fallback} alt={node.label} className="w-full h-full object-contain" />
+                                </div>
+                                <div className="min-w-0 max-w-[120px]">
+                                    <p className="font-semibold leading-tight truncate">{node.label}</p>
+                                    <p className="text-[10px] opacity-60 truncate">{node.detail}</p>
+                                </div>
+                                {node.notes && (
+                                    <span className="text-[10px] opacity-50 italic ml-1 max-w-[60px] truncate" title={node.notes}>{node.notes}</span>
+                                )}
+                                {isSuperuser && node.terminalEntryId && (
+                                    <button
+                                        onClick={() => onDeleteEntry(node.terminalEntryId!)}
+                                        className="opacity-0 group-hover/node:opacity-100 transition-opacity ml-1 w-4 h-4 flex items-center justify-center text-red-400 hover:text-red-600"
+                                        title="Delete this combination"
+                                    >
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Children */}
+                            {node.children.length > 0 ? (
+                                <TreeBranch
+                                    nodes={node.children}
+                                    isSuperuser={isSuperuser}
+                                    onDeleteEntry={onDeleteEntry}
+                                    pickerKey={pickerKey}
+                                    onOpenPicker={onOpenPicker}
+                                    pickerMode={pickerMode}
+                                    pickerProps={pickerProps}
+                                    pathPrefix={[...pathPrefix, node.key]}
+                                    lensId={lensId}
+                                    draftChain={draftChain}
+                                    suppressPicker={suppressPicker}
+                                />
+                            ) : node.type !== 'port' && isSuperuser ? (
+                                /* + button to extend this chain */
+                                <div className="flex items-center relative ml-1" style={{ height: NC * 2 }}>
+                                    <div className="w-6 h-0.5 bg-gray-300" />
+                                    <div className="relative">
+                                        <AddButton onClick={() => onOpenPicker(nodeKey)} size="sm" />
+                                        {pickerKey === nodeKey && pickerMode && !suppressPicker && <InlinePicker mode={pickerMode} {...pickerProps} />}
+                                    </div>
+                                </div>
+                            ) : null}
+                        </div>
+                    </div>
+                )
+            })}
+
+            {/* Branch + button (add alternative sibling) */}
+            {isSuperuser && nodes.length > 0 && (
+                <div className="flex items-stretch">
+                    <div className="relative w-8 shrink-0" style={{ height: NC * 2 + 8 }}>
+                        <div className="absolute left-0 right-0 h-0.5 bg-gray-300 opacity-40" style={{ top: NC }} />
+                        <div className="absolute left-0 w-0.5 bg-gray-300 opacity-40 top-0" style={{ height: NC }} />
+                    </div>
+                    <div className="py-1 relative">
+                        <AddButton onClick={() => onOpenPicker(`branch:${draftPath}`)} size="sm" />
+                        {pickerKey === `branch:${draftPath}` && pickerMode && !suppressPicker && (
+                            <InlinePicker mode={pickerMode} recomputeKey={0} {...pickerProps} />
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+}
+
+/* ═══════════════════════════════════════════════
+   Main Component
+   ═══════════════════════════════════════════════ */
+
 export default function PortChartClient({
     manufacturerId,
     allLenses,
     allPorts,
     allExtensionRings,
+    allPortAdapters,
     entries: initial,
     isSuperuser,
 }: Props) {
     const [entries, setEntries] = useState(initial)
-    const [modal, setModal] = useState<'add' | 'edit' | 'delete' | null>(null)
-    const [target, setTarget] = useState<Entry | null>(null)
-
-    // Form state
-    const [lensSearch, setLensSearch] = useState('')
-    const [lensId, setLensId] = useState<number | ''>('')
-    const [portId, setPortId] = useState<number | ''>('')
-    const [ringIds, setRingIds] = useState<number[]>([])
-    const [notes, setNotes] = useState('')
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
 
-    // Lens search filter
-    const filteredLenses = allLenses.filter(l =>
-        lensSearch.trim() === '' ||
-        `${l.manufacturer.name} ${l.name}`.toLowerCase().includes(lensSearch.toLowerCase())
-    )
-    const selectedLens = allLenses.find(l => l.id === lensId) ?? null
+    // Picker state
+    const [pickerKey, setPickerKey] = useState<string | null>(null)
+    const [pickerMode, setPickerMode] = useState<PickerMode | null>(null)
+    const [pickerContext, setPickerContext] = useState<{
+        lensId?: number
+        branchPath: string
+        sharedStepKeys: string[]
+    } | null>(null)
 
-    function resetForm() {
-        setLensSearch('')
-        setLensId('')
-        setPortId('')
-        setRingIds([])
-        setNotes('')
-        setError(null)
+    // Draft chain (building in progress)
+    const [draftChain, setDraftChain] = useState<DraftChain | null>(null)
+
+    function closePicker() {
+        setPickerKey(null)
+        setPickerMode(null)
+        setPickerContext(null)
     }
 
-    function openAdd() { resetForm(); setTarget(null); setModal('add') }
-
-    function openEdit(entry: Entry) {
-        setTarget(entry)
-        setLensId(entry.lens.id)
-        setLensSearch('')
-        setPortId(entry.port?.id ?? '')
-        setRingIds(entry.rings.map(r => r.extensionRing.id))
-        setNotes(entry.notes ?? '')
-        setError(null)
-        setModal('edit')
+    function cancelDraft() {
+        setDraftChain(null)
+        closePicker()
     }
 
-    function openDelete(entry: Entry) { setTarget(entry); setError(null); setModal('delete') }
+    const trees = buildLensTrees(entries, allPorts, allExtensionRings, allPortAdapters)
 
-    function close() { resetForm(); setModal(null); setTarget(null); setError(null) }
-
-    function addRing(id: number) {
-        setRingIds(prev => [...prev, id])
-    }
-
-    function removeRing(idx: number) {
-        setRingIds(prev => prev.filter((_, i) => i !== idx))
-    }
-
-    function moveRing(from: number, to: number) {
-        setRingIds(prev => {
-            const arr = [...prev]
-            const [item] = arr.splice(from, 1)
-            arr.splice(to, 0, item)
-            return arr
-        })
-    }
-
-    // Build a new entry object from API response
-    function buildEntry(data: {
-        id: number
-        lens: LensData & { manufacturer: { name: string }; cameraMount: { name: string }; productPhotos: string[] }
-        port: PortData | null
-        rings: { id: number; order: number; extensionRing: { id: number; name: string; slug: string; lengthMm: number | null } }[]
-        notes: string | null
-    }): Entry {
-        return {
-            id: data.id,
-            lens: {
-                ...data.lens,
-                imageInfo: allLenses.find(l => l.id === data.lens.id)?.imageInfo ?? { src: '', fallback: '/housings/fallback.png' },
-            },
-            port: data.port ? {
-                ...data.port,
-                imageInfo: allPorts.find(p => p.id === data.port!.id)?.imageInfo ?? { src: '', fallback: '/housings/fallback.png' },
-            } : null,
-            rings: data.rings,
-            notes: data.notes,
+    /* ─── Open picker from + buttons ─── */
+    function handleOpenPicker(key: string) {
+        if (key === 'root') {
+            setPickerKey(key); setPickerMode('lens')
+            setPickerContext({ branchPath: '', sharedStepKeys: [] })
+            return
         }
+        if (key.startsWith('lens:')) {
+            const lensId = parseInt(key.replace('lens:', ''))
+            setPickerKey(key); setPickerMode('step-type')
+            setPickerContext({ lensId, branchPath: '', sharedStepKeys: [] })
+            return
+        }
+        if (key.startsWith('branch:')) {
+            const path = key.replace('branch:', '')
+            const parts = path.split('/').filter(Boolean)
+            const lensId = findLensIdFromPath(parts)
+            setPickerKey(key); setPickerMode('step-type')
+            setPickerContext({ lensId, branchPath: path, sharedStepKeys: parts })
+            return
+        }
+        if (key.startsWith('draft:')) {
+            setPickerKey(key); setPickerMode('step-type')
+            if (draftChain) {
+                setPickerContext({
+                    lensId: draftChain.lensId,
+                    branchPath: draftChain.branchPath,
+                    sharedStepKeys: draftChain.sharedStepKeys,
+                })
+            }
+            return
+        }
+        // Node key: continue chain from this node
+        const parts = key.split('/').filter(Boolean)
+        const lensId = findLensIdFromPath(parts)
+        setPickerKey(key); setPickerMode('step-type')
+        setPickerContext({ lensId, branchPath: key, sharedStepKeys: parts })
     }
 
-    async function handleAdd() {
-        if (!lensId) return
-        setLoading(true); setError(null)
+    function findLensIdFromPath(parts: string[]): number | undefined {
+        for (const tree of trees) {
+            let nodes = tree.roots
+            let matched = true
+            for (const part of parts) {
+                const node = nodes.find(n => n.key === part)
+                if (!node) { matched = false; break }
+                nodes = node.children
+            }
+            if (matched) return tree.lens.id
+        }
+        return undefined
+    }
+
+    /* ─── Selection handlers ─── */
+
+    function handleSelectLens(lensId: number) {
+        // Keep pickerKey at 'root' so the picker stays visible at the same button
+        setPickerMode('step-type')
+        setPickerContext({ lensId, branchPath: '', sharedStepKeys: [] })
+    }
+
+    function handleSelectStepType(type: 'ring' | 'adapter' | 'port') {
+        setPickerMode(type)
+    }
+
+    function handleSelectRing(ringId: number) {
+        const ring = allExtensionRings.find(r => r.id === ringId)
+        if (!ring || !pickerContext?.lensId) return
+
+        const step: DraftStep = {
+            type: 'ring', itemId: ringId,
+            label: ring.lengthMm != null ? `${ring.lengthMm}mm` : ring.name,
+            detail: ring.name,
+        }
+        const chain: DraftChain = draftChain && draftChain.lensId === pickerContext.lensId
+            ? { ...draftChain, steps: [...draftChain.steps, step] }
+            : { lensId: pickerContext.lensId, branchPath: pickerContext.branchPath, sharedStepKeys: pickerContext.sharedStepKeys, steps: [step] }
+        setDraftChain(chain)
+        // Stay at same picker position — just switch back to step-type for the next step
+        setPickerMode('step-type')
+    }
+
+    function handleSelectAdapter(adapterId: number) {
+        const adapter = allPortAdapters.find(a => a.id === adapterId)
+        if (!adapter || !pickerContext?.lensId) return
+
+        const step: DraftStep = {
+            type: 'adapter', itemId: adapterId,
+            label: adapter.name,
+            detail: `${adapter.inputHousingMount?.slug.toUpperCase() ?? '?'} → ${adapter.outputHousingMount?.slug.toUpperCase() ?? '?'}`,
+        }
+        const chain: DraftChain = draftChain && draftChain.lensId === pickerContext.lensId
+            ? { ...draftChain, steps: [...draftChain.steps, step] }
+            : { lensId: pickerContext.lensId, branchPath: pickerContext.branchPath, sharedStepKeys: pickerContext.sharedStepKeys, steps: [step] }
+        setDraftChain(chain)
+        // Stay at same picker position — just switch back to step-type for the next step
+        setPickerMode('step-type')
+    }
+
+    async function handleSelectPort(portId: number) {
+        if (!pickerContext?.lensId) return
+        setLoading(true)
+
+        const allSteps: { extensionRingId?: number; portAdapterId?: number }[] = []
+        for (const key of pickerContext.sharedStepKeys) {
+            const [type, idStr] = key.split(':')
+            const id = parseInt(idStr)
+            if (type === 'ring') allSteps.push({ extensionRingId: id })
+            else if (type === 'adapter') allSteps.push({ portAdapterId: id })
+        }
+        if (draftChain && draftChain.lensId === pickerContext.lensId) {
+            for (const step of draftChain.steps) {
+                if (step.type === 'ring') allSteps.push({ extensionRingId: step.itemId })
+                else if (step.type === 'adapter') allSteps.push({ portAdapterId: step.itemId })
+            }
+        }
+
         try {
             const res = await fetch('/api/admin/port-chart-entries', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ manufacturerId, lensId, portId: portId || null, ringIds, notes: notes || null }),
+                body: JSON.stringify({ manufacturerId, lensId: pickerContext.lensId, portId, steps: allSteps }),
             })
-            const data = await res.json()
-            if (!res.ok) { setError(data.error ?? 'Failed to create'); return }
-            setEntries(prev => [...prev, buildEntry(data)].sort((a, b) => a.lens.name.localeCompare(b.lens.name) || a.id - b.id))
-            close()
-        } catch { setError('Network error') } finally { setLoading(false) }
+            if (res.ok) {
+                const data = await res.json()
+                const lens = allLenses.find(l => l.id === pickerContext.lensId)!
+                const port = allPorts.find(p => p.id === portId)!
+                const newEntry: Entry = {
+                    id: data.id,
+                    lens,
+                    port: port ? { id: port.id, name: port.name, slug: port.slug, isFlatPort: port.isFlatPort, productPhotos: port.productPhotos, imageInfo: port.imageInfo } : null,
+                    steps: (data.steps ?? []).map((s: { id: number; order: number; extensionRing: EntryStep['extensionRing']; portAdapter: EntryStep['portAdapter'] }) => ({
+                        id: s.id, order: s.order, extensionRing: s.extensionRing, portAdapter: s.portAdapter,
+                    })),
+                    notes: data.notes ?? null,
+                }
+                setEntries(prev => [...prev, newEntry].sort((a, b) => a.lens.name.localeCompare(b.lens.name)))
+            }
+        } catch { /* ignore */ }
+        finally { setLoading(false); setDraftChain(null); closePicker() }
     }
 
-    async function handleEdit() {
-        if (!target || !lensId) return
-        setLoading(true); setError(null)
+    async function handleDeleteEntry(entryId: number) {
+        setLoading(true)
         try {
-            const res = await fetch(`/api/admin/port-chart-entries?id=${target.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ lensId, portId: portId || null, ringIds, notes: notes || null }),
-            })
-            const data = await res.json()
-            if (!res.ok) { setError(data.error ?? 'Failed to update'); return }
-            setEntries(prev => prev.map(e => e.id === target.id ? buildEntry(data) : e))
-            close()
-        } catch { setError('Network error') } finally { setLoading(false) }
+            const res = await fetch(`/api/admin/port-chart-entries?id=${entryId}`, { method: 'DELETE' })
+            if (res.ok) setEntries(prev => prev.filter(e => e.id !== entryId))
+        } catch { /* ignore */ }
+        finally { setLoading(false) }
     }
 
-    async function handleDelete() {
-        if (!target) return
-        setLoading(true); setError(null)
-        try {
-            const res = await fetch(`/api/admin/port-chart-entries?id=${target.id}`, { method: 'DELETE' })
-            if (!res.ok) { const d = await res.json(); setError(d.error ?? 'Failed'); return }
-            setEntries(prev => prev.filter(e => e.id !== target.id))
-            close()
-        } catch { setError('Network error') } finally { setLoading(false) }
+    const sharedPickerProps = {
+        allLenses, allPorts, allExtensionRings, allPortAdapters,
+        onSelectLens: handleSelectLens, onSelectStepType: handleSelectStepType,
+        onSelectRing: handleSelectRing, onSelectAdapter: handleSelectAdapter,
+        onSelectPort: handleSelectPort, onClose: closePicker,
     }
 
-    /* ─── Group entries by lens ─── */
-    const lensGroups: Map<number, { lens: Entry['lens']; entries: Entry[] }> = new Map()
-    for (const entry of entries) {
-        if (!lensGroups.has(entry.lens.id)) {
-            lensGroups.set(entry.lens.id, { lens: entry.lens, entries: [] })
-        }
-        lensGroups.get(entry.lens.id)!.entries.push(entry)
-    }
-    const groups = Array.from(lensGroups.values())
+    /* ─── Pending new lens (selected from root but no entries yet) ─── */
+    const pendingLensId =
+        pickerKey === 'root' && pickerMode && pickerMode !== 'lens'
+            ? pickerContext?.lensId
+            : undefined
+    const pendingLens = pendingLensId ? allLenses.find(l => l.id === pendingLensId) : undefined
+    const isNewPendingLens = !!(pendingLens && !trees.find(t => t.lens.id === pendingLensId))
 
+    /* ═══════════════════════════════════════════════
+       Render
+       ═══════════════════════════════════════════════ */
     return (
-        <>
+        <div className="relative">
             {/* Legend */}
-            <div className="flex items-center gap-6 mb-6 text-xs text-gray-500">
-                <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-blue-100 border border-blue-300" />
-                    Lens
-                </div>
-                <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-purple-100 border border-purple-300" />
-                    Extension ring
-                </div>
-                <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-emerald-100 border border-emerald-300" />
-                    Port
-                </div>
-                {isSuperuser && (
-                    <button
-                        onClick={openAdd}
-                        className="ml-auto flex items-center gap-1.5 bg-blue-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add combination
+            <div className="flex items-center gap-5 mb-6 text-xs text-gray-500 flex-wrap">
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-100 border border-blue-300" /> Lens</div>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-purple-100 border border-purple-300" /> Extension ring</div>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-amber-100 border border-amber-300" /> Adapter</div>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-emerald-100 border border-emerald-300" /> Port</div>
+                {draftChain && (
+                    <button onClick={cancelDraft} className="ml-auto text-red-500 hover:text-red-700 text-xs font-medium">
+                        Cancel building
                     </button>
                 )}
             </div>
 
-            {/* Empty state */}
-            {groups.length === 0 && (
-                <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                    <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    <p className="text-gray-500 text-sm">No port chart entries yet.</p>
-                    {isSuperuser && (
-                        <button onClick={openAdd} className="mt-3 text-blue-600 text-sm font-medium hover:underline">
-                            Add the first combination →
-                        </button>
-                    )}
+            {loading && (
+                <div className="absolute inset-0 bg-white/50 z-30 flex items-center justify-center rounded-xl">
+                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                 </div>
             )}
 
-            {/* Port chart table */}
-            {groups.length > 0 && (
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    {/* Table header */}
-                    <div className="grid grid-cols-[auto_1fr_auto] gap-0 border-b border-gray-100 bg-gray-50 px-4 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                        <div className="w-48 pr-4">Lens</div>
-                        <div>Combination (Rings → Port)</div>
-                        <div className="w-32 text-right">Notes</div>
-                    </div>
+            {/* Tree — pickers use portals so overflow-x-auto is safe here */}
+            <div className="bg-white rounded-xl border border-gray-200 p-6 overflow-x-auto">
+                <div className="flex flex-col gap-6 min-w-fit">
+                    {trees.map(tree => {
+                        const lensPK = `lens:${tree.lens.id}`
+                        const isLensPickerOpen = pickerKey === lensPK
+                        // Show draft row when pickerContext targets this lens (moves picker out of the tree)
+                        const isActiveLensDraft = !!(pickerContext?.lensId === tree.lens.id && pickerMode && pickerMode !== 'lens')
+                        const showDraftRow = isActiveLensDraft && !isNewPendingLens
+                        const draftStepsForRow = showDraftRow && draftChain?.lensId === tree.lens.id ? draftChain.steps : []
 
-                    {/* Groups */}
-                    {groups.map((group, groupIdx) => (
-                        <div key={group.lens.id} className={groupIdx > 0 ? 'border-t-2 border-gray-100' : ''}>
-                            {group.entries.map((entry, entryIdx) => (
-                                <div
-                                    key={entry.id}
-                                    className="group grid grid-cols-[auto_1fr_auto] gap-0 hover:bg-blue-50/40 transition-colors"
-                                >
-                                    {/* Lens cell — only shown on first row of each group */}
-                                    <div className={`w-48 flex items-center gap-3 px-4 py-3 ${entryIdx > 0 ? 'border-t border-dashed border-gray-100' : ''}`}>
-                                        {entryIdx === 0 ? (
-                                            <>
-                                                <div className="relative shrink-0 w-10 h-10 rounded-lg overflow-hidden bg-blue-50 border border-blue-100">
-                                                    <HousingImage
-                                                        src={entry.lens.imageInfo.src}
-                                                        fallback={entry.lens.imageInfo.fallback}
-                                                        alt={entry.lens.name}
-                                                        className="w-full h-full object-contain p-1"
-                                                    />
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-xs font-semibold text-gray-900 leading-snug truncate">{entry.lens.name}</p>
-                                                    <p className="text-[10px] text-gray-400">{focalLabel(entry.lens)}</p>
-                                                    <p className="text-[10px] text-gray-400">{entry.lens.manufacturer.name}</p>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <div className="ml-13 flex-1" />
-                                        )}
+                        return (
+                            <div key={tree.lens.id} className="flex flex-col gap-1">
+                                <div className="flex items-start">
+                                    {/* Lens node */}
+                                    <div className="relative py-1 shrink-0">
+                                        <div className={`flex items-center gap-2.5 rounded-xl border-2 px-3 py-2 text-xs shrink-0 ${nodeStyles.lens}`}>
+                                            <div className="relative w-9 h-9 rounded-lg overflow-hidden shrink-0 bg-white/60">
+                                                <HousingImage src={tree.lens.imageInfo.src} fallback={tree.lens.imageInfo.fallback} alt={tree.lens.name} className="w-full h-full object-contain p-0.5" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="font-bold leading-tight text-sm">{tree.lens.name}</p>
+                                                <p className="text-[10px] opacity-60">{focalLabel(tree.lens)}</p>
+                                                <p className="text-[10px] opacity-60">{tree.lens.manufacturer.name}</p>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    {/* Combination chain */}
-                                    <div className={`flex items-center gap-1 px-4 py-3 ${entryIdx > 0 ? 'border-t border-dashed border-gray-100' : ''}`}>
-                                        {entry.rings.length === 0 && !entry.port && (
-                                            <span className="text-xs text-gray-400 italic">No rings or port specified</span>
-                                        )}
+                                    {/* Children tree */}
+                                    {tree.roots.length > 0 ? (
+                                        <TreeBranch
+                                            nodes={tree.roots}
+                                            isSuperuser={isSuperuser}
+                                            onDeleteEntry={handleDeleteEntry}
+                                            pickerKey={pickerKey}
+                                            onOpenPicker={handleOpenPicker}
+                                            pickerMode={pickerMode}
+                                            pickerProps={sharedPickerProps}
+                                            pathPrefix={[]}
+                                            lensId={tree.lens.id}
+                                            draftChain={draftChain}
+                                            suppressPicker={isActiveLensDraft}
+                                        />
+                                    ) : isSuperuser ? (
+                                        <div className="flex items-center relative ml-2" style={{ height: NC * 2 + 8 }}>
+                                            <div className="w-8 h-0.5 bg-gray-300" />
+                                            <div className="relative">
+                                                <AddButton onClick={() => handleOpenPicker(lensPK)} />
+                                                {isLensPickerOpen && pickerMode && !isActiveLensDraft && <InlinePicker key={pickerMode} mode={pickerMode} {...sharedPickerProps} />}
+                                            </div>
+                                        </div>
+                                    ) : null}
+                                </div>
 
-                                        {/* Extension rings */}
-                                        {entry.rings.map((r, rIdx) => (
-                                            <div key={r.id} className="flex items-center gap-1">
-                                                {rIdx === 0 && <ChainArrow />}
-                                                <div className="flex items-center gap-1.5 bg-purple-50 border border-purple-200 text-purple-800 text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap">
-                                                    <svg className="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <circle cx="12" cy="12" r="9" strokeWidth={2} />
-                                                        <circle cx="12" cy="12" r="4" strokeWidth={2} />
-                                                    </svg>
-                                                    {r.extensionRing.lengthMm != null ? `${r.extensionRing.lengthMm}mm` : r.extensionRing.name}
+                                {/* Horizontal draft row — shown while building a chain for this lens */}
+                                {showDraftRow && (
+                                    <div className="flex items-center ml-2 pb-1">
+                                        <span className="text-[10px] text-gray-400 mr-1.5 font-mono">└─</span>
+                                        {draftStepsForRow.map((s, i) => (
+                                            <div key={i} className="flex items-center">
+                                                {i > 0 && <div className="w-4 h-0.5 bg-gray-300" />}
+                                                <div className={`flex items-center gap-1 rounded-lg border-2 border-dashed px-2 py-1 text-xs shrink-0 opacity-80 ${nodeStyles[s.type]}`}>
+                                                    <p className="font-semibold leading-tight">{s.label}</p>
+                                                    {s.detail && <p className="text-[9px] opacity-60">{s.detail}</p>}
                                                 </div>
-                                                <ChainArrow />
                                             </div>
                                         ))}
-
-                                        {/* Port */}
-                                        {entry.port ? (
-                                            <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-lg">
-                                                <div className="relative w-7 h-7 rounded overflow-hidden bg-emerald-50 shrink-0">
-                                                    <HousingImage
-                                                        src={entry.port.imageInfo.src}
-                                                        fallback={entry.port.imageInfo.fallback}
-                                                        alt={entry.port.name}
-                                                        className="w-full h-full object-contain"
+                                        <div className="flex items-center">
+                                            {draftStepsForRow.length > 0 && <div className="w-4 h-0.5 bg-gray-300" />}
+                                            <div className="relative">
+                                                <div className="w-5 h-5 rounded-full border-2 border-dashed border-blue-400 bg-blue-50 flex items-center justify-center">
+                                                    <svg className="w-2.5 h-2.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                                                    </svg>
+                                                </div>
+                                                {pickerMode && (
+                                                    <InlinePicker
+                                                        recomputeKey={draftStepsForRow.length}
+                                                        mode={pickerMode}
+                                                        {...sharedPickerProps}
                                                     />
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs font-semibold text-emerald-900 leading-none whitespace-nowrap">{entry.port.name}</p>
-                                                    <p className="text-[10px] text-emerald-600">{entry.port.isFlatPort ? 'Flat' : 'Dome'}</p>
-                                                </div>
+                                                )}
                                             </div>
-                                        ) : entry.rings.length > 0 ? (
-                                            <span className="text-[10px] text-gray-400 italic">No port</span>
-                                        ) : null}
-
-                                        {/* Superuser actions */}
-                                        {isSuperuser && (
-                                            <div className="ml-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => openEdit(entry)} title="Edit" className="w-6 h-6 bg-white border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 shadow-sm">
-                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
-                                                    </svg>
-                                                </button>
-                                                <button onClick={() => openDelete(entry)} title="Delete" className="w-6 h-6 bg-white border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:text-red-600 hover:border-red-300 shadow-sm">
-                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a1 1 0 00-1-1H8a1 1 0 00-1 1h10z" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        )}
+                                        </div>
                                     </div>
+                                )}
+                            </div>
+                        )
+                    })}
 
-                                    {/* Notes */}
-                                    <div className={`w-32 px-4 py-3 ${entryIdx > 0 ? 'border-t border-dashed border-gray-100' : ''}`}>
-                                        {entry.notes && (
-                                            <p className="text-[10px] text-gray-500 leading-relaxed">{entry.notes}</p>
-                                        )}
+                    {/* Pending new lens being built — shown once a lens is selected from root + */}
+                    {isSuperuser && isNewPendingLens && pendingLens && (
+                        <div className="flex items-center gap-0 py-1">
+                            {/* Lens card (dashed = unsaved) */}
+                            <div className={`flex items-center gap-2.5 rounded-xl border-2 border-dashed px-3 py-2 text-xs shrink-0 opacity-75 ${nodeStyles.lens}`}>
+                                <div className="relative w-9 h-9 rounded-lg overflow-hidden shrink-0 bg-white/60">
+                                    <HousingImage src={pendingLens.imageInfo.src} fallback={pendingLens.imageInfo.fallback} alt={pendingLens.name} className="w-full h-full object-contain p-0.5" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="font-bold leading-tight text-sm">{pendingLens.name}</p>
+                                    <p className="text-[10px] opacity-60">{focalLabel(pendingLens)}</p>
+                                    <p className="text-[10px] opacity-60">{pendingLens.manufacturer.name}</p>
+                                </div>
+                            </div>
+                            {/* Draft steps accumulated so far */}
+                            {(draftChain?.steps ?? []).map((s, i) => (
+                                <div key={i} className="flex items-center">
+                                    <div className="w-6 h-0.5 bg-gray-300" />
+                                    <div className={`flex items-center gap-1.5 rounded-lg border-2 border-dashed px-2.5 py-1.5 text-xs shrink-0 opacity-75 ${nodeStyles[s.type]}`}>
+                                        <p className="font-semibold leading-tight">{s.label}</p>
+                                        <p className="text-[10px] opacity-60">{s.detail}</p>
                                     </div>
                                 </div>
                             ))}
+                            {/* Connector to current picker */}
+                            <div className="flex items-center">
+                                <div className="w-6 h-0.5 bg-gray-300" />
+                                <div className="relative">
+                                    {/* Visual indicator dot where picker is attached */}
+                                    <div className="w-5 h-5 rounded-full border-2 border-dashed border-blue-400 bg-blue-50 flex items-center justify-center">
+                                        <svg className="w-2.5 h-2.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                                        </svg>
+                                    </div>
+                                    {/* Picker anchored here */}
+                                    <InlinePicker key={pickerMode ?? ''} recomputeKey={draftChain?.steps.length ?? 0} mode={pickerMode!} {...sharedPickerProps} />
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
-                            {/* Add another combination for this lens (superuser) */}
-                            {isSuperuser && (
-                                <button
-                                    onClick={() => {
-                                        resetForm__internal(group.lens.id)
-                                        setModal('add')
-                                    }}
-                                    className="w-full flex items-center gap-1.5 px-4 py-2 text-[10px] text-gray-400 hover:text-blue-600 hover:bg-blue-50/40 transition-colors border-t border-dashed border-gray-100"
-                                >
-                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    Add another combination for {group.lens.name}
-                                </button>
+                    {/* Root + : add a new lens */}
+                    {isSuperuser && (
+                        <div className="relative">
+                            <AddButton onClick={() => handleOpenPicker('root')} className="ml-1" />
+                            {/* Only show lens picker at root — step continuation moves to pendingLens area */}
+                            {pickerKey === 'root' && pickerMode === 'lens' && (
+                                <InlinePicker key="lens" mode="lens" {...sharedPickerProps} />
                             )}
                         </div>
-                    ))}
+                    )}
                 </div>
-            )}
 
-            {/* ── Add / Edit modal ── */}
-            {(modal === 'add' || modal === 'edit') && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={e => { if (e.target === e.currentTarget) close() }}>
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl p-6 max-h-[90vh] overflow-y-auto">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-5">{modal === 'edit' ? 'Edit combination' : 'Add port chart combination'}</h3>
-
-                        {/* Lens selector */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Lens</label>
-                        <input
-                            type="text"
-                            value={selectedLens ? `${selectedLens.manufacturer.name} ${selectedLens.name}` : lensSearch}
-                            onChange={e => { setLensSearch(e.target.value); setLensId('') }}
-                            onFocus={e => { if (selectedLens) { setLensSearch(''); setLensId('') } }}
-                            placeholder="Search lenses…"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-1"
-                        />
-                        {(lensSearch.trim() !== '' || !selectedLens) && (
-                            <div className="border border-gray-200 rounded-lg max-h-40 overflow-y-auto mb-4 divide-y divide-gray-100">
-                                {filteredLenses.slice(0, 30).map(l => (
-                                    <button
-                                        key={l.id}
-                                        type="button"
-                                        onClick={() => { setLensId(l.id); setLensSearch('') }}
-                                        className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors"
-                                    >
-                                        <span className="font-medium text-gray-900">{l.name}</span>
-                                        <span className="text-gray-400 ml-2 text-xs">{l.manufacturer.name} · {focalLabel(l)}</span>
-                                    </button>
-                                ))}
-                                {filteredLenses.length === 0 && <p className="px-3 py-2 text-sm text-gray-400">No lenses found</p>}
-                            </div>
-                        )}
-                        {selectedLens && <div className="mb-4" />}
-
-                        {/* Extension rings — ordered list */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Extension rings (in order)</label>
-                        <div className="space-y-1.5 mb-2">
-                            {ringIds.map((rid, idx) => {
-                                const ring = allExtensionRings.find(r => r.id === rid)
-                                return (
-                                    <div key={`${rid}-${idx}`} className="flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-lg px-3 py-1.5">
-                                        <span className="text-xs text-purple-700 font-medium flex-1 truncate">
-                                            {ring?.lengthMm != null ? `${ring.lengthMm}mm` : ring?.name ?? `Ring #${rid}`}
-                                            {ring?.housingMount && <span className="ml-1 opacity-60">({ring.housingMount.slug.toUpperCase()})</span>}
-                                        </span>
-                                        <div className="flex gap-1">
-                                            {idx > 0 && (
-                                                <button type="button" onClick={() => moveRing(idx, idx - 1)} className="w-5 h-5 flex items-center justify-center text-purple-400 hover:text-purple-700">↑</button>
-                                            )}
-                                            {idx < ringIds.length - 1 && (
-                                                <button type="button" onClick={() => moveRing(idx, idx + 1)} className="w-5 h-5 flex items-center justify-center text-purple-400 hover:text-purple-700">↓</button>
-                                            )}
-                                            <button type="button" onClick={() => removeRing(idx)} className="w-5 h-5 flex items-center justify-center text-red-400 hover:text-red-600">×</button>
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                        <select
-                            value=""
-                            onChange={e => { if (e.target.value) addRing(parseInt(e.target.value)) }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
-                        >
-                            <option value="">+ Add extension ring…</option>
-                            {allExtensionRings.map(r => (
-                                <option key={r.id} value={r.id}>
-                                    {r.lengthMm != null ? `${r.lengthMm}mm — ` : ''}{r.name}{r.housingMount ? ` (${r.housingMount.slug.toUpperCase()})` : ''}
-                                </option>
-                            ))}
-                        </select>
-
-                        {/* Port selector */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Port</label>
-                        <select
-                            value={portId}
-                            onChange={e => setPortId(e.target.value ? parseInt(e.target.value) : '')}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
-                        >
-                            <option value="">— No port —</option>
-                            {allPorts.map(p => (
-                                <option key={p.id} value={p.id}>
-                                    {p.name} ({p.isFlatPort ? 'Flat' : 'Dome'}{p.housingMount ? ` · ${p.housingMount.slug.toUpperCase()}` : ''})
-                                </option>
-                            ))}
-                        </select>
-
-                        {/* Notes */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                        <textarea
-                            value={notes}
-                            onChange={e => setNotes(e.target.value)}
-                            rows={2}
-                            placeholder="e.g. Required for full-frame coverage"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 resize-none mb-4"
-                        />
-
-                        {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
-
-                        <div className="flex gap-3 justify-end">
-                            <button onClick={close} disabled={loading} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50">Cancel</button>
-                            <button
-                                onClick={modal === 'edit' ? handleEdit : handleAdd}
-                                disabled={loading || !lensId}
-                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {loading ? 'Saving…' : modal === 'edit' ? 'Save changes' : 'Add combination'}
-                            </button>
-                        </div>
+                {/* Empty state */}
+                {trees.length === 0 && !isSuperuser && (
+                    <div className="text-center py-12">
+                        <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        <p className="text-gray-500 text-sm">No port chart entries yet.</p>
                     </div>
-                </div>
-            )}
-
-            {/* ── Delete confirm modal ── */}
-            {modal === 'delete' && target && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={e => { if (e.target === e.currentTarget) close() }}>
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete combination</h3>
-                        <p className="text-sm text-gray-600 mb-4">
-                            Remove the combination for <strong>{target.lens.name}</strong>
-                            {target.port && <> → <strong>{target.port.name}</strong></>}?
-                            This cannot be undone.
-                        </p>
-                        {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
-                        <div className="flex gap-3 justify-end">
-                            <button onClick={close} disabled={loading} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50">Cancel</button>
-                            <button onClick={handleDelete} disabled={loading} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50">
-                                {loading ? 'Deleting…' : 'Delete'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </>
+                )}
+            </div>
+        </div>
     )
-
-    // Helper used inline in the JSX above
-    function resetForm__internal(prefillLensId?: number) {
-        setLensSearch('')
-        setLensId(prefillLensId ?? '')
-        setPortId('')
-        setRingIds([])
-        setNotes('')
-        setError(null)
-        setTarget(null)
-    }
 }
