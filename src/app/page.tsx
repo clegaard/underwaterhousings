@@ -6,7 +6,7 @@ import HousingFilters from '@/components/HousingFilters'
 async function getHousingsData() {
     try {
         // Optimized: Reduced from 5 queries to 3 queries
-        const [housings, cameras, lenses, portsRaw] = await Promise.all([
+        const [housings, cameras, lenses, portsRaw, portChartEntriesRaw] = await Promise.all([
             prisma.housing.findMany({
                 include: {
                     manufacturer: {
@@ -80,7 +80,24 @@ async function getHousingsData() {
                 orderBy: {
                     name: 'asc'
                 }
-            })
+            }),
+            prisma.portChartEntry.findMany({
+                include: {
+                    port: {
+                        select: {
+                            id: true, name: true, slug: true, isFlatPort: true,
+                            priceAmount: true, depthRating: true, housingMountId: true,
+                        },
+                    },
+                    steps: {
+                        include: {
+                            extensionRing: { select: { id: true, name: true, slug: true, lengthMm: true, priceAmount: true } },
+                            portAdapter: { select: { id: true, name: true, slug: true, priceAmount: true } },
+                        },
+                        orderBy: { order: 'asc' },
+                    },
+                },
+            }),
         ])
 
         // Derive manufacturers from housings (no separate query needed)
@@ -139,16 +156,49 @@ async function getHousingsData() {
             }),
             manufacturers,
             ports,
+            portChartEntries: portChartEntriesRaw.map(e => ({
+                id: e.id,
+                manufacturerId: e.manufacturerId,
+                lensId: e.lensId,
+                portId: e.portId,
+                isRecommended: e.isRecommended,
+                notes: e.notes,
+                port: e.port ? {
+                    id: e.port.id,
+                    name: e.port.name,
+                    slug: e.port.slug,
+                    isFlatPort: e.port.isFlatPort,
+                    priceAmount: e.port.priceAmount ? Number(e.port.priceAmount) : null,
+                    depthRating: e.port.depthRating,
+                    housingMountId: e.port.housingMountId,
+                } : null,
+                steps: e.steps.map(s => ({
+                    order: s.order,
+                    extensionRing: s.extensionRing ? {
+                        id: s.extensionRing.id,
+                        name: s.extensionRing.name,
+                        slug: s.extensionRing.slug,
+                        lengthMm: s.extensionRing.lengthMm,
+                        priceAmount: s.extensionRing.priceAmount ? Number(s.extensionRing.priceAmount) : null,
+                    } : null,
+                    portAdapter: s.portAdapter ? {
+                        id: s.portAdapter.id,
+                        name: s.portAdapter.name,
+                        slug: s.portAdapter.slug,
+                        priceAmount: s.portAdapter.priceAmount ? Number(s.portAdapter.priceAmount) : null,
+                    } : null,
+                })),
+            })),
             source: 'database'
         }
     } catch (error) {
         console.log('Database not available:', error instanceof Error ? error.message : error)
-        return { housings: [], cameras: [], manufacturers: [], lenses: [], ports: [], source: 'fallback' }
+        return { housings: [], cameras: [], manufacturers: [], lenses: [], ports: [], portChartEntries: [], source: 'fallback' }
     }
 }
 
 export default async function Home() {
-    const { housings, cameras, manufacturers, lenses, ports, source } = await getHousingsData()
+    const { housings, cameras, manufacturers, lenses, ports, portChartEntries, source } = await getHousingsData()
 
     if (source === 'fallback') {
         return (
@@ -165,5 +215,5 @@ export default async function Home() {
         )
     }
 
-    return <HousingFilters initialHousings={housings} cameras={cameras} manufacturers={manufacturers} lenses={lenses} ports={ports} />
+    return <HousingFilters initialHousings={housings} cameras={cameras} manufacturers={manufacturers} lenses={lenses} ports={ports} portChartEntries={portChartEntries} />
 }

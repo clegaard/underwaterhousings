@@ -110,3 +110,37 @@ export async function DELETE(req: NextRequest) {
     await prisma.portChartEntry.delete({ where: { id } })
     return NextResponse.json({ success: true })
 }
+
+export async function PATCH(req: NextRequest) {
+    const session = await auth()
+    const denied = requireSuperuser(session)
+    if (denied) return denied
+
+    const id = parseInt(req.nextUrl.searchParams.get('id') ?? '')
+    if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+
+    const body = await req.json()
+    const { isRecommended } = body
+
+    if (typeof isRecommended !== 'boolean') {
+        return NextResponse.json({ error: 'isRecommended (boolean) required' }, { status: 400 })
+    }
+
+    if (isRecommended) {
+        // Clear other recommended entries for the same manufacturer+lens
+        const entry = await prisma.portChartEntry.findUnique({ where: { id }, select: { manufacturerId: true, lensId: true } })
+        if (!entry) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+        await prisma.portChartEntry.updateMany({
+            where: { manufacturerId: entry.manufacturerId, lensId: entry.lensId, isRecommended: true },
+            data: { isRecommended: false },
+        })
+    }
+
+    const updated = await prisma.portChartEntry.update({
+        where: { id },
+        data: { isRecommended },
+        include,
+    })
+    return NextResponse.json(updated)
+}

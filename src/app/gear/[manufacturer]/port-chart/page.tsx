@@ -102,6 +102,7 @@ export default async function PortChartPage({ params }: PageProps) {
             } : null,
         })),
         notes: e.notes,
+        isRecommended: e.isRecommended,
     }))
 
     const portsData = manufacturer.ports.map(p => ({

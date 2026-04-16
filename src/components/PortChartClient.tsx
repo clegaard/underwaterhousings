@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, createContext, useContext, memo, useRef, useEffect, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { useRouter } from 'next/navigation'
 import {
     ReactFlow,
     Handle,
@@ -9,7 +10,6 @@ import {
 } from '@xyflow/react'
 import type { Node, Edge, NodeProps } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import Link from 'next/link'
 import { HousingImage } from '@/components/HousingImage'
 
 /* ═══════════════════════════════════════════════
@@ -55,6 +55,7 @@ interface Entry {
     port: Omit<PortData, 'housingMount'> | null
     steps: EntryStep[]
     notes: string | null
+    isRecommended: boolean
 }
 
 interface Props {
@@ -85,6 +86,7 @@ interface TrieNode {
     key: string
     type: 'ring' | 'adapter' | 'port'
     itemId: number
+    lensId: number
     slug: string
     label: string
     detail: string
@@ -160,7 +162,7 @@ function buildLensTrees(entries: Entry[], allPorts: PortData[], allRings: RingDa
                 let existing = nodes.find(n => n.key === step.key)
                 if (!existing) {
                     existing = {
-                        key: step.key, type: step.type, itemId: step.itemId, slug: step.slug,
+                        key: step.key, type: step.type, itemId: step.itemId, lensId: group.lens.id, slug: step.slug,
                         label: step.label, detail: step.detail, imageInfo: step.imageInfo,
                         entryIds: [], children: [],
                     }
@@ -180,6 +182,56 @@ function buildLensTrees(entries: Entry[], allPorts: PortData[], allRings: RingDa
 
     trees.sort((a, b) => a.lens.name.localeCompare(b.lens.name))
     return trees
+}
+
+/* ═══════════════════════════════════════════════
+   Draft entry synthesis
+   ═══════════════════════════════════════════════ */
+
+const DRAFT_ENTRY_ID = -1
+
+function buildDraftEntry(
+    chain: DraftChain,
+    allLenses: LensData[],
+    allRings: RingData[],
+    allAdapters: AdapterData[],
+): Entry | null {
+    const lens = allLenses.find(l => l.id === chain.lensId)
+    if (!lens) return null
+
+    // Reconstruct shared steps (already in trie from existing entries)
+    const sharedSteps: EntryStep[] = chain.sharedStepKeys.map((key, i) => {
+        const [type, idStr] = key.split(':')
+        const id = parseInt(idStr)
+        if (type === 'ring') {
+            const r = allRings.find(r => r.id === id)
+            return { id: -(100 + i), order: i, extensionRing: r ? { id: r.id, name: r.name, slug: r.slug, lengthMm: r.lengthMm } : null, portAdapter: null }
+        } else {
+            const a = allAdapters.find(a => a.id === id)
+            return { id: -(100 + i), order: i, extensionRing: null, portAdapter: a ? { id: a.id, name: a.name, slug: a.slug } : null }
+        }
+    })
+
+    // New draft steps
+    const draftSteps: EntryStep[] = chain.steps.map((s, i) => ({
+        id: -(200 + i),
+        order: sharedSteps.length + i,
+        extensionRing: s.type === 'ring'
+            ? (() => { const r = allRings.find(r => r.id === s.itemId); return r ? { id: r.id, name: r.name, slug: r.slug, lengthMm: r.lengthMm } : null })()
+            : null,
+        portAdapter: s.type === 'adapter'
+            ? (() => { const a = allAdapters.find(a => a.id === s.itemId); return a ? { id: a.id, name: a.name, slug: a.slug } : null })()
+            : null,
+    }))
+
+    return {
+        id: DRAFT_ENTRY_ID,
+        lens,
+        port: null,
+        steps: [...sharedSteps, ...draftSteps],
+        notes: null,
+        isRecommended: false,
+    }
 }
 
 /* ═══════════════════════════════════════════════
@@ -216,6 +268,8 @@ function computeFlowLayout(
     trees: LensTree[],
     maxSteps: number,
     isSuperuser: boolean,
+    manufacturerSlug: string,
+    draftEntryId: number | null,
 ): { nodes: Node[]; edges: Edge[]; height: number; width: number } {
     const portColX = LENS_W + COL_GAP + Math.max(maxSteps, 1) * (NODE_W + COL_GAP)
 
@@ -232,16 +286,17 @@ function computeFlowLayout(
                 id: lensId,
                 type: 'chartLens',
                 position: { x: 0, y: currentY },
-                data: { lens: tree.lens },
+                data: { lens: tree.lens, href: `/lenses/${tree.lens.manufacturer.slug}/${tree.lens.slug}` },
             })
 
             if (isSuperuser) {
                 const addId = `add-empty-${lensNumId}`
+                const isDraftLens = draftEntryId != null && tree.entryIds.includes(draftEntryId)
                 nodes.push({
                     id: addId,
                     type: 'chartAdd',
                     position: { x: LENS_W + COL_GAP, y: currentY + (LENS_H - 28) / 2 },
-                    data: { pickerKey: `lens:${lensNumId}` },
+                    data: { pickerKey: isDraftLens ? 'draft:next' : `lens:${lensNumId}` },
                 })
                 edges.push({
                     id: `e-${lensId}-${addId}`,
@@ -276,28 +331,30 @@ function computeFlowLayout(
 
                 if (isLeaf) {
                     const x = isPort ? portColX : stepX(depth)
+                    const isDraftNode = draftEntryId != null && node.entryIds.length === 1 && node.entryIds[0] === draftEntryId
                     nodes.push({
                         id: nodeId,
                         type: isPort ? 'chartPort' : 'chartStep',
                         position: { x, y: cy },
-                        data: { trieNode: node },
+                        data: { trieNode: node, href: `/gear/${manufacturerSlug}/${node.slug}`, isDraft: isDraftNode },
                     })
                     edges.push({
                         id: `e-${parentId}-${nodeId}`,
                         source: parentId,
                         target: nodeId,
                         type: 'smoothstep',
-                        style: { stroke: '#9ca3af', strokeWidth: 1.5 },
+                        style: { stroke: isDraftNode ? '#a78bfa' : '#9ca3af', strokeWidth: 1.5, ...(isDraftNode ? { strokeDasharray: '6 3' } : {}) },
                     })
 
                     if (!isPort && isSuperuser) {
                         const addId = `add-ext-${nodeId}`
                         const addX = x + NODE_W + 20
+                        const addPickerKey = isDraftNode ? 'draft:next' : `L${lensNumId}/${nodePath.join('/')}`
                         nodes.push({
                             id: addId,
                             type: 'chartAdd',
                             position: { x: addX, y: cy + (NODE_H - 28) / 2 },
-                            data: { pickerKey: `L${lensNumId}/${nodePath.join('/')}` },
+                            data: { pickerKey: addPickerKey },
                         })
                         edges.push({
                             id: `e-${nodeId}-${addId}`,
@@ -318,11 +375,12 @@ function computeFlowLayout(
 
                     const centerY = (childStart + result.contentBottom) / 2 - NODE_H / 2
                     const x = isPort ? portColX : stepX(depth)
+                    const isDraftBranch = draftEntryId != null && node.entryIds.length === 1 && node.entryIds[0] === draftEntryId
                     nodes.push({
                         id: nodeId,
                         type: isPort ? 'chartPort' : 'chartStep',
                         position: { x, y: centerY },
-                        data: { trieNode: node },
+                        data: { trieNode: node, href: `/gear/${manufacturerSlug}/${node.slug}`, isDraft: isDraftBranch },
                     })
                     edges.push({
                         id: `e-${parentId}-${nodeId}`,
@@ -363,7 +421,7 @@ function computeFlowLayout(
             id: lensId,
             type: 'chartLens',
             position: { x: 0, y: lensCenterY },
-            data: { lens: tree.lens },
+            data: { lens: tree.lens, href: `/lenses/${tree.lens.manufacturer.slug}/${tree.lens.slug}` },
         })
 
         currentY = result.nextY + GROUP_GAP
@@ -372,11 +430,11 @@ function computeFlowLayout(
     if (isSuperuser) {
         nodes.push({
             id: 'add-root',
-            type: 'chartAdd',
+            type: 'chartAddRoot',
             position: { x: 0, y: currentY },
             data: { pickerKey: 'root' },
         })
-        currentY += ROW_H
+        currentY += LENS_H + GROUP_GAP
     }
 
     return {
@@ -423,6 +481,7 @@ interface SharedPickerProps {
     allPorts: PortData[]
     allExtensionRings: RingData[]
     allPortAdapters: AdapterData[]
+    cameraMountFilter: string | null
     onSelectLens: (id: number) => void
     onSelectStepType: (type: 'ring' | 'adapter' | 'port') => void
     onSelectRing: (id: number) => void
@@ -434,7 +493,10 @@ interface SharedPickerProps {
 interface ChartContextValue {
     isSuperuser: boolean
     manufacturerSlug: string
+    recommendedEntries: Set<number>
+    toggleRecommended: (entryId: number) => void
     onDeleteEntry: (id: number) => void
+    onCancelDraft: () => void
     onOpenPicker: (key: string) => void
     pickerKey: string | null
     pickerMode: PickerMode | null
@@ -447,13 +509,14 @@ const ChartContext = createContext<ChartContextValue | null>(null)
    Inline Picker Popover (portal-based)
    ═══════════════════════════════════════════════ */
 
-function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensionRings, allPortAdapters, onSelectLens, onSelectStepType, onSelectRing, onSelectAdapter, onSelectPort, onClose }: {
+function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensionRings, allPortAdapters, cameraMountFilter, onSelectLens, onSelectStepType, onSelectRing, onSelectAdapter, onSelectPort, onClose }: {
     mode: PickerMode
     recomputeKey?: number
     allLenses: LensData[]
     allPorts: PortData[]
     allExtensionRings: RingData[]
     allPortAdapters: AdapterData[]
+    cameraMountFilter: string | null
     onSelectLens: (id: number) => void
     onSelectStepType: (type: 'ring' | 'adapter' | 'port') => void
     onSelectRing: (id: number) => void
@@ -469,7 +532,13 @@ function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensio
     useLayoutEffect(() => {
         if (!placeholderRef.current) return
         const rect = placeholderRef.current.getBoundingClientRect()
-        setPos({ top: rect.bottom + 4, left: rect.left })
+        const estimatedHeight = mode === 'step-type' ? 130 : 330
+        const spaceBelow = window.innerHeight - rect.bottom - 8
+        if (spaceBelow < estimatedHeight) {
+            setPos({ top: Math.max(8, rect.top - estimatedHeight - 4), left: rect.left })
+        } else {
+            setPos({ top: rect.bottom + 4, left: rect.left })
+        }
     }, [recomputeKey, mode])
 
     useEffect(() => {
@@ -508,7 +577,9 @@ function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensio
     } else {
         let items: { id: number; primary: string; secondary: string }[] = []
         if (mode === 'lens') {
-            items = allLenses.filter(l => !q || `${l.manufacturer.name} ${l.name}`.toLowerCase().includes(q))
+            items = allLenses
+                .filter(l => !cameraMountFilter || l.cameraMount.name === cameraMountFilter)
+                .filter(l => !q || `${l.manufacturer.name} ${l.name}`.toLowerCase().includes(q))
                 .map(l => ({ id: l.id, primary: l.name, secondary: `${l.manufacturer.name} · ${focalLabel(l)}` }))
         } else if (mode === 'ring') {
             items = allExtensionRings.filter(r => !q || r.name.toLowerCase().includes(q))
@@ -569,9 +640,7 @@ function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensio
 const LensNodeComponent = memo(function LensNodeComponent({ data }: NodeProps) {
     const lens = (data as any).lens as LensData
     return (
-        <Link
-            href={`/lenses/${lens.manufacturer.slug}/${lens.slug}`}
-            className={`flex items-center gap-2.5 rounded-xl border-2 px-3 py-2 text-xs hover:shadow-md transition-shadow cursor-pointer ${nodeStyleClasses.lens}`}
+        <div className={`flex items-center gap-2.5 rounded-xl border-2 px-3 py-2 text-xs cursor-pointer hover:shadow-md transition-shadow ${nodeStyleClasses.lens}`}
             style={{ width: LENS_W, height: LENS_H }}>
             <Handle type="source" position={Position.Right} className="!bg-blue-400 !w-2 !h-2 !border-0" />
             <div className="relative w-9 h-9 rounded-lg overflow-hidden shrink-0 bg-white/60">
@@ -583,12 +652,13 @@ const LensNodeComponent = memo(function LensNodeComponent({ data }: NodeProps) {
                 <p className="text-[10px] opacity-60">{focalLabel(lens)}</p>
                 <p className="text-[10px] opacity-60">{lens.manufacturer.name}</p>
             </div>
-        </Link>
+        </div>
     )
 })
 
 const StepNodeComponent = memo(function StepNodeComponent({ data }: NodeProps) {
     const trieNode = (data as any).trieNode as TrieNode
+    const isDraft = (data as any).isDraft as boolean
     const ctx = useContext(ChartContext)
     const style = nodeStyleClasses[trieNode.type] || nodeStyleClasses.ring
 
@@ -596,9 +666,7 @@ const StepNodeComponent = memo(function StepNodeComponent({ data }: NodeProps) {
         <div className="group/node relative" style={{ width: NODE_W, height: NODE_H }}>
             <Handle type="target" position={Position.Left} className="!bg-gray-400 !w-2 !h-2 !border-0" />
             <Handle type="source" position={Position.Right} className="!bg-gray-400 !w-2 !h-2 !border-0" />
-            <Link
-                href={`/gear/${ctx?.manufacturerSlug}/${trieNode.slug}`}
-                className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs w-full h-full hover:shadow-md transition-shadow cursor-pointer ${style}`}>
+            <div className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs w-full h-full cursor-pointer hover:shadow-md transition-shadow ${style} ${isDraft ? 'border-dashed border-2 opacity-70' : ''}`}>
                 <div className="relative w-7 h-7 rounded overflow-hidden shrink-0" style={{ background: 'rgba(255,255,255,0.5)' }}>
                     <HousingImage src={trieNode.imageInfo.src} fallback={trieNode.imageInfo.fallback} alt={trieNode.label}
                         className="w-full h-full object-contain" />
@@ -612,15 +680,26 @@ const StepNodeComponent = memo(function StepNodeComponent({ data }: NodeProps) {
                         {trieNode.notes}
                     </span>
                 )}
-            </Link>
-            {ctx?.isSuperuser && trieNode.terminalEntryId && (
+            </div>
+            {ctx?.isSuperuser && trieNode.terminalEntryId && !isDraft && (
                 <button
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); ctx.onDeleteEntry(trieNode.terminalEntryId!) }}
-                    className="absolute -top-1.5 -right-1.5 opacity-0 group-hover/node:opacity-100 transition-opacity w-4 h-4 flex items-center justify-center text-red-400 hover:text-red-600 bg-white rounded-full shadow-sm border border-gray-200"
+                    onClick={(e) => { e.stopPropagation(); ctx.onDeleteEntry(trieNode.terminalEntryId!) }}
+                    className="absolute -top-1.5 -right-1.5 opacity-0 group-hover/node:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center text-gray-400 hover:text-red-500 bg-white rounded-full shadow-sm border border-gray-200"
                     title="Delete this combination"
                 >
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            )}
+            {isDraft && trieNode.children.length === 0 && (
+                <button
+                    onClick={(e) => { e.stopPropagation(); ctx?.onCancelDraft() }}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center text-gray-400 hover:text-red-500 bg-white rounded-full shadow-sm border border-gray-200"
+                    title="Cancel building"
+                >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                 </button>
             )}
@@ -631,37 +710,87 @@ const StepNodeComponent = memo(function StepNodeComponent({ data }: NodeProps) {
 const PortNodeComponent = memo(function PortNodeComponent({ data }: NodeProps) {
     const trieNode = (data as any).trieNode as TrieNode
     const ctx = useContext(ChartContext)
+    const isRec = !!(trieNode.terminalEntryId && ctx?.recommendedEntries.has(trieNode.terminalEntryId))
 
     return (
         <div className="group/node relative" style={{ width: NODE_W, height: NODE_H }}>
             <Handle type="target" position={Position.Left} className="!bg-emerald-400 !w-2 !h-2 !border-0" />
-            <Link
-                href={`/gear/${ctx?.manufacturerSlug}/${trieNode.slug}`}
-                className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs w-full h-full hover:shadow-md transition-shadow cursor-pointer ${nodeStyleClasses.port}`}>
+            <div className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs w-full h-full cursor-pointer hover:shadow-md transition-shadow ${nodeStyleClasses.port}`}>
                 <div className="relative w-7 h-7 rounded overflow-hidden shrink-0" style={{ background: 'rgba(255,255,255,0.5)' }}>
                     <HousingImage src={trieNode.imageInfo.src} fallback={trieNode.imageInfo.fallback} alt={trieNode.label}
                         className="w-full h-full object-contain" />
                 </div>
-                <div className="min-w-0 max-w-[120px]">
+                <div className="min-w-0 flex-1">
                     <p className="font-semibold leading-tight truncate">{trieNode.label}</p>
                     <p className="text-[10px] opacity-60 truncate">{trieNode.detail}</p>
                 </div>
                 {trieNode.notes && (
-                    <span className="text-[10px] opacity-50 italic ml-1 max-w-[60px] truncate" title={trieNode.notes}>
+                    <span className="text-[10px] opacity-50 italic max-w-[40px] truncate" title={trieNode.notes}>
                         {trieNode.notes}
                     </span>
                 )}
-            </Link>
+            </div>
+            {/* Recommended star — outside the node to the right */}
+            {trieNode.terminalEntryId && (isRec || ctx?.isSuperuser) && (
+                <div className="absolute top-1/2 -translate-y-1/2" style={{ left: NODE_W + 6 }}>
+                    {ctx?.isSuperuser ? (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); ctx.toggleRecommended(trieNode.terminalEntryId!) }}
+                            className={`w-5 h-5 flex items-center justify-center rounded-full transition-colors ${isRec
+                                ? 'text-amber-400 hover:text-amber-500'
+                                : 'text-gray-300 hover:text-amber-400'
+                                }`}
+                            title="Mark as recommended port system"
+                        >
+                            <svg viewBox="0 0 24 24" className="w-4 h-4" fill={isRec ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                            </svg>
+                        </button>
+                    ) : (
+                        <span className="w-5 h-5 flex items-center justify-center text-amber-400" title="Recommended port system">
+                            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                            </svg>
+                        </span>
+                    )}
+                </div>
+            )}
             {ctx?.isSuperuser && trieNode.terminalEntryId && (
                 <button
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); ctx.onDeleteEntry(trieNode.terminalEntryId!) }}
-                    className="absolute -top-1.5 -right-1.5 opacity-0 group-hover/node:opacity-100 transition-opacity w-4 h-4 flex items-center justify-center text-red-400 hover:text-red-600 bg-white rounded-full shadow-sm border border-gray-200"
+                    onClick={(e) => { e.stopPropagation(); ctx.onDeleteEntry(trieNode.terminalEntryId!) }}
+                    className="absolute -top-1.5 -right-1.5 opacity-0 group-hover/node:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center text-gray-400 hover:text-red-500 bg-white rounded-full shadow-sm border border-gray-200"
                     title="Delete this combination"
                 >
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                 </button>
+            )}
+        </div>
+    )
+})
+
+const AddLensNodeComponent = memo(function AddLensNodeComponent({ data }: NodeProps) {
+    const ctx = useContext(ChartContext)
+    const pk = (data as any).pickerKey as string
+    const isOpen = ctx?.pickerKey === pk
+
+    return (
+        <div className="nopan nodrag nowheel relative" style={{ width: LENS_W, height: LENS_H }}>
+            <Handle type="target" position={Position.Left} className="!bg-transparent !w-0 !h-0 !border-0 !min-w-0 !min-h-0" />
+            <button
+                onClick={(e) => { e.stopPropagation(); ctx?.onOpenPicker(pk) }}
+                className="nopan nodrag nowheel w-full h-full rounded-xl border-2 border-dashed border-blue-200 flex items-center justify-center gap-2 text-blue-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-all cursor-pointer"
+                style={{ pointerEvents: 'all' }}
+                title="Add new lens entry"
+            >
+                <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                </svg>
+                <span className="text-sm font-medium">New Entry</span>
+            </button>
+            {isOpen && ctx?.pickerMode && (
+                <InlinePicker mode={ctx.pickerMode} {...ctx.pickerProps} />
             )}
         </div>
     )
@@ -703,6 +832,7 @@ const nodeTypes = {
     chartStep: StepNodeComponent,
     chartPort: PortNodeComponent,
     chartAdd: AddNodeComponent,
+    chartAddRoot: AddLensNodeComponent,
 }
 
 /* ═══════════════════════════════════════════════
@@ -719,8 +849,54 @@ export default function PortChartClient({
     entries: initial,
     isSuperuser,
 }: Props) {
+    const router = useRouter()
     const [entries, setEntries] = useState(initial)
     const [loading, setLoading] = useState(false)
+
+    // ── Recommended entries (persisted in DB) ─────────────────────
+    const [recommendedEntries, setRecommendedEntries] = useState<Set<number>>(() => {
+        const set = new Set<number>()
+        for (const e of initial) {
+            if (e.isRecommended) set.add(e.id)
+        }
+        return set
+    })
+
+    async function toggleRecommended(entryId: number) {
+        const wasRecommended = recommendedEntries.has(entryId)
+        const newValue = !wasRecommended
+        // Optimistic update
+        setRecommendedEntries(prev => {
+            const next = new Set(prev)
+            if (newValue) {
+                const entry = entries.find(e => e.id === entryId)
+                if (entry) {
+                    for (const e of entries) {
+                        if (e.lens.id === entry.lens.id) next.delete(e.id)
+                    }
+                }
+                next.add(entryId)
+            } else {
+                next.delete(entryId)
+            }
+            return next
+        })
+        try {
+            await fetch(`/api/admin/port-chart-entries?id=${entryId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isRecommended: newValue }),
+            })
+        } catch {
+            // Revert on error
+            setRecommendedEntries(prev => {
+                const next = new Set(prev)
+                if (wasRecommended) next.add(entryId)
+                else next.delete(entryId)
+                return next
+            })
+        }
+    }
 
     // ── Camera-mount tabs ──────────────────────────────────────────
     const mounts: string[] = useMemo(
@@ -748,6 +924,7 @@ export default function PortChartClient({
         lensId?: number
         branchPath: string
         sharedStepKeys: string[]
+        isDraftContinuation?: boolean
     } | null>(null)
 
     // ── Draft chain (in-progress build) ───────────────────────────
@@ -765,19 +942,41 @@ export default function PortChartClient({
     }
 
     // ── Computed trees and layout ─────────────────────────────────
-    const trees = useMemo(
-        () => buildLensTrees(visibleEntries, allPorts, allExtensionRings, allPortAdapters),
-        [visibleEntries, allPorts, allExtensionRings, allPortAdapters],
-    )
+    const trees = useMemo(() => {
+        if (!draftChain) {
+            return buildLensTrees(visibleEntries, allPorts, allExtensionRings, allPortAdapters)
+        }
+
+        const draftEntry = buildDraftEntry(draftChain, allLenses, allExtensionRings, allPortAdapters)
+        const isNewLens = !visibleEntries.some(e => e.lens.id === draftChain.lensId)
+
+        if (isNewLens) {
+            // Keep the draft lens at the end to avoid disorienting re-sorts during building
+            const realTrees = buildLensTrees(visibleEntries, allPorts, allExtensionRings, allPortAdapters)
+            if (draftEntry) {
+                const draftTrees = buildLensTrees([draftEntry], allPorts, allExtensionRings, allPortAdapters)
+                return [...realTrees, ...draftTrees]
+            }
+            return realTrees
+        } else {
+            // Merge draft into existing tree for this lens
+            const entriesToUse = draftEntry ? [...visibleEntries, draftEntry] : visibleEntries
+            return buildLensTrees(entriesToUse, allPorts, allExtensionRings, allPortAdapters)
+        }
+    }, [visibleEntries, allPorts, allExtensionRings, allPortAdapters, draftChain, allLenses])
 
     const maxSteps = useMemo(
-        () => Math.max(0, ...visibleEntries.map(e => e.steps.length)),
-        [visibleEntries],
+        () => Math.max(
+            0,
+            ...visibleEntries.map(e => e.steps.length),
+            draftChain ? draftChain.sharedStepKeys.length + draftChain.steps.length : 0,
+        ),
+        [visibleEntries, draftChain],
     )
 
     const { nodes: flowNodes, edges: flowEdges, height: flowHeight, width: flowWidth } = useMemo(
-        () => computeFlowLayout(trees, maxSteps, isSuperuser),
-        [trees, maxSteps, isSuperuser],
+        () => computeFlowLayout(trees, maxSteps, isSuperuser, manufacturerSlug, draftChain ? DRAFT_ENTRY_ID : null),
+        [trees, maxSteps, isSuperuser, manufacturerSlug, draftChain],
     )
 
     // ── Picker key parsing ────────────────────────────────────────
@@ -790,13 +989,13 @@ export default function PortChartClient({
     function handleOpenPicker(key: string) {
         if (key === 'root') {
             setPickerKey(key); setPickerMode('lens')
-            setPickerContext({ branchPath: '', sharedStepKeys: [] })
+            setPickerContext({ branchPath: '', sharedStepKeys: [], isDraftContinuation: false })
             return
         }
         if (key.startsWith('lens:')) {
             const lensId = parseInt(key.replace('lens:', ''))
             setPickerKey(key); setPickerMode('step-type')
-            setPickerContext({ lensId, branchPath: '', sharedStepKeys: [] })
+            setPickerContext({ lensId, branchPath: '', sharedStepKeys: [], isDraftContinuation: false })
             return
         }
         if (key.startsWith('branch:L')) {
@@ -804,7 +1003,7 @@ export default function PortChartClient({
             if (parsed) {
                 const parts = parsed.innerPath.split('/').filter(Boolean)
                 setPickerKey(key); setPickerMode('step-type')
-                setPickerContext({ lensId: parsed.lensId, branchPath: parsed.innerPath, sharedStepKeys: parts })
+                setPickerContext({ lensId: parsed.lensId, branchPath: parsed.innerPath, sharedStepKeys: parts, isDraftContinuation: false })
                 return
             }
         }
@@ -815,6 +1014,7 @@ export default function PortChartClient({
                     lensId: draftChain.lensId,
                     branchPath: draftChain.branchPath,
                     sharedStepKeys: draftChain.sharedStepKeys,
+                    isDraftContinuation: true,
                 })
             }
             return
@@ -823,7 +1023,7 @@ export default function PortChartClient({
         if (parsed) {
             const parts = parsed.innerPath.split('/').filter(Boolean)
             setPickerKey(key); setPickerMode('step-type')
-            setPickerContext({ lensId: parsed.lensId, branchPath: parsed.innerPath, sharedStepKeys: parts })
+            setPickerContext({ lensId: parsed.lensId, branchPath: parsed.innerPath, sharedStepKeys: parts, isDraftContinuation: false })
         }
     }
 
@@ -831,7 +1031,8 @@ export default function PortChartClient({
 
     function handleSelectLens(lensId: number) {
         setPickerMode('step-type')
-        setPickerContext({ lensId, branchPath: '', sharedStepKeys: [] })
+        setPickerContext({ lensId, branchPath: '', sharedStepKeys: [], isDraftContinuation: true })
+        setDraftChain({ lensId, branchPath: '', sharedStepKeys: [], steps: [] })
     }
 
     function handleSelectStepType(type: 'ring' | 'adapter' | 'port') {
@@ -847,11 +1048,13 @@ export default function PortChartClient({
             label: ring.lengthMm != null ? `${ring.lengthMm}mm` : ring.name,
             detail: ring.name,
         }
-        const chain: DraftChain = draftChain && draftChain.lensId === pickerContext.lensId
+        const chain: DraftChain = (draftChain && pickerContext?.isDraftContinuation)
             ? { ...draftChain, steps: [...draftChain.steps, step] }
             : { lensId: pickerContext.lensId, branchPath: pickerContext.branchPath, sharedStepKeys: pickerContext.sharedStepKeys, steps: [step] }
         setDraftChain(chain)
+        setPickerKey('draft:next')
         setPickerMode('step-type')
+        setPickerContext({ lensId: chain.lensId, branchPath: chain.branchPath, sharedStepKeys: chain.sharedStepKeys, isDraftContinuation: true })
     }
 
     function handleSelectAdapter(adapterId: number) {
@@ -863,25 +1066,29 @@ export default function PortChartClient({
             label: adapter.name,
             detail: `${adapter.inputHousingMount?.slug.toUpperCase() ?? '?'} → ${adapter.outputHousingMount?.slug.toUpperCase() ?? '?'}`,
         }
-        const chain: DraftChain = draftChain && draftChain.lensId === pickerContext.lensId
+        const chain: DraftChain = (draftChain && pickerContext?.isDraftContinuation)
             ? { ...draftChain, steps: [...draftChain.steps, step] }
             : { lensId: pickerContext.lensId, branchPath: pickerContext.branchPath, sharedStepKeys: pickerContext.sharedStepKeys, steps: [step] }
         setDraftChain(chain)
+        setPickerKey('draft:next')
         setPickerMode('step-type')
+        setPickerContext({ lensId: chain.lensId, branchPath: chain.branchPath, sharedStepKeys: chain.sharedStepKeys, isDraftContinuation: true })
     }
 
     async function handleSelectPort(portId: number) {
-        if (!pickerContext?.lensId) return
+        const lensId = draftChain?.lensId ?? pickerContext?.lensId
+        if (!lensId) return
         setLoading(true)
 
         const allSteps: { extensionRingId?: number; portAdapterId?: number }[] = []
-        for (const key of pickerContext.sharedStepKeys) {
+        const sharedKeys = draftChain?.sharedStepKeys ?? pickerContext?.sharedStepKeys ?? []
+        for (const key of sharedKeys) {
             const [type, idStr] = key.split(':')
             const id = parseInt(idStr)
             if (type === 'ring') allSteps.push({ extensionRingId: id })
             else if (type === 'adapter') allSteps.push({ portAdapterId: id })
         }
-        if (draftChain && draftChain.lensId === pickerContext.lensId) {
+        if (draftChain) {
             for (const step of draftChain.steps) {
                 if (step.type === 'ring') allSteps.push({ extensionRingId: step.itemId })
                 else if (step.type === 'adapter') allSteps.push({ portAdapterId: step.itemId })
@@ -892,11 +1099,11 @@ export default function PortChartClient({
             const res = await fetch('/api/admin/port-chart-entries', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ manufacturerId, lensId: pickerContext.lensId, portId, steps: allSteps }),
+                body: JSON.stringify({ manufacturerId, lensId, portId, steps: allSteps }),
             })
             if (res.ok) {
                 const data = await res.json()
-                const lens = allLenses.find(l => l.id === pickerContext.lensId)!
+                const lens = allLenses.find(l => l.id === lensId)!
                 const port = allPorts.find(p => p.id === portId)!
                 const newEntry: Entry = {
                     id: data.id,
@@ -906,6 +1113,7 @@ export default function PortChartClient({
                         id: s.id, order: s.order, extensionRing: s.extensionRing, portAdapter: s.portAdapter,
                     })),
                     notes: data.notes ?? null,
+                    isRecommended: false,
                 }
                 setEntries(prev => [...prev, newEntry].sort((a, b) => a.lens.name.localeCompare(b.lens.name)))
             }
@@ -924,22 +1132,26 @@ export default function PortChartClient({
 
     const sharedPickerProps: SharedPickerProps = useMemo(() => ({
         allLenses, allPorts, allExtensionRings, allPortAdapters,
+        cameraMountFilter: selectedMount,
         onSelectLens: handleSelectLens, onSelectStepType: handleSelectStepType,
         onSelectRing: handleSelectRing, onSelectAdapter: handleSelectAdapter,
         onSelectPort: handleSelectPort, onClose: closePicker,
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }), [allLenses, allPorts, allExtensionRings, allPortAdapters, closePicker])
+    }), [allLenses, allPorts, allExtensionRings, allPortAdapters, closePicker, draftChain, pickerContext, selectedMount])
 
     const chartCtx: ChartContextValue = useMemo(() => ({
         isSuperuser,
         manufacturerSlug,
+        recommendedEntries,
+        toggleRecommended,
         onDeleteEntry: handleDeleteEntry,
+        onCancelDraft: cancelDraft,
         onOpenPicker: handleOpenPicker,
         pickerKey,
         pickerMode,
         pickerProps: sharedPickerProps,
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }), [isSuperuser, manufacturerSlug, pickerKey, pickerMode, sharedPickerProps])
+    }), [isSuperuser, manufacturerSlug, recommendedEntries, pickerKey, pickerMode, sharedPickerProps, draftChain])
 
     const canvasWidth = flowWidth + 40
     const canvasHeight = flowHeight + 40
@@ -976,28 +1188,7 @@ export default function PortChartClient({
                 <div className="flex items-center gap-1.5 ml-2 text-gray-400">
                     <span>Scroll to navigate</span>
                 </div>
-                {draftChain && (
-                    <button onClick={cancelDraft} className="ml-auto text-red-500 hover:text-red-700 text-xs font-medium">
-                        Cancel building
-                    </button>
-                )}
             </div>
-
-            {/* Draft preview bar */}
-            {draftChain && draftChain.steps.length > 0 && (
-                <div className="flex items-center gap-2 mb-4 px-3 py-2 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                    <span className="text-[10px] text-gray-500 font-medium shrink-0">Building:</span>
-                    {draftChain.steps.map((step, i) => (
-                        <div key={i} className="flex items-center gap-1">
-                            {i > 0 && <span className="text-gray-300 text-xs">→</span>}
-                            <div className={`rounded-lg border-2 border-dashed px-2 py-0.5 text-[11px] font-medium ${nodeStyleClasses[step.type]}`}>
-                                {step.label}
-                            </div>
-                        </div>
-                    ))}
-                    <span className="text-[10px] text-gray-400 ml-1">→ select next step</span>
-                </div>
-            )}
 
             {loading && (
                 <div className="absolute inset-0 bg-white/50 z-30 flex items-center justify-center rounded-xl">
@@ -1008,8 +1199,7 @@ export default function PortChartClient({
             {/* React Flow canvas */}
             {trees.length > 0 || isSuperuser ? (
                 <ChartContext.Provider value={chartCtx}>
-                    <div className="overflow-auto rounded-xl border border-gray-200 bg-white port-chart-container">
-                        <style>{`.port-chart-container .react-flow__pane { pointer-events: none !important; }`}</style>
+                    <div className="overflow-auto rounded-xl border border-gray-200 bg-white">
                         <div style={{ width: canvasWidth, height: canvasHeight }}>
                             <ReactFlow
                                 key={selectedMount ?? 'all'}
@@ -1028,6 +1218,13 @@ export default function PortChartClient({
                                 zoomOnDoubleClick={false}
                                 preventScrolling={false}
                                 proOptions={{ hideAttribution: true }}
+                                onNodeClick={(event, node) => {
+                                    // Don't navigate if a button inside the node was clicked
+                                    if ((event.target as HTMLElement).closest('button')) return
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    const href = (node.data as any).href as string | undefined
+                                    if (href) router.push(href)
+                                }}
                             />
                         </div>
                     </div>

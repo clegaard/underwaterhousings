@@ -293,6 +293,7 @@ model PortChartEntry {
     lensId         Int
     portId         Int?
     notes          String?
+    isRecommended  Boolean              @default(false)
     createdAt      DateTime             @default(now())
     manufacturer   Manufacturer         @relation(fields: [manufacturerId], references: [id])
     lens           Lens                 @relation(fields: [lensId], references: [id])
