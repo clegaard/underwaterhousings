@@ -10,7 +10,7 @@ interface Props {
 }
 
 async function findItem(manufacturerSlug: string, itemSlug: string) {
-    const [manufacturer, port, ring, adapter] = await Promise.all([
+    const [manufacturer, port, ring, adapter, gear] = await Promise.all([
         prisma.manufacturer.findUnique({ where: { slug: manufacturerSlug } }),
         prisma.port.findFirst({
             where: { slug: itemSlug, manufacturer: { slug: manufacturerSlug } },
@@ -24,11 +24,16 @@ async function findItem(manufacturerSlug: string, itemSlug: string) {
             where: { slug: itemSlug, manufacturer: { slug: manufacturerSlug } },
             include: { inputHousingMount: true, outputHousingMount: true, manufacturer: true },
         }),
+        prisma.gear.findFirst({
+            where: { slug: itemSlug, manufacturer: { slug: manufacturerSlug } },
+            include: { manufacturer: true, lenses: { select: { id: true, name: true, slug: true } } },
+        }),
     ])
 
     if (port) return { kind: 'port' as const, item: port, manufacturer }
     if (ring) return { kind: 'extensionRing' as const, item: ring, manufacturer }
     if (adapter) return { kind: 'portAdapter' as const, item: adapter, manufacturer }
+    if (gear) return { kind: 'gear' as const, item: gear, manufacturer }
     return { kind: null as null, item: null, manufacturer }
 }
 
@@ -86,6 +91,12 @@ export default async function GearItemPage({ params }: Props) {
         }
         if (a.outputHousingMount) {
             specs.push({ label: 'Output mount', value: a.outputHousingMount.name })
+        }
+    } else if (kind === 'gear') {
+        subtitle = 'Gear'
+        const g = item as typeof item & { sku: string | null; lenses: { id: number; name: string; slug: string }[] }
+        if (g.sku) {
+            specs.push({ label: 'SKU', value: g.sku })
         }
     }
 
@@ -147,6 +158,20 @@ export default async function GearItemPage({ params }: Props) {
                                     {priceCurrency} {priceAmount.toFixed(2)}
                                 </div>
                             )}
+
+                            {kind === 'gear' && (() => {
+                                const g = item as typeof item & { lenses: { id: number; name: string; slug: string }[] }
+                                return g.lenses.length > 0 ? (
+                                    <div className="mb-6">
+                                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Compatible lenses</p>
+                                        <ul className="space-y-1">
+                                            {g.lenses.map(l => (
+                                                <li key={l.id} className="text-sm text-gray-800">• {l.name}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ) : null
+                            })()}
 
                             <div className="mt-auto">
                                 <Link

@@ -104,6 +104,7 @@ async function main() {
     await prisma.housingMount.deleteMany()
     await prisma.housing.deleteMany()
     await prisma.camera.deleteMany()
+    await prisma.portChartEntry.deleteMany()
     await prisma.lens.deleteMany()
     await prisma.cameraMount.deleteMany()
     await prisma.extensionRing.deleteMany()

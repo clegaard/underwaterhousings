@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { HousingImage } from '@/components/HousingImage'
 import { getPortImagePathWithFallback } from '@/lib/images'
 
@@ -262,7 +263,10 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                 {gears.map((gear) => (
                     <div key={gear.id} className="group/card relative">
-                        <div className="group bg-white rounded-xl border border-gray-200 hover:border-teal-300 hover:shadow-md transition-all overflow-hidden block">
+                        <Link
+                            href={`/gear/${manufacturer.slug}/${gear.slug}`}
+                            className="group bg-white rounded-xl border border-gray-200 hover:border-teal-300 hover:shadow-md transition-all overflow-hidden block"
+                        >
                             <div className="relative h-28 bg-gray-50">
                                 <HousingImage
                                     src={gear.imageInfo.src}
@@ -287,7 +291,7 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
                                     <p className="text-xs font-medium text-green-600 mt-1">${gear.priceAmount.toFixed(2)}</p>
                                 )}
                             </div>
-                        </div>
+                        </Link>
                         {isSuperuser && (
                             <div className="absolute top-1.5 left-1.5 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity z-10">
                                 <button onClick={() => openEdit(gear)} title="Edit gear" className="w-6 h-6 bg-white border border-gray-200 rounded flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-300 shadow-sm">

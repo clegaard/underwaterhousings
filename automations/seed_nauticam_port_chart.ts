@@ -96,13 +96,57 @@ const PORT = {
 
 type Step =
     | { kind: "adaptor"; slug: string }
-    | { kind: "ring"; slug: string };
+    | { kind: "ring"; slug: string }
+    | { kind: "gear"; slug: string };
 
 const adaptor = (slug: string): Step => ({ kind: "adaptor", slug });
 const ring = (slug: string): Step => ({ kind: "ring", slug });
+const gear = (slug: string): Step => ({ kind: "gear", slug });
 
 /** Shorthand for the N100→N120 35.5mm Port Adaptor II used in most entries. */
 const A = adaptor(ADAPTOR_35_5_SLUG);
+
+// ─── Gear slug constants (from seed_nauticam.ts / nauticam_scraped.json) ─────
+
+const GEAR = {
+    // Sony FE 16-35mm f/4 ZA OSS (SEL1635Z)
+    SE1635_Z: "se1635-z-zoom-gear-for-sony-vario-tessar-t-fe-16-35mm-f4-za-oss",
+    SE1635_F: "se1635-f-focus-gear-for-sony-vario-tessar-t-fe-16-35mm-f4-za-oss",
+    // Sony FE PZ 16-35mm f/4 G (FEPZ1635)
+    SFE1635_Z: "sfe1635-z-zoom-gear-for-sony-fe-pz-16-35mm-f4-g",
+    // Sony FE 12-24mm f/4 G (SEL1224G)
+    SFE1224_Z: "sfe1224-z-zoom-gear-for-sony-sel1224g-fe-12-24mm-f4-g",
+    // Sony FE 12-24mm f/2.8 GM (SEL1224GM)
+    SFE1224GM_Z: "sfe1224gm-z-zoom-gear-for-sony-sel1224gm-fe-12-24mm-f2-8gm",
+    SFE1224GM_F: "sfe1224gm-f-focus-gear-for-sony-sel1224gm-fe-12-24mm-f2-8gm",
+    // Sony FE 16-35mm f/2.8 GM (SEL1635GM)
+    SFE1635GM_Z: "sfe1635gm-z-zoom-gear-for-sony-sel1635gm-fe-16-35mm-f2-8-gm",
+    // Sony FE 16-35mm f/2.8 GM II (SEL1635GM2)
+    SFE1635GM2_Z: "zoom-gear-for-sony-fe-16-35mm-f2-8-gm-ii",
+    SFE1635GM2_F: "nauticam-sfe1635gmii-f-focus-gear-for-sony-fe-16-35mm-f2-8-gm-ii",
+    // Sony FE 24-70mm f/2.8 GM (SEL2470GM)
+    SFE2470GM_Z: "sfe2470gm-z-zoom-gear-for-sony-sel2470gm-fe-24-70mm-f2-8-gm",
+    SFE2470GM_F: "sfe2470gm-f-foom-gear-for-sony-sel2470gm-fe-24-70mm-f2-8-gm",
+    // Sony FE 24-70mm f/2.8 GM II (SEL2470GM2)
+    SFE2470II_Z: "sfe2470ii-z-zoom-gear-for-sony-fe-24-70-f2-8-gm-ii",
+    SFE2470II_F: "sfe2470ii-f-focus-gear-for-sony-fe-24-70-f2-8-gm-ii",
+    // Sony FE 28-60mm f/4-5.6 (SEL2860)
+    SFE2860_Z: "sfe2860-z-zoom-gear-for-sony-fe-28-60-f4-5-6",
+    SFE2860_F: "sfe2860-f-focus-gear-for-sony-fe-28-60-f4-5-6",
+    // Sony FE 28-70mm f/2 GM (SEL2870GM)
+    SFE2870_Z: "sfe2870-z-zoom-gear-for-sony-fe-28-70-f2-gm",
+    // Sony FE 20-70mm f/4 G (FE2070)
+    SFE2070_Z: "sfe2070-z-zoom-gear-for-sony-fe-20-70-f4-g",
+    // Sony FE 24-50mm f/2.8 G (FE2450G)
+    SFE2450_Z: "sfe2450-z-zoom-gear-for-sony-fe-24-50mm-f-2-8g-lens",
+    // Sony FE 90mm f/2.8 Macro G OSS (SEL90M28G)
+    SE90_F: "se90-f-focus-gear-for-sony-fe-90mm-f2-8-macro-g-oss",
+    SFE90_F: "sfe90-f-focus-gear-for-sony-fe-90mm-f2-8-macro-g-oss",
+    // Sony FE 100mm f/2.8 Macro GM (FE100MACRO)
+    SE100_F: "se100-f-focus-gear-for-sony-fe-100mm-f2-8-macro-gm",
+    // Sigma 105mm f/2.8 DG DN Macro Art (S105MACRO)
+    SGE105_F: "sge105-f-focus-gear-for-sigma-105mm-f-2-8-dg-dn-macro-art",
+} as const;
 
 // ─── Lens definitions ─────────────────────────────────────────────────────────
 
@@ -180,29 +224,28 @@ const PORT_CHART: ChartRow[] = [
     // ══════════════════════════════════════════════════════════════
     // Sony FE 24-70mm f/2.8 GM  (#SEL2470GM)
     // ══════════════════════════════════════════════════════════════
-    { lens: SEL2470GM, steps: [A, ring(RING_N120["60-ii"])], portSlug: PORT.N120_180MM },
+    { lens: SEL2470GM, steps: [gear(GEAR.SFE2470GM_Z), gear(GEAR.SFE2470GM_F), A, ring(RING_N120["60-ii"])], portSlug: PORT.N120_180MM },
 
     // ══════════════════════════════════════════════════════════════
     // Sony FE 24-70mm f/2.8 GM II  (#SEL2470GM2)
     // ══════════════════════════════════════════════════════════════
-    { lens: SEL2470GM2, steps: [A, ring(RING_N120["50-ii"])], portSlug: PORT.N120_8_5_ACRYLIC },
-    { lens: SEL2470GM2, steps: [A, ring(RING_N120["55-ii"])], portSlug: PORT.N120_180MM },
+    { lens: SEL2470GM2, steps: [gear(GEAR.SFE2470II_Z), gear(GEAR.SFE2470II_F), A, ring(RING_N120["50-ii"])], portSlug: PORT.N120_8_5_ACRYLIC },
+    { lens: SEL2470GM2, steps: [gear(GEAR.SFE2470II_Z), gear(GEAR.SFE2470II_F), A, ring(RING_N120["55-ii"])], portSlug: PORT.N120_180MM },
 
     // ══════════════════════════════════════════════════════════════
     // Sony FE 28-60mm F4-5.6  (#SEL2860)
     // ══════════════════════════════════════════════════════════════
     // N100-only path: two N100 Extension Ring 30 II stacked
     {
-        lens: SEL2860, steps: [ring(RING_N100["30-ii"]), ring(RING_N100["30-ii"])],
+        lens: SEL2860, steps: [gear(GEAR.SFE2860_Z), gear(GEAR.SFE2860_F), ring(RING_N100["30-ii"]), ring(RING_N100["30-ii"])],
         portSlug: PORT.N100_180MM, notes: "Two N100 Extension Ring 30 II stacked (Nauticam #37430 × 2)"
     },
-    // N120 path via port adaptor
-    { lens: SEL2860, steps: [A, ring(RING_N120["30-ii"])], portSlug: PORT.N120_180MM },
+    { lens: SEL2860, steps: [gear(GEAR.SFE2860_Z), gear(GEAR.SFE2860_F), A, ring(RING_N120["30-ii"])], portSlug: PORT.N120_180MM },
 
     // ══════════════════════════════════════════════════════════════
     // Sony FE 28-70mm f/2 GM  (#SEL2870GM)
     // ══════════════════════════════════════════════════════════════
-    { lens: SEL2870GM, steps: [A, ring(RING_N120["80-ii"])], portSlug: PORT.N120_8_5_ACRYLIC },
+    { lens: SEL2870GM, steps: [gear(GEAR.SFE2870_Z), A, ring(RING_N120["80-ii"])], portSlug: PORT.N120_8_5_ACRYLIC },
 
     // ══════════════════════════════════════════════════════════════
     // Sony FE 50mm f/1.8  (#SEL50M18)
@@ -232,35 +275,35 @@ const PORT_CHART: ChartRow[] = [
     // ══════════════════════════════════════════════════════════════
     // Sony FE 90mm f/2.8 Macro G OSS  (#SEL90M28G)
     // ══════════════════════════════════════════════════════════════
-    { lens: SEL90M28G, steps: [], portSlug: PORT.N100_MACRO_105 },
+    { lens: SEL90M28G, steps: [gear(GEAR.SE90_F)], portSlug: PORT.N100_MACRO_105 },
 
     // ══════════════════════════════════════════════════════════════
     // Sony FE 100mm f/2.8 Macro GM
     // ══════════════════════════════════════════════════════════════
-    { lens: FE100MACRO, steps: [], portSlug: PORT.N100_MACRO_125 },
+    { lens: FE100MACRO, steps: [gear(GEAR.SE100_F)], portSlug: PORT.N100_MACRO_125 },
     {
-        lens: FE100MACRO, steps: [ring(RING_N100["30-ii"])], portSlug: PORT.N100_MACRO_125,
+        lens: FE100MACRO, steps: [gear(GEAR.SE100_F), ring(RING_N100["30-ii"])], portSlug: PORT.N100_MACRO_125,
         notes: "With Sony FE 1.4× Teleconverter"
     },
     {
-        lens: FE100MACRO, steps: [ring(RING_N100["30-ii"])], portSlug: PORT.N100_MACRO_125,
+        lens: FE100MACRO, steps: [gear(GEAR.SE100_F), ring(RING_N100["30-ii"])], portSlug: PORT.N100_MACRO_125,
         notes: "With Sony FE 2.0× Teleconverter"
     },
 
     // ══════════════════════════════════════════════════════════════
     // Sigma 105mm f/2.8 DG DN Macro Art
     // ══════════════════════════════════════════════════════════════
-    { lens: S105MACRO, steps: [], portSlug: PORT.N100_MACRO_110 },
+    { lens: S105MACRO, steps: [gear(GEAR.SGE105_F)], portSlug: PORT.N100_MACRO_110 },
     {
-        lens: S105MACRO, steps: [A, ring(RING_N120["20-ii"])], portSlug: PORT.N120_MACRO_60,
+        lens: S105MACRO, steps: [gear(GEAR.SGE105_F), A, ring(RING_N120["20-ii"])], portSlug: PORT.N120_MACRO_60,
         notes: "N120 path via N100→N120 35.5mm Port Adaptor II"
     },
 
     // ══════════════════════════════════════════════════════════════
     // Sony FE 20-70mm f/4 G
     // ══════════════════════════════════════════════════════════════
-    { lens: FE2070, steps: [A, ring(RING_N120["35-ii"])], portSlug: PORT.N120_180MM },
-    { lens: FE2070, steps: [A, ring(RING_N120["40-ii"])], portSlug: PORT.N120_8_5_ACRYLIC },
+    { lens: FE2070, steps: [gear(GEAR.SFE2070_Z), A, ring(RING_N120["35-ii"])], portSlug: PORT.N120_180MM },
+    { lens: FE2070, steps: [gear(GEAR.SFE2070_Z), A, ring(RING_N120["40-ii"])], portSlug: PORT.N120_8_5_ACRYLIC },
 
     // ══════════════════════════════════════════════════════════════
     // Sigma 24-70mm f/2.8 DG DN Art
@@ -275,21 +318,21 @@ const PORT_CHART: ChartRow[] = [
     // ══════════════════════════════════════════════════════════════
     // Sony FE 24-50mm f/2.8 G
     // ══════════════════════════════════════════════════════════════
-    { lens: FE2450G, steps: [A, ring(RING_N120["50-ii"])], portSlug: PORT.N120_8_5_ACRYLIC },
+    { lens: FE2450G, steps: [gear(GEAR.SFE2450_Z), A, ring(RING_N120["50-ii"])], portSlug: PORT.N120_8_5_ACRYLIC },
     {
-        lens: FE2450G, steps: [ring(RING_N100["50-ii"]), ring(RING_N100["35-ii"])], portSlug: PORT.N100_180MM,
+        lens: FE2450G, steps: [gear(GEAR.SFE2450_Z), ring(RING_N100["50-ii"]), ring(RING_N100["35-ii"])], portSlug: PORT.N100_180MM,
         notes: "N100-only path: N100 Extension Ring 50 II + N100 Extension Ring 35 II (#37433 + #37431)"
     },
 
     // ══════════════════════════════════════════════════════════════
     // Sony FE 12-24mm f/2.8 GM  (#SEL1224GM)
     // ══════════════════════════════════════════════════════════════
-    { lens: SEL1224GM, steps: [A, ring(RING_N120["55-ii"])], portSlug: PORT.N120_230MM },
+    { lens: SEL1224GM, steps: [gear(GEAR.SFE1224GM_Z), gear(GEAR.SFE1224GM_F), A, ring(RING_N120["55-ii"])], portSlug: PORT.N120_230MM },
 
     // ══════════════════════════════════════════════════════════════
     // Sony FE 12-24mm f/4 G  (#SEL1224G)
     // ══════════════════════════════════════════════════════════════
-    { lens: SEL1224G, steps: [A, ring(RING_N120["40-ii"])], portSlug: PORT.N120_230MM },
+    { lens: SEL1224G, steps: [gear(GEAR.SFE1224_Z), A, ring(RING_N120["40-ii"])], portSlug: PORT.N120_230MM },
 
     // ══════════════════════════════════════════════════════════════
     // Sony FE 14mm f/1.8 GM
@@ -300,39 +343,38 @@ const PORT_CHART: ChartRow[] = [
     // ══════════════════════════════════════════════════════════════
     // Sony FE 16-35mm f/2.8 GM  (#SEL1635GM)
     // ══════════════════════════════════════════════════════════════
-    { lens: SEL1635GM, steps: [A, ring(RING_N120["60-ii"])], portSlug: PORT.N120_180MM },
-    { lens: SEL1635GM, steps: [A, ring(RING_N120["70-ii"])], portSlug: PORT.N120_230MM },
+    { lens: SEL1635GM, steps: [gear(GEAR.SFE1635GM_Z), A, ring(RING_N120["60-ii"])], portSlug: PORT.N120_180MM },
+    { lens: SEL1635GM, steps: [gear(GEAR.SFE1635GM_Z), A, ring(RING_N120["70-ii"])], portSlug: PORT.N120_230MM },
 
     // ══════════════════════════════════════════════════════════════
     // Sony FE 16-35mm f/2.8 GM II  (#SEL1635GM2)
     // ══════════════════════════════════════════════════════════════
-    { lens: SEL1635GM2, steps: [A, ring(RING_N120["50-ii"])], portSlug: PORT.N120_180MM },
-    { lens: SEL1635GM2, steps: [A, ring(RING_N120["60-ii"])], portSlug: PORT.N120_8_5_ACRYLIC },
+    { lens: SEL1635GM2, steps: [gear(GEAR.SFE1635GM2_Z), gear(GEAR.SFE1635GM2_F), A, ring(RING_N120["50-ii"])], portSlug: PORT.N120_180MM },
+    { lens: SEL1635GM2, steps: [gear(GEAR.SFE1635GM2_Z), gear(GEAR.SFE1635GM2_F), A, ring(RING_N120["60-ii"])], portSlug: PORT.N120_8_5_ACRYLIC },
 
     // ══════════════════════════════════════════════════════════════
     // Sony Vario-Tessar T* FE 16-35mm f/4 ZA OSS  (#SEL1635Z)
     // ══════════════════════════════════════════════════════════════
     // N100-only path: two different rings stacked
     {
-        lens: SEL1635Z, steps: [ring(RING_N100["30-ii"]), ring(RING_N100["50-ii"])],
+        lens: SEL1635Z, steps: [gear(GEAR.SE1635_Z), gear(GEAR.SE1635_F), ring(RING_N100["30-ii"]), ring(RING_N100["50-ii"])],
         portSlug: PORT.N100_180MM,
         notes: "N100-only path: N100 Extension Ring 30 II + N100 Extension Ring 50 II (#37430 + #37433)"
     },
-    // N120 paths
-    { lens: SEL1635Z, steps: [A, ring(RING_N120["50-ii"])], portSlug: PORT.N120_180MM },
-    { lens: SEL1635Z, steps: [A, ring(RING_N120["60-ii"])], portSlug: PORT.N120_230MM },
+    { lens: SEL1635Z, steps: [gear(GEAR.SE1635_Z), gear(GEAR.SE1635_F), A, ring(RING_N120["50-ii"])], portSlug: PORT.N120_180MM },
+    { lens: SEL1635Z, steps: [gear(GEAR.SE1635_Z), gear(GEAR.SE1635_F), A, ring(RING_N120["60-ii"])], portSlug: PORT.N120_230MM },
 
     // ══════════════════════════════════════════════════════════════
     // Sony FE PZ 16-35mm f/4 G
     // ══════════════════════════════════════════════════════════════
     {
-        lens: FEPZ1635, steps: [ring(RING_N100["50-ii"])], portSlug: PORT.N100_180MM,
+        lens: FEPZ1635, steps: [gear(GEAR.SFE1635_Z), ring(RING_N100["50-ii"])], portSlug: PORT.N100_180MM,
         notes: "Only compatible with N100 180mm port SN:A525549 onwards (#37129)"
     },
-    { lens: FEPZ1635, steps: [A, ring(RING_N120["25-ii"])], portSlug: PORT.N120_8_5_ACRYLIC },
-    { lens: FEPZ1635, steps: [A, ring(RING_N120["20-ii"])], portSlug: PORT.N120_180MM },
+    { lens: FEPZ1635, steps: [gear(GEAR.SFE1635_Z), A, ring(RING_N120["25-ii"])], portSlug: PORT.N120_8_5_ACRYLIC },
+    { lens: FEPZ1635, steps: [gear(GEAR.SFE1635_Z), A, ring(RING_N120["20-ii"])], portSlug: PORT.N120_180MM },
     {
-        lens: FEPZ1635, steps: [A, ring(RING_N120["35-ii"])], portSlug: PORT.N120_250MM,
+        lens: FEPZ1635, steps: [gear(GEAR.SFE1635_Z), A, ring(RING_N120["35-ii"])], portSlug: PORT.N120_250MM,
         notes: "250mm Optical Glass Wide Angle Port (Nauticam #18815)"
     },
 
@@ -507,6 +549,9 @@ async function main(): Promise<void> {
     const allAdaptors = await prisma.portAdapter.findMany({ select: { id: true, slug: true } });
     const adaptorMap = new Map(allAdaptors.map((a) => [a.slug, a.id]));
 
+    const allGears = await prisma.gear.findMany({ select: { id: true, slug: true } });
+    const gearMap = new Map(allGears.map((g) => [g.slug, g.id]));
+
     // ── 8. Process port chart rows ────────────────────────────────────────────
     let created = 0;
     let skippedDupe = 0;
@@ -547,7 +592,7 @@ async function main(): Promise<void> {
 
         // 8c. Resolve all steps and verify they exist in the DB
         let stepsFailed = false;
-        const resolvedSteps: Array<{ extensionRingId?: number; portAdapterId?: number; order: number }> = [];
+        const resolvedSteps: Array<{ extensionRingId?: number; portAdapterId?: number; gearId?: number; order: number }> = [];
 
         for (let i = 0; i < row.steps.length; i++) {
             const step = row.steps[i];
@@ -560,6 +605,15 @@ async function main(): Promise<void> {
                     break;
                 }
                 resolvedSteps.push({ portAdapterId: adaptorId, order: i });
+
+            } else if (step.kind === "gear") {
+                const gearId = gearMap.get(step.slug);
+                if (!gearId) {
+                    console.warn(`  ⚠ Gear slug not found: "${step.slug}" for lens "${row.lens.name}" — skipped`);
+                    stepsFailed = true;
+                    break;
+                }
+                resolvedSteps.push({ gearId, order: i });
 
             } else {
                 const ringId = ringMap.get(step.slug);
@@ -594,6 +648,10 @@ async function main(): Promise<void> {
                 if (s.portAdapterId) {
                     const a = allAdaptors.find((x) => x.id === s.portAdapterId);
                     return `adaptor:${a?.slug ?? s.portAdapterId}`;
+                }
+                if (s.gearId) {
+                    const g = allGears.find((x) => x.id === s.gearId);
+                    return `gear:${g?.slug ?? s.gearId}`;
                 }
                 const r = allRings.find((x) => x.id === s.extensionRingId);
                 return `ring:${r?.slug ?? s.extensionRingId}`;

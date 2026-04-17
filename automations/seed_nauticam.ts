@@ -694,6 +694,7 @@ async function main(): Promise<void> {
                     description: g.description || null,
                     priceAmount: g.priceAmount,
                     priceCurrency: g.priceCurrency,
+                    manufacturerId: nauticam.id,
                     productPhotos,
                     lenses: lensIds.size > 0 ? { set: lensConnect } : undefined,
                 },

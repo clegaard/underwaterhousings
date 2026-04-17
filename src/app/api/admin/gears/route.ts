@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json()
-        const { name, manufacturerId, sku, priceAmount, priceCurrency, productPhotos } = body
+        const { name, manufacturerId, sku, priceAmount, priceCurrency, productPhotos, lensIds } = body
 
         if (!name || !manufacturerId) {
             return NextResponse.json({ error: 'Name and manufacturer are required' }, { status: 400 })

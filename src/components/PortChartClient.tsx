@@ -509,6 +509,7 @@ interface SharedPickerProps {
     allPortAdapters: AdapterData[]
     allGears: GearData[]
     cameraMountFilter: string | null
+    gearAllowed: boolean
     onSelectLens: (id: number) => void
     onSelectStepType: (type: 'ring' | 'adapter' | 'port' | 'gear') => void
     onSelectRing: (id: number) => void
@@ -537,7 +538,7 @@ const ChartContext = createContext<ChartContextValue | null>(null)
    Inline Picker Popover (portal-based)
    ═══════════════════════════════════════════════ */
 
-function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensionRings, allPortAdapters, allGears, cameraMountFilter, onSelectLens, onSelectStepType, onSelectRing, onSelectAdapter, onSelectPort, onSelectGear, onClose }: {
+function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensionRings, allPortAdapters, allGears, cameraMountFilter, gearAllowed, onSelectLens, onSelectStepType, onSelectRing, onSelectAdapter, onSelectPort, onSelectGear, onClose }: {
     mode: PickerMode
     recomputeKey?: number
     allLenses: LensData[]
@@ -546,6 +547,7 @@ function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensio
     allPortAdapters: AdapterData[]
     allGears: GearData[]
     cameraMountFilter: string | null
+    gearAllowed: boolean
     onSelectLens: (id: number) => void
     onSelectStepType: (type: 'ring' | 'adapter' | 'port' | 'gear') => void
     onSelectRing: (id: number) => void
@@ -590,10 +592,12 @@ function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensio
     if (mode === 'step-type') {
         pickerEl = (
             <div ref={pickerRef} style={pickerStyle} className="bg-white rounded-xl shadow-xl border border-gray-200 p-1.5 w-44">
-                <button onClick={() => onSelectStepType('gear')} className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-teal-50 text-gray-800 flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-teal-200 border border-teal-400" />
-                    Gear
-                </button>
+                {gearAllowed && (
+                    <button onClick={() => onSelectStepType('gear')} className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-teal-50 text-gray-800 flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full bg-teal-200 border border-teal-400" />
+                        Gear
+                    </button>
+                )}
                 <button onClick={() => onSelectStepType('ring')} className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-purple-50 text-gray-800 flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-purple-200 border border-purple-400" />
                     Extension ring
@@ -1189,14 +1193,23 @@ export default function PortChartClient({
         finally { setLoading(false) }
     }
 
+    // Gear is only valid as a step when no non-gear steps (rings/adapters) have been added yet
+    const gearAllowed = useMemo(() => {
+        const sharedKeys = pickerContext?.sharedStepKeys ?? []
+        if (sharedKeys.some(k => k.startsWith('ring:') || k.startsWith('adapter:'))) return false
+        const draftSteps = draftChain?.steps ?? []
+        return !draftSteps.some(s => s.type === 'ring' || s.type === 'adapter')
+    }, [pickerContext, draftChain])
+
     const sharedPickerProps: SharedPickerProps = useMemo(() => ({
         allLenses, allPorts, allExtensionRings, allPortAdapters, allGears,
         cameraMountFilter: selectedMount,
+        gearAllowed,
         onSelectLens: handleSelectLens, onSelectStepType: handleSelectStepType,
         onSelectRing: handleSelectRing, onSelectAdapter: handleSelectAdapter,
         onSelectPort: handleSelectPort, onSelectGear: handleSelectGear, onClose: closePicker,
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }), [allLenses, allPorts, allExtensionRings, allPortAdapters, allGears, closePicker, draftChain, pickerContext, selectedMount])
+    }), [allLenses, allPorts, allExtensionRings, allPortAdapters, allGears, closePicker, draftChain, pickerContext, selectedMount, gearAllowed])
 
     const chartCtx: ChartContextValue = useMemo(() => ({
         isSuperuser,
