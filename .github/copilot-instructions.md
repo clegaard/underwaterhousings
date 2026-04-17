@@ -8,7 +8,7 @@ This is a Next.js 14 catalog application for underwater camera housings from man
 ### Scraping
 - Scrapers should extract prices in USD per default
 - Data sourced from manufacturer websites such as Nauticam and Sea Frogs
-- Scrapers are in `automations/` and use Cheerio for HTML parsing
+- Scrapers are in `automations/`
 - Output is structured JSON for easy Prisma seeding
 - Scrapers include logic to determine features like interchangeable ports based on title keywords and spec tables
 - Scraping is a one-time operation per manufacturer, with manual review of output before seeding

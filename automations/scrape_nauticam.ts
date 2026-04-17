@@ -127,6 +127,19 @@ interface ScrapedPortAdapter {
     sourceUrl: string;
 }
 
+interface ScrapedGear {
+    name: string;
+    slug: string;
+    sku: string;
+    description: string;
+    priceAmount: number | null;
+    priceCurrency: string;
+    productPhotos: string[];
+    /** Lens hints extracted from the gear product name (e.g. "Sony FE 20-70mm f/4 G"). */
+    lensHints: string[];
+    sourceUrl: string;
+}
+
 /**
  * A port chart entry derived from port product naming conventions.
  * Encodes a lens → port relationship (no extension ring steps — those must be
@@ -154,6 +167,7 @@ interface ScraperOutput {
     ports: ScrapedPort[];
     extensionRings: ScrapedExtensionRing[];
     portAdapters: ScrapedPortAdapter[];
+    gears: ScrapedGear[];
     /**
      * Lens → port combinations inferred from port product names.
      * Extension ring steps are not included here because that information is
@@ -328,10 +342,26 @@ function isFlatPort(name: string): boolean {
 // Port-type classification helpers
 // ---------------------------------------------------------------------------
 
-type PortKind = "port" | "extensionRing" | "portAdapter";
+type PortKind = "port" | "extensionRing" | "portAdapter" | "gear";
 
 function classifyPortProduct(title: string): PortKind {
     const lower = title.toLowerCase();
+    // Gears: match "zoom gear", "focus gear", "cinema gear" but NOT port names
+    // that merely mention a gear in passing (e.g. "Macro Port 45 with Zoom/Focus Knob")
+    if (
+        (/\b(?:zoom|focus|cinema|aperture|dslr)\s+gear/i.test(lower) ||
+            /\bgear\s+(?:for|set|system)\b/i.test(lower)) &&
+        !lower.includes("dome port") &&
+        !lower.includes("flat port") &&
+        !lower.includes("macro port") &&
+        !lower.includes("wide-angle") &&
+        !lower.includes("wide angle") &&
+        !lower.includes("extension ring") &&
+        !lower.includes("pancake port") &&
+        !lower.includes("conversion port")
+    ) {
+        return "gear";
+    }
     if (lower.includes("extension ring") || lower.includes("extension tube")) {
         return "extensionRing";
     }
@@ -579,6 +609,50 @@ function transformPortAdapter(product: ShopifyProduct): ScrapedPortAdapter {
     };
 }
 
+/**
+ * Extract lens hints from a gear product name.
+ * Nauticam gear names follow patterns like:
+ *   "SFE2070-Z Zoom Gear for Sony FE 20-70mm f/4 G"
+ *   "SC105-F Focus Gear for Sony FE 105mm f/2.8 STF GM OSS"
+ *   "Cinema Gear Set for Sigma 18-35mm f/1.8 DC HSM Art"
+ */
+function extractGearLensHints(name: string): string[] {
+    const forMatch = /(?:~?\s*for\s+)(.+)/i.exec(name);
+    if (!forMatch) return [];
+    let section = forMatch[1].trim();
+    // Strip parenthetical content
+    section = section.replace(/\([^)]*\)/g, "").replace(/\s{2,}/g, " ").trim();
+    // Split on " & " or " and " for multi-lens gears
+    const parts = section
+        .split(/\s*&\s*|\s+and\s+/i)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 4);
+    return parts;
+}
+
+function transformGear(product: ShopifyProduct): ScrapedGear {
+    const { title, handle, body_html, variants, images } = product;
+    const bodyHtml = body_html ?? "";
+
+    const sku = variants[0]?.sku ?? "";
+    const priceAmount = variants[0]?.price ? parseFloat(variants[0].price) : null;
+    const photos = images.map((img) => img.src).filter(Boolean);
+    const description = extractDescription(bodyHtml);
+    const lensHints = extractGearLensHints(title);
+
+    return {
+        name: title,
+        slug: handle,
+        sku,
+        description,
+        priceAmount,
+        priceCurrency: "USD",
+        productPhotos: photos,
+        lensHints,
+        sourceUrl: `${BASE_URL}/collections/ports/products/${handle}`,
+    };
+}
+
 // ---------------------------------------------------------------------------
 // Collect unique housing mounts
 // ---------------------------------------------------------------------------
@@ -722,11 +796,33 @@ async function main(): Promise<void> {
     const ports: ScrapedPort[] = [];
     const extensionRings: ScrapedExtensionRing[] = [];
     const portAdapters: ScrapedPortAdapter[] = [];
+    const gears: ScrapedGear[] = [];
+    const gearHandlesSeen = new Set<string>();
     for (const p of rawPorts) {
         const kind = classifyPortProduct(p.title);
         if (kind === "extensionRing") extensionRings.push(transformExtensionRing(p));
         else if (kind === "portAdapter") portAdapters.push(transformPortAdapter(p));
+        else if (kind === "gear") {
+            gears.push(transformGear(p));
+            gearHandlesSeen.add(p.handle);
+        }
         else ports.push(transformPort(p));
+    }
+
+    await sleep(delayMs);
+
+    // Fetch dedicated gear collections — these contain the bulk of all gear products
+    const GEAR_COLLECTIONS = ["zoom-gears", "focus-gears", "cinema-gears"] as const;
+    for (const col of GEAR_COLLECTIONS) {
+        console.log(`Fetching ${col} …`);
+        const raw = await fetchCollectionProducts(col, delayMs);
+        console.log(`  Total raw products in ${col}: ${raw.length}`);
+        for (const p of raw) {
+            if (gearHandlesSeen.has(p.handle)) continue; // already collected
+            gears.push(transformGear(p));
+            gearHandlesSeen.add(p.handle);
+        }
+        await sleep(delayMs);
     }
 
     const housingMounts = collectHousingMounts(housings, ports, extensionRings, portAdapters);
@@ -743,6 +839,7 @@ async function main(): Promise<void> {
     console.log(`  Ports scraped         : ${ports.length}`);
     console.log(`  Extension rings       : ${extensionRings.length}`);
     console.log(`  Port adapters         : ${portAdapters.length}`);
+    console.log(`  Gears                 : ${gears.length}`);
     console.log(`  Housing mounts found  : ${housingMounts.length}`);
     console.log(`  Unique cameras found  : ${cameraSet.size}`);
     console.log(`  Port chart entries    : ${portChartEntries.length}`);
@@ -772,6 +869,7 @@ async function main(): Promise<void> {
         ports,
         extensionRings,
         portAdapters,
+        gears,
         portChartEntries,
     };
 

@@ -13,7 +13,7 @@ const include = {
     lens: { include: { manufacturer: true, cameraMount: true } },
     port: true,
     steps: {
-        include: { extensionRing: true, portAdapter: true },
+        include: { extensionRing: true, portAdapter: true, gear: true },
         orderBy: { order: 'asc' as const },
     },
 }
@@ -21,6 +21,7 @@ const include = {
 interface StepInput {
     extensionRingId?: number
     portAdapterId?: number
+    gearId?: number
 }
 
 export async function GET(req: NextRequest) {
@@ -58,6 +59,7 @@ export async function POST(req: NextRequest) {
                 create: ((steps ?? []) as StepInput[]).map((s, idx) => ({
                     extensionRingId: s.extensionRingId ?? null,
                     portAdapterId: s.portAdapterId ?? null,
+                    gearId: s.gearId ?? null,
                     order: idx,
                 })),
             },
@@ -90,6 +92,7 @@ export async function PUT(req: NextRequest) {
                 create: ((steps ?? []) as StepInput[]).map((s, idx) => ({
                     extensionRingId: s.extensionRingId ?? null,
                     portAdapterId: s.portAdapterId ?? null,
+                    gearId: s.gearId ?? null,
                     order: idx,
                 })),
             },

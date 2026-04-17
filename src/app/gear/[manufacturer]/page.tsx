@@ -7,13 +7,14 @@ import HousingManufacturerHousingsClient from '@/components/HousingManufacturerH
 import PortManufacturerPortsClient from '@/components/PortManufacturerPortsClient'
 import ExtensionRingsClient from '@/components/ExtensionRingsClient'
 import PortAdaptersClient from '@/components/PortAdaptersClient'
+import GearsClient from '@/components/GearsClient'
 
 interface GearManufacturerPageProps {
     params: { manufacturer: string }
 }
 
 async function getData(slug: string) {
-    const [manufacturer, allCameras, allHousingMounts] = await Promise.all([
+    const [manufacturer, allCameras, allHousingMounts, allLenses] = await Promise.all([
         prisma.manufacturer.findUnique({
             where: { slug },
             include: {
@@ -33,14 +34,19 @@ async function getData(slug: string) {
                     include: { inputHousingMount: true, outputHousingMount: true },
                     orderBy: { name: 'asc' },
                 },
+                gears: {
+                    include: { lenses: { select: { id: true, name: true } } },
+                    orderBy: { name: 'asc' },
+                },
                 housingMounts: { orderBy: { name: 'asc' } },
-                _count: { select: { housings: true, ports: true, extensionRings: true, portAdapters: true } },
+                _count: { select: { housings: true, ports: true, extensionRings: true, portAdapters: true, gears: true } },
             },
         }),
         prisma.camera.findMany({ include: { brand: true }, orderBy: { name: 'asc' } }),
         prisma.housingMount.findMany({ orderBy: { name: 'asc' } }),
+        prisma.lens.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
     ])
-    return { manufacturer, allCameras, allHousingMounts }
+    return { manufacturer, allCameras, allHousingMounts, allLenses }
 }
 
 export async function generateMetadata({ params }: GearManufacturerPageProps) {
@@ -53,7 +59,7 @@ export async function generateMetadata({ params }: GearManufacturerPageProps) {
 }
 
 export default async function GearManufacturerPage({ params }: GearManufacturerPageProps) {
-    const [{ manufacturer, allCameras, allHousingMounts }, session] = await Promise.all([
+    const [{ manufacturer, allCameras, allHousingMounts, allLenses }, session] = await Promise.all([
         getData(params.manufacturer),
         auth(),
     ])
@@ -113,6 +119,18 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
         imageInfo: getPortImagePathWithFallback(a.productPhotos),
     }))
 
+    const gearsData = manufacturer.gears.map(g => ({
+        id: g.id,
+        name: g.name,
+        slug: g.slug,
+        sku: g.sku,
+        priceAmount: g.priceAmount ? parseFloat(g.priceAmount.toString()) : null,
+        priceCurrency: g.priceCurrency,
+        productPhotos: g.productPhotos,
+        imageInfo: getPortImagePathWithFallback(g.productPhotos),
+        lenses: g.lenses,
+    }))
+
     const cameras = allCameras.map(c => ({ id: c.id, name: c.name, brand: { name: c.brand.name } }))
     const housingMounts = manufacturer.housingMounts.map(m => ({ id: m.id, name: m.name, slug: m.slug }))
 
@@ -121,6 +139,7 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
         { id: 'ports', label: 'Ports', count: manufacturer._count.ports },
         { id: 'rings', label: 'Extension Rings', count: manufacturer._count.extensionRings },
         { id: 'adapters', label: 'Port Adapters', count: manufacturer._count.portAdapters },
+        { id: 'gears', label: 'Gears', count: manufacturer._count.gears },
     ].filter(t => t.count > 0 || isSuperuser)
 
     return (
@@ -174,6 +193,12 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
                                 <div>
                                     <div className="text-2xl font-bold text-amber-600">{manufacturer._count.portAdapters}</div>
                                     <div className="text-xs text-gray-500">Adapter{manufacturer._count.portAdapters !== 1 ? 's' : ''}</div>
+                                </div>
+                            )}
+                            {manufacturer._count.gears > 0 && (
+                                <div>
+                                    <div className="text-2xl font-bold text-teal-600">{manufacturer._count.gears}</div>
+                                    <div className="text-xs text-gray-500">Gear{manufacturer._count.gears !== 1 ? 's' : ''}</div>
                                 </div>
                             )}
                         </div>
@@ -250,6 +275,19 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
                             adapters={portAdaptersData}
                             manufacturer={{ id: manufacturer.id, name: manufacturer.name, slug: manufacturer.slug }}
                             housingMounts={allHousingMounts}
+                            isSuperuser={isSuperuser}
+                        />
+                    </section>
+                )}
+
+                {/* Gears section */}
+                {(gearsData.length > 0 || isSuperuser) && (
+                    <section id="gears">
+                        <h2 className="text-2xl font-bold text-blue-900 mb-6">Gears</h2>
+                        <GearsClient
+                            gears={gearsData}
+                            manufacturer={{ id: manufacturer.id, name: manufacturer.name, slug: manufacturer.slug }}
+                            allLenses={allLenses}
                             isSuperuser={isSuperuser}
                         />
                     </section>

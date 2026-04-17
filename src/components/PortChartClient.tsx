@@ -43,10 +43,16 @@ interface AdapterData {
     imageInfo: { src: string; fallback: string }
 }
 
+interface GearData {
+    id: number; name: string; slug: string
+    imageInfo: { src: string; fallback: string }
+}
+
 interface EntryStep {
     id: number; order: number
     extensionRing: { id: number; name: string; slug: string; lengthMm: number | null } | null
     portAdapter: { id: number; name: string; slug: string } | null
+    gear: { id: number; name: string; slug: string } | null
 }
 
 interface Entry {
@@ -67,6 +73,7 @@ interface Props {
     allPorts: PortData[]
     allExtensionRings: RingData[]
     allPortAdapters: AdapterData[]
+    allGears: GearData[]
     isSuperuser: boolean
 }
 
@@ -84,7 +91,7 @@ function focalLabel(l: { focalLengthTele: number; focalLengthWide: number | null
 
 interface TrieNode {
     key: string
-    type: 'ring' | 'adapter' | 'port'
+    type: 'ring' | 'adapter' | 'port' | 'gear'
     itemId: number
     lensId: number
     slug: string
@@ -103,7 +110,7 @@ interface LensTree {
     entryIds: number[]
 }
 
-function buildLensTrees(entries: Entry[], allPorts: PortData[], allRings: RingData[], allAdapters: AdapterData[]): LensTree[] {
+function buildLensTrees(entries: Entry[], allPorts: PortData[], allRings: RingData[], allAdapters: AdapterData[], allGears: GearData[] = []): LensTree[] {
     const lensMap = new Map<number, { lens: LensData; entries: Entry[] }>()
     for (const e of entries) {
         if (!lensMap.has(e.lens.id)) lensMap.set(e.lens.id, { lens: e.lens, entries: [] })
@@ -115,10 +122,21 @@ function buildLensTrees(entries: Entry[], allPorts: PortData[], allRings: RingDa
         const roots: TrieNode[] = []
 
         for (const entry of group.entries) {
-            const path: { key: string; type: 'ring' | 'adapter' | 'port'; itemId: number; slug: string; label: string; detail: string; imageInfo: { src: string; fallback: string } }[] = []
+            const path: { key: string; type: 'ring' | 'adapter' | 'port' | 'gear'; itemId: number; slug: string; label: string; detail: string; imageInfo: { src: string; fallback: string } }[] = []
 
             for (const s of entry.steps) {
-                if (s.extensionRing) {
+                if (s.gear) {
+                    const g = allGears.find(g => g.id === s.gear!.id)
+                    path.push({
+                        key: `gear:${s.gear.id}`,
+                        type: 'gear',
+                        itemId: s.gear.id,
+                        slug: s.gear.slug,
+                        label: s.gear.name,
+                        detail: 'Gear',
+                        imageInfo: g?.imageInfo ?? { src: '', fallback: '/housings/fallback.png' },
+                    })
+                } else if (s.extensionRing) {
                     const ring = allRings.find(r => r.id === s.extensionRing!.id)
                     path.push({
                         key: `ring:${s.extensionRing.id}`,
@@ -195,6 +213,7 @@ function buildDraftEntry(
     allLenses: LensData[],
     allRings: RingData[],
     allAdapters: AdapterData[],
+    allGears: GearData[],
 ): Entry | null {
     const lens = allLenses.find(l => l.id === chain.lensId)
     if (!lens) return null
@@ -205,10 +224,13 @@ function buildDraftEntry(
         const id = parseInt(idStr)
         if (type === 'ring') {
             const r = allRings.find(r => r.id === id)
-            return { id: -(100 + i), order: i, extensionRing: r ? { id: r.id, name: r.name, slug: r.slug, lengthMm: r.lengthMm } : null, portAdapter: null }
+            return { id: -(100 + i), order: i, extensionRing: r ? { id: r.id, name: r.name, slug: r.slug, lengthMm: r.lengthMm } : null, portAdapter: null, gear: null }
+        } else if (type === 'gear') {
+            const g = allGears.find(g => g.id === id)
+            return { id: -(100 + i), order: i, extensionRing: null, portAdapter: null, gear: g ? { id: g.id, name: g.name, slug: g.slug } : null }
         } else {
             const a = allAdapters.find(a => a.id === id)
-            return { id: -(100 + i), order: i, extensionRing: null, portAdapter: a ? { id: a.id, name: a.name, slug: a.slug } : null }
+            return { id: -(100 + i), order: i, extensionRing: null, portAdapter: a ? { id: a.id, name: a.name, slug: a.slug } : null, gear: null }
         }
     })
 
@@ -221,6 +243,9 @@ function buildDraftEntry(
             : null,
         portAdapter: s.type === 'adapter'
             ? (() => { const a = allAdapters.find(a => a.id === s.itemId); return a ? { id: a.id, name: a.name, slug: a.slug } : null })()
+            : null,
+        gear: s.type === 'gear'
+            ? (() => { const g = allGears.find(g => g.id === s.itemId); return g ? { id: g.id, name: g.name, slug: g.slug } : null })()
             : null,
     }))
 
@@ -454,16 +479,17 @@ const nodeStyleClasses: Record<string, string> = {
     ring: 'bg-purple-50 border-purple-200 text-purple-900',
     adapter: 'bg-amber-50 border-amber-200 text-amber-900',
     port: 'bg-emerald-50 border-emerald-200 text-emerald-900',
+    gear: 'bg-teal-50 border-teal-200 text-teal-900',
 }
 
 /* ═══════════════════════════════════════════════
    Chart context — provides handlers to custom nodes
    ═══════════════════════════════════════════════ */
 
-type PickerMode = 'lens' | 'step-type' | 'ring' | 'adapter' | 'port'
+type PickerMode = 'lens' | 'step-type' | 'ring' | 'adapter' | 'port' | 'gear'
 
 interface DraftStep {
-    type: 'ring' | 'adapter' | 'port'
+    type: 'ring' | 'adapter' | 'port' | 'gear'
     itemId: number
     label: string
     detail: string
@@ -481,12 +507,14 @@ interface SharedPickerProps {
     allPorts: PortData[]
     allExtensionRings: RingData[]
     allPortAdapters: AdapterData[]
+    allGears: GearData[]
     cameraMountFilter: string | null
     onSelectLens: (id: number) => void
-    onSelectStepType: (type: 'ring' | 'adapter' | 'port') => void
+    onSelectStepType: (type: 'ring' | 'adapter' | 'port' | 'gear') => void
     onSelectRing: (id: number) => void
     onSelectAdapter: (id: number) => void
     onSelectPort: (id: number) => void
+    onSelectGear: (id: number) => void
     onClose: () => void
 }
 
@@ -509,19 +537,21 @@ const ChartContext = createContext<ChartContextValue | null>(null)
    Inline Picker Popover (portal-based)
    ═══════════════════════════════════════════════ */
 
-function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensionRings, allPortAdapters, cameraMountFilter, onSelectLens, onSelectStepType, onSelectRing, onSelectAdapter, onSelectPort, onClose }: {
+function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensionRings, allPortAdapters, allGears, cameraMountFilter, onSelectLens, onSelectStepType, onSelectRing, onSelectAdapter, onSelectPort, onSelectGear, onClose }: {
     mode: PickerMode
     recomputeKey?: number
     allLenses: LensData[]
     allPorts: PortData[]
     allExtensionRings: RingData[]
     allPortAdapters: AdapterData[]
+    allGears: GearData[]
     cameraMountFilter: string | null
     onSelectLens: (id: number) => void
-    onSelectStepType: (type: 'ring' | 'adapter' | 'port') => void
+    onSelectStepType: (type: 'ring' | 'adapter' | 'port' | 'gear') => void
     onSelectRing: (id: number) => void
     onSelectAdapter: (id: number) => void
     onSelectPort: (id: number) => void
+    onSelectGear: (id: number) => void
     onClose: () => void
 }) {
     const [search, setSearch] = useState('')
@@ -560,6 +590,10 @@ function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensio
     if (mode === 'step-type') {
         pickerEl = (
             <div ref={pickerRef} style={pickerStyle} className="bg-white rounded-xl shadow-xl border border-gray-200 p-1.5 w-44">
+                <button onClick={() => onSelectStepType('gear')} className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-teal-50 text-gray-800 flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-teal-200 border border-teal-400" />
+                    Gear
+                </button>
                 <button onClick={() => onSelectStepType('ring')} className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-purple-50 text-gray-800 flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-purple-200 border border-purple-400" />
                     Extension ring
@@ -587,6 +621,9 @@ function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensio
         } else if (mode === 'adapter') {
             items = allPortAdapters.filter(a => !q || a.name.toLowerCase().includes(q))
                 .map(a => ({ id: a.id, primary: a.name, secondary: `${a.inputHousingMount?.slug.toUpperCase() ?? '?'} → ${a.outputHousingMount?.slug.toUpperCase() ?? '?'}` }))
+        } else if (mode === 'gear') {
+            items = allGears.filter(g => !q || g.name.toLowerCase().includes(q))
+                .map(g => ({ id: g.id, primary: g.name, secondary: '' }))
         } else if (mode === 'port') {
             items = allPorts.filter(p => !q || p.name.toLowerCase().includes(q))
                 .map(p => ({ id: p.id, primary: p.name, secondary: `${p.isFlatPort ? 'Flat' : 'Dome'}${p.housingMount ? ` · ${p.housingMount.slug.toUpperCase()}` : ''}` }))
@@ -595,6 +632,7 @@ function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensio
             if (mode === 'lens') onSelectLens(id)
             else if (mode === 'ring') onSelectRing(id)
             else if (mode === 'adapter') onSelectAdapter(id)
+            else if (mode === 'gear') onSelectGear(id)
             else if (mode === 'port') onSelectPort(id)
         }
 
@@ -606,7 +644,7 @@ function InlinePicker({ mode, recomputeKey = 0, allLenses, allPorts, allExtensio
                         type="text"
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        placeholder={`Search ${mode === 'lens' ? 'lenses' : mode === 'ring' ? 'extension rings' : mode === 'adapter' ? 'adapters' : 'ports'}…`}
+                        placeholder={`Search ${mode === 'lens' ? 'lenses' : mode === 'ring' ? 'extension rings' : mode === 'adapter' ? 'adapters' : mode === 'gear' ? 'gears' : 'ports'}…`}
                         className="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                     />
                 </div>
@@ -846,6 +884,7 @@ export default function PortChartClient({
     allPorts,
     allExtensionRings,
     allPortAdapters,
+    allGears,
     entries: initial,
     isSuperuser,
 }: Props) {
@@ -944,26 +983,26 @@ export default function PortChartClient({
     // ── Computed trees and layout ─────────────────────────────────
     const trees = useMemo(() => {
         if (!draftChain) {
-            return buildLensTrees(visibleEntries, allPorts, allExtensionRings, allPortAdapters)
+            return buildLensTrees(visibleEntries, allPorts, allExtensionRings, allPortAdapters, allGears)
         }
 
-        const draftEntry = buildDraftEntry(draftChain, allLenses, allExtensionRings, allPortAdapters)
+        const draftEntry = buildDraftEntry(draftChain, allLenses, allExtensionRings, allPortAdapters, allGears)
         const isNewLens = !visibleEntries.some(e => e.lens.id === draftChain.lensId)
 
         if (isNewLens) {
             // Keep the draft lens at the end to avoid disorienting re-sorts during building
-            const realTrees = buildLensTrees(visibleEntries, allPorts, allExtensionRings, allPortAdapters)
+            const realTrees = buildLensTrees(visibleEntries, allPorts, allExtensionRings, allPortAdapters, allGears)
             if (draftEntry) {
-                const draftTrees = buildLensTrees([draftEntry], allPorts, allExtensionRings, allPortAdapters)
+                const draftTrees = buildLensTrees([draftEntry], allPorts, allExtensionRings, allPortAdapters, allGears)
                 return [...realTrees, ...draftTrees]
             }
             return realTrees
         } else {
             // Merge draft into existing tree for this lens
             const entriesToUse = draftEntry ? [...visibleEntries, draftEntry] : visibleEntries
-            return buildLensTrees(entriesToUse, allPorts, allExtensionRings, allPortAdapters)
+            return buildLensTrees(entriesToUse, allPorts, allExtensionRings, allPortAdapters, allGears)
         }
-    }, [visibleEntries, allPorts, allExtensionRings, allPortAdapters, draftChain, allLenses])
+    }, [visibleEntries, allPorts, allExtensionRings, allPortAdapters, allGears, draftChain, allLenses])
 
     const maxSteps = useMemo(
         () => Math.max(
@@ -1035,8 +1074,26 @@ export default function PortChartClient({
         setDraftChain({ lensId, branchPath: '', sharedStepKeys: [], steps: [] })
     }
 
-    function handleSelectStepType(type: 'ring' | 'adapter' | 'port') {
+    function handleSelectStepType(type: 'ring' | 'adapter' | 'port' | 'gear') {
         setPickerMode(type)
+    }
+
+    function handleSelectGear(gearId: number) {
+        const gear = allGears.find(g => g.id === gearId)
+        if (!gear || !pickerContext?.lensId) return
+
+        const step: DraftStep = {
+            type: 'gear', itemId: gearId,
+            label: gear.name,
+            detail: 'Gear',
+        }
+        const chain: DraftChain = (draftChain && pickerContext?.isDraftContinuation)
+            ? { ...draftChain, steps: [...draftChain.steps, step] }
+            : { lensId: pickerContext.lensId, branchPath: pickerContext.branchPath, sharedStepKeys: pickerContext.sharedStepKeys, steps: [step] }
+        setDraftChain(chain)
+        setPickerKey('draft:next')
+        setPickerMode('step-type')
+        setPickerContext({ lensId: chain.lensId, branchPath: chain.branchPath, sharedStepKeys: chain.sharedStepKeys, isDraftContinuation: true })
     }
 
     function handleSelectRing(ringId: number) {
@@ -1080,18 +1137,20 @@ export default function PortChartClient({
         if (!lensId) return
         setLoading(true)
 
-        const allSteps: { extensionRingId?: number; portAdapterId?: number }[] = []
+        const allSteps: { extensionRingId?: number; portAdapterId?: number; gearId?: number }[] = []
         const sharedKeys = draftChain?.sharedStepKeys ?? pickerContext?.sharedStepKeys ?? []
         for (const key of sharedKeys) {
             const [type, idStr] = key.split(':')
             const id = parseInt(idStr)
             if (type === 'ring') allSteps.push({ extensionRingId: id })
             else if (type === 'adapter') allSteps.push({ portAdapterId: id })
+            else if (type === 'gear') allSteps.push({ gearId: id })
         }
         if (draftChain) {
             for (const step of draftChain.steps) {
                 if (step.type === 'ring') allSteps.push({ extensionRingId: step.itemId })
                 else if (step.type === 'adapter') allSteps.push({ portAdapterId: step.itemId })
+                else if (step.type === 'gear') allSteps.push({ gearId: step.itemId })
             }
         }
 
@@ -1109,8 +1168,8 @@ export default function PortChartClient({
                     id: data.id,
                     lens,
                     port: port ? { id: port.id, name: port.name, slug: port.slug, isFlatPort: port.isFlatPort, productPhotos: port.productPhotos, imageInfo: port.imageInfo } : null,
-                    steps: (data.steps ?? []).map((s: { id: number; order: number; extensionRing: EntryStep['extensionRing']; portAdapter: EntryStep['portAdapter'] }) => ({
-                        id: s.id, order: s.order, extensionRing: s.extensionRing, portAdapter: s.portAdapter,
+                    steps: (data.steps ?? []).map((s: { id: number; order: number; extensionRing: EntryStep['extensionRing']; portAdapter: EntryStep['portAdapter']; gear: EntryStep['gear'] }) => ({
+                        id: s.id, order: s.order, extensionRing: s.extensionRing, portAdapter: s.portAdapter, gear: s.gear,
                     })),
                     notes: data.notes ?? null,
                     isRecommended: false,
@@ -1131,13 +1190,13 @@ export default function PortChartClient({
     }
 
     const sharedPickerProps: SharedPickerProps = useMemo(() => ({
-        allLenses, allPorts, allExtensionRings, allPortAdapters,
+        allLenses, allPorts, allExtensionRings, allPortAdapters, allGears,
         cameraMountFilter: selectedMount,
         onSelectLens: handleSelectLens, onSelectStepType: handleSelectStepType,
         onSelectRing: handleSelectRing, onSelectAdapter: handleSelectAdapter,
-        onSelectPort: handleSelectPort, onClose: closePicker,
+        onSelectPort: handleSelectPort, onSelectGear: handleSelectGear, onClose: closePicker,
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }), [allLenses, allPorts, allExtensionRings, allPortAdapters, closePicker, draftChain, pickerContext, selectedMount])
+    }), [allLenses, allPorts, allExtensionRings, allPortAdapters, allGears, closePicker, draftChain, pickerContext, selectedMount])
 
     const chartCtx: ChartContextValue = useMemo(() => ({
         isSuperuser,
@@ -1182,6 +1241,7 @@ export default function PortChartClient({
             {/* Legend */}
             <div className="flex items-center gap-5 mb-4 text-xs text-gray-500 flex-wrap">
                 <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-100 border border-blue-300" /> Lens</div>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-teal-100 border border-teal-300" /> Gear</div>
                 <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-purple-100 border border-purple-300" /> Extension ring</div>
                 <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-amber-100 border border-amber-300" /> Adapter</div>
                 <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-emerald-100 border border-emerald-300" /> Port</div>

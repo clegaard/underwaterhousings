@@ -21,6 +21,7 @@ model Manufacturer {
     ports            Port[]
     extensionRings   ExtensionRing[]
     portAdapters     PortAdapter[]
+    gears            Gear[]
     portChartEntries PortChartEntry[]
     logoPath         String?
 
@@ -183,7 +184,7 @@ model Lens {
     minimumFocusDistanceWide Float? // Minimum focus distance at the wide end in metres
     isZoomLens               Boolean          @default(false) // True if it's a zoom lens, false if it's a prime lens
     focalLengthTele          Int // Focal length at the tele end in mm (prime lenses: sole focal length)
-    focalLengthWide          Int? // Focal length at the wide end in mm; null means prime lens
+    focalLengthWide          Int? // Focal length at the wide end in m m; null means prime lens
     maximumMagnification     Float? // Maximum reproduction ratio e.g. 0.30 for 0.30x; scraped from manufacturer specs
     priceAmount              Decimal?         @db.Decimal(10, 2)
     priceCurrency            String?          @default("USD")
@@ -199,8 +200,26 @@ model Lens {
     manufacturer             Manufacturer?    @relation(fields: [manufacturerId], references: [id])
     ports                    Port[]           @relation("LensToPort")
     portChartEntries         PortChartEntry[]
+    gears                    Gear[]           @relation("GearToLens")
 
     @@map("lenses")
+}
+
+model Gear {
+    id             Int                  @id @default(autoincrement())
+    name           String
+    slug           String               @unique
+    sku            String?
+    description    String?
+    priceAmount    Decimal?             @db.Decimal(10, 2)
+    priceCurrency  String?              @default("USD")
+    productPhotos  String[]
+    manufacturerId Int?
+    manufacturer   Manufacturer?        @relation(fields: [manufacturerId], references: [id])
+    lenses         Lens[]               @relation("GearToLens")
+    portChartSteps PortChartEntryStep[]
+
+    @@map("gears")
 }
 
 model User {
@@ -308,10 +327,12 @@ model PortChartEntryStep {
     portChartEntryId Int
     extensionRingId  Int?
     portAdapterId    Int?
+    gearId           Int?
     order            Int            @default(0)
     portChartEntry   PortChartEntry @relation(fields: [portChartEntryId], references: [id], onDelete: Cascade)
     extensionRing    ExtensionRing? @relation(fields: [extensionRingId], references: [id])
     portAdapter      PortAdapter?   @relation(fields: [portAdapterId], references: [id])
+    gear             Gear?          @relation(fields: [gearId], references: [id])
 
     @@map("port_chart_entry_steps")
 }

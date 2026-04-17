@@ -217,6 +217,18 @@ interface ScrapedPortAdapter {
     sourceUrl: string;
 }
 
+interface ScrapedGear {
+    name: string;
+    slug: string;
+    sku: string;
+    description: string;
+    priceAmount: number | null;
+    priceCurrency: string;
+    productPhotos: string[];
+    lensHints: string[];
+    sourceUrl: string;
+}
+
 interface ScrapedPortChartEntry {
     /** Lens name as extracted from the port product name. Used for fuzzy DB matching. */
     lensHint: string;
@@ -233,6 +245,7 @@ interface ScraperOutput {
     ports: ScrapedPort[];
     extensionRings: ScrapedExtensionRing[];
     portAdapters: ScrapedPortAdapter[];
+    gears?: ScrapedGear[];
     portChartEntries?: ScrapedPortChartEntry[];
 }
 
@@ -291,6 +304,7 @@ async function main(): Promise<void> {
     console.log(`  ${data.ports.length} ports`);
     console.log(`  ${(data.extensionRings ?? []).length} extension rings`);
     console.log(`  ${(data.portAdapters ?? []).length} port adapters`);
+    console.log(`  ${(data.gears ?? []).length} gears`);
     console.log(`  ${(data.portChartEntries ?? []).length} port chart entries`);
 
     if (s3Configured) {
@@ -622,7 +636,86 @@ async function main(): Promise<void> {
     console.log(`✅ Port adapters: ${adapterOk} upserted`);
 
     // ------------------------------------------------------------------
-    // 9. Seed port chart entries
+    // 9. Upsert gears
+    // ------------------------------------------------------------------
+    const rawGears = data.gears ?? [];
+
+    if (rawGears.length === 0) {
+        console.log("ℹ Gears: none in scraped data");
+    } else {
+        // Build a normalised lens-name index for fuzzy matching
+        const normaliseName = (s: string): string =>
+            s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+        const allLenses = await prisma.lens.findMany({ select: { id: true, name: true } });
+        const lensNormMap = new Map<string, number>();
+        for (const l of allLenses) {
+            lensNormMap.set(normaliseName(l.name), l.id);
+        }
+
+        let gearOk = 0;
+        let gearNoLens = 0;
+
+        for (const g of rawGears) {
+            // Resolve lens IDs from hints using fuzzy matching
+            const lensIds = new Set<number>();
+            for (const hint of g.lensHints ?? []) {
+                const normHint = normaliseName(hint);
+                let lensId = lensNormMap.get(normHint);
+                if (!lensId) {
+                    for (const [normName, id] of Array.from(lensNormMap)) {
+                        if (normName.includes(normHint) || normHint.includes(normName)) {
+                            lensId = id;
+                            break;
+                        }
+                    }
+                }
+                if (lensId) lensIds.add(lensId);
+            }
+
+            if (lensIds.size === 0) {
+                gearNoLens++;
+            }
+
+            process.stdout.write(`  Uploading photos for ${g.slug} `);
+            const productPhotos = await uploadProductPhotos(
+                g.productPhotos,
+                `gears/nauticam/${g.slug}`,
+            );
+            process.stdout.write(" ✓\n");
+
+            const lensConnect = Array.from(lensIds).map(id => ({ id }));
+
+            await prisma.gear.upsert({
+                where: { slug: g.slug },
+                update: {
+                    name: g.name,
+                    sku: g.sku || null,
+                    description: g.description || null,
+                    priceAmount: g.priceAmount,
+                    priceCurrency: g.priceCurrency,
+                    productPhotos,
+                    lenses: lensIds.size > 0 ? { set: lensConnect } : undefined,
+                },
+                create: {
+                    name: g.name,
+                    slug: g.slug,
+                    sku: g.sku || null,
+                    description: g.description || null,
+                    priceAmount: g.priceAmount,
+                    priceCurrency: g.priceCurrency,
+                    manufacturerId: nauticam.id,
+                    productPhotos,
+                    lenses: lensIds.size > 0 ? { connect: lensConnect } : undefined,
+                },
+            });
+            gearOk++;
+        }
+        console.log(`✅ Gears: ${gearOk} upserted (${gearNoLens} without a matching lens)`);
+    }
+
+    // ------------------------------------------------------------------
+    // 10. Seed port chart entries
     //    Derived from port product names in the scraped data.
     //    Each entry represents a direct lens → port pairing with no
     //    intermediate steps (extension rings must be added via admin UI).

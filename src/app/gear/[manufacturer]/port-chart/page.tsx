@@ -10,7 +10,7 @@ interface PageProps {
 }
 
 async function getData(slug: string) {
-    const [manufacturer, allLenses, allExtensionRings, allPortAdapters] = await Promise.all([
+    const [manufacturer, allLenses, allExtensionRings, allPortAdapters, allGears] = await Promise.all([
         prisma.manufacturer.findUnique({
             where: { slug },
             include: {
@@ -21,7 +21,7 @@ async function getData(slug: string) {
                         lens: { include: { manufacturer: true, cameraMount: true } },
                         port: true,
                         steps: {
-                            include: { extensionRing: true, portAdapter: true },
+                            include: { extensionRing: true, portAdapter: true, gear: true },
                             orderBy: { order: 'asc' },
                         },
                     },
@@ -41,8 +41,11 @@ async function getData(slug: string) {
             include: { inputHousingMount: true, outputHousingMount: true },
             orderBy: { name: 'asc' },
         }),
+        prisma.gear.findMany({
+            orderBy: { name: 'asc' },
+        }),
     ])
-    return { manufacturer, allLenses, allExtensionRings, allPortAdapters }
+    return { manufacturer, allLenses, allExtensionRings, allPortAdapters, allGears }
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -55,7 +58,7 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export default async function PortChartPage({ params }: PageProps) {
-    const [{ manufacturer, allLenses, allExtensionRings, allPortAdapters }, session] = await Promise.all([
+    const [{ manufacturer, allLenses, allExtensionRings, allPortAdapters, allGears }, session] = await Promise.all([
         getData(params.manufacturer),
         auth(),
     ])
@@ -99,6 +102,11 @@ export default async function PortChartPage({ params }: PageProps) {
                 id: s.portAdapter.id,
                 name: s.portAdapter.name,
                 slug: s.portAdapter.slug,
+            } : null,
+            gear: s.gear ? {
+                id: s.gear.id,
+                name: s.gear.name,
+                slug: s.gear.slug,
             } : null,
         })),
         notes: e.notes,
@@ -146,6 +154,13 @@ export default async function PortChartPage({ params }: PageProps) {
         imageInfo: getPortImagePathWithFallback(l.productPhotos),
     }))
 
+    const gearsData = allGears.map(g => ({
+        id: g.id,
+        name: g.name,
+        slug: g.slug,
+        imageInfo: getPortImagePathWithFallback(g.productPhotos),
+    }))
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
             {/* Header */}
@@ -185,6 +200,7 @@ export default async function PortChartPage({ params }: PageProps) {
                     allPorts={portsData}
                     allExtensionRings={extensionRingsData}
                     allPortAdapters={portAdaptersData}
+                    allGears={gearsData}
                     isSuperuser={isSuperuser}
                 />
             </div>

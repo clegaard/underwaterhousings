@@ -1,5 +1,5 @@
 {
-  "scrapedAt": "2026-04-15T05:14:53.857Z",
+  "scrapedAt": "2026-04-17T03:55:42.205Z",
   "sourceBaseUrl": "https://www.nauticam.com",
   "_notes": [
     "Prices are in USD (fetched via Shopify products.json from a US IP; geo-based pricing).",
@@ -72,17 +72,20 @@
       "cameraBrand": "Insta360",
       "interchangeablePort": false,
       "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/files/1_814958d6-dc9a-44bb-99ba-5454ac31d10a.jpg?v=1768483505",
-        "https://cdn.shopify.com/s/files/1/2305/1013/files/2_3ae9da7b-4b44-48ed-8b6d-3398e0fe712f.jpg?v=1768483504",
-        "https://cdn.shopify.com/s/files/1/2305/1013/files/3_61909c49-2e95-4076-99de-d60f2f0a5bb3.jpg?v=1768483503",
-        "https://cdn.shopify.com/s/files/1/2305/1013/files/4_4183224b-709d-4a54-9ba6-a3ac82ba29af.jpg?v=1768483504",
-        "https://cdn.shopify.com/s/files/1/2305/1013/files/6_8c471d38-397d-46a4-acc2-8612947615bb.jpg?v=1768483505",
-        "https://cdn.shopify.com/s/files/1/2305/1013/files/7_32882ad1-36b8-4a65-9747-3b83d9c16087.jpg?v=1768483503",
-        "https://cdn.shopify.com/s/files/1/2305/1013/files/8_9f8318ab-959b-42e7-a26e-8f4c22f5ffa3.jpg?v=1768483505",
-        "https://cdn.shopify.com/s/files/1/2305/1013/files/9_92e6a86a-b16e-4c88-a4ef-85aad78bceb4.jpg?v=1768483504",
-        "https://cdn.shopify.com/s/files/1/2305/1013/files/10_4d50405a-1662-481f-8ccc-a0f5fe973888.jpg?v=1768483504",
-        "https://cdn.shopify.com/s/files/1/2305/1013/files/11_4e818f4d-5d2c-41d8-a610-cabed2d2c36f.jpg?v=1768483505",
-        "https://cdn.shopify.com/s/files/1/2305/1013/files/12_f99f06ef-1fb1-4a27-a9c3-61af7af05704.jpg?v=1768483504"
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/1_881e86f7-dbf5-46cd-8d50-47cbd3d303cd.jpg?v=1776285240",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/2_e6d43976-02c2-4a49-97bf-ee0ff1b4634c.jpg?v=1776285240",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/3_e87e4b87-554e-456e-b461-9c58ec309997.jpg?v=1776285240",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/4_165e22de-4386-4e5e-825d-9a4231e11730.jpg?v=1776285240",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/5_efe3f9f8-015d-473a-a5cf-8262f64b52f5.jpg?v=1776285240",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/6_1eeb4ee3-e347-4654-8905-294adbc83f2a.jpg?v=1776285240",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/7_ee09f87e-23ad-49a4-9043-04f91b47a22b.jpg?v=1776285240",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/8_21665e60-825b-4f0d-9879-e9147d24e214.jpg?v=1776285240",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/9_5070ba43-4b0b-47ed-8c72-e9846523e465.jpg?v=1776285240",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/10_488b056d-c4f0-467c-a1db-2908f8704289.jpg?v=1776285239",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/11_1219916b-09e5-4efb-b284-443f827a32ad.jpg?v=1776285240",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/12_7c74e144-eab7-450b-afae-4cd54c5d54c0.jpg?v=1776285240",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/13_b2d1bcf3-507b-4781-b93d-009657036b0f.jpg?v=1776285240",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/14_d065a70c-f412-4a93-a034-373908729f0e.jpg?v=1776285240"
       ],
       "sourceUrl": "https://www.nauticam.com/collections/housings/products/nauticam-housing-for-insta360-x5"
     },
@@ -3105,22 +3108,6 @@
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-flat-port-45-with-focus-knob"
     },
     {
-      "name": "SGE105-F Focus Gear for Sigma 105mm f/2.8 DG DN Macro Art",
-      "slug": "sge105-f-focus-gear-for-sigma-105mm-f-2-8-dg-dn-macro-art",
-      "sku": "37166",
-      "description": "SGE105-F Focus Gear for Sigma 105mm f/2.8 DG DN Macro Art",
-      "priceAmount": 350,
-      "priceCurrency": "USD",
-      "depthRating": null,
-      "isFlatPort": true,
-      "hemisphereWidth": null,
-      "housingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/37166.jpg?v=1631606020"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sge105-f-focus-gear-for-sigma-105mm-f-2-8-dg-dn-macro-art"
-    },
-    {
       "name": "N120 Macro Port 80",
       "slug": "n120-macro-port-80",
       "sku": "18708",
@@ -3234,6 +3221,26 @@
         "https://cdn.shopify.com/s/files/1/2305/1013/files/37180N100MacroPort125forSonyFE100mmF2.8.jpg?v=1762280334"
       ],
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-macro-port-125-for-sony-fe-100mm-f2-8"
+    },
+    {
+      "name": "N120 140mm optical glass fisheye port with removable shade II",
+      "slug": "n120-140mm-optical-glass-fisheye-port-with-removable-shade-ii",
+      "sku": "18816",
+      "description": "N120 140mm optical glass fisheye port with removable shade II",
+      "priceAmount": 1600,
+      "priceCurrency": "USD",
+      "depthRating": null,
+      "isFlatPort": false,
+      "hemisphereWidth": null,
+      "housingMount": null,
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/1_d522caef-ddbe-4d5d-b716-bf1a7296aa5f.jpg?v=1776270678",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/2_096c821d-03a8-404f-bc75-659e510de0d6.jpg?v=1776270678",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/3_edc04802-6f5a-4b0c-a0be-ec12dd6fca8f.jpg?v=1776270678",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/4_47713f5b-5862-4aaf-ba18-474801b8f23c.jpg?v=1776270678",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/5_d665d3a2-6bf9-4072-ab80-a25b124fcbd3.jpg?v=1776270678"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n120-140mm-optical-glass-fisheye-port-with-removable-shade-ii"
     }
   ],
   "extensionRings": [
@@ -3827,20 +3834,6 @@
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/insect-eye-port-adaptor-n60-mr130-for-nikkor-af-d-60mm-macro-lens"
     },
     {
-      "name": "Adapter for Olympus 4/3 Port and Gear System",
-      "slug": "adaptor-for-olympus-4-3-port-and-gear-system",
-      "sku": "36051",
-      "description": "Allows for the use of Olympus Evolt 4/3 Lenses and Ports on Nauticam MFT systems.",
-      "priceAmount": 900,
-      "priceCurrency": "USD",
-      "inputHousingMount": null,
-      "outputHousingMount": null,
-      "productPhotos": [
-        "https://cdn.shopify.com/s/files/1/2305/1013/products/nau.36051_1.jpg?v=1562429095"
-      ],
-      "sourceUrl": "https://www.nauticam.com/collections/ports/products/adaptor-for-olympus-4-3-port-and-gear-system"
-    },
-    {
       "name": "N100 to N120 40mm Port Adapter ~with Zoom/Focus knob (for NA-A7)",
       "slug": "n100-to-n120-40mm-port-adaptor-with-zoom-focus-knob-for-na-a7",
       "sku": "37301",
@@ -3965,6 +3958,2733 @@
         "https://cdn.shopify.com/s/files/1/2305/1013/products/37304-1.jpg?v=1562429094"
       ],
       "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-to-n120-55mm-port-adapter-with-zoom-focus-knob"
+    }
+  ],
+  "gears": [
+    {
+      "name": "Adapter for Olympus 4/3 Port and Gear System",
+      "slug": "adaptor-for-olympus-4-3-port-and-gear-system",
+      "sku": "36051",
+      "description": "Allows for the use of Olympus Evolt 4/3 Lenses and Ports on Nauticam MFT systems.",
+      "priceAmount": 900,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/nau.36051_1.jpg?v=1562429095"
+      ],
+      "lensHints": [
+        "Olympus 4/3 Port",
+        "Gear System"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/adaptor-for-olympus-4-3-port-and-gear-system"
+    },
+    {
+      "name": "SGE105-F Focus Gear for Sigma 105mm f/2.8 DG DN Macro Art",
+      "slug": "sge105-f-focus-gear-for-sigma-105mm-f-2-8-dg-dn-macro-art",
+      "sku": "37166",
+      "description": "SGE105-F Focus Gear for Sigma 105mm f/2.8 DG DN Macro Art",
+      "priceAmount": 350,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37166.jpg?v=1631606020"
+      ],
+      "lensHints": [
+        "Sigma 105mm f/2.8 DG DN Macro Art"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sge105-f-focus-gear-for-sigma-105mm-f-2-8-dg-dn-macro-art"
+    },
+    {
+      "name": "C1018-Z Zoom Gear ~for Canon EF-S 10-18mm f/4.5-5.6 IS STM",
+      "slug": "c1018-z-zoom-gear-for-canon-ef-s-10-18mm-f-4-5-5-6-is-stm",
+      "sku": "19549",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 290,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19549_C1018-Z_Zoom_Gear.JPG?v=1562429159"
+      ],
+      "lensHints": [
+        "Canon EF-S 10-18mm f/4.5-5.6 IS STM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c1018-z-zoom-gear-for-canon-ef-s-10-18mm-f-4-5-5-6-is-stm"
+    },
+    {
+      "name": "C1022-Z Zoom Gear ~for Canon EF-S 10-22mm f/3.5-4.5 USM",
+      "slug": "c1022-z-for-canon-ef-s-10-22mm-f-3-5-4-5-usm",
+      "sku": "19525",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19525-C1022-Z-1024x739.png?v=1507209632"
+      ],
+      "lensHints": [
+        "Canon EF-S 10-22mm f/3.5-4.5 USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c1022-z-for-canon-ef-s-10-22mm-f-3-5-4-5-usm"
+    },
+    {
+      "name": "C1124-Z Zoom Gear ~for Canon EF 11-24mm f/4L USM",
+      "slug": "c1124-z-zoom-gear-for-canon-ef-11-24mm-f-4l-usm",
+      "sku": "19550",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19550_C1124-Z_Zoom_Gear.JPG?v=1562429159"
+      ],
+      "lensHints": [
+        "Canon EF 11-24mm f/4L USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c1124-z-zoom-gear-for-canon-ef-11-24mm-f-4l-usm"
+    },
+    {
+      "name": "C1635f4-Z Zoom Gear ~for Canon EF 16-35mm f/4L IS USM",
+      "slug": "c1635f4-z-zoom-gear-for-canon-ef-16-35mm-f-4l-is-usm",
+      "sku": "19548",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 310,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19548-C1635f4-Z-1024x739.jpg?v=1507212525"
+      ],
+      "lensHints": [
+        "Canon EF 16-35mm f/4L IS USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c1635f4-z-zoom-gear-for-canon-ef-16-35mm-f-4l-is-usm"
+    },
+    {
+      "name": "C1635II-Z Zoom Gear ~for Canon EF 16-35mm f/2.8L II USM",
+      "slug": "c1635ii-z-for-canon-ef-16-35mm-f-2-8l-ii-usm",
+      "sku": "19527",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19527-C1635II-Z-1024x682.jpg?v=1507217377"
+      ],
+      "lensHints": [
+        "Canon EF 16-35mm f/2.8L II USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c1635ii-z-for-canon-ef-16-35mm-f-2-8l-ii-usm"
+    },
+    {
+      "name": "C1635III-Z Zoom Gear ~for Canon EF 16-35mm f/2.8L III USM",
+      "slug": "c1635iii-z-zoom-gear-for-canon-ef-16-35mm-f-2-8l-iii-usm",
+      "sku": "19554",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 310,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19554_C1635III-Z.JPG?v=1562429160"
+      ],
+      "lensHints": [
+        "Canon EF 16-35mm f/2.8L III USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c1635iii-z-zoom-gear-for-canon-ef-16-35mm-f-2-8l-iii-usm"
+    },
+    {
+      "name": "C1855IS-Z Zoom Gear ~for Canon EF-S 18-55mm f3.5-5.6 IS",
+      "slug": "c1855is-z-for-canon-ef-s-18-55mm-f3-5-5-6-is",
+      "sku": "19532",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19532.jpg?v=1562429172"
+      ],
+      "lensHints": [
+        "Canon EF-S 18-55mm f3.5-5.6 IS"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c1855is-z-for-canon-ef-s-18-55mm-f3-5-5-6-is"
+    },
+    {
+      "name": "C1855ISSTM-Z Zoom Gear ~for Canon EF-S 18-55mm f/3.5-5.6 IS STM",
+      "slug": "c1855isstm-z-zoom-gear-for-canon-ef-s-18-55mm-f-3-5-5-6-is-stm",
+      "sku": "19547",
+      "description": "This product has been discontinued. There is limited stock available.",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19547-C1855ISSTM-Z-zoom-gear-1024x684.jpg?v=1507209033"
+      ],
+      "lensHints": [
+        "Canon EF-S 18-55mm f/3.5-5.6 IS STM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c1855isstm-z-zoom-gear-for-canon-ef-s-18-55mm-f-3-5-5-6-is-stm"
+    },
+    {
+      "name": "C24105-Z Zoom Gear ~for Canon EF 24-105mm f4L IS USM",
+      "slug": "c24105-z-z00m-gear-for-canon-ef-24-105mm-f4l-is-usm",
+      "sku": "19545",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 310,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19545_C24105-Z_Z00m_gear.JPG?v=1562429158"
+      ],
+      "lensHints": [
+        "Canon EF 24-105mm f4L IS USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c24105-z-z00m-gear-for-canon-ef-24-105mm-f4l-is-usm"
+    },
+    {
+      "name": "C24105II-Z Zoom Gear for Canon EF 24-105mm f/4L IS II USM Lens",
+      "slug": "c24105ii-z-zoom-gear-for-canon-ef-24-105mm-f-4l-is-ii-usm-lens",
+      "sku": "19562",
+      "description": "Zoom gears attach to a lens and allow for the use of the lens' zoom function when the camera is inside the housing. Requires a supported housing and port configuration. Please check the Port Chart for compatibility.",
+      "priceAmount": 340,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/coming_soon_1024x1024_70bb2785-6b37-43c9-b58a-4430fc5c3bbb.jpg?v=1562429140"
+      ],
+      "lensHints": [
+        "Canon EF 24-105mm f/4L IS II USM Lens"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c24105ii-z-zoom-gear-for-canon-ef-24-105mm-f-4l-is-ii-usm-lens"
+    },
+    {
+      "name": "C2470f4-Z Zoom Gear ~for Canon EF 24-70mm f/4L IS USM",
+      "slug": "c2470f4-z-zoom-gear-for-canon-ef-24-70mm-f-4l-is-usm",
+      "sku": "19544",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 310,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19544_C2470f4-Z_Zoom_gear.JPG?v=1562429157"
+      ],
+      "lensHints": [
+        "Canon EF 24-70mm f/4L IS USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c2470f4-z-zoom-gear-for-canon-ef-24-70mm-f-4l-is-usm"
+    },
+    {
+      "name": "C2470II-Z Zoom Gear ~for Canon EF 24-70mm f/2.8L II USM",
+      "slug": "c2470ii-z-zoom-gear-for-canon-ef-24-70mm-f-2-8l-ii-usm",
+      "sku": "19543",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19543_C2470II-Z_Zoom_gear.JPG?v=1562429121"
+      ],
+      "lensHints": [
+        "Canon EF 24-70mm f/2.8L II USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c2470ii-z-zoom-gear-for-canon-ef-24-70mm-f-2-8l-ii-usm"
+    },
+    {
+      "name": "C2870f3.5II-Z Zoom Gear ~for Canon EF 28-70mm f/3.5-4.5 II",
+      "slug": "c2870f3-5ii-z-zoom-gear-for-canon-ef-28-70mm-f-3-5-4-5-ii",
+      "sku": "19557",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 310,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_2402.jpg?v=1562429174"
+      ],
+      "lensHints": [
+        "Canon EF 28-70mm f/3.5-4.5 II"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c2870f3-5ii-z-zoom-gear-for-canon-ef-28-70mm-f-3-5-4-5-ii"
+    },
+    {
+      "name": "C2880f3.5II-Z Zoom Gear ~for Canon EF 28-80mm f/3.5-5.6 II",
+      "slug": "c2880f3-5ii-z-zoom-gear-for-canon-ef-28-80mm-f-3-5-5-6-ii",
+      "sku": "19558",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 310,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_2408.jpg?v=1562429173"
+      ],
+      "lensHints": [
+        "Canon EF 28-80mm f/3.5-5.6 II"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c2880f3-5ii-z-zoom-gear-for-canon-ef-28-80mm-f-3-5-5-6-ii"
+    },
+    {
+      "name": "C815-Z Zoom Gear ~for Canon EF 8-15mm f/4L Fisheye USM",
+      "slug": "c815-z-for-canon-ef-8-15mm-f-4l-fisheye-usm",
+      "sku": "19537",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19537.png?v=1562429154"
+      ],
+      "lensHints": [
+        "Canon EF 8-15mm f/4L Fisheye USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c815-z-for-canon-ef-8-15mm-f-4l-fisheye-usm"
+    },
+    {
+      "name": "Cinema Gear Set for Canon EF 28-80mm f/3.5-5.6 V USM",
+      "slug": "nauticam-cinema-gear-set-for-canon-ef-28-80mm-f-3-5-5-6-v-usm",
+      "sku": "16344",
+      "description": "Nauticam Cinema Gear Set for Canon EF 28-80mm f/3.5-5.6 V USM",
+      "priceAmount": 660,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16344-2.jpg?v=1668183731",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16344-1.jpg?v=1668183761"
+      ],
+      "lensHints": [
+        "Canon EF 28-80mm f/3.5-5.6 V USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nauticam-cinema-gear-set-for-canon-ef-28-80mm-f-3-5-5-6-v-usm"
+    },
+    {
+      "name": "Cinema Gear Set for Canon RF 14-35mm / 10-20mm f/4L IS USM",
+      "slug": "nauticam-cinema-gear-set-for-canon-rf-14-35mm-f-4l-is-usm",
+      "sku": "16342",
+      "description": "Nauticam Cinema Gear Set for Canon RF 14-35mm and 10-20mm f/4L IS USM",
+      "priceAmount": 780,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16342.jpg?v=1632921829"
+      ],
+      "lensHints": [
+        "Canon RF 14-35mm / 10-20mm f/4L IS USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nauticam-cinema-gear-set-for-canon-rf-14-35mm-f-4l-is-usm"
+    },
+    {
+      "name": "Cinema Gear Set for Canon RF 15-30mm F4.5-6.3 IS STM",
+      "slug": "nauticam-cinema-gear-set-for-canon-rf-15-30mm-f4-5-6-3-is-stm",
+      "sku": "16345",
+      "description": "Nauticam Cinema Gear Set for Canon RF 15-30mm F4.5-6.3 IS STM Instruction Manual PDF Download",
+      "priceAmount": 750,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16345.jpg?v=1679416039"
+      ],
+      "lensHints": [
+        "Canon RF 15-30mm F4.5-6.3 IS STM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nauticam-cinema-gear-set-for-canon-rf-15-30mm-f4-5-6-3-is-stm"
+    },
+    {
+      "name": "Cinema Gear Set for Canon RF 15-35mm F/2.8L IS",
+      "slug": "cinema-gear-set-for-canon-rf-15-35mm-f-2-8l-is",
+      "sku": "16341",
+      "description": "Cinema Gear Set for Canon RF 15-35mm F/2.8L IS",
+      "priceAmount": 780,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16341.jpg?v=1631603426"
+      ],
+      "lensHints": [
+        "Canon RF 15-35mm F/2.8L IS"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cinema-gear-set-for-canon-rf-15-35mm-f-2-8l-is"
+    },
+    {
+      "name": "Cinema Gear Set for Canon RF 24-70mm F/2.8L IS USM",
+      "slug": "nauticam-cinema-gear-set-for-canon-rf-24-70mm-f-2-8l-is-usm",
+      "sku": "16346",
+      "description": "Cinema Gear Set for Canon RF 24-70mm F/2.8L IS USM",
+      "priceAmount": 730,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/Nauticam-Cinema-Gear-Set-for-Canon-RF-24-70mm-F_2.8L-IS-USM-2.jpg?v=1681831140",
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/Nauticam-Cinema-Gear-Set-for-Canon-RF-24-70mm-F_2.8L-IS-USM.jpg?v=1681831140"
+      ],
+      "lensHints": [
+        "Canon RF 24-70mm F/2.8L IS USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nauticam-cinema-gear-set-for-canon-rf-24-70mm-f-2-8l-is-usm"
+    },
+    {
+      "name": "Cinema Gear Set for Canon RF 28-70mm f/2L USM",
+      "slug": "nauticam-cinema-gear-set-for-canon-rf-28-70mm-f-2l-usm",
+      "sku": "16343",
+      "description": "Nauticam Cinema Gear Set for Canon RF 28-70mm f/2L USM Instruction Manual PDF Download",
+      "priceAmount": 750,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16343.jpg?v=1665765318"
+      ],
+      "lensHints": [
+        "Canon RF 28-70mm f/2L USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nauticam-cinema-gear-set-for-canon-rf-28-70mm-f-2l-usm"
+    },
+    {
+      "name": "Cinema System Gear Set for Canon EF-S 18-55mm f/3.5-5.6 IS STM",
+      "slug": "nauticam-cinema-system-gear-set-for-canon-ef-s-18-55mm-f-3-5-5-6-is-stm",
+      "sku": "16330",
+      "description": "Cinema gear sets allow for manual control of a lens' zoom and focus functions when the camera is inside the housing. This gear is designed for the Canon EF-S 18-55mm f/3.5-5.6 IS STM lens. See the port chart for supported ports and extensions.",
+      "priceAmount": 650,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16330.png?v=1596815720"
+      ],
+      "lensHints": [
+        "Canon EF-S 18-55mm f/3.5-5.6 IS STM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nauticam-cinema-system-gear-set-for-canon-ef-s-18-55mm-f-3-5-5-6-is-stm"
+    },
+    {
+      "name": "Cinema System Gear Set ~for Tokina AT-X 11-20mm F2.8 PRO DX",
+      "slug": "nauticam-cinema-system-gear-set-for-tokina-at-x-11-20mm-f2-8-pro-dx",
+      "sku": "16328",
+      "description": "Zoom and focus gears allow access to the mechanical zoom/focus functions of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom/focus gear set is for the Tokina AT-X 11-20mm F2.8 PRO DX with the Nauticam Cinema System.",
+      "priceAmount": 650,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_2413.jpg?v=1562429102"
+      ],
+      "lensHints": [
+        "Tokina AT-X 11-20mm F2.8 PRO DX"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nauticam-cinema-system-gear-set-for-tokina-at-x-11-20mm-f2-8-pro-dx"
+    },
+    {
+      "name": "CM1545-Z Zoom Gear ~for Canon EF-M 15-45mm f/3.5-6.3 IS STM",
+      "slug": "cm1545-z-zoom-gear-for-canon-ef-m-15-45mm-f-3-5-6-3-is-stm",
+      "sku": "36195",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Canon EF-M 15-45mm f/3.5-6.3 IS STM lens.",
+      "priceAmount": 340,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_2404.jpg?v=1562429196"
+      ],
+      "lensHints": [
+        "Canon EF-M 15-45mm f/3.5-6.3 IS STM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cm1545-z-zoom-gear-for-canon-ef-m-15-45mm-f-3-5-6-3-is-stm"
+    },
+    {
+      "name": "CM1855-Z Zoom Gear ~for Canon EF-M 18-55mm",
+      "slug": "cm1855-z-for-canon-ef-m-18-55mm-zoom-gear",
+      "sku": "36191",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 340,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36191_CM1855-Z.JPG?v=1562429195"
+      ],
+      "lensHints": [
+        "Canon EF-M 18-55mm"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cm1855-z-for-canon-ef-m-18-55mm-zoom-gear"
+    },
+    {
+      "name": "CR1435-Z Zoom Gear for Canon RF 14-35mm / 10-20mm f/4L IS USM",
+      "slug": "cr1435-z-zoom-gear-for-canon-rf-14-35mm-f-4l-is-usm",
+      "sku": "19574",
+      "description": "CR1435-Z Zoom Gear for Canon RF 14-35mm and 10-20mm f/4L IS USM",
+      "priceAmount": 290,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19574.jpg?v=1767989551"
+      ],
+      "lensHints": [
+        "Canon RF 14-35mm / 10-20mm f/4L IS USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cr1435-z-zoom-gear-for-canon-rf-14-35mm-f-4l-is-usm"
+    },
+    {
+      "name": "CR1530-Z Zoom Gear for Canon RF 15-30mm f4.5-6.3 IS STM",
+      "slug": "cr1530-z-zoom-gear-for-canon-rf-15-30mm-f4-5-6-3-is-stm",
+      "sku": "19597",
+      "description": "CR1530-Z Zoom Gear for Canon RF 15-30mm f4.5-6.3 IS STM Instruction Manual PDF Download",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/CR1530-Z-Zoom-Gear-for-Canon-RF-15-30mm-f4.5-6.3-IS-STM.jpg?v=1681831099"
+      ],
+      "lensHints": [
+        "Canon RF 15-30mm f4.5-6.3 IS STM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cr1530-z-zoom-gear-for-canon-rf-15-30mm-f4-5-6-3-is-stm"
+    },
+    {
+      "name": "CR1845-Z Zoom Gear for Canon RF-S 18-45mm f/4.5-6.3 IS STM",
+      "slug": "cr1845-z-zoom-gear-for-canon-rf-s-18-45mm-f-4-5-6-3-is-stm",
+      "sku": "19596",
+      "description": "CR1845-Z Zoom Gear for Canon RF-S 18-45mm f/4.5-6.3 IS STM PDF User Manual",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19596.jpg?v=1665765702"
+      ],
+      "lensHints": [
+        "Canon RF-S 18-45mm f/4.5-6.3 IS STM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cr1845-z-zoom-gear-for-canon-rf-s-18-45mm-f-4-5-6-3-is-stm"
+    },
+    {
+      "name": "CR24105-Z Zoom Gear for Canon RF 24-105mm f/4 L IS USM Lens",
+      "slug": "cr25105-z-zoom-gear-for-canon-rf-24-105mm-f-4-l-is-usm-lens",
+      "sku": "19565",
+      "description": "PDF User Manual",
+      "priceAmount": 360,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19565CR24105-Z.jpg?v=1596817055"
+      ],
+      "lensHints": [
+        "Canon RF 24-105mm f/4 L IS USM Lens"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cr25105-z-zoom-gear-for-canon-rf-24-105mm-f-4-l-is-usm-lens"
+    },
+    {
+      "name": "CR24105f2.8-Z Zoom Gear for Canon RF 24-105mm F2.8L IS USM Z",
+      "slug": "cr24105f2-8-z-zoom-gear-for-canon-rf-24-105mm-f2-8l-is-usm-z",
+      "sku": "19600",
+      "description": "CR24105f2.8-Z Zoom Gear for Canon RF 24-105mm F2.8L IS USM Z",
+      "priceAmount": 370,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19600-1.jpg?v=1740673516",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19600-2.jpg?v=1740673516"
+      ],
+      "lensHints": [
+        "Canon RF 24-105mm F2.8L IS USM Z"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cr24105f2-8-z-zoom-gear-for-canon-rf-24-105mm-f2-8l-is-usm-z"
+    },
+    {
+      "name": "CR2450-Z Zoom Gear for Canon RF 24-50mm F4.5-6.3 IS STM",
+      "slug": "cr2450-z-zoom-gear-for-canon-rf-24-50mm-f4-5-6-3-is-stm",
+      "sku": "19598",
+      "description": "CR2450-Z Zoom Gear for Canon RF 24-50mm F4.5-6.3 IS STM",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19598.jpg?v=1683820745"
+      ],
+      "lensHints": [
+        "Canon RF 24-50mm F4.5-6.3 IS STM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cr2450-z-zoom-gear-for-canon-rf-24-50mm-f4-5-6-3-is-stm"
+    },
+    {
+      "name": "CR2850-Z Zoom Gear for Canon RF 24-50mm F4.5-6.3 IS STM with 28-50mm Limiter Ring",
+      "slug": "cr2850-z-zoom-gear-for-canon-rf-24-50mm-f4-5-6-3-is-stm-with-28-50mm-limitor-ring",
+      "sku": "19599",
+      "description": "Product Manual",
+      "priceAmount": 370,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19599.jpg?v=1775582187"
+      ],
+      "lensHints": [
+        "Canon RF 24-50mm F4.5-6.3 IS STM with 28-50mm Limiter Ring"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cr2850-z-zoom-gear-for-canon-rf-24-50mm-f4-5-6-3-is-stm-with-28-50mm-limitor-ring"
+    },
+    {
+      "name": "CR2870-Z Zoom Gear for Canon RF 28-70 f/2L USM",
+      "slug": "cr2870-z-zoom-gear-for-canon-rf-28-70-f-2l-usm",
+      "sku": "19595",
+      "description": "*It is highly recommended to send the housing to a service center to have the zoom gear wheel changed for use with this lens. CR2870-Z Zoom Gear for Canon RF 28-70 f/2L USM Instruction Manual",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19595.jpg?v=1665765660"
+      ],
+      "lensHints": [
+        "Canon RF 28-70 f/2L USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cr2870-z-zoom-gear-for-canon-rf-28-70-f-2l-usm"
+    },
+    {
+      "name": "EA1635-Z Zoom Gear for Sony LA-EA3 ~with SAL1635Z Vario-Sonnar T* 16-35mm F2.8 ZA SSM",
+      "slug": "ea1635-z-zoom-gear-for-sony-la-ea3-with-sal1635z-vario-sonnar-t-16-35mm-f2-8-za-ssm",
+      "sku": "37143",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 380,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37143_EA1635-Z.JPG?v=1562429135"
+      ],
+      "lensHints": [
+        "Sony LA-EA3 ~with SAL1635Z Vario-Sonnar T* 16-35mm F2.8 ZA SSM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/ea1635-z-zoom-gear-for-sony-la-ea3-with-sal1635z-vario-sonnar-t-16-35mm-f2-8-za-ssm"
+    },
+    {
+      "name": "Gear Set for Canon 28-70mm f3.5-4.5II to use with Sigma MC21 Converter and WACP",
+      "slug": "gear-set-for-canon-2870f3-5-4-5ii-to-use-with-sigma-mc21-converter-and-wacp",
+      "sku": "19725",
+      "description": "This gear set allows for manual focus and zoom when using the Canon 28-70mm F3.5-4.5II with the MC21 Converter on Panasonic L mount systems and the WACP.",
+      "priceAmount": 550,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19725_2.jpg?v=1578955033"
+      ],
+      "lensHints": [
+        "Canon 28-70mm f3.5-4.5II to use with Sigma MC21 Converter"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/gear-set-for-canon-2870f3-5-4-5ii-to-use-with-sigma-mc21-converter-and-wacp"
+    },
+    {
+      "name": "GF2035-Z for FUJIFILM GF 20-35mm f/4 R",
+      "slug": "gf2035-z-for-fujifilm-gf-20-35mm-f-4-r",
+      "sku": "19827",
+      "description": "GF2035-Z for FUJIFILM GF 20-35mm f/4 R PDF Instruction Manual Download This item is non-returnable, non-refundable, non-cancellable, and may be subject to extended lead times as it is manufactured on demand. We always do our best to meet trip deadlines so please advise us if you have a trip coming up!",
+      "priceAmount": 680,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19827.jpg?v=1714407063"
+      ],
+      "lensHints": [
+        "FUJIFILM GF 20-35mm f/4 R"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/gf2035-z-for-fujifilm-gf-20-35mm-f-4-r"
+    },
+    {
+      "name": "LS1635-Z  Zoom Gear ~for Leica Super-Vario-Elmar-SL 16-35mm f/3.5-4.5 ASPH",
+      "slug": "ls1635-z-zoom-gear-for-leica-super-vario-elmar-sl-16-35mm-f-3-5-4-5-asph",
+      "sku": "19722",
+      "description": "Zoom gears allow for manual control of a lens' zoom function when the camera is inside the housing. This gear is designed for the Leica Super-Vario-Elmar-SL 16-35mm f/3.5-4.5 ASPH lens. See the port chart for supported ports and extensions.",
+      "priceAmount": 290,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19722-1.png?v=1596817074"
+      ],
+      "lensHints": [
+        "Leica Super-Vario-Elmar-SL 16-35mm f/3.5-4.5 ASPH"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/ls1635-z-zoom-gear-for-leica-super-vario-elmar-sl-16-35mm-f-3-5-4-5-asph"
+    },
+    {
+      "name": "N100 X1855-Z Zoom Gear ~for Fujifilm FUJINON XF18-55 F2.8-4.0",
+      "slug": "n100-x1855-z-zoom-gear-for-fujifilm-fujinon-xf18-55-f2-8-4-0",
+      "sku": "36474",
+      "description": "Zoom gear for the Fujifilm FUJINON XF18-55 F2.8-4.0 lens allows manual zoom of the lens in the housing. See port chart for supported housings and extensions.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36474.png?v=1596817591"
+      ],
+      "lensHints": [
+        "Fujifilm FUJINON XF18-55 F2.8-4.0"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-x1855-z-zoom-gear-for-fujifilm-fujinon-xf18-55-f2-8-4-0"
+    },
+    {
+      "name": "N100 X816-Z Zoom Gear for FUJIFILM XF 8-16mm f2.8 R LM WR",
+      "slug": "n100-x816-z-zoom-gear-for-fujifilm-xf-8-16mm-f2-8-r-lm-wr",
+      "sku": "36477",
+      "description": "Zoom gears attach to a lens and allow for the use of the zoom function when the camera is inside the housing. Requires compatible housing and port configuration. See Port Chart for compatibility.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36477.jpg?v=1596817595"
+      ],
+      "lensHints": [
+        "FUJIFILM XF 8-16mm f2.8 R LM WR"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-x816-z-zoom-gear-for-fujifilm-xf-8-16mm-f2-8-r-lm-wr"
+    },
+    {
+      "name": "N100 XF1650-Z For Fujifilm XF 16-50mm f2.8-4.8 R LM WR Lens",
+      "slug": "xf1650-z-for-fujifilm-xf-16-50mm-f2-8-4-8-r-lm-wr-lens",
+      "sku": "36480",
+      "description": "N100 XF1650-Z Zoom Gear For Fujifilm XF 16-50mm f2.8-4.8 R LM WR Lens",
+      "priceAmount": 370,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/0Large.jpg?v=1723838684",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/1Large.jpg?v=1723838684",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/2Large.jpg?v=1723838684",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/3Large.jpg?v=1723838684",
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/4Large.jpg?v=1723838684"
+      ],
+      "lensHints": [
+        "Fujifilm XF 16-50mm f2.8-4.8 R LM WR Lens"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/xf1650-z-for-fujifilm-xf-16-50mm-f2-8-4-8-r-lm-wr-lens"
+    },
+    {
+      "name": "N1030-Z Zoom Gear ~for Nikon 1 Nikkor VR 10-30mm f/3.5-5.6",
+      "slug": "n1030-z-nikon-1-nikkor-vr-10-30mm-f-3-5-5-6",
+      "sku": "36152",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Nikon 1 Nikkor VR 10-30mm f/3.5-5.6 lens.",
+      "priceAmount": 180,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36152-N1030-Z-1024x683.jpg?v=1507210970"
+      ],
+      "lensHints": [
+        "Nikon 1 Nikkor VR 10-30mm f/3.5-5.6"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n1030-z-nikon-1-nikkor-vr-10-30mm-f-3-5-5-6"
+    },
+    {
+      "name": "N1224-Z Zoom Gear ~for Nikkor AF-S DX ED 12-24 F4G",
+      "slug": "n1224-z-for-nikkor-af-s-dx-ed-12-24-f4g",
+      "sku": "19125",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Nikon AF-S DX NIKKOR 12-24mm f/4G IF-ED lens.",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19125-N1224-Z-1024x683.jpg?v=1507208633"
+      ],
+      "lensHints": [
+        "Nikkor AF-S DX ED 12-24 F4G"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n1224-z-for-nikkor-af-s-dx-ed-12-24-f4g"
+    },
+    {
+      "name": "N1424-Z Zoom Gear for NIKKOR Z 14-24mm f/2.8 S",
+      "slug": "n1424-z-zoom-gear-for-nikkor-z-14-24mm-f-2-8-s",
+      "sku": "19160",
+      "description": "N1424-Z Zoom Gear for NIKKOR Z 14-24mm f/2.8 S",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19160.jpg?v=1631604728"
+      ],
+      "lensHints": [
+        "NIKKOR Z 14-24mm f/2.8 S"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n1424-z-zoom-gear-for-nikkor-z-14-24mm-f-2-8-s"
+    },
+    {
+      "name": "N1635-Z Zoom Gear ~for AF-S NIKKOR 16-35mm f/4G ED VR",
+      "slug": "n1635-z-for-af-s-nikkor-16-35mm-f-4g-ed-vr",
+      "sku": "19138",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the AF-S NIKKOR 16-35mm f/4G ED VR lens.",
+      "priceAmount": 310,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19138-N1635-Z-1024x683.jpg?v=1507207191"
+      ],
+      "lensHints": [
+        "AF-S NIKKOR 16-35mm f/4G ED VR"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n1635-z-for-af-s-nikkor-16-35mm-f-4g-ed-vr"
+    },
+    {
+      "name": "N1735-Z Zoom Gear ~for Nikkor 17-35mm F/2.8D ED",
+      "slug": "n1735-z-for-nikkor-17-35mm-f-2-8d-ed",
+      "sku": "19130",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Nikon Nikkor 17-35mm F/2.8D ED lens.",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19130-N1735-Z-1024x683.jpg?v=1507207616"
+      ],
+      "lensHints": [
+        "Nikkor 17-35mm F/2.8D ED"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n1735-z-for-nikkor-17-35mm-f-2-8d-ed"
+    },
+    {
+      "name": "N1835-Z Zoom Gear ~for Nikon AF-S NIKKOR 18-35mm f/3.5-4.5G ED",
+      "slug": "n1835-z-for-nikon-af-s-nikkor-18-35mm-f-3-5-4-5g-ed",
+      "sku": "19141",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Nikon AF-S NIKKOR 18-35mm f/3.5-4.5G ED lens.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19141_N1835-Zsmall.jpg?v=1562429169"
+      ],
+      "lensHints": [
+        "Nikon AF-S NIKKOR 18-35mm f/3.5-4.5G ED"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n1835-z-for-nikon-af-s-nikkor-18-35mm-f-3-5-4-5g-ed"
+    },
+    {
+      "name": "N1855 VR-Z Zoom Gear ~for Nikkor 18-55mm F3.5-5.6 VR lens",
+      "slug": "n1855-vr-z-for-nikkor-18-55mm-f3-5-5-6-vr-lens",
+      "sku": "19123",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Nikon AF-S DX NIKKOR 18-55mm f/3.5-5.6G VR lens.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19123-N1855VR-Z-1024x683.jpg?v=1507208825"
+      ],
+      "lensHints": [
+        "Nikkor 18-55mm F3.5-5.6 VR lens"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n1855-vr-z-for-nikkor-18-55mm-f3-5-5-6-vr-lens"
+    },
+    {
+      "name": "N1855II-Z Zoom Gear ~for Nikkor 18-55 mm F3.5-5.6 GII",
+      "slug": "n1855ii-z-for-nikkor-18-55-mm-f3-5-5-6-gii-lens",
+      "sku": "19124",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Nikkor 18-55 mm F3.5-5.6 GII lens.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19124_N1855II.jpg?v=1562429164"
+      ],
+      "lensHints": [
+        "Nikkor 18-55 mm F3.5-5.6 GII"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n1855ii-z-for-nikkor-18-55-mm-f3-5-5-6-gii-lens"
+    },
+    {
+      "name": "N1855VRII-Z Zoom Gear ~for Nikon AF-S DX NIKKOR 18-55mm f/3.5-5.6G VR II",
+      "slug": "n1855vrii-z-zoom-gear-for-nikon-af-s-dx-nikkor-18-55mm-f-3-5-5-6g-vr-ii",
+      "sku": "19144",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Nikon AF-S DX NIKKOR 18-55mm f/3.5-5.6G VR II lens.",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19144-N1855VRII-Z-1024x664.jpg?v=1507206701"
+      ],
+      "lensHints": [
+        "Nikon AF-S DX NIKKOR 18-55mm f/3.5-5.6G VR II"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n1855vrii-z-zoom-gear-for-nikon-af-s-dx-nikkor-18-55mm-f-3-5-5-6g-vr-ii"
+    },
+    {
+      "name": "N2485-Z Zoom Gear ~for AF-S NIKKOR 24-85mm f/3.5-4.5G ED VR",
+      "slug": "n2485-z-for-af-s-nikkor-24-85mm-f-3-5-4-5g-ed-vr",
+      "sku": "19139",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Nikon AF-S NIKKOR 24-85mm f/3.5-4.5G ED VR lens. This item is non-returnable, non-refundable, non-cancellable, and may be subject to extended lead times as it is manufactured on demand. We always do our best to meet trip deadlines so please advise us if you have a trip coming up!",
+      "priceAmount": 310,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19139-N2485-Z-1024x739.jpg?v=1507206089"
+      ],
+      "lensHints": [
+        "AF-S NIKKOR 24-85mm f/3.5-4.5G ED VR"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n2485-z-for-af-s-nikkor-24-85mm-f-3-5-4-5g-ed-vr"
+    },
+    {
+      "name": "N2870f3.5D-Z Zoom Gear ~for Nikon 28-70mm f/3.5-4.5D",
+      "slug": "n2870f3-5d-z-zoom-gear-for-nikon-28-70mm-f-3-5-4-5d",
+      "sku": "19148",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Nikon 28-70mm f/3.5-4.5D lens.",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19148-N2870f3.5D-Z-1024x683.jpg?v=1562429155"
+      ],
+      "lensHints": [
+        "Nikon 28-70mm f/3.5-4.5D"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n2870f3-5d-z-zoom-gear-for-nikon-28-70mm-f-3-5-4-5d"
+    },
+    {
+      "name": "N6.713-Z Zoom Gear ~for Nikon 1 NIKKOR VR 6.7-13mm f/3.5-5.6",
+      "slug": "n6-713-z-nikon-1-nikkor-vr-6-7-13mm-f-3-5-5-6-zoom-gear",
+      "sku": "36153",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Nikon 1 NIKKOR VR 6.7-13mm f/3.5-5.6 lens.",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36153-N6.713-Z-1024x683.jpg?v=1507208042"
+      ],
+      "lensHints": [
+        "Nikon 1 NIKKOR VR 6.7-13mm f/3.5-5.6"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n6-713-z-nikon-1-nikkor-vr-6-7-13mm-f-3-5-5-6-zoom-gear"
+    },
+    {
+      "name": "N815-Z Zoom Gear ~for Nikon AF-S Fisheye NIKKOR 8-15mm f/3.5-4.5E ED",
+      "slug": "n815-z-zoom-gear-for-nikon-af-s-fisheye-nikkor-8-15mm-f-3-5-4-5e-ed",
+      "sku": "19150",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Nikon AF-S Fisheye NIKKOR 8-15mm f/3.5-4.5E ED lens.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/JuanNauticam-1.jpg?v=1562429157"
+      ],
+      "lensHints": [
+        "Nikon AF-S Fisheye NIKKOR 8-15mm f/3.5-4.5E ED"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n815-z-zoom-gear-for-nikon-af-s-fisheye-nikkor-8-15mm-f-3-5-4-5e-ed"
+    },
+    {
+      "name": "NE2870-Z Zoom Gear for Techart Sony E to Nikon Z Autofocus Adaptor with Sony SEL2870 FE28-70mm F3.5-5.6 OSS",
+      "slug": "ne2870-z-zoom-gear-for-techart-sony-e-to-nikon-z-autofocus-adaptor-with-sony-sel2870-fe28-70mm-f3-5-5-6-oss",
+      "sku": "19158",
+      "description": "This zoom gear is designed to allow for manual zoom control of the Sony SEL2870 FE28-70mm F3.5-5.6 OSS lens when used with the Techart Sony E to Nikon Z mount adapter.",
+      "priceAmount": 300,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19158_2.jpg?v=1578954473"
+      ],
+      "lensHints": [
+        "Techart Sony E to Nikon Z Autofocus Adaptor with Sony SEL2870 FE28-70mm F3.5-5.6 OSS"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/ne2870-z-zoom-gear-for-techart-sony-e-to-nikon-z-autofocus-adaptor-with-sony-sel2870-fe28-70mm-f3-5-5-6-oss"
+    },
+    {
+      "name": "NZ1430-Z  Zoom Gear for Nikkor Z 14-30mm f4 S",
+      "slug": "nz1430-z-zoom-gear-for-nikkor-z-14-30mm-f4-s",
+      "sku": "19156",
+      "description": "NZ1430-Z Zoom Gear for Nikkor Z 14-30mm f4 S",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19156_1.jpg?v=1775586619"
+      ],
+      "lensHints": [
+        "Nikkor Z 14-30mm f4 S"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nz1430-z-zoom-gear-for-nikkor-z-14-30mm-f4-s"
+    },
+    {
+      "name": "NZ1430-Z Zoom Gear for Nikkor Z 24-70mm/14-30mm f4 S Lens",
+      "slug": "nz2470-z-zoom-gear-for-nikkor-z-24-70mm-f4-s-lens",
+      "sku": "19154",
+      "description": "Zoom gears allow for manual operation of the lens' zoom function inside the housing. Refer to the corresponding port chart to insure compatibility and proper orientation with extension rings and ports.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19154.jpg?v=1775582095"
+      ],
+      "lensHints": [
+        "Nikkor Z 24-70mm/14-30mm f4 S Lens"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nz2470-z-zoom-gear-for-nikkor-z-24-70mm-f4-s-lens"
+    },
+    {
+      "name": "NZ2450-Z Zoom Gear for NIKKOR Z 24-50mm f/4-6.3",
+      "slug": "nz2450-z-zoom-gear-for-nikkor-z-24-50mm-f-4-6-3",
+      "sku": "19163",
+      "description": "NZ2450-Z Zoom Gear for NIKKOR Z 24-50mm f/4-6.3 PDF Manual Download",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19163.jpg?v=1665765598"
+      ],
+      "lensHints": [
+        "NIKKOR Z 24-50mm f/4-6.3"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nz2450-z-zoom-gear-for-nikkor-z-24-50mm-f-4-6-3"
+    },
+    {
+      "name": "NZ2470II-Z Zoom Gear for Nikkor Z 24-70mm f2.8 S II",
+      "slug": "nz2470ii-z-zoom-gear-for-nikkor-z-24-70mm-f2-8-s-ii",
+      "sku": "19166",
+      "description": "NZ2470II-Z Zoom Gear for Nikkor Z 24-70mm f2.8 S II Instruction Manual PDF Download",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19166.jpg?v=1767989459"
+      ],
+      "lensHints": [
+        "Nikkor Z 24-70mm f2.8 S II"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nz2470ii-z-zoom-gear-for-nikkor-z-24-70mm-f2-8-s-ii"
+    },
+    {
+      "name": "NZ2850-Z Zoom Gear for NIKKOR Z 24-50mm f/4-6.3 with 28-50mm Limitor Ring",
+      "slug": "nz2850-z-zoom-gear-for-nikkor-z-24-50mm-f-4-6-3-with-28-50mm-limiter-ring",
+      "sku": "19165",
+      "description": "Instruction Manual",
+      "priceAmount": 370,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19165.jpg?v=1706030392"
+      ],
+      "lensHints": [
+        "NIKKOR Z 24-50mm f/4-6.3 with 28-50mm Limitor Ring"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nz2850-z-zoom-gear-for-nikkor-z-24-50mm-f-4-6-3-with-28-50mm-limiter-ring"
+    },
+    {
+      "name": "NZ2875-Z Zoom Gear for Nikkor Z 28-75mm f/2.8",
+      "slug": "nz2875-z-zoom-gear-for-nikkor-z-28-75mm-f-2-8",
+      "sku": "19162",
+      "description": "NZ2875-Z Zoom Gear for Nikkor Z 28-75mm f/2.8 Instruction Manual PDF Download",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19162.jpg?v=1665765562"
+      ],
+      "lensHints": [
+        "Nikkor Z 28-75mm f/2.8"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nz2875-z-zoom-gear-for-nikkor-z-28-75mm-f-2-8"
+    },
+    {
+      "name": "O1240-Z Zoom Gear ~for Olympus M.ZUIKO DIGITAL ED 12-40mm f/2.8 PRO",
+      "slug": "o1240-z-zoom-gear-for-olympus-m-zuiko-digital-ed-12-40mm-f-2-8-pro",
+      "sku": "36045",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Olympus M.ZUIKO DIGITAL ED 12-40mm f/2.8 PRO lens.",
+      "priceAmount": 290,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36045-O1240-Z-1024x683.jpg?v=1507206552"
+      ],
+      "lensHints": [
+        "Olympus M.ZUIKO DIGITAL ED 12-40mm f/2.8 PRO"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/o1240-z-zoom-gear-for-olympus-m-zuiko-digital-ed-12-40mm-f-2-8-pro"
+    },
+    {
+      "name": "O1245-Z Zoom Gear for Olympus M.Zuiko Digital 12-45mm f/4 Pro",
+      "slug": "o1245-z-zoom-gear-for-olympus-m-zuiko-digital-12-45mm-f-4-pro",
+      "sku": "36069",
+      "description": "Product Manual PDF",
+      "priceAmount": 220,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36069.jpg?v=1631605473"
+      ],
+      "lensHints": [
+        "Olympus M.Zuiko Digital 12-45mm f/4 Pro"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/o1245-z-zoom-gear-for-olympus-m-zuiko-digital-12-45mm-f-4-pro"
+    },
+    {
+      "name": "O1250-Z Zoom Gear ~for Olympus M.Zuiko 12-50mm F3.5-6.3 EZ",
+      "slug": "o1250-z-olympus-m-zuiko-12-50mm-f3-5-6-3-ez-zoom-gear",
+      "sku": "36147",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 780,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36147-O1250-Z-1024x683.jpg?v=1507205445"
+      ],
+      "lensHints": [
+        "Olympus M.Zuiko 12-50mm F3.5-6.3 EZ"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/o1250-z-olympus-m-zuiko-12-50mm-f3-5-6-3-ez-zoom-gear"
+    },
+    {
+      "name": "O1442EZ-Z Zoom Gear ~for Olympus M.ZUIKO DIGITAL ED 14-42mm F3.5-5.6 EZ",
+      "slug": "o1442ez-z-zoom-gear-for-olympus-m-zuiko-digital-ed-14-42mm-f3-5-5-6-ez",
+      "sku": "36047",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Olympus M.ZUIKO DIGITAL ED 14-42mm F3.5-5.6 EZ lens.",
+      "priceAmount": 220,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/nau.36047.jpg?v=1562429195"
+      ],
+      "lensHints": [
+        "Olympus M.ZUIKO DIGITAL ED 14-42mm F3.5-5.6 EZ"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/o1442ez-z-zoom-gear-for-olympus-m-zuiko-digital-ed-14-42mm-f3-5-5-6-ez"
+    },
+    {
+      "name": "O714-Z Zoom Gear ~for Olympus M.ZUIKO DIGITAL ED 7-14mm f/2.8 PRO",
+      "slug": "o714-z-for-olympus-m-zuiko-digital-ed-7-14mm-f-2-8-pro",
+      "sku": "36054",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Olympus M.ZUIKO DIGITAL ED 7-14mm f/2.8 PRO lens.",
+      "priceAmount": 270,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36054-O714-Z-1024x682.jpg?v=1507205001"
+      ],
+      "lensHints": [
+        "Olympus M.ZUIKO DIGITAL ED 7-14mm f/2.8 PRO"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/o714-z-for-olympus-m-zuiko-digital-ed-7-14mm-f-2-8-pro"
+    },
+    {
+      "name": "O825-Z Zoom Gear for Olympus M.Zuiko Digital ED 8-25mm f4 PRO",
+      "slug": "o825-z-zoom-gear-for-olympus-m-zuiko-digital-ed-8-25mm-f4-pro",
+      "sku": "36071",
+      "description": "O825-Z Zoom Gear for Olympus M.Zuiko Digital ED 8-25mm f4 PRO Instruction Manual PDF Download",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/36071.jpg?v=1692368571"
+      ],
+      "lensHints": [
+        "Olympus M.Zuiko Digital ED 8-25mm f4 PRO"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/o825-z-zoom-gear-for-olympus-m-zuiko-digital-ed-8-25mm-f4-pro"
+    },
+    {
+      "name": "P1235-Z Zoom Gear ~for Panasonic Lumix G X VARIO 12-35mm F2.8 ASPH. POWER O.I.S.",
+      "slug": "p1235-z-panasonic-lumix-g-x-vario-12-35mm-f2-8-asph-power-o-i-s-zoom-gear",
+      "sku": "36148",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Panasonic Lumix G X VARIO 12-35mm F2.8 ASPH. POWER O.I.S. lens. Instruction Manual",
+      "priceAmount": 220,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36148-P1235-Z-1024x683.jpg?v=1507202195"
+      ],
+      "lensHints": [
+        "Panasonic Lumix G X VARIO 12-35mm F2.8 ASPH. POWER O.I.S."
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/p1235-z-panasonic-lumix-g-x-vario-12-35mm-f2-8-asph-power-o-i-s-zoom-gear"
+    },
+    {
+      "name": "P1442-Z Zoom Gear ~for Panasonic Vario 14-42mm",
+      "slug": "p1442-z-panasonic-vario-14-42mm-zoom-gear",
+      "sku": "36141",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 230,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/P1442-Z-1024x683.jpg?v=1507203732"
+      ],
+      "lensHints": [
+        "Panasonic Vario 14-42mm"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/p1442-z-panasonic-vario-14-42mm-zoom-gear"
+    },
+    {
+      "name": "P1442II-Z zoom Gear ~for Panasonic LUMIX G VARIO 14-42mm F3.5-5.6 II ASPH MEGA O.I.S.",
+      "slug": "p1442ii-z-zoom-gear-for-panasonic-lumix-g-vario-14-42mm-f3-5-5-6-ii-asph-mega-o-i-s",
+      "sku": "36057",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Panasonic LUMIX G VARIO 14-42mm F3.5-5.6 II ASPH MEGA O.I.S. lens.",
+      "priceAmount": 200,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36057-P1442II-Z-1024x683.jpg?v=1507203908"
+      ],
+      "lensHints": [
+        "Panasonic LUMIX G VARIO 14-42mm F3.5-5.6 II ASPH MEGA O.I.S."
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/p1442ii-z-zoom-gear-for-panasonic-lumix-g-vario-14-42mm-f3-5-5-6-ii-asph-mega-o-i-s"
+    },
+    {
+      "name": "P1445-Z Zoom Gear ~for Panasonic G Vario 14-45 F/3.5-5.6 ASPH",
+      "slug": "p1445-z-for-panasonic-g-vario-14-45-f-3-5-5-6-asph",
+      "sku": "36053",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Panasonic LUMIX G VARIO 14-45mm F3.5-5.6 ASPH. MEGA O.I.S. lens.",
+      "priceAmount": 220,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36053-P1445-Z-1024x683.jpg?v=1507204001"
+      ],
+      "lensHints": [
+        "Panasonic G Vario 14-45 F/3.5-5.6 ASPH"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/p1445-z-for-panasonic-g-vario-14-45-f-3-5-5-6-asph"
+    },
+    {
+      "name": "PL1260-Z Zoom Gear ~for Panasonic LEICA DG VARIO-ELMARIT 12-60mm F2.8-4.0 ASPH. POWER O.I.S.",
+      "slug": "pl1260-z-zoom-gear-for-panasonic-leica-dg-vario-elmarit-12-60mm-f2-8-4-0-asph-power-o-i-s",
+      "sku": "36058",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Panasonic LEICA DG VARIO-ELMARIT 12-60mm F2.8-4.0 ASPH. POWER O.I.S. lens.",
+      "priceAmount": 250,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_2417.jpg?v=1562429179"
+      ],
+      "lensHints": [
+        "Panasonic LEICA DG VARIO-ELMARIT 12-60mm F2.8-4.0 ASPH. POWER O.I.S."
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/pl1260-z-zoom-gear-for-panasonic-leica-dg-vario-elmarit-12-60mm-f2-8-4-0-asph-power-o-i-s"
+    },
+    {
+      "name": "PL2460-Z Zoom Gear for Panasonic S 24-60mm f2.8",
+      "slug": "pl2460-z-zoom-gear-for-panasonic-s-24-60mm-f2-8",
+      "sku": "19733",
+      "description": "PL2460-Z Zoom Gear for Panasonic S 24-60mm f2.8",
+      "priceAmount": 300,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19733.jpg?v=1750903332"
+      ],
+      "lensHints": [
+        "Panasonic S 24-60mm f2.8"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/pl2460-z-zoom-gear-for-panasonic-s-24-60mm-f2-8"
+    },
+    {
+      "name": "PL2470-Z Zoom Gear for Panasonic Lumix S PRO 24-70 f/2.8",
+      "slug": "pl2470-z-zoom-gear-for-panasonic-lumix-s-pro-24-70-f-2-8",
+      "sku": "19730",
+      "description": "This item is non-returnable, non-refundable, non-cancellable, and may be subject to extended lead times as it is manufactured on demand. We always do our best to meet trip deadlines so please advise us if you have a trip coming up!",
+      "priceAmount": 300,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19730.jpg?v=1631605611"
+      ],
+      "lensHints": [
+        "Panasonic Lumix S PRO 24-70 f/2.8"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/pl2470-z-zoom-gear-for-panasonic-lumix-s-pro-24-70-f-2-8"
+    },
+    {
+      "name": "PL818-Z Zoom Gear ~for Panasonic Leica DG Vario Elmarit 8-18mm f/2.8-4.0 ASPH",
+      "slug": "pl818-z-zoom-gear-for-panasonic-leica-dg-vario-elmarit-8-18mm-f-2-8-4-0-asph",
+      "sku": "36062",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Panasonic Leica DG Vario Elmarit 8-18mm f/2.8-4.0 ASPH lens.",
+      "priceAmount": 350,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_2400.jpg?v=1562429129"
+      ],
+      "lensHints": [
+        "Panasonic Leica DG Vario Elmarit 8-18mm f/2.8-4.0 ASPH"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/pl818-z-zoom-gear-for-panasonic-leica-dg-vario-elmarit-8-18mm-f-2-8-4-0-asph"
+    },
+    {
+      "name": "PS24105-Z Zoom Gear for Panasonic Lumix S 24-105mm f4 Lens",
+      "slug": "ps24105-z-zoom-gear-for-panasonic-lumix-s-24-105mm-f4-lens",
+      "sku": "19721",
+      "description": "This zoom gear is designed to allow for manual zoom control of the Panasonic Lumix S 24-105mm f4 Lens.",
+      "priceAmount": 290,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19721_2.jpg?v=1578954846"
+      ],
+      "lensHints": [
+        "Panasonic Lumix S 24-105mm f4 Lens"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/ps24105-z-zoom-gear-for-panasonic-lumix-s-24-105mm-f4-lens"
+    },
+    {
+      "name": "RC1022-Z Zoom Gear ~for Canon EF-S 10-22mm f/3.5-4.5 USM",
+      "slug": "rc1022-z-canon-ef-s-10-22mm-f-3-5-4-5-usm-zoom-gear",
+      "sku": "16303",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Canon EF-S 10-22mm f/3.5-4.5 USM lens.",
+      "priceAmount": 380,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16303_RC1022-Z.JPG?v=1562429130"
+      ],
+      "lensHints": [
+        "Canon EF-S 10-22mm f/3.5-4.5 USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rc1022-z-canon-ef-s-10-22mm-f-3-5-4-5-usm-zoom-gear"
+    },
+    {
+      "name": "RC1635f4-Z Zoom Gear ~for Canon 16-35mm f/4L  IS USM",
+      "slug": "rc1635f4-z-zoom-gear-for-canon-16-35mm-f-4l-is-usm",
+      "sku": "16317",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Canon 16-35mm f/4L IS USM lens.",
+      "priceAmount": 380,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16317_RC1635f4-Z.JPG?v=1562429133"
+      ],
+      "lensHints": [
+        "Canon 16-35mm f/4L IS USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rc1635f4-z-zoom-gear-for-canon-16-35mm-f-4l-is-usm"
+    },
+    {
+      "name": "RC815-Z Zoom Gear ~for Canon EF 8-15mm f/4L Fisheye USM",
+      "slug": "rc815-z-canon-ef-8-15mm-f-4l-fisheye-usm-zoom-gear",
+      "sku": "16301",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Canon EF 8-15mm f/4L Fisheye USM lens.",
+      "priceAmount": 430,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16301_RC815-Z.JPG?v=1562429145"
+      ],
+      "lensHints": [
+        "Canon EF 8-15mm f/4L Fisheye USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rc815-z-canon-ef-8-15mm-f-4l-fisheye-usm-zoom-gear"
+    },
+    {
+      "name": "RF100-F for Canon RF 100mm f2.8L Macro IS USM V2",
+      "slug": "rf100-f-for-canon-rf-100mm-f2-8l-macro-is-usm-v2",
+      "sku": "19630",
+      "description": "RF100-F for Canon RF 100mm f2.8L Macro IS USM V2",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19630-2.jpg?v=1769182192"
+      ],
+      "lensHints": [
+        "Canon RF 100mm f2.8L Macro IS USM V2"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rf100-f-for-canon-rf-100mm-f2-8l-macro-is-usm-v2"
+    },
+    {
+      "name": "RF1535-Z Zoom Gear for Canon RF 15-35mm F/2.8L IS V2",
+      "slug": "rf1535-z-zoom-gear-for-canon-rf-15-35mm-f-2-8l-is-v2",
+      "sku": "19631",
+      "description": "RF1535-Z Zoom Gear for Canon RF 15-35mm F/2.8L IS V2",
+      "priceAmount": 290,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/1t_3UhT.jpg?v=1769883692"
+      ],
+      "lensHints": [
+        "Canon RF 15-35mm F/2.8L IS V2"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rf1535-z-zoom-gear-for-canon-rf-15-35mm-f-2-8l-is-v2"
+    },
+    {
+      "name": "RF24105f2.8-Z Zoom Gear for Canon RF 24-105mm F2.8L IS USM Z V2",
+      "slug": "rf24105f2-8-z-zoom-gear-for-canon-rf-24-105mm-f2-8l-is-usm-z-v2",
+      "sku": "19637",
+      "description": "RF24105f2.8-Z Zoom Gear for Canon RF 24-105mm F2.8L IS USM Z V2",
+      "priceAmount": 370,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/Nauticamcoming_soon_1024x1024_a99651eb-1c43-47c2-92c3-fca8f75155f7.jpg?v=1762616459"
+      ],
+      "lensHints": [
+        "Canon RF 24-105mm F2.8L IS USM Z V2"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rf24105f2-8-z-zoom-gear-for-canon-rf-24-105mm-f2-8l-is-usm-z-v2"
+    },
+    {
+      "name": "RF2450-Z Zoom Gear for Canon RF 24-50mm F4.5-6.3 IS STM V2",
+      "slug": "rf2450-z-zoom-gear-for-canon-rf-24-50mm-f4-5-6-3-is-stm-v2",
+      "sku": "19633",
+      "description": "RF2450-Z Zoom Gear for Canon RF 24-50mm F4.5-6.3 IS STM V2",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19633.jpg?v=1769181729"
+      ],
+      "lensHints": [
+        "Canon RF 24-50mm F4.5-6.3 IS STM V2"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rf2450-z-zoom-gear-for-canon-rf-24-50mm-f4-5-6-3-is-stm-v2"
+    },
+    {
+      "name": "RF2470-Z Zoom Gear for Canon RF 24-70mm F/2.8L IS V2",
+      "slug": "rf2470-z-zoom-gear-for-canon-rf-24-70mm-f-2-8l-is-v2",
+      "sku": "19636",
+      "description": "RF2470-Z Zoom Gear for Canon RF 24-70mm F/2.8L IS V2",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19636.jpg?v=1769182383"
+      ],
+      "lensHints": [
+        "Canon RF 24-70mm F/2.8L IS V2"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rf2470-z-zoom-gear-for-canon-rf-24-70mm-f-2-8l-is-v2"
+    },
+    {
+      "name": "RF2850-Z Zoom Gear for Canon RF 24-50mm F4.5-6.3 IS STM with 28-50mm Limitor Ring V2",
+      "slug": "rf2850-z-zoom-gear-for-canon-rf-24-50mm-f4-5-6-3-is-stm-with-28-50mm-limitor-ring-v2",
+      "sku": "19635",
+      "description": "RF2850-Z Zoom Gear for Canon RF 24-50mm F4.5-6.3 IS STM with 28-50mm Limitor Ring V2",
+      "priceAmount": 370,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19635.jpg?v=1769182339"
+      ],
+      "lensHints": [
+        "Canon RF 24-50mm F4.5-6.3 IS STM with 28-50mm Limitor Ring V2"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rf2850-z-zoom-gear-for-canon-rf-24-50mm-f4-5-6-3-is-stm-with-28-50mm-limitor-ring-v2"
+    },
+    {
+      "name": "RF714-Z Zoom Gear for Canon RF 7-14mm F2.8-3.5 STM",
+      "slug": "rf714-z-zoom-gear-for-canon-rf-7-14mm-f2-8-3-5-stm",
+      "sku": "19638",
+      "description": "RF714-Z Zoom Gear for Canon RF 7-14mm F2.8-3.5 STM",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/Nauticamcoming_soon_1024x1024_e8dbf4f7-bcb0-485a-bdc4-17e4fa244b3f.jpg?v=1773428854"
+      ],
+      "lensHints": [
+        "Canon RF 7-14mm F2.8-3.5 STM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rf714-z-zoom-gear-for-canon-rf-7-14mm-f2-8-3-5-stm"
+    },
+    {
+      "name": "RSC816-Z Zoom Gear ~for Sigma 8-16mm F4.5-5.6 DC HSM",
+      "slug": "rsc816-z-sigma-8-16mm-f4-5-5-6-dc-hsm-zoom-gear",
+      "sku": "16305",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sigma 8-16mm F4.5-5.6 DC HSM lens.",
+      "priceAmount": 320,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16305_RSC816-Z.JPG?v=1562429146"
+      ],
+      "lensHints": [
+        "Sigma 8-16mm F4.5-5.6 DC HSM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rsc816-z-sigma-8-16mm-f4-5-5-6-dc-hsm-zoom-gear"
+    },
+    {
+      "name": "RTC1017-Z Zoom Gear ~for Tokina AT-X 10-17mm F3.5-4.5 Fisheye DX",
+      "slug": "rtc1017-z-tokina-at-x-10-17mm-f3-5-4-5-fisheye-dx-zoom-gear",
+      "sku": "16307",
+      "description": "This product has been discontinued. There is limited stock available.",
+      "priceAmount": 330,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/nau.16307_1.jpg?v=1562429147"
+      ],
+      "lensHints": [
+        "Tokina AT-X 10-17mm F3.5-4.5 Fisheye DX"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rtc1017-z-tokina-at-x-10-17mm-f3-5-4-5-fisheye-dx-zoom-gear"
+    },
+    {
+      "name": "RTC1116-Z Zoom Gear ~for Tokina AT-X Pro 11-16mm F2.8 (IF) DX",
+      "slug": "rtc1116-z-tokina-at-x-pro-11-16mm-f2-8-if-dx-zoom-gear",
+      "sku": "16309",
+      "description": "This product has been discontinued. There is limited stock available.",
+      "priceAmount": 330,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16309_RTC1116-Z_434fb6ca-06eb-4d5a-9855-04a0d930410c.JPG?v=1562429147"
+      ],
+      "lensHints": [
+        "Tokina AT-X Pro 11-16mm F2.8 DX"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rtc1116-z-tokina-at-x-pro-11-16mm-f2-8-if-dx-zoom-gear"
+    },
+    {
+      "name": "SC1020-Z Zoom Gear ~for Sigma AF10-20mm F4-5.6 EX DC HSM",
+      "slug": "sc1020-z-for-sigma-af10-20mm-f4-5-6-ex-dc-hsm",
+      "sku": "19535",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Sigma 10-20mm F4-5.6 EX DC HSM lens.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19535_SC1020-Z.JPG?v=1562429173"
+      ],
+      "lensHints": [
+        "Sigma AF10-20mm F4-5.6 EX DC HSM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sc1020-z-for-sigma-af10-20mm-f4-5-6-ex-dc-hsm"
+    },
+    {
+      "name": "SC1424A-Z Zoom Gear for Sigma 14-24mm F2.8 DG HSM Art Lens",
+      "slug": "sc1424a-z-zoom-gear-for-sigma-14-24mm-f2-8-dg-hsm-art-lens",
+      "sku": "19564",
+      "description": "",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19564.jpg?v=1596817057"
+      ],
+      "lensHints": [
+        "Sigma 14-24mm F2.8 DG HSM Art Lens"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sc1424a-z-zoom-gear-for-sigma-14-24mm-f2-8-dg-hsm-art-lens"
+    },
+    {
+      "name": "SC1770-Z Zoom Gear ~for Sigma 17-70mm F2.8-4DC Macro",
+      "slug": "sc1770-z-for-sigma-17-70mm-f2-8-4dc-macro",
+      "sku": "19533",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sigma 17-70mm F2.8-4DC Macro lens.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19533_SC1770.jpg?v=1562429172"
+      ],
+      "lensHints": [
+        "Sigma 17-70mm F2.8-4DC Macro"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sc1770-z-for-sigma-17-70mm-f2-8-4dc-macro"
+    },
+    {
+      "name": "SC1770OS-Z Zoom Gear ~for Sigma 17-70mm F2.8-4DC Macro OS HSM",
+      "slug": "sc1770os-z-for-sigma-17-70mm-f2-8-4dc-macro-os-hsm",
+      "sku": "19534",
+      "description": "Limited stock is available. Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sigma 17-70mm F2.8-4DC Macro OS HSM (Canon mount) lens. Product Manual PDF",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19534.jpg?v=1562429172"
+      ],
+      "lensHints": [
+        "Sigma 17-70mm F2.8-4DC Macro OS HSM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sc1770os-z-for-sigma-17-70mm-f2-8-4dc-macro-os-hsm"
+    },
+    {
+      "name": "SC1835f1.8-Z Zoom Gear ~for Sigma 18-35mm F1.8 DC HSM | A",
+      "slug": "sc1835f1-8-z-zoom-gear-for-sigma-18-35mm-f1-8-dc-hsm-a",
+      "sku": "19552",
+      "description": "This product has been discontinued. There is limited stock available.",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19552_SC1835f1.8-Z.JPG?v=1562429159"
+      ],
+      "lensHints": [
+        "Sigma 18-35mm F1.8 DC HSM | A"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sc1835f1-8-z-zoom-gear-for-sigma-18-35mm-f1-8-dc-hsm-a"
+    },
+    {
+      "name": "SE1018-Z Zoom Gear ~for Sony E-Mount 10-18mm F4",
+      "slug": "se1018-z-for-sony-e-mount-10-18mm-f4-zoom-gear",
+      "sku": "36173",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sony E-Mount 10-18mm F4 lens.",
+      "priceAmount": 220,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37173.jpg?v=1665765863"
+      ],
+      "lensHints": [
+        "Sony E-Mount 10-18mm F4"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/se1018-z-for-sony-e-mount-10-18mm-f4-zoom-gear"
+    },
+    {
+      "name": "SE1020-Z Zoom Gear for Sony E 10-20mm f/4 PZ G Lens",
+      "slug": "se1020-z-zoom-gear-for-sony-e-10-20mm-f-4-pz-g-len",
+      "sku": "36176",
+      "description": "SE1020-Z Zoom Gear for Sony E 10-20mm f/4 PZ G Lens PDF Instruction Manual Download",
+      "priceAmount": 220,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36176.jpg?v=1665765830"
+      ],
+      "lensHints": [
+        "Sony E 10-20mm f/4 PZ G Lens"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/se1020-z-zoom-gear-for-sony-e-10-20mm-f-4-pz-g-len"
+    },
+    {
+      "name": "SE1635-Z Zoom Gear ~for Sony Vario-Tessar T* FE 16-35mm F4 ZA OSS",
+      "slug": "se1635-z-zoom-gear-for-sony-vario-tessar-t-fe-16-35mm-f4-za-oss",
+      "sku": "37145",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sony Vario-Tessar T* FE 16-35mm F4 ZA OSS lens.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37145_SE1635-Z.JPG?v=1562429185"
+      ],
+      "lensHints": [
+        "Sony Vario-Tessar T* FE 16-35mm F4 ZA OSS"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/se1635-z-zoom-gear-for-sony-vario-tessar-t-fe-16-35mm-f4-za-oss"
+    },
+    {
+      "name": "SE1650-PZ Zoom Gear ~for Sony E-Mount PZ 16-50mm F3.5-5.6 OSS",
+      "slug": "se1650-pz-for-sony-e-mount-pz-16-50mm-f3-5-5-6-oss-zoom-gear",
+      "sku": "36172",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sony SELP1650 E PZ 16-50mm F3.5-5.6 OSS lens.",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36172-SE1650-PZ-1024x682.jpg?v=1507128338"
+      ],
+      "lensHints": [
+        "Sony E-Mount PZ 16-50mm F3.5-5.6 OSS"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/se1650-pz-for-sony-e-mount-pz-16-50mm-f3-5-5-6-oss-zoom-gear"
+    },
+    {
+      "name": "SE1670-Z Zoom Gear ~for Sony Vario-Tessar T* E 16-70mm F4 ZA OSS",
+      "slug": "se1670-z-zoom-gear-for-sony-vario-tessar-t-e-16-70mm-f4-za-oss",
+      "sku": "36174",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sony Vario-Tessar T* E 16-70mm F4 ZA OSS lens.",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36174_SE1670-Z.JPG?v=1562429155"
+      ],
+      "lensHints": [
+        "Sony Vario-Tessar T* E 16-70mm F4 ZA OSS"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/se1670-z-zoom-gear-for-sony-vario-tessar-t-e-16-70mm-f4-za-oss"
+    },
+    {
+      "name": "SE2870-Z Zoom Gear ~for Sony FE 28-70mm F3.5-5.6 OSS",
+      "slug": "se2870-z-zoom-gear-for-sony-fe-28-70mm-f3-5-5-6-oss",
+      "sku": "37141",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sony SEL2870 FE 28-70mm F3.5-5.6 OSS lens.",
+      "priceAmount": 370,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37141_SE2870-Z.JPG?v=1562429127"
+      ],
+      "lensHints": [
+        "Sony FE 28-70mm F3.5-5.6 OSS"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/se2870-z-zoom-gear-for-sony-fe-28-70mm-f3-5-5-6-oss"
+    },
+    {
+      "name": "SFE1224-Z Zoom Gear ~for Sony SEL1224G FE 12-24mm F4 G",
+      "slug": "sfe1224-z-zoom-gear-for-sony-sel1224g-fe-12-24mm-f4-g",
+      "sku": "37153",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sony SEL1224G FE 12-24mm F4 G lens.",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/Juan_37153NauticamJuan.jpg?v=1562429186"
+      ],
+      "lensHints": [
+        "Sony SEL1224G FE 12-24mm F4 G"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sfe1224-z-zoom-gear-for-sony-sel1224g-fe-12-24mm-f4-g"
+    },
+    {
+      "name": "SFE1224GM-Z Zoom Gear for Sony SEL1224GM FE 12-24mm F2.8GM",
+      "slug": "sfe1224gm-z-zoom-gear-for-sony-sel1224gm-fe-12-24mm-f2-8gm",
+      "sku": "37161",
+      "description": "Zoom Gear for Sony SEL1224GM FE 12-24mm F2.8GM",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37161.jpg?v=1631606004"
+      ],
+      "lensHints": [
+        "Sony SEL1224GM FE 12-24mm F2.8GM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sfe1224gm-z-zoom-gear-for-sony-sel1224gm-fe-12-24mm-f2-8gm"
+    },
+    {
+      "name": "SFE1635-Z Zoom Gear for Sony FE PZ 16-35mm F4 G",
+      "slug": "sfe1635-z-zoom-gear-for-sony-fe-pz-16-35mm-f4-g",
+      "sku": "37172",
+      "description": "SFE1635-Z Zoom Gear for Sony FE PZ 16-35mm F4 G Instruction Manual PDF Download",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/37172.jpg?v=1775582342"
+      ],
+      "lensHints": [
+        "Sony FE PZ 16-35mm F4 G"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sfe1635-z-zoom-gear-for-sony-fe-pz-16-35mm-f4-g"
+    },
+    {
+      "name": "SFE1635GM-Z Zoom Gear ~for Sony SEL1635GM FE 16-35mm F2.8 GM",
+      "slug": "sfe1635gm-z-zoom-gear-for-sony-sel1635gm-fe-16-35mm-f2-8-gm",
+      "sku": "37155",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sony SEL1635GM FE 16-35mm F2.8 GM lens.",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/Juan_37155Nauticam.jpg?v=1562429187"
+      ],
+      "lensHints": [
+        "Sony SEL1635GM FE 16-35mm F2.8 GM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sfe1635gm-z-zoom-gear-for-sony-sel1635gm-fe-16-35mm-f2-8-gm"
+    },
+    {
+      "name": "SFE2070-Z Zoom Gear for Sony FE 20-70 F4 G",
+      "slug": "sfe2070-z-zoom-gear-for-sony-fe-20-70-f4-g",
+      "sku": "37174",
+      "description": "SFE2070-Z Zoom Gear for Sony FE 20-70 F4 G",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/37174.jpg?v=1690264656"
+      ],
+      "lensHints": [
+        "Sony FE 20-70 F4 G"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sfe2070-z-zoom-gear-for-sony-fe-20-70-f4-g"
+    },
+    {
+      "name": "SFE2450-Z Zoom Gear for Sony FE 24-50mm f/2.8G Lens",
+      "slug": "sfe2450-z-zoom-gear-for-sony-fe-24-50mm-f-2-8g-lens",
+      "sku": "37178",
+      "description": "SFE2450-Z Zoom Gear for Sony FE 24-50mm f/2.8G Lens",
+      "priceAmount": 310,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/coming_soon_1024x1024_ba9db92b-6338-47d5-9aef-ce52bc6b0ca0.webp?v=1721760502"
+      ],
+      "lensHints": [
+        "Sony FE 24-50mm f/2.8G Lens"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sfe2450-z-zoom-gear-for-sony-fe-24-50mm-f-2-8g-lens"
+    },
+    {
+      "name": "SFE2470GM-Z Zoom Gear ~for Sony SEL2470GM FE 24-70mm F2.8 GM",
+      "slug": "sfe2470gm-z-zoom-gear-for-sony-sel2470gm-fe-24-70mm-f2-8-gm",
+      "sku": "37151",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sony SEL2470GM FE 24-70mm F2.8 GM lens. Instruction Manual PDF Download",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37151-SFE2470GM-Z-1024x683.jpg?v=1507130388"
+      ],
+      "lensHints": [
+        "Sony SEL2470GM FE 24-70mm F2.8 GM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sfe2470gm-z-zoom-gear-for-sony-sel2470gm-fe-24-70mm-f2-8-gm"
+    },
+    {
+      "name": "SFE2470II-Z Zoom Gear for Sony FE 24-70 F2.8 GM II",
+      "slug": "sfe2470ii-z-zoom-gear-for-sony-fe-24-70-f2-8-gm-ii",
+      "sku": "37173",
+      "description": "SFE2470II-Z Zoom Gear for Sony FE 24-70 F2.8 GM II Instruction Manual PDF Download",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/37173_2acbe9ed-2771-46eb-9bd3-28188d2378fc.jpg?v=1687364990"
+      ],
+      "lensHints": [
+        "Sony FE 24-70 F2.8 GM II"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sfe2470ii-z-zoom-gear-for-sony-fe-24-70-f2-8-gm-ii"
+    },
+    {
+      "name": "SFE2860-Z Zoom Gear for Sony FE 28-60 F4-5.6",
+      "slug": "sfe2860-z-zoom-gear-for-sony-fe-28-60-f4-5-6",
+      "sku": "37163",
+      "description": "SFE2860-Z Zoom Gear for Sony FE 28-60 F4-5.6",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37163.jpg?v=1631606014"
+      ],
+      "lensHints": [
+        "Sony FE 28-60 F4-5.6"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sfe2860-z-zoom-gear-for-sony-fe-28-60-f4-5-6"
+    },
+    {
+      "name": "SFE2870-Z Zoom Gear for Sony FE 28-70 F2 GM",
+      "slug": "sfe2870-z-zoom-gear-for-sony-fe-28-70-f2-gm",
+      "sku": "37179",
+      "description": "Instruction Manual PDF Download",
+      "priceAmount": 290,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/37179.jpg?v=1769181806"
+      ],
+      "lensHints": [
+        "Sony FE 28-70 F2 GM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sfe2870-z-zoom-gear-for-sony-fe-28-70-f2-gm"
+    },
+    {
+      "name": "SN1224A-Z Zoom Gear ~for Sigma 12-24mm F4 DG HSM | Art",
+      "slug": "sn1224a-z-zoom-gear-for-sigma-12-24mm-f4-dg-hsm-art",
+      "sku": "19149",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sigma 12-24mm F4 DG HSM | Art lens.",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_2406.jpg?v=1562429157"
+      ],
+      "lensHints": [
+        "Sigma 12-24mm F4 DG HSM | Art"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sn1224a-z-zoom-gear-for-sigma-12-24mm-f4-dg-hsm-art"
+    },
+    {
+      "name": "SN1770-Z Zoom Gear ~for Sigma 17-70mm F2.8-4.5 DC Macro HSM",
+      "slug": "sn1770-z-for-sigma-17-70mm-f2-8-4-5-dc-macro-hsm",
+      "sku": "19132",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sigma 17-70mm F2.8-4.5 DC Macro HSM (Nikon mount) lens. This item is non-returnable, non-refundable, non-cancellable, and may be subject to extended lead times as it is manufactured on demand. We always do our best to meet trip deadlines so please advise us if you have a trip coming up!",
+      "priceAmount": 310,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19132_SN1770_144b5ab2-2e12-4e47-b630-583b845a5076.jpg?v=1562429166"
+      ],
+      "lensHints": [
+        "Sigma 17-70mm F2.8-4.5 DC Macro HSM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sn1770-z-for-sigma-17-70mm-f2-8-4-5-dc-macro-hsm"
+    },
+    {
+      "name": "SN1770OS-Z Zoom Gear ~for Sigma 17-70mm F2.8-4DC Macro OS HSM",
+      "slug": "sn1770os-z-for-sigma-17-70mm-f2-8-4dc-macro-os-hsm",
+      "sku": "19133",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sigma 17-70mm F2.8-4DC Macro OS HSM (Nikon mount) lens. Product Manual PDF",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19133-SN1770OS-Z-1024x683.jpg?v=1507200868"
+      ],
+      "lensHints": [
+        "Sigma 17-70mm F2.8-4DC Macro OS HSM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sn1770os-z-for-sigma-17-70mm-f2-8-4dc-macro-os-hsm"
+    },
+    {
+      "name": "SN1835f1.8-Z Zoom Gear ~for Sigma 18-35mm F1.8 DC HSM | A",
+      "slug": "sn1835f1-8-z-zoom-gear-for-sigma-18-35mm-f1-8-dc-hsm-a",
+      "sku": "19146",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sigma 18-35mm F1.8 DC HSM | A (Nikon mount) lens.",
+      "priceAmount": 300,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19146_SN1835f1.8-Z.JPG?v=1562429156"
+      ],
+      "lensHints": [
+        "Sigma 18-35mm F1.8 DC HSM | A"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sn1835f1-8-z-zoom-gear-for-sigma-18-35mm-f1-8-dc-hsm-a"
+    },
+    {
+      "name": "SN816-Z Zoom Gear ~for Sigma 8-16mm F4.5-5.6 DC HSM",
+      "slug": "sn816-z-for-sigma-8-16mm-f4-5-5-6-dc-hsm",
+      "sku": "19136",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Sigma 8-16mm F4.5-5.6 DC HSM lens.",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/nau.19536_1.jpg?v=1562429168"
+      ],
+      "lensHints": [
+        "Sigma 8-16mm F4.5-5.6 DC HSM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sn816-z-for-sigma-8-16mm-f4-5-5-6-dc-hsm"
+    },
+    {
+      "name": "SSF2470-Z Zoom Gear for Sigma 24-70mm F2.8 DG",
+      "slug": "ssf2470-z-zoom-gear-for-sigma-24-70mm-f2-8-dg",
+      "sku": "37171",
+      "description": "Zoom gears allow for the use of a lens' manual zoom function when used with supported housings and/or port extensions. Consult the Port Chart for more details. This zoom gear is for the Sigma 24-70mm F2.8 DG lens.",
+      "priceAmount": 290,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37171SSF2470-ZZoomGearforSigma24-70mmF2.8DG.jpg?v=1636562252"
+      ],
+      "lensHints": [
+        "Sigma 24-70mm F2.8 DG"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/ssf2470-z-zoom-gear-for-sigma-24-70mm-f2-8-dg"
+    },
+    {
+      "name": "TC1017-Z Zoom Gear ~for Tokina AT-X 10-17mm F3.5-4.5 Fisheye DX",
+      "slug": "tc1017-z-for-tokina-at-x-10-17mm-f3-5-4-5-fisheye-dx",
+      "sku": "19529",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Tokina AT-X 107 AF DX Fisheye AF 10-17mm f/3.5-4.5 (Canon mount) lens.",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19529_TC1017-Z.JPG?v=1562429189"
+      ],
+      "lensHints": [
+        "Tokina AT-X 10-17mm F3.5-4.5 Fisheye DX"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/tc1017-z-for-tokina-at-x-10-17mm-f3-5-4-5-fisheye-dx"
+    },
+    {
+      "name": "TC1116-Z Zoom Gear ~for Tokina AT-X Pro 11-16mm F2.8 (IF) DX",
+      "slug": "tc1116-z-for-tokina-at-x-pro-11-16mm-f2-8-if-dx",
+      "sku": "19530",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Tokina AT-X Pro 11-16mm F2.8 (IF) DX lens.",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19530_TC1116.jpg?v=1562429189"
+      ],
+      "lensHints": [
+        "Tokina AT-X Pro 11-16mm F2.8 DX"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/tc1116-z-for-tokina-at-x-pro-11-16mm-f2-8-if-dx"
+    },
+    {
+      "name": "TC1224-Z Zoom Gear ~for Tokina AT-X pro 12-24mm F4 (IF) DX",
+      "slug": "tc1224-z-for-tokina-at-x-pro-12-24mm-f4-if-dx",
+      "sku": "19531",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Tokina AT-X pro 12-24mm F4 (IF) DX lens.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19531_TC1224.jpg?v=1562429172"
+      ],
+      "lensHints": [
+        "Tokina AT-X pro 12-24mm F4 DX"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/tc1224-z-for-tokina-at-x-pro-12-24mm-f4-if-dx"
+    },
+    {
+      "name": "TN1017-Z Zoom Gear ~for Tokina AT-X 10-17mm F3.5-4.5 Fisheye DX",
+      "slug": "tn1017-z-for-tokina-at-x-10-17mm-f3-5-4-5-fisheye-dx",
+      "sku": "19127",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Tokina AT-X 107 AF DX Fisheye AF 10-17mm f/3.5-4.5 (Nikon mount) lens.",
+      "priceAmount": 310,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19127_TN1017.JPG?v=1562429187"
+      ],
+      "lensHints": [
+        "Tokina AT-X 10-17mm F3.5-4.5 Fisheye DX"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/tn1017-z-for-tokina-at-x-10-17mm-f3-5-4-5-fisheye-dx"
+    },
+    {
+      "name": "TN1017-Z+1.4 Zoom Gear ~for Tokina 10-17mm with Kenko 1.4x Teleplus Pro 300",
+      "slug": "tn1017-z-1-4-for-tokina-10-17mm-lens-with-kenko-1-4x-teleplus-pro-300",
+      "sku": "19227",
+      "description": "Zoom gears allow access to the mechanical zoom function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details. This zoom gear is for the Tokina 10-17mm lens with Kenko 1.4x Teleplus Pro 300 teleconverter.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19227_19629.jpg?v=1562429166"
+      ],
+      "lensHints": [
+        "Tokina 10-17mm with Kenko 1.4x Teleplus Pro 300"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/tn1017-z-1-4-for-tokina-10-17mm-lens-with-kenko-1-4x-teleplus-pro-300"
+    },
+    {
+      "name": "Z1424-Z Zoom Gear for Nikkor Z 14-24mm f/2.8 S (V2)",
+      "slug": "z1424-z-zoom-gear-for-nikkor-z-14-24mm-f-2-8-s",
+      "sku": "19202",
+      "description": "19202 Z1424-Z Zoom Gear for Nikkor Z 14-24mm f/2.8 S for NA-Z6III",
+      "priceAmount": 320,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19202.jpg?v=1731527172"
+      ],
+      "lensHints": [
+        "Nikkor Z 14-24mm f/2.8 S"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/z1424-z-zoom-gear-for-nikkor-z-14-24mm-f-2-8-s"
+    },
+    {
+      "name": "Z1430-Z Zoom Gear for Nikkor 14-30mm f4 S",
+      "slug": "z1430-z-zoom-gear-for-nikkor-14-30mm-f4-s",
+      "sku": "19203",
+      "description": "Z1430-Z Zoom Gear for Nikkor 14-30mm f4 S for NA-Z6III",
+      "priceAmount": 320,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19203.jpg?v=1731527204"
+      ],
+      "lensHints": [
+        "Nikkor 14-30mm f4 S"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/z1430-z-zoom-gear-for-nikkor-14-30mm-f4-s"
+    },
+    {
+      "name": "Z1430-ZII Zoom Gear for Nikkor 14-30mm f4 S (V3)",
+      "slug": "z1430-zii-zoom-gear-for-nikkor-14-30mm-f4-s-v3",
+      "sku": "19235",
+      "description": "Z1430-ZII Zoom Gear for Nikkor 14-30mm f4 S (V3)",
+      "priceAmount": 330,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19235.jpg?v=1767989235"
+      ],
+      "lensHints": [
+        "Nikkor 14-30mm f4 S"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/z1430-zii-zoom-gear-for-nikkor-14-30mm-f4-s-v3"
+    },
+    {
+      "name": "Z2450-Z Zoom Gear for Nikkor Z 24-50mm f/4-6.3",
+      "slug": "z2450-z-zoom-gear-for-nikkor-z-24-50mm-f-4-6-3",
+      "sku": "19201",
+      "description": "Z2450-Z Zoom Gear for Nikkor Z 24-50mm f/4-6.3 for NA-Z6III User Manual PDF Download",
+      "priceAmount": 320,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19201.jpg?v=1731527135"
+      ],
+      "lensHints": [
+        "Nikkor Z 24-50mm f/4-6.3"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/z2450-z-zoom-gear-for-nikkor-z-24-50mm-f-4-6-3"
+    },
+    {
+      "name": "Z2470-Z Zoom Gear for Nikkor Z 24-70mm f4",
+      "slug": "z2470-z-zoom-gear-for-nikkor-z-24-70mm-f4",
+      "sku": "19204",
+      "description": "Z2470-Z Zoom Gear for Nikkor Z 24-70mm f4 for NA-Z6III PDF User Manual",
+      "priceAmount": 320,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/coming_soon_1024x1024_c0dc7b9c-8b49-42e6-8047-089038e8a2de.webp?v=1725396017"
+      ],
+      "lensHints": [
+        "Nikkor Z 24-70mm f4"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/z2470-z-zoom-gear-for-nikkor-z-24-70mm-f4"
+    },
+    {
+      "name": "Zoom Gear for Sony FE 16-35mm F2.8 GM II",
+      "slug": "zoom-gear-for-sony-fe-16-35mm-f2-8-gm-ii",
+      "sku": "37175",
+      "description": "Zoom Gear for Sony FE 16-35mm F2.8 GM II PDF Instruction Manual Download",
+      "priceAmount": 310,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/37175.jpg?v=1701201219"
+      ],
+      "lensHints": [
+        "Sony FE 16-35mm F2.8 GM II"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/zoom-gear-for-sony-fe-16-35mm-f2-8-gm-ii"
+    },
+    {
+      "name": "ZS2860-Z Zoom Gear for Sony FE 28-60 F4-5.6 (with Megadap ETZ 21 Pro+) (V3)",
+      "slug": "zs2860-z-zoom-gear-for-sony-fe-28-60-f4-5-6-withmegadap-etz-21-pro-v3",
+      "sku": "19237",
+      "description": "ZS2860-Z Zoom Gear for Sony FE 28-60 F4-5.6 (with Megadap ETZ 21 Pro+) (V3)",
+      "priceAmount": 330,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19237.jpg?v=1769181581"
+      ],
+      "lensHints": [
+        "Sony FE 28-60 F4-5.6"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/zs2860-z-zoom-gear-for-sony-fe-28-60-f4-5-6-withmegadap-etz-21-pro-v3"
+    },
+    {
+      "name": "(Discontinued) P1235-F Focus Gear ~for Panasonic Lumix G X VARIO 12-35mm F2.8 ASPH. POWER O.I.S. (to use with 36164)",
+      "slug": "p1235-f-focus-gear-for-panasonic-lumix-g-x-vario-12-35mm-f2-8-asph-power-o-i-s-to-use-with-36164",
+      "sku": "36042",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Panasonic LUMIX G X Vario 12-35mm F2.8 ASPH. POWER O.I.S. lens. NOTE: This focus gear is designed to be used with SKU #36164 6\" Wide-Angle Dome Port with Focus Knob.",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36042-P1235-F-1024x739.jpg?v=1507202266"
+      ],
+      "lensHints": [
+        "Panasonic Lumix G X VARIO 12-35mm F2.8 ASPH. POWER O.I.S."
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/p1235-f-focus-gear-for-panasonic-lumix-g-x-vario-12-35mm-f2-8-asph-power-o-i-s-to-use-with-36164"
+    },
+    {
+      "name": "C100-F Focus Gear ~for Canon EF 100mm f/2.8 Macro USM",
+      "slug": "c100-f-for-canon-ef-100mm-f-2-8-macro-usm",
+      "sku": "19522",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Canon EF 100mm f/2.8 Macro IS USM lens.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19522_C100.jpg?v=1562429169"
+      ],
+      "lensHints": [
+        "Canon EF 100mm f/2.8 Macro USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c100-f-for-canon-ef-100mm-f-2-8-macro-usm"
+    },
+    {
+      "name": "C100IS-F Focus Gear ~for Canon EF 100mm f2.8L Macro IS USM",
+      "slug": "c100is-f-for-canon-ef-100mm-f2-8l-macro-is-usm",
+      "sku": "19523",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19523.jpg?v=1665765625"
+      ],
+      "lensHints": [
+        "Canon EF 100mm f2.8L Macro IS USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c100is-f-for-canon-ef-100mm-f2-8l-macro-is-usm"
+    },
+    {
+      "name": "C60-F Focus Gear ~for Canon EF-S 60mm f/2.8 Macro USM",
+      "slug": "c60-f-for-canon-ef-s-60mm-f-2-8-macro-usm",
+      "sku": "19521",
+      "description": "This product has been discontinued. Limited stock is available.",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19521-C60-F-1024x682.jpg?v=1507209952"
+      ],
+      "lensHints": [
+        "Canon EF-S 60mm f/2.8 Macro USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c60-f-for-canon-ef-s-60mm-f-2-8-macro-usm"
+    },
+    {
+      "name": "C815-F Focus Gear ~for Canon EF 8-15mm f/4L Fisheye USM (for use with 21230)",
+      "slug": "c815-f-focus-gear-for-canon-ef-8-15mm-f-4l-fisheye-usm-for-use-with-21230",
+      "sku": "19541",
+      "description": "Focus gears allow access to the mechanical manual focus function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 430,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19541_C815-F_focus_gear.JPG?v=1562429127"
+      ],
+      "lensHints": [
+        "Canon EF 8-15mm f/4L Fisheye USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/c815-f-focus-gear-for-canon-ef-8-15mm-f-4l-fisheye-usm-for-use-with-21230"
+    },
+    {
+      "name": "CMEF60-F Focus Gear ~for Canon EF-EOS M Adapter and EF-S 60mm f/2.8 Macro USM",
+      "slug": "cmef60-f-for-canon-ef-eos-m-adaptor-and-ef-s-60mm-f-2-8-macro-usm-focus-gear",
+      "sku": "36192",
+      "description": "Focus gears allow access to the mechanical manual focus function of supported lenses. Use of this gear may require the use of additional port extensions or adapters. Check the Port Chart for more details.",
+      "priceAmount": 340,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36192.jpg?v=1562429196"
+      ],
+      "lensHints": [
+        "Canon EF-EOS M Adapter",
+        "EF-S 60mm f/2.8 Macro USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cmef60-f-for-canon-ef-eos-m-adaptor-and-ef-s-60mm-f-2-8-macro-usm-focus-gear"
+    },
+    {
+      "name": "CR1535-F Focus Gear for Canon RF 15-35mm F/2.8L IS",
+      "slug": "cr1535-f-focus-gear-for-canon-rf-15-35mm-f-2-8l-is",
+      "sku": "19570",
+      "description": "This focus gear is designed to allow manual focus of the Canon RF 15-35mm F/2.8L IS lens. Requires supported housing.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19570_2.jpg?v=1578954663"
+      ],
+      "lensHints": [
+        "Canon RF 15-35mm F/2.8L IS"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cr1535-f-focus-gear-for-canon-rf-15-35mm-f-2-8l-is"
+    },
+    {
+      "name": "CRF100-F for Canon RF 100mm f2.8L Macro IS USM",
+      "slug": "crf100-f-for-canon-rf-100mm-f2-8l-macro-is-usm",
+      "sku": "19575",
+      "description": "CRF100-F for Canon RF 100mm f2.8L Macro IS USM Instruction Manual PDF Download",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19575_72479f5a-5660-460b-be45-9b992fb8a031.jpg?v=1649358306"
+      ],
+      "lensHints": [
+        "Canon RF 100mm f2.8L Macro IS USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/crf100-f-for-canon-rf-100mm-f2-8l-macro-is-usm"
+    },
+    {
+      "name": "LS1635-F  Focus Gear ~for Leica Super-Vario-Elmar-SL 16-35mm f/3.5-4.5 ASPH",
+      "slug": "ls1635-f-foucs-gear-for-leica-super-vario-elmar-sl-16-35mm-f-3-5-4-5-asph",
+      "sku": "19723",
+      "description": "This product has been discontinued. There is limited stock available.",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19723-1.png?v=1596817074"
+      ],
+      "lensHints": [
+        "Leica Super-Vario-Elmar-SL 16-35mm f/3.5-4.5 ASPH"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/ls1635-f-foucs-gear-for-leica-super-vario-elmar-sl-16-35mm-f-3-5-4-5-asph"
+    },
+    {
+      "name": "N100 X80-F Focus Gear ~for Fujifilm FUJINON XF 80mm f/2.8 R LM OIS WR Macro",
+      "slug": "n100-x89-f-focus-gear-for-fujifilm-fujinon-xf-80mm-f-2-8-r-lm-ois-wr-macro",
+      "sku": "36473",
+      "description": "Focus gear for the Fujifilm FUJINON XF 80mm f.2.8 R LM OIS WR Macro lens that allows for the lens to be focused manually with supported housings. Consult the port chart for supported housings and extensions.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36473_2.jpg?v=1596817586"
+      ],
+      "lensHints": [
+        "Fujifilm FUJINON XF 80mm f/2.8 R LM OIS WR Macro"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n100-x89-f-focus-gear-for-fujifilm-fujinon-xf-80mm-f-2-8-r-lm-ois-wr-macro"
+    },
+    {
+      "name": "N1024-Z Zoom Gear ~for Nikkor AF-S DX 10-24mm F3.5-4.5G ED",
+      "slug": "n1024-z-for-nikkor-af-s-dx-10-24mm-f3-5-4-5g-ed",
+      "sku": "19135",
+      "description": "This item is non-returnable, non-refundable, non-cancellable, and may be subject to extended lead times as it is manufactured on demand. We always do our best to meet trip deadlines so please advise us if you have a trip coming up!",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19135.jpg?v=1562429168"
+      ],
+      "lensHints": [
+        "Nikkor AF-S DX 10-24mm F3.5-4.5G ED"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n1024-z-for-nikkor-af-s-dx-10-24mm-f3-5-4-5g-ed"
+    },
+    {
+      "name": "N105VR-F Focus Gear ~for Nikkor AF-S VR Micro Nikkor 105mm F2.8G IF-ED",
+      "slug": "n105vr-f-for-nikkor-af-s-vr-micro-nikkor-105mm-f2-8g-if-ed",
+      "sku": "19122",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Nikkor AF-S VR micro Nikkor 105mm F2.8G IF-ED lens. Instruction Manual PDF Download",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19122-N105VR-e1487404401708-1024x684.jpg?v=1507206251"
+      ],
+      "lensHints": [
+        "Nikkor AF-S VR Micro Nikkor 105mm F2.8G IF-ED"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n105vr-f-for-nikkor-af-s-vr-micro-nikkor-105mm-f2-8g-if-ed"
+    },
+    {
+      "name": "N1635-F Focus Gear ~for AF-S NIKKOR 16-35mm f/4G ED VR",
+      "slug": "n1635-f-focus-gear-for-af-s-nikkor-16-35mm-f-4g-ed-vr",
+      "sku": "19142",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the AF-S NIKKOR 16-35mm f/4G ED VR lens.",
+      "priceAmount": 290,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19142-N1635-F-1024x684.jpg?v=1507207395"
+      ],
+      "lensHints": [
+        "AF-S NIKKOR 16-35mm f/4G ED VR"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n1635-f-focus-gear-for-af-s-nikkor-16-35mm-f-4g-ed-vr"
+    },
+    {
+      "name": "N85VR-F Focus Gear ~for Nikkor 85mm 1:3.5G ED VR",
+      "slug": "n85vr-f-for-nikkor-85mm-1-3-5g-ed-vr",
+      "sku": "19129",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Nikon AF-S DX Micro NIKKOR 85mm f/3.5G ED VR lens. Instruction Manual PDF Download",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19129-N85VR.jpg?v=1507208411"
+      ],
+      "lensHints": [
+        "Nikkor 85mm 1:3.5G ED VR"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/n85vr-f-for-nikkor-85mm-1-3-5g-ed-vr"
+    },
+    {
+      "name": "NZ105VR-F Focus Gear for Nikkor Z MC 105mm F/2.8 VR S",
+      "slug": "nz105vr-f-focus-gear-for-nikkor-z-mc-105mm-f-2-8-vr-s",
+      "sku": "19161",
+      "description": "NZ105VR-F Focus Gear for Nikkor Z MC 105mm F/2.8 VR S Instruction Manual PDF Download",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19161.jpg?v=1631605440"
+      ],
+      "lensHints": [
+        "Nikkor Z MC 105mm F/2.8 VR S"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nz105vr-f-focus-gear-for-nikkor-z-mc-105mm-f-2-8-vr-s"
+    },
+    {
+      "name": "O1245-F Focus Gear for Olympus M.Zuiko Digital 12-45mm f/4 Pro",
+      "slug": "o1245-f-focus-gear-for-olympus-m-zuiko-digital-12-45mm-f-4-pro",
+      "sku": "36070",
+      "description": "Product Manual PDF",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36070.jpg?v=1631605471"
+      ],
+      "lensHints": [
+        "Olympus M.Zuiko Digital 12-45mm f/4 Pro"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/o1245-f-focus-gear-for-olympus-m-zuiko-digital-12-45mm-f-4-pro"
+    },
+    {
+      "name": "O60-F Focus Gear ~for Olympus M.Zuiko Digital ED 60mm F2.8 Macro",
+      "slug": "o60-f-for-olympus-m-zuiko-digital-ed-60mm-f2-8-macro-focus-gear",
+      "sku": "36149",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Olympus M.Zuiko Digital ED 60mm F2.8 Macro lens.",
+      "priceAmount": 220,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36149-O60-F-1024x682.jpg?v=1507205779"
+      ],
+      "lensHints": [
+        "Olympus M.Zuiko Digital ED 60mm F2.8 Macro"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/o60-f-for-olympus-m-zuiko-digital-ed-60mm-f2-8-macro-focus-gear"
+    },
+    {
+      "name": "O8-F Focus Gear ~for Olympus M.Zuiko Digital ED 8mm 1:1.8 Fisheye PRO",
+      "slug": "o8-f-for-olympus-m-zuiko-digital-ed-8mm-1-1-8-fisheye-pro",
+      "sku": "36056",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the OLYMPUS M.ZUIKO DIGITAL ED 8mm F1.8 Fisheye PRO lens.",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36056_O8-F.JPG?v=1562429174"
+      ],
+      "lensHints": [
+        "Olympus M.Zuiko Digital ED 8mm 1:1.8 Fisheye PRO"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/o8-f-for-olympus-m-zuiko-digital-ed-8mm-1-1-8-fisheye-pro"
+    },
+    {
+      "name": "O90-F Focus Gear for OM M.Zuiko Digital ED 90mm f/3.5 Macro IS PRO",
+      "slug": "o90-f-focus-gear-for-om-m-zuiko-digital-ed-90mm-f-3-5-macro-is-pro",
+      "sku": "36072",
+      "description": "O90-F Focus Gear for OM M.Zuiko Digital ED 90mm f/3.5 Macro IS PRO Instruction Manual PDF",
+      "priceAmount": 290,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36072.jpg?v=1679416082"
+      ],
+      "lensHints": [
+        "OM M.Zuiko Digital ED 90mm f/3.5 Macro IS PRO"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/o90-f-focus-gear-for-om-m-zuiko-digital-ed-90mm-f-3-5-macro-is-pro"
+    },
+    {
+      "name": "P120-F Focus Gear ~for Mamiya 120mm f/4 Macro and Phase One 120mm f/4.0 Macro",
+      "slug": "p120-f-for-mamiya-120mm-f-4-macro-lens",
+      "sku": "19821",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specifically made for the Mamiya 120mm f/4 Macro lens and Phase One Digital 120mm f/4.0 lens.",
+      "priceAmount": 380,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/nau.19821_1.jpg?v=1562429119"
+      ],
+      "lensHints": [
+        "Mamiya 120mm f/4 Macro",
+        "Phase One 120mm f/4.0 Macro"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/p120-f-for-mamiya-120mm-f-4-macro-lens"
+    },
+    {
+      "name": "P45-F Focus Gear ~for Leica DG Macro Elmarit 45mm",
+      "slug": "p45-f-leica-dg-macro-elmarit-45mm-focus-gear",
+      "sku": "36145",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the LEICA DG MACRO-ELMARIT 45mm F2.8 ASPH. MEGA O.I.S. lens.",
+      "priceAmount": 220,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36145-1024x683.jpg?v=1507211812"
+      ],
+      "lensHints": [
+        "Leica DG Macro Elmarit 45mm"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/p45-f-leica-dg-macro-elmarit-45mm-focus-gear"
+    },
+    {
+      "name": "P714-F Focus Gear ~for Panasonic Vario 7-14mm (to use with 36164)",
+      "slug": "p714-f-focus-gear-for-panasonic-vario-7-14mm-to-use-with-36164",
+      "sku": "36043",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for Panasonic Vario 7-14mm lens.",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/Juan_36043.jpg?v=1562429149"
+      ],
+      "lensHints": [
+        "Panasonic Vario 7-14mm"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/p714-f-focus-gear-for-panasonic-vario-7-14mm-to-use-with-36164"
+    },
+    {
+      "name": "P8-F Focus Gear ~for Panasonic LUMIX G FISHEYE 8mm",
+      "slug": "p8-f-focus-gear-for-panasonic-lumix-g-fisheye-8mm",
+      "sku": "36041",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Panasonic LUMIX G FISHEYE 8mm / F3.5 lens.",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36041-P8-F-1024x681.jpg?v=1507203280"
+      ],
+      "lensHints": [
+        "Panasonic LUMIX G FISHEYE 8mm"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/p8-f-focus-gear-for-panasonic-lumix-g-fisheye-8mm"
+    },
+    {
+      "name": "PL100-F Focus Gear for Panasonic Lumix S 100mm f/2.8",
+      "slug": "pl100-f-focus-gear-for-panasonic-lumix-s-100mm-f-2-8",
+      "sku": "19732",
+      "description": "PL100-F Focus Gear for Panasonic Lumix S 100mm f/2.8 PDF Instruction Manual Download",
+      "priceAmount": 300,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19732.jpg?v=1731527249"
+      ],
+      "lensHints": [
+        "Panasonic Lumix S 100mm f/2.8"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/pl100-f-focus-gear-for-panasonic-lumix-s-100mm-f-2-8"
+    },
+    {
+      "name": "PL2060-Z Zoom Gear for Panasonic Lumix S 20-60mm f/3.5-5.6",
+      "slug": "pl2060-z-zoom-gear-for-panasonic-lumix-s-20-60mm-f-3-5-5-6",
+      "sku": "19731",
+      "description": "This item is non-returnable, non-refundable, non-cancellable, and may be subject to extended lead times as it is manufactured on demand. We always do our best to meet trip deadlines so please advise us if you have a trip coming up!",
+      "priceAmount": 300,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19731.jpg?v=1631605607"
+      ],
+      "lensHints": [
+        "Panasonic Lumix S 20-60mm f/3.5-5.6"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/pl2060-z-zoom-gear-for-panasonic-lumix-s-20-60mm-f-3-5-5-6"
+    },
+    {
+      "name": "PL818-F Focus Gear ~for Panasonic Leica DG Vario Elmarit 8-18mm f/2.8-4.0 ASPH",
+      "slug": "pl818-f-focus-gear-for-panasonic-leica-dg-vario-elmarit-8-18mm-f-2-8-4-0-asph",
+      "sku": "36063",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Panasonic Leica DG Vario Elmarit 8-18mm f/2.8-4.0 ASPH lens.",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/RPV_2415.jpg?v=1562429184"
+      ],
+      "lensHints": [
+        "Panasonic Leica DG Vario Elmarit 8-18mm f/2.8-4.0 ASPH"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/pl818-f-focus-gear-for-panasonic-leica-dg-vario-elmarit-8-18mm-f-2-8-4-0-asph"
+    },
+    {
+      "name": "RC1022-F Focus Gear ~for Canon EF-S 10-22mm f/3.5-4.5 USM",
+      "slug": "rc1022-f-canon-ef-s-10-22mm-f-3-5-4-5-usm-focus-gear",
+      "sku": "16304",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Canon EF-S 10-22mm f/3.5-4.5 USM lens.",
+      "priceAmount": 330,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16304_RC1022-F.JPG?v=1562429146"
+      ],
+      "lensHints": [
+        "Canon EF-S 10-22mm f/3.5-4.5 USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rc1022-f-canon-ef-s-10-22mm-f-3-5-4-5-usm-focus-gear"
+    },
+    {
+      "name": "RC815-F Focus Gear ~for Canon EF 8-15mm f/4L Fisheye USM",
+      "slug": "rc815-f-canon-ef-8-15mm-f-4l-fisheye-usm-focus-gear",
+      "sku": "16302",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Canon EF 8-15mm f/4L Fisheye USM lens.",
+      "priceAmount": 410,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16302_RC815-F.JPG?v=1562429131"
+      ],
+      "lensHints": [
+        "Canon EF 8-15mm f/4L Fisheye USM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rc815-f-canon-ef-8-15mm-f-4l-fisheye-usm-focus-gear"
+    },
+    {
+      "name": "RF1535-F Focus Gear for Canon RF 15-35mm F/2.8L IS",
+      "slug": "rf1535-f-focus-gear-for-canon-rf-15-35mm-f-2-8l-is",
+      "sku": "19643",
+      "description": "RF1535-F Focus Gear for Canon RF 15-35mm F/2.8L IS",
+      "priceAmount": 290,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/Nauticamcoming_soon_1024x1024_19995488-7af3-4ec9-be1a-d9c3c045af73.jpg?v=1773428594"
+      ],
+      "lensHints": [
+        "Canon RF 15-35mm F/2.8L IS"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rf1535-f-focus-gear-for-canon-rf-15-35mm-f-2-8l-is"
+    },
+    {
+      "name": "RSC816-F Focus Gear ~for Sigma 8-16mm F4.5-5.6 DC HSM",
+      "slug": "rsc816-f-sigma-8-16mm-f4-5-5-6-dc-hsm-focus-gear",
+      "sku": "16306",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Sigma 8-16mm F4.5-5.6 DC HSM lens.",
+      "priceAmount": 380,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16306_RSC816-F.JPG?v=1562429131"
+      ],
+      "lensHints": [
+        "Sigma 8-16mm F4.5-5.6 DC HSM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rsc816-f-sigma-8-16mm-f4-5-5-6-dc-hsm-focus-gear"
+    },
+    {
+      "name": "RTC1017-F Focus Gear ~for Tokina AT-X 10-17mm F3.5-4.5 Fisheye DX",
+      "slug": "rtc1017-f-tokina-at-x-10-17mm-f3-5-4-5-fisheye-dx-focus-gear",
+      "sku": "16308",
+      "description": "This product has been discontinued. There is limited stock available.",
+      "priceAmount": 380,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16309_RTC1116-Z.JPG?v=1562429131"
+      ],
+      "lensHints": [
+        "Tokina AT-X 10-17mm F3.5-4.5 Fisheye DX"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/rtc1017-f-tokina-at-x-10-17mm-f3-5-4-5-fisheye-dx-focus-gear"
+    },
+    {
+      "name": "SC105-F Focus Gear ~for Sigma 105mm F2.8 EX DG OS HSM Macro",
+      "slug": "sc105-f-focus-gear-for-sigma-105mm-f2-8-ex-dg-os-hsm-macro",
+      "sku": "19553",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Sigma 105mm F2.8 EX DG OS HSM Macro (Canon mount) lens. This item is non-returnable, non-refundable, non-cancellable, and may be subject to extended lead times as it is manufactured on demand. We always do our best to meet trip deadlines so please advise us if you have a trip coming up! Instruction Manual PDF Download",
+      "priceAmount": 330,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19553-SC105-F-1024x682.jpg?v=1507201437"
+      ],
+      "lensHints": [
+        "Sigma 105mm F2.8 EX DG OS HSM Macro"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sc105-f-focus-gear-for-sigma-105mm-f2-8-ex-dg-os-hsm-macro"
+    },
+    {
+      "name": "SE100-F Focus Gear for Sony FE 100mm F2.8 Macro GM",
+      "slug": "se100-f-focus-gear-for-sony-fe-100mm-f2-8-macro-gm",
+      "sku": "37182",
+      "description": "SE100-F Focus Gear for Sony FE 100mm F2.8 Macro GM Instruction Manual PDF Download",
+      "priceAmount": 290,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/37182SE100-FFocusGearforSonyFE100mmF2.8MacroGM.jpg?v=1762280388"
+      ],
+      "lensHints": [
+        "Sony FE 100mm F2.8 Macro GM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/se100-f-focus-gear-for-sony-fe-100mm-f2-8-macro-gm"
+    },
+    {
+      "name": "SE1635-F Focus Gear ~for Sony Vario-Tessar T* FE 16-35mm F4 ZA OSS",
+      "slug": "se1635-f-focus-gear-for-sony-vario-tessar-t-fe-16-35mm-f4-za-oss",
+      "sku": "37146",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Sony SEL1635Z Vario-Tessar T* FE 16-35mm F4 ZA OSS lens.",
+      "priceAmount": 360,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37146_SE1635-F.JPG?v=1562429185"
+      ],
+      "lensHints": [
+        "Sony Vario-Tessar T* FE 16-35mm F4 ZA OSS"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/se1635-f-focus-gear-for-sony-vario-tessar-t-fe-16-35mm-f4-za-oss"
+    },
+    {
+      "name": "SE2470-F Focus Gear ~for Sony SEL2470Z Vario-Tessar T* FE 24-70mm F4 ZA OSS (Use with 37149)",
+      "slug": "se2470-f-focus-gear-for-sony-sel2470z-vario-tessar-t-fe-24-70mm-f4-za-oss-to-use-with-37149",
+      "sku": "37148",
+      "description": "This product has been discontinued. There is limited stock available.",
+      "priceAmount": 370,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37148_SE2470-F.JPG?v=1562429129"
+      ],
+      "lensHints": [
+        "Sony SEL2470Z Vario-Tessar T* FE 24-70mm F4 ZA OSS"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/se2470-f-focus-gear-for-sony-sel2470z-vario-tessar-t-fe-24-70mm-f4-za-oss-to-use-with-37149"
+    },
+    {
+      "name": "SE30-F Focus Gear ~for Sony E mount 30mm f/3.5 Macro",
+      "slug": "se30-f-for-sony-e-mount-30mm-f-3-5-macro-focus-gear",
+      "sku": "36171",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Sony SEL1855 E 18-55mm F3.5-5.6 OSS lens.",
+      "priceAmount": 220,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36171_SE30-F.JPG?v=1562429189"
+      ],
+      "lensHints": [
+        "Sony E mount 30mm f/3.5 Macro"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/se30-f-for-sony-e-mount-30mm-f-3-5-macro-focus-gear"
+    },
+    {
+      "name": "SE90-F Focus Gear ~for Sony FE 90mm F2.8 Macro G OSS",
+      "slug": "se90-f-focus-gear-for-sony-fe-90mm-f2-8-macro-g-oss",
+      "sku": "37147",
+      "description": "Focus gears allow access to the mechanical focus function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Sony FE 90mm F2.8 Macro G OSS lens.",
+      "priceAmount": 290,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37147_SE90-F.JPG?v=1562429185"
+      ],
+      "lensHints": [
+        "Sony FE 90mm F2.8 Macro G OSS"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/se90-f-focus-gear-for-sony-fe-90mm-f2-8-macro-g-oss"
+    },
+    {
+      "name": "SFE1224GM-F Focus Gear for Sony SEL1224GM FE 12-24mm F2.8GM",
+      "slug": "sfe1224gm-f-focus-gear-for-sony-sel1224gm-fe-12-24mm-f2-8gm",
+      "sku": "37162",
+      "description": "Focus Gear for Sony SEL1224GM FE 12-24mm F2.8GM",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37162.jpg?v=1631606002"
+      ],
+      "lensHints": [
+        "Sony SEL1224GM FE 12-24mm F2.8GM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sfe1224gm-f-focus-gear-for-sony-sel1224gm-fe-12-24mm-f2-8gm"
+    },
+    {
+      "name": "SFE1635GMII F Focus Gear for Sony FE 16-35mm F2.8 GM II",
+      "slug": "nauticam-sfe1635gmii-f-focus-gear-for-sony-fe-16-35mm-f2-8-gm-ii",
+      "sku": "37176",
+      "description": "Nauticam SFE1635GMII F Focus Gear for Sony FE 16-35mm F2.8 GM II",
+      "priceAmount": 450,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/37176.jpg?v=1706031179"
+      ],
+      "lensHints": [
+        "Sony FE 16-35mm F2.8 GM II"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nauticam-sfe1635gmii-f-focus-gear-for-sony-fe-16-35mm-f2-8-gm-ii"
+    },
+    {
+      "name": "SFE2470GM-F Focus Gear ~for Sony SEL2470GM FE 24-70mm F2.8 GM",
+      "slug": "sfe2470gm-f-foom-gear-for-sony-sel2470gm-fe-24-70mm-f2-8-gm",
+      "sku": "37152",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Sony SEL2470GM FE 24-70mm F2.8 GM lens.",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37152-SFE2470GM-F-1024x739.jpg?v=1521657661"
+      ],
+      "lensHints": [
+        "Sony SEL2470GM FE 24-70mm F2.8 GM"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sfe2470gm-f-foom-gear-for-sony-sel2470gm-fe-24-70mm-f2-8-gm"
+    },
+    {
+      "name": "SFE2470II-F Focus Gear for Sony FE 24-70 F2.8 GM II",
+      "slug": "sfe2470ii-f-focus-gear-for-sony-fe-24-70-f2-8-gm-ii",
+      "sku": "37183",
+      "description": "SFE2470II-F Focus Gear for Sony FE 24-70 F2.8 GM II",
+      "priceAmount": 320,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/37183.jpg?v=1773693306"
+      ],
+      "lensHints": [
+        "Sony FE 24-70 F2.8 GM II"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sfe2470ii-f-focus-gear-for-sony-fe-24-70-f2-8-gm-ii"
+    },
+    {
+      "name": "SFE2860-F Focus Gear for Sony FE 28-60 F4-5.6",
+      "slug": "sfe2860-f-focus-gear-for-sony-fe-28-60-f4-5-6",
+      "sku": "37164",
+      "description": "SFE2860-F Focus Gear for Sony FE 28-60 F4-5.6",
+      "priceAmount": 250,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/37164.jpg?v=1631606011"
+      ],
+      "lensHints": [
+        "Sony FE 28-60 F4-5.6"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sfe2860-f-focus-gear-for-sony-fe-28-60-f4-5-6"
+    },
+    {
+      "name": "SFE90-F Focus Gear ~for Sony FE 90mm F2.8 Macro G OSS",
+      "slug": "sfe90-f-focus-gear-for-sony-fe-90mm-f2-8-macro-g-oss",
+      "sku": "36175",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Sony FE 90mm F2.8 Macro G OSS lens.(N85)",
+      "priceAmount": 280,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/36175_SFE90-F.JPG?v=1562429150"
+      ],
+      "lensHints": [
+        "Sony FE 90mm F2.8 Macro G OSS"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sfe90-f-focus-gear-for-sony-fe-90mm-f2-8-macro-g-oss"
+    },
+    {
+      "name": "SN105-F Focus Gear ~for Sigma 105mm F2.8 EX DG OS HSM Macro",
+      "slug": "sn105-f-focus-gear-for-sigma-105mm-f2-8-ex-dg-os-hsm-macro",
+      "sku": "19147",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Sigma 105mm F2.8 EX DG OS HSM Macro (Nikon Mount) lens.",
+      "priceAmount": 240,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19147-SN105-F-1024x682.jpg?v=1507201609"
+      ],
+      "lensHints": [
+        "Sigma 105mm F2.8 EX DG OS HSM Macro"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sn105-f-focus-gear-for-sigma-105mm-f2-8-ex-dg-os-hsm-macro"
+    },
+    {
+      "name": "SN15-F Focus Gear ~for Sigma 15mm F2.8 EX DG Diagonal Fisheye",
+      "slug": "sn15-f-focus-gear-for-sigma-15mm-f2-8-ex-dg-diagonal-fisheye",
+      "sku": "19143",
+      "description": "Focus gears allow access to the mechanical zoom function of many lenses. Use of these gears may require specific port extensions and may not be available for all housings and lenses. This focus gear is specific for the Sigma 15mm F2.8 EX DG Diagonal Fisheye lens.",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/19143_SN15-F_focus_gear.JPG?v=1562429155"
+      ],
+      "lensHints": [
+        "Sigma 15mm F2.8 EX DG Diagonal Fisheye"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/sn15-f-focus-gear-for-sigma-15mm-f2-8-ex-dg-diagonal-fisheye"
+    },
+    {
+      "name": "Z105-F for Nikkor Z MC 105mm F/2.8 VR S",
+      "slug": "z105-f-for-nikkor-z-mc-105mm-f-2-8-vr-s",
+      "sku": "19200",
+      "description": "Z105-F for Nikkor Z MC 105mm F/2.8 VR S for NA-Z6III User Manual PDF Download",
+      "priceAmount": 320,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19200.jpg?v=1731527105"
+      ],
+      "lensHints": [
+        "Nikkor Z MC 105mm F/2.8 VR S"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/z105-f-for-nikkor-z-mc-105mm-f-2-8-vr-s"
+    },
+    {
+      "name": "Z1424-FII Focus Gear for Nikkor Z 14-24mm f/2.8 S for NA-ZR",
+      "slug": "z1424-fii-focus-gear-for-nikkor-z-14-24mm-f-2-8-s-for-na-zr",
+      "sku": "19244",
+      "description": "Z1424-FII Focus Gear for Nikkor Z 14-24mm f/2.8 S",
+      "priceAmount": 330,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/Nauticamcoming_soon_1024x1024_ba7c4af5-fe12-4a5b-8186-4a90e91f31fc.jpg?v=1767892883"
+      ],
+      "lensHints": [
+        "Nikkor Z 14-24mm f/2.8 S for NA-ZR"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/z1424-fii-focus-gear-for-nikkor-z-14-24mm-f-2-8-s-for-na-zr"
+    },
+    {
+      "name": "Z2450-FII Focus Gear for Nikkor Z 24-50mm f/4-6.3",
+      "slug": "z2450-fii-focus-gear-for-nikkor-z-24-50mm-f-4-6-3",
+      "sku": "19243",
+      "description": "Z2450-FII Focus Gear for Nikkor Z 24-50mm f/4-6.3",
+      "priceAmount": 260,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/19243.jpg?v=1775581828"
+      ],
+      "lensHints": [
+        "Nikkor Z 24-50mm f/4-6.3"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/z2450-fii-focus-gear-for-nikkor-z-24-50mm-f-4-6-3"
+    },
+    {
+      "name": "Cinema Gear Set for Canon RF 24-50mm f/4.5-6.3 IS STM Lens",
+      "slug": "cinema-gear-set-for-canon-rf-24-50mm-f-4-5-6-3-is-stm-lens",
+      "sku": "16347",
+      "description": "Cinema Gear Set for Canon RF 24-50mm f/4.5-6.3 IS STM Lens",
+      "priceAmount": 750,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/16347.jpg?v=1690264143"
+      ],
+      "lensHints": [
+        "Canon RF 24-50mm f/4.5-6.3 IS STM Lens"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cinema-gear-set-for-canon-rf-24-50mm-f-4-5-6-3-is-stm-lens"
+    },
+    {
+      "name": "Cinema Gear Set for Laowa 24mm f/14 2x Macro Probe",
+      "slug": "cinema-gear-set-for-laowa-24mm-f-14-2x-macro-probe",
+      "sku": "16335",
+      "description": "The Laowa 24mm Probe lens is produced in two versions, a Standard Version and a Cine-mod Version . The Cine Mod version features de-clicked aperture adjustments as well as cinema-styled focus to allow for easier follow focus.",
+      "priceAmount": 850,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16336_port-30.jpg?v=1562429089"
+      ],
+      "lensHints": [
+        "Laowa 24mm f/14 2x Macro Probe"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cinema-gear-set-for-laowa-24mm-f-14-2x-macro-probe"
+    },
+    {
+      "name": "Cinema System Gear Set for Canon EF 28-70mm f/3.5-4.5 II Lens",
+      "slug": "cinema-system-gear-set-for-canon-ef-28-70mm-f-3-5-4-5-ii-lens",
+      "sku": "16334",
+      "description": "",
+      "priceAmount": 900,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/files/16334.jpg?v=1775582493"
+      ],
+      "lensHints": [
+        "Canon EF 28-70mm f/3.5-4.5 II Lens"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/cinema-system-gear-set-for-canon-ef-28-70mm-f-3-5-4-5-ii-lens"
+    },
+    {
+      "name": "Cinema System Gear Set for Zeiss Otus Lenses (28mm, 55mm, 85mm)",
+      "slug": "nauticam-cinema-system-gear-set-for-zeiss-otus-lenses-28mm-55mm-85mm",
+      "sku": "16332",
+      "description": "This item is non-returnable, non-refundable, non-cancellable, and may be subject to extended lead times as it is manufactured on demand. We always do our best to meet trip deadlines so please advise us if you have a trip coming up!",
+      "priceAmount": 780,
+      "priceCurrency": "USD",
+      "productPhotos": [
+        "https://cdn.shopify.com/s/files/1/2305/1013/products/16332.jpg?v=1665765274"
+      ],
+      "lensHints": [
+        "Zeiss Otus Lenses"
+      ],
+      "sourceUrl": "https://www.nauticam.com/collections/ports/products/nauticam-cinema-system-gear-set-for-zeiss-otus-lenses-28mm-55mm-85mm"
     }
   ],
   "portChartEntries": [

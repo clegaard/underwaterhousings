@@ -167,7 +167,7 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
                             )}
                         </div>
 
-                        {/* Gear Dropdown */}
+                        {/* Underwater Products Dropdown */}
                         <div className="relative" ref={housingsDropdownRef}>
                             <div className="flex items-center">
                                 <Link
@@ -175,12 +175,12 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
                                     className="text-gray-700 hover:text-blue-900 transition-colors font-medium"
                                     onClick={() => setIsHousingsOpen(false)}
                                 >
-                                    Gear
+                                    Underwater Products
                                 </Link>
                                 <button
                                     onClick={() => { closeAll(); setIsHousingsOpen(v => !v) }}
                                     className="ml-1 p-0.5 text-gray-700 hover:text-blue-900 transition-colors"
-                                    aria-label="Browse gear manufacturers"
+                                    aria-label="Browse underwater product manufacturers"
                                 >
                                     <svg className={`h-4 w-4 transition-transform ${isHousingsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
