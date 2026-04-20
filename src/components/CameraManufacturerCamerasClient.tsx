@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { HousingImage } from '@/components/HousingImage'
-import { getCameraImagePathWithFallback } from '@/lib/images'
+import { withBase, getCameraImagePathWithFallback } from '@/lib/images'
 
 interface Camera {
     id: number
@@ -239,7 +239,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
     }
 
     function getSlotPreview(slot: PhotoSlot): string {
-        return slot.kind === 'existing' ? slot.path : slot.previewUrl
+        return slot.kind === 'existing' ? withBase(slot.path) : slot.previewUrl
     }
 
     async function buildFinalPhotoPaths(): Promise<string[]> {

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { HousingImage } from '@/components/HousingImage'
-import { getPortImagePathWithFallback } from '@/lib/images'
+import { withBase, getPortImagePathWithFallback } from '@/lib/images'
 
 interface ExtensionRing {
     id: number
@@ -146,7 +146,7 @@ export default function ExtensionRingsClient({ rings: initial, manufacturer, hou
     function handlePhotoDragEnd() { setDragPhotoIdx(null) }
 
     function getSlotPreview(slot: PhotoSlot): string {
-        return slot.kind === 'existing' ? slot.path : slot.previewUrl
+        return slot.kind === 'existing' ? withBase(slot.path) : slot.previewUrl
     }
 
     async function buildFinalPhotoPaths(): Promise<string[]> {

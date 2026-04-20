@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { HousingImage } from '@/components/HousingImage'
-import { getPortImagePathWithFallback } from '@/lib/images'
+import { withBase, getPortImagePathWithFallback } from '@/lib/images'
 
 interface Lens {
     id: number
@@ -148,7 +148,7 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
     function handlePhotoDragEnd() { setDragPhotoIdx(null) }
 
     function getSlotPreview(slot: PhotoSlot): string {
-        return slot.kind === 'existing' ? slot.path : slot.previewUrl
+        return slot.kind === 'existing' ? withBase(slot.path) : slot.previewUrl
     }
 
     async function buildFinalPhotoPaths(): Promise<string[]> {

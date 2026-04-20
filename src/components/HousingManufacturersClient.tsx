@@ -213,7 +213,7 @@ export default function HousingManufacturersClient({ manufacturers: initial, cam
         setDragPhotoIdx(idx)
     }
     function handlePhotoDragEnd() { setDragPhotoIdx(null) }
-    function getSlotPreview(slot: PhotoSlot) { return slot.kind === 'existing' ? slot.path : slot.previewUrl }
+    function getSlotPreview(slot: PhotoSlot) { return slot.kind === 'existing' ? withBase(slot.path) : slot.previewUrl }
 
     async function buildFinalPhotoPaths(mfrSlug: string): Promise<string[]> {
         const paths: string[] = []

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { HousingImage } from '@/components/HousingImage'
-import { getHousingImagePathWithFallback } from '@/lib/images'
+import { withBase, getHousingImagePathWithFallback } from '@/lib/images'
 
 interface Housing {
     id: number
@@ -212,7 +212,7 @@ export default function HousingManufacturerHousingsClient({
     }
 
     function getSlotPreview(slot: PhotoSlot): string {
-        return slot.kind === 'existing' ? slot.path : slot.previewUrl
+        return slot.kind === 'existing' ? withBase(slot.path) : slot.previewUrl
     }
 
     async function buildFinalPhotoPaths(): Promise<string[]> {
