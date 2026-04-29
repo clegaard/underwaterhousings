@@ -740,7 +740,7 @@ async function main() {
             depthRating: 100,
             material: 'Aluminum',
             manufacturerId: nauticam.id,
-            cameraId: omOM5II.id,
+            cameras: { connect: [{ id: omOM5II.id }] },
             housingMountId: mountTypeNauticamN120.id,
             productPhotos: ['/housings/na-om5ii-front.webp', '/housings/na-om5ii-back.webp']
         }
@@ -757,7 +757,7 @@ async function main() {
             depthRating: 60,
             material: 'ABS Plastic',
             manufacturerId: divevolk.id,
-            cameraId: iphone14Pro.id,
+            cameras: { connect: [{ id: iphone14Pro.id }] },
             interchangeablePort: false,
             productPhotos: ['/housings/divevolk-seatouch-4-front.webp']
         }
@@ -774,7 +774,7 @@ async function main() {
             depthRating: 40,
             material: 'ABS Plastic',
             manufacturerId: seafrogs.id,
-            cameraId: canonR6MarkII.id,
+            cameras: { connect: [{ id: canonR6MarkII.id }] },
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: ['/housings/sf-s-r6-ii-front.webp', '/housings/sf-s-r6-ii-back.webp']
         }
@@ -790,7 +790,7 @@ async function main() {
             depthRating: 40,
             material: 'ABS Plastic',
             manufacturerId: seafrogs.id,
-            cameraId: sonyZVE1.id,
+            cameras: { connect: [{ id: sonyZVE1.id }] },
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: ['/housings/sf-s-zv1-e1-front.webp']
         }
@@ -806,7 +806,7 @@ async function main() {
             depthRating: 40,
             material: 'ABS Plastic',
             manufacturerId: seafrogs.id,
-            cameraId: sonyA7III.id,
+            cameras: { connect: [{ id: sonyA7III.id }] },
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: []
         }
@@ -822,7 +822,7 @@ async function main() {
             depthRating: 40,
             material: 'ABS Plastic',
             manufacturerId: seafrogs.id,
-            cameraId: sonyA7IV.id,
+            cameras: { connect: [{ id: sonyA7IV.id }] },
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: ['/housings/sf-a7iv-sl.jpg']
         }
@@ -838,7 +838,7 @@ async function main() {
             depthRating: 40,
             material: 'ABS Plastic',
             manufacturerId: seafrogs.id,
-            cameraId: sonyA7RV.id,
+            cameras: { connect: [{ id: sonyA7RV.id }] },
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: ['/housings/sf-s-a7rv-front.webp']
         }
@@ -952,7 +952,7 @@ async function main() {
             depthRating: 40,
             material: 'ABS Plastic',
             manufacturerId: seafrogs.id,
-            cameraId: sonyA6700.id,
+            cameras: { connect: [{ id: sonyA6700.id }] },
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: ['/housings/sf-s-a6700-front.jpg', '/housings/sf-s-a6700-back.jpg']
         }
@@ -968,7 +968,7 @@ async function main() {
             depthRating: 40,
             material: 'ABS Plastic',
             manufacturerId: seafrogs.id,
-            cameraId: sonyFX3.id,
+            cameras: { connect: [{ id: sonyFX3.id }] },
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: ['/housings/sf-s-fx3.jpg']
         }
@@ -984,7 +984,7 @@ async function main() {
             depthRating: 40,
             material: 'ABS Plastic',
             manufacturerId: seafrogs.id,
-            cameraId: canonR5.id,
+            cameras: { connect: [{ id: canonR5.id }] },
             housingMountId: mountTypeSeaFrogsPolycarbonate.id,
             productPhotos: ['/housings/sf-eosr5-np.webp']
         }
@@ -1000,7 +1000,7 @@ async function main() {
             depthRating: 60,
             material: 'ABS Plastic',
             manufacturerId: seafrogs.id,
-            cameraId: omTg7.id,
+            cameras: { connect: [{ id: omTg7.id }] },
             interchangeablePort: false,
             productPhotos: ['/housings/sf-tg-7.jpg']
         }

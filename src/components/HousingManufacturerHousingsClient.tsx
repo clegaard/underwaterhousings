@@ -18,7 +18,7 @@ interface Housing {
     priceCurrency: string | null
     productPhotos: string[]
     interchangeablePort: boolean
-    camera: { id: number; name: string; brand: { name: string } } | null
+    cameras: Array<{ id: number; name: string; brand: { name: string } }>
     imageInfo: { src: string; fallback: string }
 }
 
@@ -69,7 +69,7 @@ export default function HousingManufacturerHousingsClient({
     // Form state
     const [nameInput, setNameInput] = useState('')
     const [cameraSearch, setCameraSearch] = useState('')
-    const [cameraId, setCameraId] = useState<number | ''>('')
+    const [selectedCameraIds, setSelectedCameraIds] = useState<number[]>([])
     const [mountId, setMountId] = useState<number | ''>('')
     const [depthRating, setDepthRating] = useState('')
     const [priceAmount, setPriceAmount] = useState('')
@@ -86,12 +86,11 @@ export default function HousingManufacturerHousingsClient({
         cameraSearch.trim() === '' ||
         `${c.brand.name} ${c.name}`.toLowerCase().includes(cameraSearch.toLowerCase())
     )
-    const selectedCamera = cameras.find(c => c.id === cameraId) ?? null
 
     function resetForm() {
         setNameInput('')
         setCameraSearch('')
-        setCameraId('')
+        setSelectedCameraIds([])
         setMountId('')
         setDepthRating('')
         setPriceAmount('')
@@ -114,7 +113,7 @@ export default function HousingManufacturerHousingsClient({
     function openEdit(h: Housing) {
         setTarget(h)
         setNameInput(h.name)
-        setCameraId(h.camera?.id ?? '')
+        setSelectedCameraIds(h.cameras.map(c => c.id))
         setCameraSearch('')
         setMountId(h.housingMountId ?? '')
         setDepthRating(h.depthRating != null ? String(h.depthRating) : '')
@@ -234,7 +233,7 @@ export default function HousingManufacturerHousingsClient({
     }
 
     async function handleAdd() {
-        if (!nameInput.trim() || !cameraId) return
+        if (!nameInput.trim() || selectedCameraIds.length === 0) return
         setLoading(true)
         setError(null)
         try {
@@ -245,7 +244,7 @@ export default function HousingManufacturerHousingsClient({
                 body: JSON.stringify({
                     name: nameInput.trim(),
                     manufacturerId: manufacturer.id,
-                    cameraId,
+                    cameraIds: selectedCameraIds,
                     housingMountId: mountId !== '' ? mountId : null,
                     depthRating: depthRating ? parseInt(depthRating) : undefined,
                     priceAmount: priceAmount ? priceAmount : undefined,
@@ -256,7 +255,7 @@ export default function HousingManufacturerHousingsClient({
             })
             const data = await res.json()
             if (!res.ok) { setError(data.error ?? 'Failed to create'); return }
-            const cam = cameras.find(c => c.id === cameraId) ?? null
+            const selectedCameras = cameras.filter(c => selectedCameraIds.includes(c.id))
             const newHousing: Housing = {
                 id: data.id,
                 name: nameInput.trim(),
@@ -269,7 +268,7 @@ export default function HousingManufacturerHousingsClient({
                 priceCurrency,
                 interchangeablePort,
                 productPhotos,
-                camera: cam ? { id: cam.id, name: cam.name, brand: cam.brand } : null,
+                cameras: selectedCameras.map(c => ({ id: c.id, name: c.name, brand: c.brand })),
                 imageInfo: getHousingImagePathWithFallback(productPhotos),
             }
             setHousings(prev => [...prev, newHousing])
@@ -283,7 +282,7 @@ export default function HousingManufacturerHousingsClient({
     }
 
     async function handleEdit() {
-        if (!target || !nameInput.trim() || !cameraId) return
+        if (!target || !nameInput.trim() || selectedCameraIds.length === 0) return
         setLoading(true)
         setError(null)
         try {
@@ -294,7 +293,7 @@ export default function HousingManufacturerHousingsClient({
                 body: JSON.stringify({
                     name: nameInput.trim(),
                     manufacturerId: manufacturer.id,
-                    cameraId,
+                    cameraIds: selectedCameraIds,
                     housingMountId: mountId !== '' ? mountId : null,
                     depthRating: depthRating ? parseInt(depthRating) : undefined,
                     priceAmount: priceAmount ? priceAmount : undefined,
@@ -305,7 +304,7 @@ export default function HousingManufacturerHousingsClient({
             })
             const data = await res.json()
             if (!res.ok) { setError(data.error ?? 'Failed to update'); return }
-            const cam = cameras.find(c => c.id === cameraId) ?? null
+            const selectedCameras = cameras.filter(c => selectedCameraIds.includes(c.id))
             setHousings(prev => prev.map(h => h.id !== target.id ? h : {
                 ...h,
                 name: nameInput.trim(),
@@ -316,7 +315,7 @@ export default function HousingManufacturerHousingsClient({
                 priceCurrency,
                 interchangeablePort,
                 productPhotos,
-                camera: cam ? { id: cam.id, name: cam.name, brand: cam.brand } : null,
+                cameras: selectedCameras.map(c => ({ id: c.id, name: c.name, brand: c.brand })),
                 imageInfo: getHousingImagePathWithFallback(productPhotos),
             }))
             router.refresh()
@@ -371,9 +370,9 @@ export default function HousingManufacturerHousingsClient({
                                 <p className="text-xs font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-snug line-clamp-2">
                                     {housing.name}
                                 </p>
-                                {housing.camera && (
+                                {housing.cameras.length > 0 && (
                                     <p className="text-[10px] text-gray-400 mt-0.5 truncate">
-                                        {housing.camera.brand.name} {housing.camera.name}
+                                        {housing.cameras.map(c => `${c.brand.name} ${c.name}`).join(', ')}
                                     </p>
                                 )}
                                 {housing.priceAmount != null && (
@@ -454,49 +453,46 @@ export default function HousingManufacturerHousingsClient({
 
                         {/* Compatible camera body */}
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Compatible camera body <span className="text-red-500">*</span>
+                            Compatible camera bodies <span className="text-red-500">*</span>
                         </label>
-                        {selectedCamera ? (
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="flex-1 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-900 font-medium">
-                                    {selectedCamera.brand.name} {selectedCamera.name}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={() => { setCameraId(''); setCameraSearch('') }}
-                                    className="text-sm text-gray-500 hover:text-red-600 px-2 py-1"
-                                >
-                                    ×
-                                </button>
+                        {/* Selected cameras tags */}
+                        {selectedCameraIds.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mb-2">
+                                {selectedCameraIds.map(id => {
+                                    const cam = cameras.find(c => c.id === id)!
+                                    return (
+                                        <span key={id} className="inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-900 text-xs font-medium px-2 py-1 rounded-full">
+                                            {cam.brand.name} {cam.name}
+                                            <button type="button" onClick={() => setSelectedCameraIds(prev => prev.filter(i => i !== id))} className="text-blue-400 hover:text-red-600">&times;</button>
+                                        </span>
+                                    )
+                                })}
                             </div>
-                        ) : (
-                            <>
-                                <input
-                                    type="text"
-                                    value={cameraSearch}
-                                    onChange={e => setCameraSearch(e.target.value)}
-                                    placeholder="Search cameras…"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-1"
-                                />
-                                <div className="border border-gray-200 rounded-lg mb-4 max-h-44 overflow-y-auto">
-                                    {filteredCameras.length === 0 ? (
-                                        <p className="px-3 py-2 text-sm text-gray-400">No cameras found</p>
-                                    ) : (
-                                        filteredCameras.map(c => (
-                                            <button
-                                                key={c.id}
-                                                type="button"
-                                                onClick={() => { setCameraId(c.id); setCameraSearch('') }}
-                                                className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-gray-100 last:border-b-0"
-                                            >
-                                                <span className="text-gray-500 mr-1">{c.brand.name}</span>
-                                                {c.name}
-                                            </button>
-                                        ))
-                                    )}
-                                </div>
-                            </>
                         )}
+                        <input
+                            type="text"
+                            value={cameraSearch}
+                            onChange={e => setCameraSearch(e.target.value)}
+                            placeholder="Search cameras to add…"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-1"
+                        />
+                        <div className="border border-gray-200 rounded-lg mb-4 max-h-44 overflow-y-auto">
+                            {filteredCameras.filter(c => !selectedCameraIds.includes(c.id)).length === 0 ? (
+                                <p className="px-3 py-2 text-sm text-gray-400">No cameras found</p>
+                            ) : (
+                                filteredCameras.filter(c => !selectedCameraIds.includes(c.id)).map(c => (
+                                    <button
+                                        key={c.id}
+                                        type="button"
+                                        onClick={() => { setSelectedCameraIds(prev => [...prev, c.id]); setCameraSearch('') }}
+                                        className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-gray-100 last:border-b-0"
+                                    >
+                                        <span className="text-gray-500 mr-1">{c.brand.name}</span>
+                                        {c.name}
+                                    </button>
+                                ))
+                            )}
+                        </div>
 
                         {/* Interchangeable port checkbox */}
                         <label className="flex items-center gap-2 mb-4 cursor-pointer select-none">
@@ -620,7 +616,7 @@ export default function HousingManufacturerHousingsClient({
                             <button onClick={close} className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900">Cancel</button>
                             <button
                                 onClick={modal === 'edit' ? handleEdit : handleAdd}
-                                disabled={loading || !nameInput.trim() || !cameraId}
+                                disabled={loading || !nameInput.trim() || selectedCameraIds.length === 0}
                                 className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                             >
                                 {loading ? 'Saving…' : modal === 'edit' ? 'Save' : 'Add housing'}

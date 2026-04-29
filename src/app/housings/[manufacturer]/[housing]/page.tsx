@@ -30,7 +30,7 @@ async function getHousingDetail(manufacturerSlug: string, housingSlug: string) {
             },
             include: {
                 manufacturer: true,
-                Camera: {
+                cameras: {
                     include: {
                         brand: true
                     }
@@ -95,9 +95,9 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                                     <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                                         {housing.manufacturer.name}
                                     </span>
-                                    {housing.Camera && (
+                                    {housing.cameras.length > 0 && (
                                         <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                                            {housing.Camera.brand.name} {housing.Camera.name}
+                                            {housing.cameras.map(c => `${c.brand.name} ${c.name}`).join(', ')}
                                         </span>
                                     )}
                                 </div>
@@ -125,7 +125,7 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                             <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
                                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Description</h3>
                                 <p className="text-gray-700 leading-relaxed">
-                                    {housing.description || `The ${housing.name} is a professional underwater housing designed for the ${housing.Camera?.brand.name} ${housing.Camera?.name}. This housing provides exceptional build quality and reliability for underwater photography enthusiasts and professionals.`}
+                                    {housing.description || `The ${housing.name} is a professional underwater housing${housing.cameras.length > 0 ? ` designed for the ${housing.cameras.map(c => `${c.brand.name} ${c.name}`).join(' and ')}` : ''}. This housing provides exceptional build quality and reliability for underwater photography enthusiasts and professionals.`}
                                 </p>
                             </div>
 
@@ -142,10 +142,12 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                                             <h4 className="font-semibold text-gray-900 mb-1">Name</h4>
                                             <p className="text-gray-700">{housing.name}</p>
                                         </div>
-                                        {housing.Camera && (
+                                        {housing.cameras.length > 0 && (
                                             <div>
-                                                <h4 className="font-semibold text-gray-900 mb-1">Compatible Camera</h4>
-                                                <p className="text-gray-700">{housing.Camera.brand.name} {housing.Camera.name}</p>
+                                                <h4 className="font-semibold text-gray-900 mb-1">Compatible Camera{housing.cameras.length > 1 ? 's' : ''}</h4>
+                                                {housing.cameras.map(c => (
+                                                    <p key={c.id} className="text-gray-700">{c.brand.name} {c.name}</p>
+                                                ))}
                                             </div>
                                         )}
                                     </div>
@@ -201,16 +203,18 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                                 </div>
                             </div>
 
-                            {housing.Camera && (
+                            {housing.cameras.length > 0 && (
                                 <div className="bg-white rounded-lg shadow-sm p-6">
                                     <h3 className="text-lg font-bold text-gray-900 mb-4">Camera Compatibility</h3>
                                     <div className="space-y-2">
-                                        <div className="flex items-center space-x-2">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                            <span className="text-sm text-gray-700">
-                                                {housing.Camera.brand.name} {housing.Camera.name}
-                                            </span>
-                                        </div>
+                                        {housing.cameras.map(c => (
+                                            <div key={c.id} className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                                <span className="text-sm text-gray-700">
+                                                    {c.brand.name} {c.name}
+                                                </span>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             )}

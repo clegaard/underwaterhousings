@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
             include: {
                 housings: {
                     include: {
-                        Camera: {
+                        cameras: {
                             include: {
                                 brand: true
                             }

@@ -25,7 +25,7 @@ export async function GET(request: Request) {
             where,
             include: {
                 manufacturer: true,
-                Camera: {
+                cameras: {
                     include: {
                         brand: true
                     }

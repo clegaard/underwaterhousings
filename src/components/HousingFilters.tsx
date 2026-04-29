@@ -251,7 +251,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
     const availableHousings = useMemo(() =>
         selectedCamera
-            ? initialHousings.filter((h: any) => h.cameraId === selectedCamera.id).sort((a: any, b: any) => a.name.localeCompare(b.name))
+            ? initialHousings.filter((h: any) => h.cameras?.some((c: any) => c.id === selectedCamera.id)).sort((a: any, b: any) => a.name.localeCompare(b.name))
             : [],
         [initialHousings, selectedCamera]
     )
@@ -315,11 +315,11 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
     const filteredCombinations = useMemo(() => {
         const combinations: any[] = []
         initialHousings.forEach((housing: any) => {
-            if (cameraBrand && housing.Camera?.brand.name !== cameraBrand) return
-            if (cameraModel && housing.Camera?.name !== cameraModel) return
+            if (cameraBrand && !housing.cameras?.some((c: any) => c.brand.name === cameraBrand)) return
+            if (cameraModel && !housing.cameras?.some((c: any) => c.name === cameraModel)) return
             if (housingName && housing.name !== housingName) return
 
-            const camera = housing.Camera
+            const camera = housing.cameras?.find((c: any) => !cameraModel || c.name === cameraModel) ?? housing.cameras?.[0]
             if (!camera) return
             const cameraWithImageInfo = cameras.find((c: any) => c.id === camera.id) || camera
             const isFixed = camera.interchangeableLens === false

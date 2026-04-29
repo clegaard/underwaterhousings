@@ -26,7 +26,7 @@ export async function GET() {
         const housings = await prisma.housing.findMany({
             include: {
                 manufacturer: true,
-                Camera: {
+                cameras: {
                     include: {
                         brand: true
                     }
@@ -58,26 +58,26 @@ export async function POST(request: NextRequest) {
             depthRating,
             material,
             manufacturerId,
-            cameraId,
+            cameraIds,
             housingMountId,
             productPhotos,
             interchangeablePort = true,
         } = body
 
-        if (!name || !manufacturerId || !cameraId) {
+        if (!name || !manufacturerId || !cameraIds?.length) {
             return NextResponse.json(
-                { error: 'Model, name, housing manufacturer, and camera are required' },
+                { error: 'Model, name, housing manufacturer, and at least one camera are required' },
                 { status: 400 }
             )
         }
 
-        // Verify the manufacturer and camera exist
-        const [manufacturer, camera] = await Promise.all([
+        // Verify the manufacturer and cameras exist
+        const [manufacturer, cameras] = await Promise.all([
             prisma.manufacturer.findUnique({
                 where: { id: manufacturerId }
             }),
-            prisma.camera.findUnique({
-                where: { id: cameraId },
+            prisma.camera.findMany({
+                where: { id: { in: cameraIds } },
                 include: { brand: true }
             })
         ])
@@ -89,9 +89,9 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        if (!camera) {
+        if (cameras.length !== cameraIds.length) {
             return NextResponse.json(
-                { error: 'Camera not found' },
+                { error: 'One or more cameras more cameras not found' },
                 { status: 404 }
             )
         }
@@ -123,14 +123,14 @@ export async function POST(request: NextRequest) {
                 depthRating: depthRating ? parseInt(depthRating) : 0,
                 material: material || null,
                 manufacturerId,
-                cameraId,
+                cameras: { connect: cameraIds.map((id: number) => ({ id })) },
                 housingMountId: housingMountId ?? null,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 interchangeablePort,
             },
             include: {
                 manufacturer: true,
-                Camera: {
+                cameras: {
                     include: {
                         brand: true
                     }
@@ -172,24 +172,25 @@ export async function PUT(request: NextRequest) {
             depthRating,
             material,
             manufacturerId,
-            cameraId,
+            cameraIds,
             housingMountId,
             productPhotos,
             interchangeablePort = true,
         } = body
 
         // Validate required fields
-        if (!name || !manufacturerId || !cameraId) {
+        if (!name || !manufacturerId || !cameraIds?.length) {
             return NextResponse.json(
-                { error: 'Model, name, housing manufacturer, and camera are required' },
+                { error: 'Model, name, housing manufacturer, and at least one camera are required' },
                 { status: 400 }
             )
         }
 
-        // Check if manufacturer exists
-        const manufacturer = await prisma.manufacturer.findUnique({
-            where: { id: manufacturerId }
-        })
+        // Check if manufacturer and cameras exist
+        const [manufacturer, cameras] = await Promise.all([
+            prisma.manufacturer.findUnique({ where: { id: manufacturerId } }),
+            prisma.camera.findMany({ where: { id: { in: cameraIds } } })
+        ])
 
         if (!manufacturer) {
             return NextResponse.json(
@@ -198,14 +199,9 @@ export async function PUT(request: NextRequest) {
             )
         }
 
-        // Check if camera exists
-        const camera = await prisma.camera.findUnique({
-            where: { id: cameraId }
-        })
-
-        if (!camera) {
+        if (cameras.length !== cameraIds.length) {
             return NextResponse.json(
-                { error: 'Camera not found' },
+                { error: 'One or more cameras not found' },
                 { status: 404 }
             )
         }
@@ -239,14 +235,14 @@ export async function PUT(request: NextRequest) {
                 depthRating: depthRating ? parseInt(depthRating) : 0,
                 material: material || null,
                 manufacturerId,
-                cameraId,
+                cameras: { set: cameraIds.map((id: number) => ({ id })) },
                 housingMountId: housingMountId ?? null,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 interchangeablePort,
             },
             include: {
                 manufacturer: true,
-                Camera: {
+                cameras: {
                     include: {
                         brand: true
                     }

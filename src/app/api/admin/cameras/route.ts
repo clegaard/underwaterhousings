@@ -238,7 +238,7 @@ export async function DELETE(request: NextRequest) {
 
         // Check if camera has any housings
         const housingCount = await prisma.housing.count({
-            where: { cameraId: parseInt(id) }
+            where: { cameras: { some: { id: parseInt(id) } } }
         })
 
         if (housingCount > 0) {

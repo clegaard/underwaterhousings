@@ -4,6 +4,7 @@ import { auth } from '@/auth'
 import Link from 'next/link'
 import { getHousingImagePathWithFallback, getPortImagePathWithFallback } from '@/lib/images'
 import HousingManufacturerHousingsClient from '@/components/HousingManufacturerHousingsClient'
+import HousingMountsClient from '@/components/HousingMountsClient'
 import PortManufacturerPortsClient from '@/components/PortManufacturerPortsClient'
 import ExtensionRingsClient from '@/components/ExtensionRingsClient'
 import PortAdaptersClient from '@/components/PortAdaptersClient'
@@ -19,7 +20,7 @@ async function getData(slug: string) {
             where: { slug },
             include: {
                 housings: {
-                    include: { Camera: { include: { brand: true } } },
+                    include: { cameras: { include: { brand: true } } },
                     orderBy: { name: 'asc' },
                 },
                 ports: {
@@ -80,9 +81,7 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
         priceCurrency: h.priceCurrency,
         productPhotos: h.productPhotos,
         interchangeablePort: h.interchangeablePort,
-        camera: h.Camera
-            ? { id: h.Camera.id, name: h.Camera.name, brand: { name: h.Camera.brand.name } }
-            : null,
+        cameras: h.cameras.map(c => ({ id: c.id, name: c.name, brand: { name: c.brand.name } })),
         imageInfo: getHousingImagePathWithFallback(h.productPhotos),
     }))
 
@@ -133,8 +132,16 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
 
     const cameras = allCameras.map(c => ({ id: c.id, name: c.name, brand: { name: c.brand.name } }))
     const housingMounts = manufacturer.housingMounts.map(m => ({ id: m.id, name: m.name, slug: m.slug }))
+    const housingMountsData = manufacturer.housingMounts.map(m => ({
+        id: m.id,
+        name: m.name,
+        slug: m.slug,
+        description: m.description,
+        innerDiameter: m.innerDiameter,
+    }))
 
     const tabs = [
+        ...(isSuperuser ? [{ id: 'mounts', label: 'Housing Mounts', count: manufacturer.housingMounts.length }] : []),
         { id: 'housings', label: 'Housings', count: manufacturer._count.housings },
         { id: 'ports', label: 'Ports', count: manufacturer._count.ports },
         { id: 'rings', label: 'Extension Rings', count: manufacturer._count.extensionRings },
@@ -227,6 +234,18 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
             </div>
 
             <div className="max-w-7xl mx-auto px-4 py-8 space-y-16">
+                {/* Housing Mounts section */}
+                {isSuperuser && (
+                    <section id="mounts">
+                        <h2 className="text-2xl font-bold text-blue-900 mb-6">Housing Mounts</h2>
+                        <HousingMountsClient
+                            mounts={housingMountsData}
+                            manufacturer={{ id: manufacturer.id, name: manufacturer.name, slug: manufacturer.slug }}
+                            isSuperuser={isSuperuser}
+                        />
+                    </section>
+                )}
+
                 {/* Housings section */}
                 {(housingsData.length > 0 || isSuperuser) && (
                     <section id="housings">
@@ -248,7 +267,7 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
                         <PortManufacturerPortsClient
                             ports={portsData}
                             manufacturer={{ id: manufacturer.id, name: manufacturer.name, slug: manufacturer.slug }}
-                            housingMounts={allHousingMounts}
+                            housingMounts={housingMounts}
                             isSuperuser={isSuperuser}
                         />
                     </section>
@@ -261,7 +280,7 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
                         <ExtensionRingsClient
                             rings={extensionRingsData}
                             manufacturer={{ id: manufacturer.id, name: manufacturer.name, slug: manufacturer.slug }}
-                            housingMounts={allHousingMounts}
+                            housingMounts={housingMounts}
                             isSuperuser={isSuperuser}
                         />
                     </section>
@@ -274,7 +293,7 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
                         <PortAdaptersClient
                             adapters={portAdaptersData}
                             manufacturer={{ id: manufacturer.id, name: manufacturer.name, slug: manufacturer.slug }}
-                            housingMounts={allHousingMounts}
+                            housingMounts={housingMounts}
                             isSuperuser={isSuperuser}
                         />
                     </section>

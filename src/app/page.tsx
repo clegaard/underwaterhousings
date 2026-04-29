@@ -16,7 +16,7 @@ async function getHousingsData() {
                             slug: true
                         }
                     },
-                    Camera: {
+                    cameras: {
                         include: {
                             brand: true,
                             cameraMount: true

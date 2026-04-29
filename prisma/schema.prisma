@@ -45,6 +45,7 @@ model HousingMount {
     description    String?
     manufacturerId Int
     slug           String          @unique
+    innerDiameter  Float? // Inner diameter in mm, used to determine if a lens will fit inside a port
     manufacturer   Manufacturer    @relation(fields: [manufacturerId], references: [id])
     housings       Housing[]
     ports          Port[]
@@ -102,13 +103,12 @@ model Housing {
     depthRating         Int
     material            String?
     manufacturerId      Int
-    cameraId            Int
     housingMountId      Int?
     productPhotos       String[]
     interchangeablePort Boolean       @default(true)
     rigReviews          RigReview[]
     cameraRigs          CameraRig[]
-    Camera              Camera        @relation(fields: [cameraId], references: [id])
+    cameras             Camera[]
     housingMount        HousingMount? @relation(fields: [housingMountId], references: [id])
     manufacturer        Manufacturer  @relation(fields: [manufacturerId], references: [id])
 

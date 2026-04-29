@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 
-function requireSuperuser(session: Awaited<ReturnType<typeof auth>>) {
+function requireSuperuser(session: { user?: unknown } | null) {
     if (!(session?.user as { isSuperuser?: boolean } | undefined)?.isSuperuser) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }

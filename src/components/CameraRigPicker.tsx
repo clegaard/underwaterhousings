@@ -55,7 +55,7 @@ export interface PickerHousing {
     name: string
     slug: string
     productPhotos: string[]
-    cameraId: number
+    cameras: Array<{ id: number }>
     interchangeablePort: boolean
     housingMount: HousingMount | null
     manufacturer: Manufacturer
@@ -261,7 +261,7 @@ export default function CameraRigPicker({
     }, [lenses, selectedCamera])
 
     const availableHousings = useMemo(
-        () => selectedCamera ? housings.filter(h => h.cameraId === selectedCamera.id) : [],
+        () => selectedCamera ? housings.filter(h => h.cameras?.some((c: { id: number }) => c.id === selectedCamera.id)) : [],
         [housings, selectedCamera]
     )
 
