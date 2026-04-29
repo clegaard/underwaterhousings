@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json()
-        const { name, manufacturerId, sku, priceAmount, priceCurrency, productPhotos, lensIds } = body
+        const { name, manufacturerId, priceAmount, priceCurrency, productPhotos, lensIds, productId, productUrl } = body
 
         if (!name || !manufacturerId) {
             return NextResponse.json({ error: 'Name and manufacturer are required' }, { status: 400 })
@@ -61,10 +61,11 @@ export async function POST(request: NextRequest) {
                 name,
                 slug,
                 manufacturerId,
-                sku: sku || null,
                 priceAmount: priceAmount || null,
                 priceCurrency: priceCurrency || 'USD',
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
+                productId: productId?.trim() || null,
+                productUrl: productUrl?.trim() || null,
                 lenses: Array.isArray(lensIds) && lensIds.length > 0
                     ? { connect: lensIds.map((id: number) => ({ id })) }
                     : undefined,
@@ -89,7 +90,7 @@ export async function PUT(request: NextRequest) {
         if (!id) return NextResponse.json({ error: 'Gear ID is required' }, { status: 400 })
 
         const body = await request.json()
-        const { name, manufacturerId, sku, priceAmount, priceCurrency, productPhotos, lensIds } = body
+        const { name, manufacturerId, priceAmount, priceCurrency, productPhotos, lensIds, productId, productUrl } = body
 
         if (!name || !manufacturerId) {
             return NextResponse.json({ error: 'Name and manufacturer are required' }, { status: 400 })
@@ -115,10 +116,11 @@ export async function PUT(request: NextRequest) {
                 name,
                 slug,
                 manufacturerId,
-                sku: sku || null,
                 priceAmount: priceAmount || null,
                 priceCurrency: priceCurrency || 'USD',
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
+                productId: productId?.trim() || null,
+                productUrl: productUrl?.trim() || null,
                 lenses: Array.isArray(lensIds)
                     ? { set: lensIds.map((id: number) => ({ id })) }
                     : undefined,

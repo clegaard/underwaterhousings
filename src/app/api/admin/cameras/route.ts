@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const { name, description, manufacturerId, interchangeableLens, canBeUsedWithoutAHousing, cameraMountId, productPhotos, exifId,
             priceAmount, priceCurrency, sensorWidth, sensorHeight, megapixels,
-            isZoomLens,
+            isZoomLens, productId, productUrl,
             focalLengthTele, focalLengthWide, minimumFocusDistanceTele, minimumFocusDistanceWide, maximumMagnification, depthRating } = body
 
         if (!name || !manufacturerId) {
@@ -107,6 +107,8 @@ export async function POST(request: NextRequest) {
                 minimumFocusDistanceWide: minimumFocusDistanceWide ?? null,
                 maximumMagnification: maximumMagnification ?? null,
                 depthRating: depthRating ?? null,
+                productId: productId?.trim() || null,
+                productUrl: productUrl?.trim() || null,
             },
             include: {
                 brand: true
@@ -141,7 +143,7 @@ export async function PUT(request: NextRequest) {
         const body = await request.json()
         const { name, description, manufacturerId, interchangeableLens, canBeUsedWithoutAHousing, cameraMountId, productPhotos, exifId,
             priceAmount, priceCurrency, sensorWidth, sensorHeight, megapixels,
-            isZoomLens,
+            isZoomLens, productId, productUrl,
             focalLengthTele, focalLengthWide, minimumFocusDistanceTele, minimumFocusDistanceWide, maximumMagnification, depthRating } = body
 
         if (!name || !manufacturerId) {
@@ -205,6 +207,8 @@ export async function PUT(request: NextRequest) {
                 minimumFocusDistanceWide: minimumFocusDistanceWide ?? null,
                 maximumMagnification: maximumMagnification ?? null,
                 depthRating: depthRating ?? null,
+                productId: productId?.trim() || null,
+                productUrl: productUrl?.trim() || null,
             },
             include: {
                 brand: true

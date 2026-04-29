@@ -43,6 +43,8 @@ export default async function LensManufacturerPage({ params }: LensManufacturerP
         cameraMount: lens.cameraMount,
         exifId: lens.exifId ?? null,
         productPhotos: lens.productPhotos,
+        productId: lens.productId ?? null,
+        productUrl: lens.productUrl ?? null,
         imageInfo: getLensImagePathWithFallback(lens.productPhotos),
     }))
 

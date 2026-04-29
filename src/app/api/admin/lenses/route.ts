@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json()
-        const { name, manufacturerId, cameraMountId, exifId, productPhotos, focalLengthTele, focalLengthWide, isZoomLens } = body
+        const { name, manufacturerId, cameraMountId, exifId, productPhotos, focalLengthTele, focalLengthWide, isZoomLens, productId, productUrl } = body
 
         if (!name || !manufacturerId || !cameraMountId || focalLengthTele === undefined || focalLengthTele === null) {
             return NextResponse.json({ error: 'Name, manufacturer, camera mount and focal length are required' }, { status: 400 })
@@ -67,6 +67,8 @@ export async function POST(request: NextRequest) {
                 isZoomLens: Boolean(isZoomLens),
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 exifId: exifId?.trim() || null,
+                productId: productId?.trim() || null,
+                productUrl: productUrl?.trim() || null,
             },
             include: { manufacturer: true, cameraMount: true },
         })
@@ -88,7 +90,7 @@ export async function PUT(request: NextRequest) {
         if (!id) return NextResponse.json({ error: 'Lens ID is required' }, { status: 400 })
 
         const body = await request.json()
-        const { name, manufacturerId, cameraMountId, exifId, productPhotos } = body
+        const { name, manufacturerId, cameraMountId, exifId, productPhotos, productId, productUrl } = body
 
         if (!name || !manufacturerId || !cameraMountId) {
             return NextResponse.json({ error: 'Name, manufacturer and camera mount are required' }, { status: 400 })
@@ -117,6 +119,8 @@ export async function PUT(request: NextRequest) {
                 cameraMountId,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 exifId: exifId?.trim() || null,
+                productId: productId?.trim() || null,
+                productUrl: productUrl?.trim() || null,
             },
             include: { manufacturer: true, cameraMount: true },
         })

@@ -15,10 +15,11 @@ interface Gear {
     id: number
     name: string
     slug: string
-    sku: string | null
     priceAmount: number | null
     priceCurrency: string | null
     productPhotos: string[]
+    productId: string | null
+    productUrl: string | null
     imageInfo: { src: string; fallback: string }
     lenses: Lens[]
 }
@@ -49,7 +50,8 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
     const [target, setTarget] = useState<Gear | null>(null)
 
     const [nameInput, setNameInput] = useState('')
-    const [skuInput, setSkuInput] = useState('')
+    const [productIdInput, setProductIdInput] = useState('')
+    const [productUrlInput, setProductUrlInput] = useState('')
     const [priceAmount, setPriceAmount] = useState('')
     const [priceCurrency, setPriceCurrency] = useState('USD')
     const [selectedLensIds, setSelectedLensIds] = useState<number[]>([])
@@ -62,7 +64,8 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
 
     function resetForm() {
         setNameInput('')
-        setSkuInput('')
+        setProductIdInput('')
+        setProductUrlInput('')
         setPriceAmount('')
         setPriceCurrency('USD')
         setSelectedLensIds([])
@@ -80,7 +83,8 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
     function openEdit(g: Gear) {
         setTarget(g)
         setNameInput(g.name)
-        setSkuInput(g.sku ?? '')
+        setProductIdInput(g.productId ?? '')
+        setProductUrlInput(g.productUrl ?? '')
         setPriceAmount(g.priceAmount != null ? String(g.priceAmount) : '')
         setPriceCurrency(g.priceCurrency ?? 'USD')
         setSelectedLensIds(g.lenses.map(l => l.id))
@@ -180,11 +184,12 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
                 body: JSON.stringify({
                     name: nameInput.trim(),
                     manufacturerId: manufacturer.id,
-                    sku: skuInput.trim() || null,
                     priceAmount: priceAmount || null,
                     priceCurrency,
                     productPhotos,
                     lensIds: selectedLensIds,
+                    productId: productIdInput.trim() || null,
+                    productUrl: productUrlInput.trim() || null,
                 }),
             })
             const data = await res.json()
@@ -193,10 +198,11 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
                 id: data.id,
                 name: nameInput.trim(),
                 slug: data.slug,
-                sku: skuInput.trim() || null,
                 priceAmount: priceAmount ? parseFloat(priceAmount) : null,
                 priceCurrency,
                 productPhotos,
+                productId: productIdInput.trim() || null,
+                productUrl: productUrlInput.trim() || null,
                 imageInfo: getPortImagePathWithFallback(productPhotos),
                 lenses: allLenses.filter(l => selectedLensIds.includes(l.id)),
             }
@@ -218,11 +224,12 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
                 body: JSON.stringify({
                     name: nameInput.trim(),
                     manufacturerId: manufacturer.id,
-                    sku: skuInput.trim() || null,
                     priceAmount: priceAmount || null,
                     priceCurrency,
                     productPhotos,
                     lensIds: selectedLensIds,
+                    productId: productIdInput.trim() || null,
+                    productUrl: productUrlInput.trim() || null,
                 }),
             })
             const data = await res.json()
@@ -231,10 +238,11 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
                 ...g,
                 name: nameInput.trim(),
                 slug: data.slug,
-                sku: skuInput.trim() || null,
                 priceAmount: priceAmount ? parseFloat(priceAmount) : null,
                 priceCurrency,
                 productPhotos,
+                productId: productIdInput.trim() || null,
+                productUrl: productUrlInput.trim() || null,
                 imageInfo: getPortImagePathWithFallback(productPhotos),
                 lenses: allLenses.filter(l => selectedLensIds.includes(l.id)),
             }))
@@ -279,9 +287,7 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
                                 <p className="text-xs font-semibold text-gray-900 leading-snug line-clamp-2">
                                     {gear.name}
                                 </p>
-                                {gear.sku && (
-                                    <p className="text-[10px] text-gray-400 mt-0.5 font-mono truncate">{gear.sku}</p>
-                                )}
+
                                 {gear.lenses.length > 0 && (
                                     <p className="text-[10px] text-teal-600 mt-0.5 truncate">
                                         {gear.lenses.length === 1 ? gear.lenses[0].name : `${gear.lenses.length} lenses`}
@@ -327,7 +333,7 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">{modal === 'edit' ? 'Edit gear' : 'Add gear'}</h3>
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
                         <input
                             autoFocus
                             type="text"
@@ -335,6 +341,24 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
                             onChange={e => setNameInput(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') modal === 'edit' ? handleEdit() : handleAdd() }}
                             placeholder="e.g. SFE2070-Z Zoom Gear for Sony FE 20-70mm f/4 G"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID</label>
+                        <input
+                            type="text"
+                            value={productIdInput}
+                            onChange={e => setProductIdInput(e.target.value)}
+                            placeholder="e.g. ABC-123"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL</label>
+                        <input
+                            type="url"
+                            value={productUrlInput}
+                            onChange={e => setProductUrlInput(e.target.value)}
+                            placeholder="https://..."
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 
@@ -372,15 +396,6 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
                                 <p className="text-xs text-gray-400 px-3 py-2">No lenses match</p>
                             )}
                         </div>
-
-                        <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-                        <input
-                            type="text"
-                            value={skuInput}
-                            onChange={e => setSkuInput(e.target.value)}
-                            placeholder="e.g. SFE2070-Z"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
-                        />
 
                         <div className="flex gap-3 mb-4">
                             <div className="flex-1">

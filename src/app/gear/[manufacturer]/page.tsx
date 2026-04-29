@@ -83,6 +83,8 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
         interchangeablePort: h.interchangeablePort,
         cameras: h.cameras.map(c => ({ id: c.id, name: c.name, brand: { name: c.brand.name } })),
         imageInfo: getHousingImagePathWithFallback(h.productPhotos),
+        productId: h.productId ?? null,
+        productUrl: h.productUrl ?? null,
     }))
 
     const portsData = manufacturer.ports.map(p => ({
@@ -92,6 +94,8 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
         housingMount: p.housingMount,
         productPhotos: p.productPhotos,
         imageInfo: getPortImagePathWithFallback(p.productPhotos),
+        productId: p.productId ?? null,
+        productUrl: p.productUrl ?? null,
     }))
 
     const extensionRingsData = manufacturer.extensionRings.map(r => ({
@@ -104,6 +108,8 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
         lengthMm: r.lengthMm,
         housingMount: r.housingMount,
         imageInfo: getPortImagePathWithFallback(r.productPhotos),
+        productId: r.productId ?? null,
+        productUrl: r.productUrl ?? null,
     }))
 
     const portAdaptersData = manufacturer.portAdapters.map(a => ({
@@ -116,18 +122,21 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
         inputHousingMount: a.inputHousingMount,
         outputHousingMount: a.outputHousingMount,
         imageInfo: getPortImagePathWithFallback(a.productPhotos),
+        productId: a.productId ?? null,
+        productUrl: a.productUrl ?? null,
     }))
 
     const gearsData = manufacturer.gears.map(g => ({
         id: g.id,
         name: g.name,
         slug: g.slug,
-        sku: g.sku,
         priceAmount: g.priceAmount ? parseFloat(g.priceAmount.toString()) : null,
         priceCurrency: g.priceCurrency,
         productPhotos: g.productPhotos,
         imageInfo: getPortImagePathWithFallback(g.productPhotos),
         lenses: g.lenses,
+        productId: g.productId ?? null,
+        productUrl: g.productUrl ?? null,
     }))
 
     const cameras = allCameras.map(c => ({ id: c.id, name: c.name, brand: { name: c.brand.name } }))

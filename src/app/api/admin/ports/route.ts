@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json()
-        const { name, manufacturerId, housingMountId, productPhotos } = body
+        const { name, manufacturerId, housingMountId, productPhotos, productId, productUrl } = body
 
         if (!name || !manufacturerId) {
             return NextResponse.json({ error: 'Name and manufacturer are required' }, { status: 400 })
@@ -63,6 +63,8 @@ export async function POST(request: NextRequest) {
                 manufacturerId,
                 housingMountId: housingMountId || null,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
+                productId: productId?.trim() || null,
+                productUrl: productUrl?.trim() || null,
             },
             include: { manufacturer: true, housingMount: true },
         })
@@ -84,7 +86,7 @@ export async function PUT(request: NextRequest) {
         if (!id) return NextResponse.json({ error: 'Port ID is required' }, { status: 400 })
 
         const body = await request.json()
-        const { name, manufacturerId, housingMountId, productPhotos } = body
+        const { name, manufacturerId, housingMountId, productPhotos, productId, productUrl } = body
 
         if (!name || !manufacturerId) {
             return NextResponse.json({ error: 'Name and manufacturer are required' }, { status: 400 })
@@ -112,6 +114,8 @@ export async function PUT(request: NextRequest) {
                 manufacturerId,
                 housingMountId: housingMountId || null,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
+                productId: productId?.trim() || null,
+                productUrl: productUrl?.trim() || null,
             },
             include: { manufacturer: true, housingMount: true },
         })

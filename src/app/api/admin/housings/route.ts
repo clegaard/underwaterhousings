@@ -62,6 +62,8 @@ export async function POST(request: NextRequest) {
             housingMountId,
             productPhotos,
             interchangeablePort = true,
+            productId,
+            productUrl,
         } = body
 
         if (!name || !manufacturerId || !cameraIds?.length) {
@@ -127,6 +129,8 @@ export async function POST(request: NextRequest) {
                 housingMountId: housingMountId ?? null,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 interchangeablePort,
+                productId: productId?.trim() || null,
+                productUrl: productUrl?.trim() || null,
             },
             include: {
                 manufacturer: true,
@@ -176,6 +180,8 @@ export async function PUT(request: NextRequest) {
             housingMountId,
             productPhotos,
             interchangeablePort = true,
+            productId,
+            productUrl,
         } = body
 
         // Validate required fields
@@ -239,6 +245,8 @@ export async function PUT(request: NextRequest) {
                 housingMountId: housingMountId ?? null,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 interchangeablePort,
+                productId: productId?.trim() || null,
+                productUrl: productUrl?.trim() || null,
             },
             include: {
                 manufacturer: true,

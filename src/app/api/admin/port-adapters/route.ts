@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json()
-        const { name, manufacturerId, inputHousingMountId, outputHousingMountId, priceAmount, priceCurrency, productPhotos } = body
+        const { name, manufacturerId, inputHousingMountId, outputHousingMountId, priceAmount, priceCurrency, productPhotos, productId, productUrl } = body
 
         if (!name || !manufacturerId) {
             return NextResponse.json({ error: 'Name and manufacturer are required' }, { status: 400 })
@@ -66,6 +66,8 @@ export async function POST(request: NextRequest) {
                 priceAmount: priceAmount || null,
                 priceCurrency: priceCurrency || 'USD',
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
+                productId: productId?.trim() || null,
+                productUrl: productUrl?.trim() || null,
             },
             include: { manufacturer: true, inputHousingMount: true, outputHousingMount: true },
         })
@@ -87,7 +89,7 @@ export async function PUT(request: NextRequest) {
         if (!id) return NextResponse.json({ error: 'Port adapter ID is required' }, { status: 400 })
 
         const body = await request.json()
-        const { name, manufacturerId, inputHousingMountId, outputHousingMountId, priceAmount, priceCurrency, productPhotos } = body
+        const { name, manufacturerId, inputHousingMountId, outputHousingMountId, priceAmount, priceCurrency, productPhotos, productId, productUrl } = body
 
         if (!name || !manufacturerId) {
             return NextResponse.json({ error: 'Name and manufacturer are required' }, { status: 400 })
@@ -118,6 +120,8 @@ export async function PUT(request: NextRequest) {
                 priceAmount: priceAmount || null,
                 priceCurrency: priceCurrency || 'USD',
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
+                productId: productId?.trim() || null,
+                productUrl: productUrl?.trim() || null,
             },
             include: { manufacturer: true, inputHousingMount: true, outputHousingMount: true },
         })

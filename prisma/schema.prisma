@@ -65,6 +65,8 @@ model Camera {
     priceAmount    Decimal? @db.Decimal(10, 2)
     productPhotos  String[]
 
+    productId   String? // Manufacturer product ID / SKU (unique within manufacturer)
+    productUrl  String? // Link to the product page on the manufacturer's website
     exifId      String?      @unique
     rigReviews  RigReview[]
     cameraRigs  CameraRig[]
@@ -106,6 +108,8 @@ model Housing {
     housingMountId      Int?
     productPhotos       String[]
     interchangeablePort Boolean       @default(true)
+    productId           String? // Manufacturer product ID / SKU (unique within manufacturer)
+    productUrl          String? // Link to the product page on the manufacturer's website
     rigReviews          RigReview[]
     cameraRigs          CameraRig[]
     cameras             Camera[]
@@ -128,6 +132,8 @@ model Port {
     isFlatPort       Boolean          @default(false) // True if it's a flat port, false if it's a dome port
     hemisphereWidth  Float? // For dome ports, the width of the hemisphere in mm
     depthRating      Int? // Maximum depth rating of the port in meters
+    productId        String? // Manufacturer product ID / SKU (unique within manufacturer)
+    productUrl       String? // Link to the product page on the manufacturer's website
     rigReviews       RigReview[]
     cameraRigs       CameraRig[]
     housingMount     HousingMount?    @relation(fields: [housingMountId], references: [id])
@@ -149,6 +155,8 @@ model ExtensionRing {
     priceAmount    Decimal?             @db.Decimal(10, 2)
     priceCurrency  String?              @default("USD")
     productPhotos  String[]
+    productId      String? // Manufacturer product ID / SKU (unique within manufacturer)
+    productUrl     String? // Link to the product page on the manufacturer's website
     manufacturer   Manufacturer         @relation(fields: [manufacturerId], references: [id])
     housingMount   HousingMount?        @relation(fields: [housingMountId], references: [id])
     portChartSteps PortChartEntryStep[]
@@ -167,6 +175,8 @@ model PortAdapter {
     priceAmount          Decimal?             @db.Decimal(10, 2)
     priceCurrency        String?              @default("USD")
     productPhotos        String[]
+    productId            String? // Manufacturer product ID / SKU (unique within manufacturer)
+    productUrl           String? // Link to the product page on the manufacturer's website
     manufacturer         Manufacturer         @relation(fields: [manufacturerId], references: [id])
     inputHousingMount    HousingMount?        @relation("AdapterInputMount", fields: [inputHousingMountId], references: [id])
     outputHousingMount   HousingMount?        @relation("AdapterOutputMount", fields: [outputHousingMountId], references: [id])
@@ -193,6 +203,8 @@ model Lens {
     productPhotos            String[]
     manufacturerId           Int
     exifId                   String?          @unique
+    productId                String? // Manufacturer product ID / SKU (unique within manufacturer)
+    productUrl               String? // Link to the product page on the manufacturer's website
     rigReviews               RigReview[]
     cameraRigs               CameraRig[]
     camera                   Camera?          @relation(fields: [cameraId], references: [id])
@@ -209,7 +221,8 @@ model Gear {
     id             Int                  @id @default(autoincrement())
     name           String
     slug           String               @unique
-    sku            String?
+    productId      String? // Manufacturer product ID / SKU (unique within manufacturer)
+    productUrl     String? // Link to the product page on the manufacturer's website
     description    String?
     priceAmount    Decimal?             @db.Decimal(10, 2)
     priceCurrency  String?              @default("USD")

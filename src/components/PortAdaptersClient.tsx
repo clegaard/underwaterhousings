@@ -15,6 +15,8 @@ interface PortAdapter {
     priceAmount: number | null
     priceCurrency: string | null
     productPhotos: string[]
+    productId: string | null
+    productUrl: string | null
     imageInfo: { src: string; fallback: string }
 }
 
@@ -56,6 +58,8 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
     const [priceCurrency, setPriceCurrency] = useState('USD')
     const [photos, setPhotos] = useState<PhotoSlot[]>([])
     const [dragPhotoIdx, setDragPhotoIdx] = useState<number | null>(null)
+    const [productIdInput, setProductIdInput] = useState('')
+    const [productUrlInput, setProductUrlInput] = useState('')
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -70,6 +74,8 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
             prev.forEach(p => { if (p.kind === 'new') URL.revokeObjectURL(p.previewUrl) })
             return []
         })
+        setProductIdInput('')
+        setProductUrlInput('')
         setDragPhotoIdx(null)
         setError(null)
     }
@@ -84,6 +90,8 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
         setPriceAmount(a.priceAmount != null ? String(a.priceAmount) : '')
         setPriceCurrency(a.priceCurrency ?? 'USD')
         setPhotos(a.productPhotos.map(path => ({ kind: 'existing' as const, path })))
+        setProductIdInput(a.productId ?? '')
+        setProductUrlInput(a.productUrl ?? '')
         setDragPhotoIdx(null)
         setError(null)
         setModal('edit')
@@ -183,6 +191,8 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
                     priceAmount: priceAmount || null,
                     priceCurrency,
                     productPhotos,
+                    productId: productIdInput.trim() || null,
+                    productUrl: productUrlInput.trim() || null,
                 }),
             })
             const data = await res.json()
@@ -198,6 +208,8 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
                 priceAmount: priceAmount ? parseFloat(priceAmount) : null,
                 priceCurrency,
                 productPhotos,
+                productId: productIdInput.trim() || null,
+                productUrl: productUrlInput.trim() || null,
                 imageInfo: getPortImagePathWithFallback(productPhotos),
             }
             setAdapters(prev => [...prev, newAdapter])
@@ -223,6 +235,8 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
                     priceAmount: priceAmount || null,
                     priceCurrency,
                     productPhotos,
+                    productId: productIdInput.trim() || null,
+                    productUrl: productUrlInput.trim() || null,
                 }),
             })
             const data = await res.json()
@@ -238,6 +252,8 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
                 priceAmount: priceAmount ? parseFloat(priceAmount) : null,
                 priceCurrency,
                 productPhotos,
+                productId: productIdInput.trim() || null,
+                productUrl: productUrlInput.trim() || null,
                 imageInfo: getPortImagePathWithFallback(productPhotos),
             }))
             router.refresh(); close()
@@ -328,7 +344,7 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">{modal === 'edit' ? 'Edit port adapter' : 'Add port adapter'}</h3>
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
                         <input
                             autoFocus
                             type="text"
@@ -336,6 +352,24 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
                             onChange={e => setNameInput(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') modal === 'edit' ? handleEdit() : handleAdd() }}
                             placeholder={`e.g. ${manufacturer.name} N85 to N120 Adapter`}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID</label>
+                        <input
+                            type="text"
+                            value={productIdInput}
+                            onChange={e => setProductIdInput(e.target.value)}
+                            placeholder="e.g. N85-N100"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL</label>
+                        <input
+                            type="url"
+                            value={productUrlInput}
+                            onChange={e => setProductUrlInput(e.target.value)}
+                            placeholder="https://..."
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 
@@ -383,9 +417,7 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
                                     <option>GBP</option>
                                 </select>
                             </div>
-                        </div>
-
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product photos</label>
+                        </div>\n\n                        <label className="block text-sm font-medium text-gray-700 mb-1">Product photos</label>
                         <div
                             className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors mb-3"
                             onClick={() => fileInputRef.current?.click()}

@@ -16,6 +16,8 @@ interface Camera {
     interchangeableLens: boolean
     canBeUsedWithoutAHousing: boolean
     exifId: string | null
+    productId: string | null
+    productUrl: string | null
     productPhotos: string[]
     imageInfo: { src: string; fallback: string }
     // pricing
@@ -74,6 +76,8 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
     const [canBeUsedWithoutAHousing, setCanBeUsedWithoutAHousing] = useState(false)
     const [mountId, setMountId] = useState<number | ''>('')
     const [exifIdInput, setExifIdInput] = useState('')
+    const [productIdInput, setProductIdInput] = useState('')
+    const [productUrlInput, setProductUrlInput] = useState('')
     // pricing
     const [priceAmount, setPriceAmount] = useState<number | ''>('')
     const [priceCurrency, setPriceCurrency] = useState('USD')
@@ -103,6 +107,8 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
         setCanBeUsedWithoutAHousing(false)
         setMountId('')
         setExifIdInput('')
+        setProductIdInput('')
+        setProductUrlInput('')
         setPriceAmount('')
         setPriceCurrency('USD')
         setSensorWidth('')
@@ -136,6 +142,8 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
         setCanBeUsedWithoutAHousing(c.canBeUsedWithoutAHousing)
         setMountId(c.cameraMount?.id ?? '')
         setExifIdInput(c.exifId ?? '')
+        setProductIdInput(c.productId ?? '')
+        setProductUrlInput(c.productUrl ?? '')
         setPriceAmount(c.priceAmount !== null ? parseFloat(c.priceAmount) : '')
         setPriceCurrency(c.priceCurrency ?? 'USD')
         setSensorWidth(c.sensorWidth ?? '')
@@ -278,6 +286,8 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                     cameraMountId: interchangeableLens && mountId !== '' ? mountId : null,
                     productPhotos,
                     exifId: exifIdInput.trim() || null,
+                    productId: productIdInput.trim() || null,
+                    productUrl: productUrlInput.trim() || null,
                     priceAmount: priceAmount !== '' ? priceAmount : null,
                     priceCurrency: priceCurrency || 'USD',
                     sensorWidth: sensorWidth !== '' ? sensorWidth : null,
@@ -305,6 +315,8 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                 canBeUsedWithoutAHousing,
                 cameraMount: interchangeableLens && resolvedMount ? resolvedMount : null,
                 exifId: exifIdInput.trim() || null,
+                productId: productIdInput.trim() || null,
+                productUrl: productUrlInput.trim() || null,
                 productPhotos,
                 imageInfo: getCameraImagePathWithFallback(productPhotos),
                 priceAmount: priceAmount !== '' ? String(priceAmount) : null,
@@ -348,6 +360,8 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                     cameraMountId: interchangeableLens && mountId !== '' ? mountId : null,
                     productPhotos,
                     exifId: exifIdInput.trim() || null,
+                    productId: productIdInput.trim() || null,
+                    productUrl: productUrlInput.trim() || null,
                     priceAmount: priceAmount !== '' ? priceAmount : null,
                     priceCurrency: priceCurrency || 'USD',
                     sensorWidth: sensorWidth !== '' ? sensorWidth : null,
@@ -375,6 +389,8 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                 cameraMount: interchangeableLens && resolvedMount ? resolvedMount : null,
                 productPhotos,
                 exifId: exifIdInput.trim() || null,
+                productId: productIdInput.trim() || null,
+                productUrl: productUrlInput.trim() || null,
                 priceAmount: priceAmount !== '' ? String(priceAmount) : null,
                 priceCurrency: priceCurrency || 'USD',
                 sensorWidth: sensorWidth !== '' ? sensorWidth : null,
@@ -525,8 +541,8 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                             {modal === 'edit' ? 'Edit camera' : 'Add camera'}
                         </h3>
 
-                        {/* Name */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        {/* Product Name */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
                         <input
                             autoFocus
                             type="text"
@@ -534,6 +550,26 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                             onChange={e => setNameInput(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') modal === 'edit' ? handleEdit() : handleAdd() }}
                             placeholder={`e.g. ${manufacturer.name} A7R V`}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        {/* Product ID */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID</label>
+                        <input
+                            type="text"
+                            value={productIdInput}
+                            onChange={e => setProductIdInput(e.target.value)}
+                            placeholder="e.g. ILCE-7RM5"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        {/* Product URL */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL</label>
+                        <input
+                            type="url"
+                            value={productUrlInput}
+                            onChange={e => setProductUrlInput(e.target.value)}
+                            placeholder="https://..."
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 

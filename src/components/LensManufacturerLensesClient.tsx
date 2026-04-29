@@ -13,6 +13,8 @@ interface Lens {
     cameraMount: { id: number; name: string; slug: string } | null
     exifId: string | null
     productPhotos: string[]
+    productId: string | null
+    productUrl: string | null
     imageInfo: { src: string; fallback: string }
 }
 
@@ -50,6 +52,8 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
     const [nameInput, setNameInput] = useState('')
     const [mountId, setMountId] = useState<number | ''>('')
     const [exifIdInput, setExifIdInput] = useState('')
+    const [productIdInput, setProductIdInput] = useState('')
+    const [productUrlInput, setProductUrlInput] = useState('')
     const [photos, setPhotos] = useState<PhotoSlot[]>([])
     const [dragPhotoIdx, setDragPhotoIdx] = useState<number | null>(null)
 
@@ -60,6 +64,8 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
         setNameInput('')
         setMountId('')
         setExifIdInput('')
+        setProductIdInput('')
+        setProductUrlInput('')
         setPhotos(prev => {
             prev.forEach(p => { if (p.kind === 'new') URL.revokeObjectURL(p.previewUrl) })
             return []
@@ -78,6 +84,8 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
         setNameInput(l.name)
         setMountId(l.cameraMount?.id ?? '')
         setExifIdInput(l.exifId ?? '')
+        setProductIdInput(l.productId ?? '')
+        setProductUrlInput(l.productUrl ?? '')
         setPhotos(l.productPhotos.map(path => ({ kind: 'existing' as const, path })))
         setDragPhotoIdx(null)
         setError(null)
@@ -205,6 +213,8 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                     cameraMountId: mountId,
                     productPhotos,
                     exifId: exifIdInput.trim() || null,
+                    productId: productIdInput.trim() || null,
+                    productUrl: productUrlInput.trim() || null,
                 }),
             })
             const data = await res.json()
@@ -217,6 +227,8 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                 cameraMount: resolvedMount,
                 exifId: exifIdInput.trim() || null,
                 productPhotos,
+                productId: productIdInput.trim() || null,
+                productUrl: productUrlInput.trim() || null,
                 imageInfo: getLensImagePathWithFallback(productPhotos),
             }
             setLenses(prev => [...prev, newLens])
@@ -244,6 +256,8 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                     cameraMountId: mountId,
                     productPhotos,
                     exifId: exifIdInput.trim() || null,
+                    productId: productIdInput.trim() || null,
+                    productUrl: productUrlInput.trim() || null,
                 }),
             })
             const data = await res.json()
@@ -256,6 +270,8 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                 cameraMount: resolvedMount,
                 productPhotos,
                 exifId: exifIdInput.trim() || null,
+                productId: productIdInput.trim() || null,
+                productUrl: productUrlInput.trim() || null,
                 imageInfo: getLensImagePathWithFallback(productPhotos),
             }))
             router.refresh()
@@ -387,7 +403,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                             {modal === 'edit' ? 'Edit lens' : 'Add lens'}
                         </h3>
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
                         <input
                             autoFocus
                             type="text"
@@ -395,6 +411,24 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                             onChange={e => setNameInput(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') modal === 'edit' ? handleEdit() : handleAdd() }}
                             placeholder={`e.g. ${manufacturer.name} 24-70mm f/2.8`}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID</label>
+                        <input
+                            type="text"
+                            value={productIdInput}
+                            onChange={e => setProductIdInput(e.target.value)}
+                            placeholder="e.g. SEL2470GM2"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL</label>
+                        <input
+                            type="url"
+                            value={productUrlInput}
+                            onChange={e => setProductUrlInput(e.target.value)}
+                            placeholder="https://..."
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 

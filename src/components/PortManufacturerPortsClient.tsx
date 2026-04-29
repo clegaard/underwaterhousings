@@ -12,6 +12,8 @@ interface Port {
     slug: string
     housingMount: { id: number; name: string; slug: string } | null
     productPhotos: string[]
+    productId: string | null
+    productUrl: string | null
     imageInfo: { src: string; fallback: string }
 }
 
@@ -49,6 +51,8 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
     const [nameInput, setNameInput] = useState('')
     const [mountId, setMountId] = useState<number | ''>('')
     const [photos, setPhotos] = useState<PhotoSlot[]>([])
+    const [productIdInput, setProductIdInput] = useState('')
+    const [productUrlInput, setProductUrlInput] = useState('')
     const [dragPhotoIdx, setDragPhotoIdx] = useState<number | null>(null)
 
     const [loading, setLoading] = useState(false)
@@ -61,6 +65,8 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
             prev.forEach(p => { if (p.kind === 'new') URL.revokeObjectURL(p.previewUrl) })
             return []
         })
+        setProductIdInput('')
+        setProductUrlInput('')
         setDragPhotoIdx(null)
     }
 
@@ -71,6 +77,8 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
         setNameInput(p.name)
         setMountId(p.housingMount?.id ?? '')
         setPhotos(p.productPhotos.map(path => ({ kind: 'existing' as const, path })))
+        setProductIdInput(p.productId ?? '')
+        setProductUrlInput(p.productUrl ?? '')
         setDragPhotoIdx(null)
         setError(null)
         setModal('edit')
@@ -167,12 +175,12 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
             const res = await fetch('/api/admin/ports', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: nameInput.trim(), manufacturerId: manufacturer.id, housingMountId: mountId || null, productPhotos }),
+                body: JSON.stringify({ name: nameInput.trim(), manufacturerId: manufacturer.id, housingMountId: mountId || null, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null }),
             })
             const data = await res.json()
             if (!res.ok) { setError(data.error ?? 'Failed to create'); return }
             const resolvedMount = housingMounts.find(m => m.id === mountId) ?? null
-            setPorts(prev => [...prev, { id: data.id, name: nameInput.trim(), slug: data.slug, housingMount: resolvedMount, productPhotos, imageInfo: getPortImagePathWithFallback(productPhotos) }])
+            setPorts(prev => [...prev, { id: data.id, name: nameInput.trim(), slug: data.slug, housingMount: resolvedMount, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, imageInfo: getPortImagePathWithFallback(productPhotos) }])
             router.refresh(); close()
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Network error')
@@ -187,12 +195,12 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
             const res = await fetch(`/api/admin/ports?id=${target.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: nameInput.trim(), manufacturerId: manufacturer.id, housingMountId: mountId || null, productPhotos }),
+                body: JSON.stringify({ name: nameInput.trim(), manufacturerId: manufacturer.id, housingMountId: mountId || null, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null }),
             })
             const data = await res.json()
             if (!res.ok) { setError(data.error ?? 'Failed to update'); return }
             const resolvedMount = housingMounts.find(m => m.id === mountId) ?? null
-            setPorts(prev => prev.map(p => p.id !== target.id ? p : { ...p, name: nameInput.trim(), slug: data.slug, housingMount: resolvedMount, productPhotos, imageInfo: getPortImagePathWithFallback(productPhotos) }))
+            setPorts(prev => prev.map(p => p.id !== target.id ? p : { ...p, name: nameInput.trim(), slug: data.slug, housingMount: resolvedMount, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, imageInfo: getPortImagePathWithFallback(productPhotos) }))
             router.refresh(); close()
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Network error')
@@ -275,7 +283,7 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">{modal === 'edit' ? 'Edit port' : 'Add port'}</h3>
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
                         <input
                             autoFocus
                             type="text"
@@ -283,6 +291,26 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
                             onChange={e => setNameInput(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') modal === 'edit' ? handleEdit() : handleAdd() }}
                             placeholder={`e.g. ${manufacturer.name} Wide Port`}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        {/* Product ID */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID</label>
+                        <input
+                            type="text"
+                            value={productIdInput}
+                            onChange={e => setProductIdInput(e.target.value)}
+                            placeholder="e.g. N100-330"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        {/* Product URL */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL</label>
+                        <input
+                            type="url"
+                            value={productUrlInput}
+                            onChange={e => setProductUrlInput(e.target.value)}
+                            placeholder="https://..."
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 

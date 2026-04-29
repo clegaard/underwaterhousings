@@ -17,6 +17,8 @@ interface Housing {
     priceAmount: number | null
     priceCurrency: string | null
     productPhotos: string[]
+    productId: string | null
+    productUrl: string | null
     interchangeablePort: boolean
     cameras: Array<{ id: number; name: string; brand: { name: string } }>
     imageInfo: { src: string; fallback: string }
@@ -76,6 +78,8 @@ export default function HousingManufacturerHousingsClient({
     const [priceCurrency, setPriceCurrency] = useState('USD')
     const [interchangeablePort, setInterchangeablePort] = useState(true)
     const [photos, setPhotos] = useState<PhotoSlot[]>([])
+    const [productIdInput, setProductIdInput] = useState('')
+    const [productUrlInput, setProductUrlInput] = useState('')
     const [dragPhotoIdx, setDragPhotoIdx] = useState<number | null>(null)
 
     const [loading, setLoading] = useState(false)
@@ -100,6 +104,8 @@ export default function HousingManufacturerHousingsClient({
             prev.forEach(p => { if (p.kind === 'new') URL.revokeObjectURL(p.previewUrl) })
             return []
         })
+        setProductIdInput('')
+        setProductUrlInput('')
         setDragPhotoIdx(null)
         setError(null)
     }
@@ -121,6 +127,8 @@ export default function HousingManufacturerHousingsClient({
         setPriceCurrency(h.priceCurrency ?? 'USD')
         setInterchangeablePort(h.interchangeablePort)
         setPhotos(h.productPhotos.map(path => ({ kind: 'existing' as const, path })))
+        setProductIdInput(h.productId ?? '')
+        setProductUrlInput(h.productUrl ?? '')
         setDragPhotoIdx(null)
         setError(null)
         setModal('edit')
@@ -251,6 +259,8 @@ export default function HousingManufacturerHousingsClient({
                     priceCurrency,
                     interchangeablePort,
                     productPhotos,
+                    productId: productIdInput.trim() || null,
+                    productUrl: productUrlInput.trim() || null,
                 }),
             })
             const data = await res.json()
@@ -268,6 +278,8 @@ export default function HousingManufacturerHousingsClient({
                 priceCurrency,
                 interchangeablePort,
                 productPhotos,
+                productId: productIdInput.trim() || null,
+                productUrl: productUrlInput.trim() || null,
                 cameras: selectedCameras.map(c => ({ id: c.id, name: c.name, brand: c.brand })),
                 imageInfo: getHousingImagePathWithFallback(productPhotos),
             }
@@ -300,6 +312,8 @@ export default function HousingManufacturerHousingsClient({
                     priceCurrency,
                     interchangeablePort,
                     productPhotos,
+                    productId: productIdInput.trim() || null,
+                    productUrl: productUrlInput.trim() || null,
                 }),
             })
             const data = await res.json()
@@ -315,6 +329,8 @@ export default function HousingManufacturerHousingsClient({
                 priceCurrency,
                 interchangeablePort,
                 productPhotos,
+                productId: productIdInput.trim() || null,
+                productUrl: productUrlInput.trim() || null,
                 cameras: selectedCameras.map(c => ({ id: c.id, name: c.name, brand: c.brand })),
                 imageInfo: getHousingImagePathWithFallback(productPhotos),
             }))
@@ -440,14 +456,34 @@ export default function HousingManufacturerHousingsClient({
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">{modal === 'edit' ? 'Edit housing' : 'Add housing'}</h3>
 
-                        {/* Name */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        {/* Product Name */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
                         <input
                             autoFocus
                             type="text"
                             value={nameInput}
                             onChange={e => setNameInput(e.target.value)}
                             placeholder={`e.g. ${manufacturer.name} NA-A7IV`}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        {/* Product ID */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID</label>
+                        <input
+                            type="text"
+                            value={productIdInput}
+                            onChange={e => setProductIdInput(e.target.value)}
+                            placeholder="e.g. NAU-NA-A7IV"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        {/* Product URL */}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL</label>
+                        <input
+                            type="url"
+                            value={productUrlInput}
+                            onChange={e => setProductUrlInput(e.target.value)}
+                            placeholder="https://..."
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 
@@ -623,34 +659,37 @@ export default function HousingManufacturerHousingsClient({
                             </button>
                         </div>
                     </div>
-                </div>
-            )}
+                </div >
+            )
+            }
 
             {/* Delete confirmation modal */}
-            {modal === 'delete' && target && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-                    onClick={(e) => { if (e.target === e.currentTarget) close() }}
-                >
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete housing?</h3>
-                        <p className="text-sm text-gray-600 mb-6">
-                            Are you sure you want to delete <strong>{target.name}</strong>? This cannot be undone.
-                        </p>
-                        {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
-                        <div className="flex justify-end gap-3">
-                            <button onClick={close} className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900">Cancel</button>
-                            <button
-                                onClick={handleDelete}
-                                disabled={loading}
-                                className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
-                            >
-                                {loading ? 'Deleting…' : 'Delete'}
-                            </button>
+            {
+                modal === 'delete' && target && (
+                    <div
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+                        onClick={(e) => { if (e.target === e.currentTarget) close() }}
+                    >
+                        <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete housing?</h3>
+                            <p className="text-sm text-gray-600 mb-6">
+                                Are you sure you want to delete <strong>{target.name}</strong>? This cannot be undone.
+                            </p>
+                            {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+                            <div className="flex justify-end gap-3">
+                                <button onClick={close} className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900">Cancel</button>
+                                <button
+                                    onClick={handleDelete}
+                                    disabled={loading}
+                                    className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+                                >
+                                    {loading ? 'Deleting…' : 'Delete'}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
         </>
     )
 }
