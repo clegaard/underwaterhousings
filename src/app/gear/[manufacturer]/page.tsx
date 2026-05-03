@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { auth } from '@/auth'
 import Link from 'next/link'
-import { getHousingImagePathWithFallback, getPortImagePathWithFallback } from '@/lib/images'
+import { withBase, getHousingImagePathWithFallback, getPortImagePathWithFallback } from '@/lib/images'
 import HousingManufacturerHousingsClient from '@/components/HousingManufacturerHousingsClient'
 import HousingMountsClient from '@/components/HousingMountsClient'
 import PortManufacturerPortsClient from '@/components/PortManufacturerPortsClient'
@@ -172,7 +172,15 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
                     </nav>
                     <div className="flex justify-between items-start">
                         <div>
-                            <h1 className="text-4xl font-bold text-blue-900 mb-1">{manufacturer.name}</h1>
+                            {manufacturer.logoPath ? (
+                                <img
+                                    src={withBase(manufacturer.logoPath)}
+                                    alt={`${manufacturer.name} logo`}
+                                    className="h-16 object-contain mb-1"
+                                />
+                            ) : (
+                                <h1 className="text-4xl font-bold text-blue-900 mb-1">{manufacturer.name}</h1>
+                            )}
                             <p className="text-gray-600">
                                 {manufacturer.description ?? `Underwater camera gear from ${manufacturer.name}`}
                             </p>

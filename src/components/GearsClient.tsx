@@ -363,37 +363,45 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
                         />
 
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Lens <span className="text-red-500">*</span>
-                            {selectedLensIds.length > 0 && (
-                                <span className="ml-1 text-xs font-normal text-teal-600">({selectedLensIds.length} selected)</span>
-                            )}
+                            Lenses
                         </label>
+                        {/* Selected lens tags */}
+                        {selectedLensIds.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mb-2">
+                                {selectedLensIds.map(id => {
+                                    const lens = allLenses.find(l => l.id === id)!
+                                    return (
+                                        <span key={id} className="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-900 text-xs font-medium px-2 py-1 rounded-full">
+                                            {lens.name}
+                                            <button type="button" onClick={() => setSelectedLensIds(prev => prev.filter(i => i !== id))} className="text-teal-400 hover:text-red-600">&times;</button>
+                                        </span>
+                                    )
+                                })}
+                            </div>
+                        )}
                         <input
                             type="text"
                             value={lensSearch}
                             onChange={e => setLensSearch(e.target.value)}
-                            placeholder="Filter lenses…"
-                            className="w-full px-3 py-1.5 border border-gray-300 rounded-t-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                            placeholder="Search lenses to add…"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-gray-900 mb-1"
                         />
-                        <div className="border border-t-0 border-gray-300 rounded-b-lg max-h-40 overflow-y-auto mb-4">
-                            {allLenses
-                                .filter(l => l.name.toLowerCase().includes(lensSearch.toLowerCase()))
-                                .map(l => (
-                                    <label key={l.id} className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedLensIds.includes(l.id)}
-                                            onChange={e => setSelectedLensIds(prev =>
-                                                e.target.checked ? [...prev, l.id] : prev.filter(id => id !== l.id)
-                                            )}
-                                            className="rounded text-blue-600"
-                                        />
-                                        <span className="text-sm text-gray-800">{l.name}</span>
-                                    </label>
-                                ))
-                            }
-                            {allLenses.filter(l => l.name.toLowerCase().includes(lensSearch.toLowerCase())).length === 0 && (
-                                <p className="text-xs text-gray-400 px-3 py-2">No lenses match</p>
+                        <div className="border border-gray-200 rounded-lg mb-4 max-h-44 overflow-y-auto">
+                            {allLenses.filter(l => !selectedLensIds.includes(l.id) && l.name.toLowerCase().includes(lensSearch.toLowerCase())).length === 0 ? (
+                                <p className="px-3 py-2 text-sm text-gray-400">No lenses found</p>
+                            ) : (
+                                allLenses
+                                    .filter(l => !selectedLensIds.includes(l.id) && l.name.toLowerCase().includes(lensSearch.toLowerCase()))
+                                    .map(l => (
+                                        <button
+                                            key={l.id}
+                                            type="button"
+                                            onClick={() => { setSelectedLensIds(prev => [...prev, l.id]); setLensSearch('') }}
+                                            className="w-full text-left px-3 py-2 text-sm hover:bg-teal-50 hover:text-teal-700 transition-colors border-b border-gray-100 last:border-b-0"
+                                        >
+                                            {l.name}
+                                        </button>
+                                    ))
                             )}
                         </div>
 
