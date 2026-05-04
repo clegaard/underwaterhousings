@@ -53,6 +53,8 @@ export default async function LensManufacturerPage({ params }: LensManufacturerP
         minimumFocusDistanceWide: lens.minimumFocusDistanceWide ?? null,
         maximumMagnificationTele: lens.maximumMagnificationTele ?? null,
         maximumMagnificationWide: lens.maximumMagnificationWide ?? null,
+        entrancePupilDistanceTele: lens.entrancePupilDistanceTele ?? null,
+        entrancePupilDistanceWide: lens.entrancePupilDistanceWide ?? null,
     }))
 
     return (

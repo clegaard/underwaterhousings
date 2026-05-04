@@ -43,6 +43,8 @@ export default async function LensesPage() {
             minimumFocusDistanceWide: l.minimumFocusDistanceWide ?? null,
             maximumMagnificationTele: l.maximumMagnificationTele ?? null,
             maximumMagnificationWide: l.maximumMagnificationWide ?? null,
+            entrancePupilDistanceTele: l.entrancePupilDistanceTele ?? null,
+            entrancePupilDistanceWide: l.entrancePupilDistanceWide ?? null,
         })),
     }))
 

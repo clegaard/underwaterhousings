@@ -23,6 +23,8 @@ interface Lens {
     maximumMagnificationWide: number | null
     minimumFocusDistanceTele: number | null
     minimumFocusDistanceWide: number | null
+    entrancePupilDistanceTele: number | null
+    entrancePupilDistanceWide: number | null
 }
 
 interface Manufacturer {
@@ -71,6 +73,12 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
     const [minimumFocusDistanceWide, setMinimumFocusDistanceWide] = useState('')
     const [maximumMagnificationTele, setMaximumMagnificationTele] = useState('')
     const [maximumMagnificationWide, setMaximumMagnificationWide] = useState('')
+    const [entrancePupilDistanceTele, setEntrancePupilDistanceTele] = useState('')
+    const [entrancePupilDistanceWide, setEntrancePupilDistanceWide] = useState('')
+
+    const zoomWide = parseInt(focalLengthWide)
+    const zoomTele = parseInt(focalLengthTele)
+    const rangeError = !isNaN(zoomWide) && !isNaN(zoomTele) && zoomWide >= zoomTele
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -93,6 +101,8 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
         setMinimumFocusDistanceWide('')
         setMaximumMagnificationTele('')
         setMaximumMagnificationWide('')
+        setEntrancePupilDistanceTele('')
+        setEntrancePupilDistanceWide('')
     }
 
     function openAdd() {
@@ -117,6 +127,8 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
         setMinimumFocusDistanceWide(l.minimumFocusDistanceWide != null ? String(l.minimumFocusDistanceWide) : '')
         setMaximumMagnificationTele(l.maximumMagnificationTele != null ? String(l.maximumMagnificationTele) : '')
         setMaximumMagnificationWide(l.maximumMagnificationWide != null ? String(l.maximumMagnificationWide) : '')
+        setEntrancePupilDistanceTele(l.entrancePupilDistanceTele != null ? String(l.entrancePupilDistanceTele) : '')
+        setEntrancePupilDistanceWide(l.entrancePupilDistanceWide != null ? String(l.entrancePupilDistanceWide) : '')
         setError(null)
         setModal('edit')
     }
@@ -251,6 +263,8 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                     minimumFocusDistanceWide: lensType === 'zoom' && minimumFocusDistanceWide ? parseFloat(minimumFocusDistanceWide) : null,
                     maximumMagnificationTele: maximumMagnificationTele ? parseFloat(maximumMagnificationTele) : null,
                     maximumMagnificationWide: lensType === 'zoom' && maximumMagnificationWide ? parseFloat(maximumMagnificationWide) : null,
+                    entrancePupilDistanceTele: entrancePupilDistanceTele ? parseFloat(entrancePupilDistanceTele) : null,
+                    entrancePupilDistanceWide: lensType === 'zoom' && entrancePupilDistanceWide ? parseFloat(entrancePupilDistanceWide) : null,
                 }),
             })
             const data = await res.json()
@@ -273,6 +287,8 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                 minimumFocusDistanceWide: lensType === 'zoom' && minimumFocusDistanceWide ? parseFloat(minimumFocusDistanceWide) : null,
                 maximumMagnificationTele: maximumMagnificationTele ? parseFloat(maximumMagnificationTele) : null,
                 maximumMagnificationWide: lensType === 'zoom' && maximumMagnificationWide ? parseFloat(maximumMagnificationWide) : null,
+                entrancePupilDistanceTele: entrancePupilDistanceTele ? parseFloat(entrancePupilDistanceTele) : null,
+                entrancePupilDistanceWide: lensType === 'zoom' && entrancePupilDistanceWide ? parseFloat(entrancePupilDistanceWide) : null,
             }
             setLenses(prev => [...prev, newLens])
             router.refresh()
@@ -308,6 +324,8 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                     minimumFocusDistanceWide: lensType === 'zoom' && minimumFocusDistanceWide ? parseFloat(minimumFocusDistanceWide) : null,
                     maximumMagnificationTele: maximumMagnificationTele ? parseFloat(maximumMagnificationTele) : null,
                     maximumMagnificationWide: lensType === 'zoom' && maximumMagnificationWide ? parseFloat(maximumMagnificationWide) : null,
+                    entrancePupilDistanceTele: entrancePupilDistanceTele ? parseFloat(entrancePupilDistanceTele) : null,
+                    entrancePupilDistanceWide: lensType === 'zoom' && entrancePupilDistanceWide ? parseFloat(entrancePupilDistanceWide) : null,
                 }),
             })
             const data = await res.json()
@@ -330,6 +348,8 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                 minimumFocusDistanceWide: lensType === 'zoom' && minimumFocusDistanceWide ? parseFloat(minimumFocusDistanceWide) : null,
                 maximumMagnificationTele: maximumMagnificationTele ? parseFloat(maximumMagnificationTele) : null,
                 maximumMagnificationWide: lensType === 'zoom' && maximumMagnificationWide ? parseFloat(maximumMagnificationWide) : null,
+                entrancePupilDistanceTele: entrancePupilDistanceTele ? parseFloat(entrancePupilDistanceTele) : null,
+                entrancePupilDistanceWide: lensType === 'zoom' && entrancePupilDistanceWide ? parseFloat(entrancePupilDistanceWide) : null,
             }))
             router.refresh()
             close()
@@ -518,7 +538,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                             <div className="flex rounded-lg border border-gray-200 overflow-hidden mb-4">
                                 <button
                                     type="button"
-                                    onClick={() => { setLensType('prime'); setFocalLengthWide(''); setMinimumFocusDistanceWide(''); setMaximumMagnificationWide('') }}
+                                    onClick={() => { setLensType('prime'); setFocalLengthWide(''); setMinimumFocusDistanceWide(''); setMaximumMagnificationWide(''); setEntrancePupilDistanceWide('') }}
                                     className={`flex-1 py-2 text-sm font-medium transition-colors ${lensType === 'prime' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
                                 >
                                     Prime
@@ -565,104 +585,163 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-1"
                                     />
                                     <p className="text-xs text-gray-400 mb-2">Reproduction ratio at closest focus, e.g. 0.30 for 0.30× (1:3.3).</p>
-                                </>
-                            ) : (() => {
-                                const wide = parseInt(focalLengthWide)
-                                const tele = parseInt(focalLengthTele)
-                                const rangeError = !isNaN(wide) && !isNaN(tele) && wide >= tele
-                                return (
-                                    <div>
-                                        {/* Focal lengths */}
-                                        <div className="flex gap-3 mb-1">
-                                            <div className="flex-1">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Wide end (mm)</label>
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    step="1"
-                                                    value={focalLengthWide}
-                                                    onChange={e => setFocalLengthWide(e.target.value)}
-                                                    placeholder="e.g. 24"
-                                                    className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 ${rangeError ? 'border-red-400' : 'border-gray-300'}`}
-                                                />
-                                            </div>
-                                            <div className="flex-1">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Tele end (mm)</label>
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    step="1"
-                                                    value={focalLengthTele}
-                                                    onChange={e => setFocalLengthTele(e.target.value)}
-                                                    placeholder="e.g. 70"
-                                                    className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 ${rangeError ? 'border-red-400' : 'border-gray-300'}`}
-                                                />
+                                    {/* Entrance pupil distance */}
+                                    <div className="flex items-center gap-1 mb-1">
+                                        <label className="block text-sm font-medium text-gray-700">Entrance pupil distance (mm)</label>
+                                        <div className="relative group/tt inline-block">
+                                            <svg className="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 hidden group-hover/tt:block z-50 shadow-lg pointer-events-none">
+                                                Distance from the lens mount flange to the entrance pupil — the apparent position of the aperture as seen from the front of the lens.<br /><br />
+                                                To select the correct dome port extension, the centre of the dome should align with the entrance pupil. Knowing this distance allows calculating the extension ring stack needed for a given housing and port combination.
+                                                <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900" />
                                             </div>
                                         </div>
-                                        {rangeError && (
-                                            <p className="text-xs text-red-500 mb-3">Wide end must be less than the tele end.</p>
-                                        )}
-                                        {!rangeError && <div className="mb-3" />}
-
-                                        {/* Minimum focus distance */}
-                                        <div className="flex gap-3 mb-3">
-                                            <div className="flex-1">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Min. focus dist. wide (m)</label>
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    step="0.01"
-                                                    value={minimumFocusDistanceWide}
-                                                    onChange={e => setMinimumFocusDistanceWide(e.target.value)}
-                                                    placeholder="e.g. 0.38"
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
-                                                />
-                                            </div>
-                                            <div className="flex-1">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Min. focus dist. tele (m)</label>
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    step="0.01"
-                                                    value={minimumFocusDistanceTele}
-                                                    onChange={e => setMinimumFocusDistanceTele(e.target.value)}
-                                                    placeholder="e.g. 0.38"
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* Maximum magnification */}
-                                        <div className="flex gap-3 mb-1">
-                                            <div className="flex-1">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Max. magnification wide (×)</label>
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    step="0.01"
-                                                    value={maximumMagnificationWide}
-                                                    onChange={e => setMaximumMagnificationWide(e.target.value)}
-                                                    placeholder="e.g. 0.20"
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
-                                                />
-                                            </div>
-                                            <div className="flex-1">
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">Max. magnification tele (×)</label>
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    step="0.01"
-                                                    value={maximumMagnificationTele}
-                                                    onChange={e => setMaximumMagnificationTele(e.target.value)}
-                                                    placeholder="e.g. 0.30"
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
-                                                />
-                                            </div>
-                                        </div>
-                                        <p className="text-xs text-gray-400 mb-2">Reproduction ratio at closest focus, e.g. 0.30 for 0.30× (1:3.3).</p>
                                     </div>
-                                )
-                            })()}
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.1"
+                                        value={entrancePupilDistanceTele}
+                                        onChange={e => setEntrancePupilDistanceTele(e.target.value)}
+                                        placeholder="e.g. 95"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-2"
+                                    />
+                                </>
+                            ) : (
+                                <div>
+                                    {/* Focal lengths */}
+                                    <div className="flex gap-3 mb-1">
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Wide end (mm)</label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                step="1"
+                                                value={focalLengthWide}
+                                                onChange={e => setFocalLengthWide(e.target.value)}
+                                                placeholder="e.g. 24"
+                                                className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 ${rangeError ? 'border-red-400' : 'border-gray-300'}`}
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Tele end (mm)</label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                step="1"
+                                                value={focalLengthTele}
+                                                onChange={e => setFocalLengthTele(e.target.value)}
+                                                placeholder="e.g. 70"
+                                                className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 ${rangeError ? 'border-red-400' : 'border-gray-300'}`}
+                                            />
+                                        </div>
+                                    </div>
+                                    {rangeError && (
+                                        <p className="text-xs text-red-500 mb-3">Wide end must be less than the tele end.</p>
+                                    )}
+                                    {!rangeError && <div className="mb-3" />}
+
+                                    {/* Minimum focus distance */}
+                                    <div className="flex gap-3 mb-3">
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Min. focus dist. wide (m)</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={minimumFocusDistanceWide}
+                                                onChange={e => setMinimumFocusDistanceWide(e.target.value)}
+                                                placeholder="e.g. 0.38"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Min. focus dist. tele (m)</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={minimumFocusDistanceTele}
+                                                onChange={e => setMinimumFocusDistanceTele(e.target.value)}
+                                                placeholder="e.g. 0.38"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Maximum magnification */}
+                                    <div className="flex gap-3 mb-1">
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Max. magnification wide (×)</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={maximumMagnificationWide}
+                                                onChange={e => setMaximumMagnificationWide(e.target.value)}
+                                                placeholder="e.g. 0.20"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Max. magnification tele (×)</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={maximumMagnificationTele}
+                                                onChange={e => setMaximumMagnificationTele(e.target.value)}
+                                                placeholder="e.g. 0.30"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-400 mb-2">Reproduction ratio at closest focus, e.g. 0.30 for 0.30× (1:3.3).</p>
+
+                                    {/* Entrance pupil distance */}
+                                    <div className="flex items-center gap-1 mb-1">
+                                        <label className="block text-sm font-medium text-gray-700">Entrance pupil distance (mm)</label>
+                                        <div className="relative group/tt inline-block">
+                                            <svg className="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 hidden group-hover/tt:block z-50 shadow-lg pointer-events-none">
+                                                Distance from the lens mount flange to the entrance pupil — the apparent position of the aperture as seen from the front of the lens.<br /><br />
+                                                To select the correct dome port extension, the centre of the dome should align with the entrance pupil. For zoom lenses this distance can shift significantly between the wide and tele ends.
+                                                <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-3 mb-2">
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Entrance pupil wide (mm)</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.1"
+                                                value={entrancePupilDistanceWide}
+                                                onChange={e => setEntrancePupilDistanceWide(e.target.value)}
+                                                placeholder="e.g. 82"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Entrance pupil tele (mm)</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.1"
+                                                value={entrancePupilDistanceTele}
+                                                onChange={e => setEntrancePupilDistanceTele(e.target.value)}
+                                                placeholder="e.g. 120"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <label className="block text-sm font-medium text-gray-700 mb-1">Product photos</label>

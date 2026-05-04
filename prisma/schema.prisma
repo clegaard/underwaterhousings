@@ -192,34 +192,36 @@ model PortAdapter {
 }
 
 model Lens {
-    id                       Int              @id @default(autoincrement())
-    name                     String
-    slug                     String           @unique
-    description              String?
-    minimumFocusDistanceTele Float? // Minimum focus distance at the tele end in metres
-    minimumFocusDistanceWide Float? // Minimum focus distance at the wide end in metres
-    isZoomLens               Boolean          @default(false) // True if it's a zoom lens, false if it's a prime lens
-    focalLengthTele          Int // Focal length at the tele end in mm (prime lenses: sole focal length)
-    focalLengthWide          Int? // Focal length at the wide end in mm; null means prime lens
-    maximumMagnificationTele Float? // Maximum reproduction ratio at tele end (or sole value for prime), e.g. 0.30 for 0.30×
-    maximumMagnificationWide Float? // Maximum reproduction ratio at wide end; null for prime lenses
-    priceAmount              Decimal?         @db.Decimal(10, 2)
-    priceCurrency            String?          @default("USD")
-    cameraMountId            Int
-    cameraId                 Int?
-    productPhotos            String[]
-    manufacturerId           Int
-    exifId                   String?          @unique
-    productId                String? // Manufacturer product ID / SKU (unique within manufacturer)
-    productUrl               String? // Link to the product page on the manufacturer's website
-    rigReviews               RigReview[]
-    cameraRigs               CameraRig[]
-    camera                   Camera?          @relation(fields: [cameraId], references: [id])
-    cameraMount              CameraMount      @relation(fields: [cameraMountId], references: [id])
-    manufacturer             Manufacturer?    @relation(fields: [manufacturerId], references: [id])
-    ports                    Port[]           @relation("LensToPort")
-    portChartEntries         PortChartEntry[]
-    gears                    Gear[]           @relation("GearToLens")
+    id                        Int              @id @default(autoincrement())
+    name                      String
+    slug                      String           @unique
+    description               String?
+    minimumFocusDistanceTele  Float? // Minimum focus distance at the tele end in metres
+    minimumFocusDistanceWide  Float? // Minimum focus distance at the wide end in metres
+    isZoomLens                Boolean          @default(false) // True if it's a zoom lens, false if it's a prime lens
+    focalLengthTele           Int // Focal length at the tele end in mm (prime lenses: sole focal length)
+    focalLengthWide           Int? // Focal length at the wide end in mm; null means prime lens
+    maximumMagnificationTele  Float? // Maximum reproduction ratio at tele end (or sole value for prime), e.g. 0.30 for 0.30×
+    maximumMagnificationWide  Float? // Maximum reproduction ratio at wide end; null for prime lenses
+    entrancePupilDistanceTele Float? // Distance from lens flange to entrance pupil at tele end (or sole value for prime) in mm
+    entrancePupilDistanceWide Float? // Distance from lens flange to entrance pupil at wide end in mm; null for prime lenses
+    priceAmount               Decimal?         @db.Decimal(10, 2)
+    priceCurrency             String?          @default("USD")
+    cameraMountId             Int
+    cameraId                  Int?
+    productPhotos             String[]
+    manufacturerId            Int
+    exifId                    String?          @unique
+    productId                 String? // Manufacturer product ID / SKU (unique within manufacturer)
+    productUrl                String? // Link to the product page on the manufacturer's website
+    rigReviews                RigReview[]
+    cameraRigs                CameraRig[]
+    camera                    Camera?          @relation(fields: [cameraId], references: [id])
+    cameraMount               CameraMount      @relation(fields: [cameraMountId], references: [id])
+    manufacturer              Manufacturer?    @relation(fields: [manufacturerId], references: [id])
+    ports                     Port[]           @relation("LensToPort")
+    portChartEntries          PortChartEntry[]
+    gears                     Gear[]           @relation("GearToLens")
 
     @@map("lenses")
 }
