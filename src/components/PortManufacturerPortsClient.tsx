@@ -15,6 +15,10 @@ interface Port {
     productId: string | null
     productUrl: string | null
     imageInfo: { src: string; fallback: string }
+    isFlatPort: boolean
+    portRadius: number | null
+    portDepth: number | null
+    radiusOfCurvature: number | null
 }
 
 interface Manufacturer {
@@ -54,6 +58,12 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
     const [productIdInput, setProductIdInput] = useState('')
     const [productUrlInput, setProductUrlInput] = useState('')
     const [dragPhotoIdx, setDragPhotoIdx] = useState<number | null>(null)
+    // Optics fields
+    const [isFlatPort, setIsFlatPort] = useState(false)
+    const [portRadius, setPortRadius] = useState('')
+    const [portDepth, setPortDepth] = useState('')
+    const [radiusOfCurvature, setRadiusOfCurvature] = useState('')
+    const [opticsTab, setOpticsTab] = useState<'dome' | 'flat'>('dome')
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -68,6 +78,11 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
         setProductIdInput('')
         setProductUrlInput('')
         setDragPhotoIdx(null)
+        setIsFlatPort(false)
+        setPortRadius('')
+        setPortDepth('')
+        setRadiusOfCurvature('')
+        setOpticsTab('dome')
     }
 
     function openAdd() { resetForm(); setError(null); setModal('add') }
@@ -80,6 +95,11 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
         setProductIdInput(p.productId ?? '')
         setProductUrlInput(p.productUrl ?? '')
         setDragPhotoIdx(null)
+        setIsFlatPort(p.isFlatPort)
+        setPortRadius(p.portRadius != null ? String(p.portRadius) : '')
+        setPortDepth(p.portDepth != null ? String(p.portDepth) : '')
+        setRadiusOfCurvature(p.radiusOfCurvature != null ? String(p.radiusOfCurvature) : '')
+        setOpticsTab(p.isFlatPort ? 'flat' : 'dome')
         setError(null)
         setModal('edit')
     }
@@ -175,12 +195,12 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
             const res = await fetch('/api/admin/ports', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: nameInput.trim(), manufacturerId: manufacturer.id, housingMountId: mountId || null, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null }),
+                body: JSON.stringify({ name: nameInput.trim(), manufacturerId: manufacturer.id, housingMountId: mountId || null, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, isFlatPort, portRadius: portRadius || null, portDepth: portDepth || null, radiusOfCurvature: radiusOfCurvature || null }),
             })
             const data = await res.json()
             if (!res.ok) { setError(data.error ?? 'Failed to create'); return }
             const resolvedMount = housingMounts.find(m => m.id === mountId) ?? null
-            setPorts(prev => [...prev, { id: data.id, name: nameInput.trim(), slug: data.slug, housingMount: resolvedMount, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, imageInfo: getPortImagePathWithFallback(productPhotos) }])
+            setPorts(prev => [...prev, { id: data.id, name: nameInput.trim(), slug: data.slug, housingMount: resolvedMount, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, imageInfo: getPortImagePathWithFallback(productPhotos), isFlatPort, portRadius: portRadius ? parseFloat(portRadius) : null, portDepth: portDepth ? parseFloat(portDepth) : null, radiusOfCurvature: radiusOfCurvature ? parseFloat(radiusOfCurvature) : null }])
             router.refresh(); close()
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Network error')
@@ -195,12 +215,12 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
             const res = await fetch(`/api/admin/ports?id=${target.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: nameInput.trim(), manufacturerId: manufacturer.id, housingMountId: mountId || null, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null }),
+                body: JSON.stringify({ name: nameInput.trim(), manufacturerId: manufacturer.id, housingMountId: mountId || null, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, isFlatPort, portRadius: portRadius || null, portDepth: portDepth || null, radiusOfCurvature: radiusOfCurvature || null }),
             })
             const data = await res.json()
             if (!res.ok) { setError(data.error ?? 'Failed to update'); return }
             const resolvedMount = housingMounts.find(m => m.id === mountId) ?? null
-            setPorts(prev => prev.map(p => p.id !== target.id ? p : { ...p, name: nameInput.trim(), slug: data.slug, housingMount: resolvedMount, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, imageInfo: getPortImagePathWithFallback(productPhotos) }))
+            setPorts(prev => prev.map(p => p.id !== target.id ? p : { ...p, name: nameInput.trim(), slug: data.slug, housingMount: resolvedMount, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, imageInfo: getPortImagePathWithFallback(productPhotos), isFlatPort, portRadius: portRadius ? parseFloat(portRadius) : null, portDepth: portDepth ? parseFloat(portDepth) : null, radiusOfCurvature: radiusOfCurvature ? parseFloat(radiusOfCurvature) : null }))
             router.refresh(); close()
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Network error')
@@ -323,6 +343,119 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
                             <option value="">— None —</option>
                             {housingMounts.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                         </select>
+
+                        {/* ── Optics section ── */}
+                        <div className="mb-4">
+                            <p className="text-sm font-medium text-gray-700 mb-2">Optics</p>
+
+                            {/* Port Radius */}
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Port radius (mm)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                step="0.1"
+                                value={portRadius}
+                                onChange={e => setPortRadius(e.target.value)}
+                                placeholder="e.g. 67"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-1"
+                            />
+                            <p className="text-xs text-gray-400 mb-4">The radius of the port opening circle in mm. Applies to both flat and dome ports.</p>
+
+                            {/* Port Depth */}
+                            <div className="flex items-center gap-1 mb-1">
+                                <label className="block text-sm font-medium text-gray-700">Port depth (mm)</label>
+                                <div className="relative group/tt inline-block">
+                                    <svg className="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 hidden group-hover/tt:block z-50 shadow-lg pointer-events-none">
+                                        <strong>Dome port:</strong> distance from the flange to the start of the spherical cap along the optical axis — i.e. how much extension the flange itself contributes.<br /><br />
+                                        <strong>Flat port:</strong> distance from the flange to the front face of the flat glass element along the optical axis.
+                                        <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900" />
+                                    </div>
+                                </div>
+                            </div>
+                            <input
+                                type="number"
+                                min="0"
+                                step="0.1"
+                                value={portDepth}
+                                onChange={e => setPortDepth(e.target.value)}
+                                placeholder="e.g. 12"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                            />
+
+                            {/* Port type tabs */}
+                            <div className="flex rounded-lg border border-gray-200 overflow-hidden mb-4">
+                                <button
+                                    type="button"
+                                    onClick={() => { setOpticsTab('dome'); setIsFlatPort(false) }}
+                                    className={`flex-1 py-2 text-sm font-medium transition-colors ${opticsTab === 'dome' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                                >
+                                    Dome port
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setOpticsTab('flat'); setIsFlatPort(true) }}
+                                    className={`flex-1 py-2 text-sm font-medium transition-colors ${opticsTab === 'flat' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                                >
+                                    Flat port
+                                </button>
+                            </div>
+
+                            {opticsTab === 'dome' && (() => {
+                                const roc = parseFloat(radiusOfCurvature)
+                                const pr = parseFloat(portRadius)
+                                const rocValid = !isNaN(roc) && roc > 0
+                                const prValid = !isNaN(pr) && pr > 0
+                                const rocTooSmall = rocValid && prValid && roc < pr
+                                const fovDeg = rocValid && prValid && !rocTooSmall
+                                    ? Math.round(2 * Math.asin(pr / roc) * (180 / Math.PI) * 10) / 10
+                                    : null
+                                return (
+                                    <div>
+                                        <div className="flex items-center gap-1 mb-1">
+                                            <label className="block text-sm font-medium text-gray-700">Radius of curvature (mm)</label>
+                                            <div className="relative group/tt inline-block">
+                                                <svg className="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 hidden group-hover/tt:block z-50 shadow-lg pointer-events-none">
+                                                    The radius of the imaginary sphere that the dome is a part of. Most domes are not full hemispheres, so their radius of curvature is typically larger than their port radius. When the radius of curvature equals the port radius, the dome is a perfect hemisphere covering a 180° field of view.
+                                                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            min={portRadius || '0'}
+                                            step="0.1"
+                                            value={radiusOfCurvature}
+                                            onChange={e => setRadiusOfCurvature(e.target.value)}
+                                            placeholder="e.g. 100"
+                                            className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-1 ${rocTooSmall ? 'border-red-400' : 'border-gray-300'}`}
+                                        />
+                                        {rocTooSmall && (
+                                            <p className="text-xs text-red-500 mb-2">Radius of curvature must be ≥ port radius ({portRadius} mm).</p>
+                                        )}
+                                        {fovDeg !== null && (
+                                            <div className="flex items-center gap-1 mt-2 p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
+                                                <span className="text-sm text-blue-800 font-medium">Maximum Field of View: {fovDeg}°</span>
+                                                <div className="relative group/tt inline-block ml-1">
+                                                    <svg className="w-3.5 h-3.5 text-blue-500 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 hidden group-hover/tt:block z-50 shadow-lg pointer-events-none">
+                                                        Calculated as 2 × arcsin(portRadius / radiusOfCurvature), assuming the lens entrance pupil is placed at the dome&apos;s center of curvature. This is the widest angle of light the dome can accept without vignetting. Using a lens with a wider angle of view than this value will cause vignetting at the corners.
+                                                        <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )
+                            })()}
+                        </div>
 
                         <label className="block text-sm font-medium text-gray-700 mb-1">Product photos</label>
                         <div

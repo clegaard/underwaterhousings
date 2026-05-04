@@ -96,6 +96,10 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
         imageInfo: getPortImagePathWithFallback(p.productPhotos),
         productId: p.productId ?? null,
         productUrl: p.productUrl ?? null,
+        isFlatPort: p.isFlatPort,
+        portRadius: p.portRadius ?? null,
+        portDepth: p.portDepth ?? null,
+        radiusOfCurvature: p.radiusOfCurvature ?? null,
     }))
 
     const extensionRingsData = manufacturer.extensionRings.map(r => ({

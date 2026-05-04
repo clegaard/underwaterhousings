@@ -120,26 +120,30 @@ model Housing {
 }
 
 model Port {
-    id               Int              @id @default(autoincrement())
-    name             String
-    slug             String           @unique
-    description      String?
-    manufacturerId   Int
-    housingMountId   Int?
-    productPhotos    String[]
-    priceAmount      Decimal?         @db.Decimal(10, 2)
-    priceCurrency    String?          @default("USD")
-    isFlatPort       Boolean          @default(false) // True if it's a flat port, false if it's a dome port
-    hemisphereWidth  Float? // For dome ports, the width of the hemisphere in mm
-    depthRating      Int? // Maximum depth rating of the port in meters
-    productId        String? // Manufacturer product ID / SKU (unique within manufacturer)
-    productUrl       String? // Link to the product page on the manufacturer's website
-    rigReviews       RigReview[]
-    cameraRigs       CameraRig[]
-    housingMount     HousingMount?    @relation(fields: [housingMountId], references: [id])
-    manufacturer     Manufacturer     @relation(fields: [manufacturerId], references: [id])
-    lens             Lens[]           @relation("LensToPort")
-    portChartEntries PortChartEntry[]
+    id                Int              @id @default(autoincrement())
+    name              String
+    slug              String           @unique
+    description       String?
+    manufacturerId    Int
+    housingMountId    Int?
+    productPhotos     String[]
+    priceAmount       Decimal?         @db.Decimal(10, 2)
+    priceCurrency     String?          @default("USD")
+    isFlatPort        Boolean          @default(false) // True if it's a flat port, false if it's a dome port
+    hemisphereWidth   Float? // For dome ports, the width of the hemisphere in mm
+    depthRating       Int? // Maximum depth rating of the port in meters
+    productId         String? // Manufacturer product ID / SKU (unique within manufacturer)
+    productUrl        String? // Link to the product page on the manufacturer's website
+    // Optics fields
+    portRadius        Float? // Radius of the port opening (circle) in mm — applies to both flat and dome ports
+    portDepth         Float? // Distance from the flange to the start of the optical element along the optical axis, in mm
+    radiusOfCurvature Float? // Dome ports only: radius of the spherical dome in mm. Must be >= portRadius
+    rigReviews        RigReview[]
+    cameraRigs        CameraRig[]
+    housingMount      HousingMount?    @relation(fields: [housingMountId], references: [id])
+    manufacturer      Manufacturer     @relation(fields: [manufacturerId], references: [id])
+    lens              Lens[]           @relation("LensToPort")
+    portChartEntries  PortChartEntry[]
 
     @@map("ports")
 }

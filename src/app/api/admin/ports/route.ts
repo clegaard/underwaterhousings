@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json()
-        const { name, manufacturerId, housingMountId, productPhotos, productId, productUrl } = body
+        const { name, manufacturerId, housingMountId, productPhotos, productId, productUrl, isFlatPort, portRadius, portDepth, radiusOfCurvature } = body
 
         if (!name || !manufacturerId) {
             return NextResponse.json({ error: 'Name and manufacturer are required' }, { status: 400 })
@@ -56,6 +56,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'A port with this name already exists for this manufacturer' }, { status: 409 })
         }
 
+        const parsedPortRadius = portRadius != null ? parseFloat(portRadius) : null
+        const parsedPortDepth = portDepth != null ? parseFloat(portDepth) : null
+        const parsedRoc = radiusOfCurvature != null ? parseFloat(radiusOfCurvature) : null
+
+        if (parsedRoc !== null && parsedPortRadius !== null && parsedRoc < parsedPortRadius) {
+            return NextResponse.json({ error: 'Radius of curvature must be greater than or equal to the port radius' }, { status: 400 })
+        }
+
         const port = await prisma.port.create({
             data: {
                 name,
@@ -65,6 +73,10 @@ export async function POST(request: NextRequest) {
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 productId: productId?.trim() || null,
                 productUrl: productUrl?.trim() || null,
+                isFlatPort: isFlatPort === true,
+                portRadius: parsedPortRadius,
+                portDepth: parsedPortDepth,
+                radiusOfCurvature: parsedRoc,
             },
             include: { manufacturer: true, housingMount: true },
         })
@@ -86,7 +98,7 @@ export async function PUT(request: NextRequest) {
         if (!id) return NextResponse.json({ error: 'Port ID is required' }, { status: 400 })
 
         const body = await request.json()
-        const { name, manufacturerId, housingMountId, productPhotos, productId, productUrl } = body
+        const { name, manufacturerId, housingMountId, productPhotos, productId, productUrl, isFlatPort, portRadius, portDepth, radiusOfCurvature } = body
 
         if (!name || !manufacturerId) {
             return NextResponse.json({ error: 'Name and manufacturer are required' }, { status: 400 })
@@ -106,6 +118,14 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ error: 'A port with this name already exists' }, { status: 409 })
         }
 
+        const parsedPortRadius = portRadius != null ? parseFloat(portRadius) : null
+        const parsedPortDepth = portDepth != null ? parseFloat(portDepth) : null
+        const parsedRoc = radiusOfCurvature != null ? parseFloat(radiusOfCurvature) : null
+
+        if (parsedRoc !== null && parsedPortRadius !== null && parsedRoc < parsedPortRadius) {
+            return NextResponse.json({ error: 'Radius of curvature must be greater than or equal to the port radius' }, { status: 400 })
+        }
+
         const port = await prisma.port.update({
             where: { id: parseInt(id) },
             data: {
@@ -116,6 +136,10 @@ export async function PUT(request: NextRequest) {
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 productId: productId?.trim() || null,
                 productUrl: productUrl?.trim() || null,
+                isFlatPort: isFlatPort === true,
+                portRadius: parsedPortRadius,
+                portDepth: parsedPortDepth,
+                radiusOfCurvature: parsedRoc,
             },
             include: { manufacturer: true, housingMount: true },
         })
