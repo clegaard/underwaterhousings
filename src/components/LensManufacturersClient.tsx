@@ -18,7 +18,10 @@ interface Lens {
     isZoomLens: boolean
     focalLengthTele: number | null
     focalLengthWide: number | null
-    maximumMagnification: number | null
+    maximumMagnificationTele: number | null
+    maximumMagnificationWide: number | null
+    minimumFocusDistanceTele: number | null
+    minimumFocusDistanceWide: number | null
 }
 
 interface Manufacturer {
@@ -113,13 +116,18 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
     const [lensType, setLensType] = useState<'prime' | 'zoom'>('prime')
     const [focalLengthTele, setFocalLengthTele] = useState('')
     const [focalLengthWide, setFocalLengthWide] = useState('')
-    const [maximumMagnification, setMaximumMagnification] = useState('')
+    const [minimumFocusDistanceTele, setMinimumFocusDistanceTele] = useState('')
+    const [minimumFocusDistanceWide, setMinimumFocusDistanceWide] = useState('')
+    const [maximumMagnificationTele, setMaximumMagnificationTele] = useState('')
+    const [maximumMagnificationWide, setMaximumMagnificationWide] = useState('')
 
     function resetLensForm() {
         setLensName(''); setMountId(''); setExifIdInput('')
         setPhotos(prev => { prev.forEach(p => { if (p.kind === 'new') URL.revokeObjectURL(p.previewUrl) }); return [] })
         setDragPhotoIdx(null)
-        setLensType('prime'); setFocalLengthTele(''); setFocalLengthWide(''); setMaximumMagnification('')
+        setLensType('prime'); setFocalLengthTele(''); setFocalLengthWide('')
+        setMinimumFocusDistanceTele(''); setMinimumFocusDistanceWide('')
+        setMaximumMagnificationTele(''); setMaximumMagnificationWide('')
     }
 
     function openLensAdd(mfr: Manufacturer) {
@@ -137,7 +145,10 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
         setLensType(l.isZoomLens ? 'zoom' : 'prime')
         setFocalLengthTele(l.focalLengthTele != null ? String(l.focalLengthTele) : '')
         setFocalLengthWide(l.focalLengthWide != null ? String(l.focalLengthWide) : '')
-        setMaximumMagnification(l.maximumMagnification != null ? String(l.maximumMagnification) : '')
+        setMinimumFocusDistanceTele(l.minimumFocusDistanceTele != null ? String(l.minimumFocusDistanceTele) : '')
+        setMinimumFocusDistanceWide(l.minimumFocusDistanceWide != null ? String(l.minimumFocusDistanceWide) : '')
+        setMaximumMagnificationTele(l.maximumMagnificationTele != null ? String(l.maximumMagnificationTele) : '')
+        setMaximumMagnificationWide(l.maximumMagnificationWide != null ? String(l.maximumMagnificationWide) : '')
         setLensModal('edit')
     }
 
@@ -233,7 +244,10 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                     isZoomLens: lensType === 'zoom',
                     focalLengthTele: focalLengthTele ? parseInt(focalLengthTele) : null,
                     focalLengthWide: lensType === 'zoom' && focalLengthWide ? parseInt(focalLengthWide) : null,
-                    maximumMagnification: maximumMagnification ? parseFloat(maximumMagnification) : null,
+                    minimumFocusDistanceTele: minimumFocusDistanceTele ? parseFloat(minimumFocusDistanceTele) : null,
+                    minimumFocusDistanceWide: lensType === 'zoom' && minimumFocusDistanceWide ? parseFloat(minimumFocusDistanceWide) : null,
+                    maximumMagnificationTele: maximumMagnificationTele ? parseFloat(maximumMagnificationTele) : null,
+                    maximumMagnificationWide: lensType === 'zoom' && maximumMagnificationWide ? parseFloat(maximumMagnificationWide) : null,
                 }),
             })
             const data = await res.json()
@@ -246,7 +260,10 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                 isZoomLens: lensType === 'zoom',
                 focalLengthTele: focalLengthTele ? parseInt(focalLengthTele) : null,
                 focalLengthWide: lensType === 'zoom' && focalLengthWide ? parseInt(focalLengthWide) : null,
-                maximumMagnification: maximumMagnification ? parseFloat(maximumMagnification) : null,
+                minimumFocusDistanceTele: minimumFocusDistanceTele ? parseFloat(minimumFocusDistanceTele) : null,
+                minimumFocusDistanceWide: lensType === 'zoom' && minimumFocusDistanceWide ? parseFloat(minimumFocusDistanceWide) : null,
+                maximumMagnificationTele: maximumMagnificationTele ? parseFloat(maximumMagnificationTele) : null,
+                maximumMagnificationWide: lensType === 'zoom' && maximumMagnificationWide ? parseFloat(maximumMagnificationWide) : null,
             }
             setManufacturers(prev => prev.map(m => m.id === lensTargetMfr.id
                 ? { ...m, lenses: [...m.lenses, newLens], _count: { lenses: m._count.lenses + 1 } }
@@ -272,7 +289,10 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                     isZoomLens: lensType === 'zoom',
                     focalLengthTele: focalLengthTele ? parseInt(focalLengthTele) : null,
                     focalLengthWide: lensType === 'zoom' && focalLengthWide ? parseInt(focalLengthWide) : null,
-                    maximumMagnification: maximumMagnification ? parseFloat(maximumMagnification) : null,
+                    minimumFocusDistanceTele: minimumFocusDistanceTele ? parseFloat(minimumFocusDistanceTele) : null,
+                    minimumFocusDistanceWide: lensType === 'zoom' && minimumFocusDistanceWide ? parseFloat(minimumFocusDistanceWide) : null,
+                    maximumMagnificationTele: maximumMagnificationTele ? parseFloat(maximumMagnificationTele) : null,
+                    maximumMagnificationWide: lensType === 'zoom' && maximumMagnificationWide ? parseFloat(maximumMagnificationWide) : null,
                 }),
             })
             const data = await res.json()
@@ -285,7 +305,10 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                     isZoomLens: lensType === 'zoom',
                     focalLengthTele: focalLengthTele ? parseInt(focalLengthTele) : null,
                     focalLengthWide: lensType === 'zoom' && focalLengthWide ? parseInt(focalLengthWide) : null,
-                    maximumMagnification: maximumMagnification ? parseFloat(maximumMagnification) : null,
+                    minimumFocusDistanceTele: minimumFocusDistanceTele ? parseFloat(minimumFocusDistanceTele) : null,
+                    minimumFocusDistanceWide: lensType === 'zoom' && minimumFocusDistanceWide ? parseFloat(minimumFocusDistanceWide) : null,
+                    maximumMagnificationTele: maximumMagnificationTele ? parseFloat(maximumMagnificationTele) : null,
+                    maximumMagnificationWide: lensType === 'zoom' && maximumMagnificationWide ? parseFloat(maximumMagnificationWide) : null,
                 }),
             }))
             router.refresh()
@@ -540,7 +563,7 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                             <div className="flex rounded-lg border border-gray-200 overflow-hidden mb-4">
                                 <button
                                     type="button"
-                                    onClick={() => { setLensType('prime'); setFocalLengthWide('') }}
+                                    onClick={() => { setLensType('prime'); setFocalLengthWide(''); setMinimumFocusDistanceWide(''); setMaximumMagnificationWide('') }}
                                     className={`flex-1 py-2 text-sm font-medium transition-colors ${lensType === 'prime' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
                                 >
                                     Prime
@@ -562,8 +585,25 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                                         value={focalLengthTele}
                                         onChange={e => setFocalLengthTele(e.target.value)}
                                         placeholder="e.g. 50"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-3"
                                     />
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Minimum focus distance (m)</label>
+                                    <input
+                                        type="number" min="0" step="0.01"
+                                        value={minimumFocusDistanceTele}
+                                        onChange={e => setMinimumFocusDistanceTele(e.target.value)}
+                                        placeholder="e.g. 0.28"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-3"
+                                    />
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Maximum magnification (×)</label>
+                                    <input
+                                        type="number" min="0" step="0.01"
+                                        value={maximumMagnificationTele}
+                                        onChange={e => setMaximumMagnificationTele(e.target.value)}
+                                        placeholder="e.g. 0.30"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-1"
+                                    />
+                                    <p className="text-xs text-gray-400 mb-2">Reproduction ratio at closest focus, e.g. 0.30 for 0.30× (1:3.3).</p>
                                 </>
                             ) : (() => {
                                 const wide = parseInt(focalLengthWide)
@@ -571,6 +611,7 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                                 const rangeError = !isNaN(wide) && !isNaN(tele) && wide >= tele
                                 return (
                                     <div>
+                                        {/* Focal lengths */}
                                         <div className="flex gap-3 mb-1">
                                             <div className="flex-1">
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">Wide end (mm)</label>
@@ -597,20 +638,58 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                                             <p className="text-xs text-red-500 mb-3">Wide end must be less than the tele end.</p>
                                         )}
                                         {!rangeError && <div className="mb-3" />}
+
+                                        {/* Minimum focus distance */}
+                                        <div className="flex gap-3 mb-3">
+                                            <div className="flex-1">
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Min. focus dist. wide (m)</label>
+                                                <input
+                                                    type="number" min="0" step="0.01"
+                                                    value={minimumFocusDistanceWide}
+                                                    onChange={e => setMinimumFocusDistanceWide(e.target.value)}
+                                                    placeholder="e.g. 0.38"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                                />
+                                            </div>
+                                            <div className="flex-1">
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Min. focus dist. tele (m)</label>
+                                                <input
+                                                    type="number" min="0" step="0.01"
+                                                    value={minimumFocusDistanceTele}
+                                                    onChange={e => setMinimumFocusDistanceTele(e.target.value)}
+                                                    placeholder="e.g. 0.38"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Maximum magnification */}
+                                        <div className="flex gap-3 mb-1">
+                                            <div className="flex-1">
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Max. magnification wide (×)</label>
+                                                <input
+                                                    type="number" min="0" step="0.01"
+                                                    value={maximumMagnificationWide}
+                                                    onChange={e => setMaximumMagnificationWide(e.target.value)}
+                                                    placeholder="e.g. 0.20"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                                />
+                                            </div>
+                                            <div className="flex-1">
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Max. magnification tele (×)</label>
+                                                <input
+                                                    type="number" min="0" step="0.01"
+                                                    value={maximumMagnificationTele}
+                                                    onChange={e => setMaximumMagnificationTele(e.target.value)}
+                                                    placeholder="e.g. 0.30"
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                                                />
+                                            </div>
+                                        </div>
+                                        <p className="text-xs text-gray-400 mb-2">Reproduction ratio at closest focus, e.g. 0.30 for 0.30× (1:3.3).</p>
                                     </div>
                                 )
                             })()}
-
-                            {/* Maximum magnification */}
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Maximum magnification (×)</label>
-                            <input
-                                type="number" min="0" step="0.01"
-                                value={maximumMagnification}
-                                onChange={e => setMaximumMagnification(e.target.value)}
-                                placeholder="e.g. 0.30"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-1"
-                            />
-                            <p className="text-xs text-gray-400 mb-2">Reproduction ratio at closest focus, e.g. 0.30 for 0.30× (1:3.3).</p>
                         </div>
 
                         <label className="block text-sm font-medium text-gray-700 mb-1">Product photos</label>

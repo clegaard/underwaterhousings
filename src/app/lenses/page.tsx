@@ -39,7 +39,10 @@ export default async function LensesPage() {
             isZoomLens: l.isZoomLens,
             focalLengthTele: l.focalLengthTele,
             focalLengthWide: l.focalLengthWide ?? null,
-            maximumMagnification: l.maximumMagnification ?? null,
+            minimumFocusDistanceTele: l.minimumFocusDistanceTele ?? null,
+            minimumFocusDistanceWide: l.minimumFocusDistanceWide ?? null,
+            maximumMagnificationTele: l.maximumMagnificationTele ?? null,
+            maximumMagnificationWide: l.maximumMagnificationWide ?? null,
         })),
     }))
 

@@ -49,7 +49,10 @@ export default async function LensManufacturerPage({ params }: LensManufacturerP
         isZoomLens: lens.isZoomLens,
         focalLengthTele: lens.focalLengthTele,
         focalLengthWide: lens.focalLengthWide ?? null,
-        maximumMagnification: lens.maximumMagnification ?? null,
+        minimumFocusDistanceTele: lens.minimumFocusDistanceTele ?? null,
+        minimumFocusDistanceWide: lens.minimumFocusDistanceWide ?? null,
+        maximumMagnificationTele: lens.maximumMagnificationTele ?? null,
+        maximumMagnificationWide: lens.maximumMagnificationWide ?? null,
     }))
 
     return (
