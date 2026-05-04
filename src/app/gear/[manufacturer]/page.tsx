@@ -199,10 +199,10 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
                                 </div>
                             )}
                             {manufacturer._count.ports > 0 && (
-                                <div>
-                                    <div className="text-2xl font-bold text-emerald-600">{manufacturer._count.ports}</div>
-                                    <div className="text-xs text-gray-500">Port{manufacturer._count.ports !== 1 ? 's' : ''}</div>
-                                </div>
+                                <Link href={`/gear/${params.manufacturer}/ports`}>
+                                    <div className="text-2xl font-bold text-emerald-600 hover:text-emerald-700 transition-colors">{manufacturer._count.ports}</div>
+                                    <div className="text-xs text-gray-500 hover:text-gray-700 transition-colors">Port{manufacturer._count.ports !== 1 ? 's' : ''}</div>
+                                </Link>
                             )}
                             {manufacturer._count.extensionRings > 0 && (
                                 <div>
@@ -277,7 +277,9 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
                 {/* Ports section */}
                 {(portsData.length > 0 || isSuperuser) && (
                     <section id="ports">
-                        <h2 className="text-2xl font-bold text-blue-900 mb-6">Ports</h2>
+                        <h2 className="text-2xl font-bold text-blue-900 mb-6">
+                            <Link href={`/gear/${params.manufacturer}/ports`} className="hover:text-blue-700 transition-colors">Ports</Link>
+                        </h2>
                         <PortManufacturerPortsClient
                             ports={portsData}
                             manufacturer={{ id: manufacturer.id, name: manufacturer.name, slug: manufacturer.slug }}

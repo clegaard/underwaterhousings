@@ -31,6 +31,8 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
     const [isPortsOpen, setIsPortsOpen] = useState(false)
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
     const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
+    const [currencySearch, setCurrencySearch] = useState('')
+    const currencySearchRef = useRef<HTMLInputElement>(null)
     const userMenuRef = useRef<HTMLDivElement>(null)
     const camerasDropdownRef = useRef<HTMLDivElement>(null)
     const lensesDropdownRef = useRef<HTMLDivElement>(null)
@@ -79,6 +81,7 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
             }
             if (currencyDropdownRef.current && !currencyDropdownRef.current.contains(event.target as Node)) {
                 setIsCurrencyOpen(false)
+                setCurrencySearch('')
             }
         }
 
@@ -226,41 +229,66 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
                         {/* Currency selector */}
                         <div className="relative" ref={currencyDropdownRef}>
                             <button
-                                onClick={() => setIsCurrencyOpen(v => !v)}
-                                className="flex items-center gap-1.5 text-sm border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-700 bg-white hover:border-indigo-400 hover:text-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                onClick={() => {
+                                    setIsCurrencyOpen(v => {
+                                        if (!v) setTimeout(() => currencySearchRef.current?.focus(), 0)
+                                        else setCurrencySearch('')
+                                        return !v
+                                    })
+                                }}
+                                className="flex items-center gap-1.5 text-gray-700 hover:text-blue-900 transition-colors font-medium focus:outline-none"
                                 aria-label="Select currency"
                             >
                                 <span className="text-base leading-none">{selectedCurrencyMeta.flag}</span>
-                                <span className="font-medium tracking-wide">{selectedCurrencyMeta.code}</span>
-                                <span className="text-gray-400 text-xs">({selectedCurrencyMeta.symbol})</span>
+                                <span>{selectedCurrencyMeta.code}</span>
                                 <svg className={`w-3 h-3 text-gray-400 ml-0.5 transition-transform ${isCurrencyOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </button>
-                            {isCurrencyOpen && (
-                                <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg ring-1 ring-black/10 z-50 overflow-hidden">
-                                    {SUPPORTED_CURRENCIES.map((c, i) => {
-                                        const isSelected = c.code === userCurrency
-                                        return (
-                                            <button
-                                                key={c.code}
-                                                onClick={() => { setUserCurrency(c.code); setIsCurrencyOpen(false) }}
-                                                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isSelected
-                                                        ? 'bg-indigo-600 text-white'
-                                                        : 'text-gray-700 hover:bg-gray-50'
-                                                    } ${i > 0 && !isSelected ? 'border-t border-gray-100' : ''}`}
-                                            >
-                                                <span className="text-lg leading-none">{c.flag}</span>
-                                                <span className="flex-1 text-left font-medium">
-                                                    {c.code}
-                                                    {c.code === 'USD' && <span className={`ml-1 text-xs font-normal ${isSelected ? 'text-indigo-200' : 'text-gray-400'}`}>(Default)</span>}
-                                                </span>
-                                                <span className={`text-xs ${isSelected ? 'text-indigo-200' : 'text-gray-400'}`}>({c.symbol})</span>
-                                            </button>
-                                        )
-                                    })}
-                                </div>
-                            )}
+                            {isCurrencyOpen && (() => {
+                                const filtered = SUPPORTED_CURRENCIES.filter(c =>
+                                    c.code.toLowerCase().includes(currencySearch.toLowerCase()) ||
+                                    c.label.toLowerCase().includes(currencySearch.toLowerCase())
+                                )
+                                return (
+                                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg ring-1 ring-black/10 z-50 overflow-hidden">
+                                        <div className="px-3 pt-3 pb-2">
+                                            <input
+                                                ref={currencySearchRef}
+                                                type="text"
+                                                value={currencySearch}
+                                                onChange={e => setCurrencySearch(e.target.value)}
+                                                placeholder="Search…"
+                                                className="w-full text-sm px-2.5 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-gray-800 placeholder-gray-400"
+                                            />
+                                        </div>
+                                        <div className="max-h-64 overflow-y-auto">
+                                            {filtered.length === 0 ? (
+                                                <p className="px-4 py-3 text-xs text-gray-400 text-center">No results</p>
+                                            ) : filtered.map((c, i) => {
+                                                const isSelected = c.code === userCurrency
+                                                return (
+                                                    <button
+                                                        key={c.code}
+                                                        onClick={() => { setUserCurrency(c.code); setIsCurrencyOpen(false); setCurrencySearch('') }}
+                                                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isSelected
+                                                            ? 'bg-indigo-600 text-white'
+                                                            : 'text-gray-700 hover:bg-gray-50'
+                                                            } ${i > 0 ? 'border-t border-gray-100' : ''}`}
+                                                    >
+                                                        <span className="text-lg leading-none">{c.flag}</span>
+                                                        <span className="flex-1 text-left font-medium">
+                                                            {c.code}
+                                                            {c.code === 'USD' && <span className={`ml-1 text-xs font-normal ${isSelected ? 'text-indigo-200' : 'text-gray-400'}`}>(Default)</span>}
+                                                        </span>
+                                                        <span className={`text-xs ${isSelected ? 'text-indigo-200' : 'text-gray-400'}`}>({c.symbol})</span>
+                                                    </button>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+                                )
+                            })()}
                         </div>
 
                         {/* Auth */}

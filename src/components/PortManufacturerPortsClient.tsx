@@ -250,7 +250,7 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
                 {ports.map((port) => (
                     <div key={port.id} className="group/card relative">
                         <Link
-                            href={`/gear/${manufacturer.slug}/${port.slug}`}
+                            href={`/gear/${manufacturer.slug}/ports/${port.slug}`}
                             className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all overflow-hidden block"
                         >
                             <div className="relative h-28 bg-gray-50">

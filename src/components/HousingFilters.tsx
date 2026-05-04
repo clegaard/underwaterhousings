@@ -952,7 +952,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                         <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Port</span>
                                                         {selectedPort?.manufacturer?.slug ? (
                                                             <Link
-                                                                href={`/gear/${selectedPort.manufacturer.slug}/${selectedPort.slug}`}
+                                                                href={`/gear/${selectedPort.manufacturer.slug}/ports/${selectedPort.slug}`}
                                                                 className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 truncate transition-colors"
                                                             >
                                                                 {selectedPort.name}
