@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { withBase, getLensImagePathWithFallback } from '@/lib/images'
+import { useCurrency } from '@/components/CurrencyContext'
 import { HousingImage } from '@/components/HousingImage'
 
 interface Lens {
@@ -53,6 +54,7 @@ interface Props {
 
 export default function LensManufacturersClient({ manufacturers: initial, cameraMounts, isSuperuser }: Props) {
     const router = useRouter()
+    const { formatMoney } = useCurrency()
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [manufacturers, setManufacturers] = useState(initial)
 
@@ -442,7 +444,7 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                                                 )}
                                                 {price !== null && (
                                                     <p className="text-xs font-medium text-green-600 mt-1">
-                                                        ${price.toLocaleString()}
+                                                        {formatMoney(price, lens.priceCurrency)}
                                                     </p>
                                                 )}
                                             </div>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { HousingImage } from '@/components/HousingImage'
 import { withBase, getPortImagePathWithFallback } from '@/lib/images'
+import { useCurrency } from '@/components/CurrencyContext'
 
 interface PortAdapter {
     id: number
@@ -45,6 +46,7 @@ interface Props {
 
 export default function PortAdaptersClient({ adapters: initial, manufacturer, housingMounts, isSuperuser }: Props) {
     const router = useRouter()
+    const { formatMoney } = useCurrency()
     const [adapters, setAdapters] = useState(initial)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -305,7 +307,7 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
                                     </p>
                                 )}
                                 {adapter.priceAmount != null && (
-                                    <p className="text-xs font-medium text-green-600 mt-1">${adapter.priceAmount.toFixed(2)}</p>
+                                    <p className="text-xs font-medium text-green-600 mt-1">{formatMoney(adapter.priceAmount, adapter.priceCurrency)}</p>
                                 )}
                             </div>
                         </Link>

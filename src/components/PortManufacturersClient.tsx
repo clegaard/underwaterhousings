@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { withBase, getPortImagePathWithFallback } from '@/lib/images'
+import { useCurrency } from '@/components/CurrencyContext'
 import { HousingImage } from '@/components/HousingImage'
 
 interface Port {
@@ -67,6 +68,7 @@ interface Props {
 
 export default function PortManufacturersClient({ manufacturers: initial, housingMounts, isSuperuser }: Props) {
     const router = useRouter()
+    const { formatMoney } = useCurrency()
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [manufacturers, setManufacturers] = useState(initial)
 
@@ -386,7 +388,7 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
                                                 )}
                                                 {price !== null && (
                                                     <p className="text-xs font-medium text-green-600 mt-1">
-                                                        ${price.toLocaleString()}
+                                                        {formatMoney(price, port.priceCurrency)}
                                                     </p>
                                                 )}
                                             </div>
@@ -449,7 +451,7 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
                                                 )}
                                                 {price !== null && (
                                                     <p className="text-xs font-medium text-green-600 mt-1">
-                                                        ${price.toLocaleString()}
+                                                        {formatMoney(price, ring.priceCurrency)}
                                                     </p>
                                                 )}
                                             </div>
@@ -458,7 +460,7 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
                                 )
                             })}
 
-                            {/* Port adapter cards */}
+                            {/* Port adapter cards */}}
                             {manufacturer.portAdapters.map(adapter => {
                                 const imageInfo = getPortImagePathWithFallback(adapter.productPhotos)
                                 const price = adapter.priceAmount ? Number(adapter.priceAmount) : null
@@ -487,7 +489,7 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
                                                 )}
                                                 {price !== null && (
                                                     <p className="text-xs font-medium text-green-600 mt-1">
-                                                        ${price.toLocaleString()}
+                                                        {formatMoney(price, adapter.priceCurrency)}
                                                     </p>
                                                 )}
                                             </div>

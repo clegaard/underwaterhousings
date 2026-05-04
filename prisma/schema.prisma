@@ -8,22 +8,22 @@ datasource db {
 }
 
 model Manufacturer {
-    id               Int              @id @default(autoincrement())
-    name             String           @unique
-    slug             String           @unique
-    description      String?
-    createdAt        DateTime         @default(now())
-    updatedAt        DateTime         @updatedAt
-    housingMounts    HousingMount[]
-    cameras          Camera[]
-    housings         Housing[]
-    lenses           Lens[]
-    ports            Port[]
-    extensionRings   ExtensionRing[]
-    portAdapters     PortAdapter[]
-    gears            Gear[]
-    portChartEntries PortChartEntry[]
-    logoPath         String?
+    id             Int             @id @default(autoincrement())
+    name           String          @unique
+    slug           String          @unique
+    description    String?
+    createdAt      DateTime        @default(now())
+    updatedAt      DateTime        @updatedAt
+    housingMounts  HousingMount[]
+    cameras        Camera[]
+    housings       Housing[]
+    lenses         Lens[]
+    ports          Port[]
+    extensionRings ExtensionRing[]
+    portAdapters   PortAdapter[]
+    gears          Gear[]
+    // portChartEntries PortChartEntry[]
+    logoPath       String?
 
     @@map("manufacturers")
 }
@@ -328,33 +328,33 @@ model RigReview {
     @@map("rig_reviews")
 }
 
-model PortChartEntry {
-    id             Int                  @id @default(autoincrement())
-    manufacturerId Int
-    lensId         Int
-    portId         Int?
-    notes          String?
-    isRecommended  Boolean              @default(false)
-    createdAt      DateTime             @default(now())
-    manufacturer   Manufacturer         @relation(fields: [manufacturerId], references: [id])
-    lens           Lens                 @relation(fields: [lensId], references: [id])
-    port           Port?                @relation(fields: [portId], references: [id])
-    steps          PortChartEntryStep[]
+// model PortChartEntry {
+//     id             Int                  @id @default(autoincrement())
+//     manufacturerId Int
+//     lensId         Int
+//     portId         Int?
+//     notes          String?
+//     isRecommended  Boolean              @default(false)
+//     createdAt      DateTime             @default(now())
+//     manufacturer   Manufacturer         @relation(fields: [manufacturerId], references: [id])
+//     lens           Lens                 @relation(fields: [lensId], references: [id])
+//     port           Port?                @relation(fields: [portId], references: [id])
+//     steps          PortChartEntryStep[]
 
-    @@map("port_chart_entries")
-}
+//     @@map("port_chart_entries")
+// }
 
-model PortChartEntryStep {
-    id               Int            @id @default(autoincrement())
-    portChartEntryId Int
-    extensionRingId  Int?
-    portAdapterId    Int?
-    gearId           Int?
-    order            Int            @default(0)
-    portChartEntry   PortChartEntry @relation(fields: [portChartEntryId], references: [id], onDelete: Cascade)
-    extensionRing    ExtensionRing? @relation(fields: [extensionRingId], references: [id])
-    portAdapter      PortAdapter?   @relation(fields: [portAdapterId], references: [id])
-    gear             Gear?          @relation(fields: [gearId], references: [id])
+// model PortChartEntryStep {
+//     id               Int            @id @default(autoincrement())
+//     portChartEntryId Int
+//     extensionRingId  Int?
+//     portAdapterId    Int?
+//     gearId           Int?
+//     order            Int            @default(0)
+//     portChartEntry   PortChartEntry @relation(fields: [portChartEntryId], references: [id], onDelete: Cascade)
+//     extensionRing    ExtensionRing? @relation(fields: [extensionRingId], references: [id])
+//     portAdapter      PortAdapter?   @relation(fields: [portAdapterId], references: [id])
+//     gear             Gear?          @relation(fields: [gearId], references: [id])
 
-    @@map("port_chart_entry_steps")
-}
+//     @@map("port_chart_entry_steps")
+// }

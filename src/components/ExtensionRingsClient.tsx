@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { HousingImage } from '@/components/HousingImage'
 import { withBase, getPortImagePathWithFallback } from '@/lib/images'
+import { useCurrency } from '@/components/CurrencyContext'
 
 interface ExtensionRing {
     id: number
@@ -45,6 +46,7 @@ interface Props {
 
 export default function ExtensionRingsClient({ rings: initial, manufacturer, housingMounts, isSuperuser }: Props) {
     const router = useRouter()
+    const { formatMoney } = useCurrency()
     const [rings, setRings] = useState(initial)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -302,7 +304,7 @@ export default function ExtensionRingsClient({ rings: initial, manufacturer, hou
                                     <p className="text-[10px] text-gray-400 truncate">{ring.lengthMm} mm</p>
                                 )}
                                 {ring.priceAmount != null && (
-                                    <p className="text-xs font-medium text-green-600 mt-1">${ring.priceAmount.toFixed(2)}</p>
+                                    <p className="text-xs font-medium text-green-600 mt-1">{formatMoney(ring.priceAmount, ring.priceCurrency)}</p>
                                 )}
                             </div>
                         </Link>

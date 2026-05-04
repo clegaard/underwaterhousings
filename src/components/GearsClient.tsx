@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { HousingImage } from '@/components/HousingImage'
 import { withBase, getPortImagePathWithFallback } from '@/lib/images'
+import { useCurrency } from '@/components/CurrencyContext'
 
 interface Lens {
     id: number
@@ -43,6 +44,7 @@ interface Props {
 
 export default function GearsClient({ gears: initial, manufacturer, allLenses, isSuperuser }: Props) {
     const router = useRouter()
+    const { formatMoney } = useCurrency()
     const [gears, setGears] = useState(initial)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -294,7 +296,7 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
                                     </p>
                                 )}
                                 {gear.priceAmount != null && (
-                                    <p className="text-xs font-medium text-green-600 mt-1">${gear.priceAmount.toFixed(2)}</p>
+                                    <p className="text-xs font-medium text-green-600 mt-1">{formatMoney(gear.priceAmount, gear.priceCurrency)}</p>
                                 )}
                             </div>
                         </Link>

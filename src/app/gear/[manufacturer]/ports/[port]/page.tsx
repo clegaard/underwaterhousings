@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { HousingImage } from '@/components/HousingImage'
 import { getPortImagePathWithFallback } from '@/lib/images'
+import PriceTag from '@/components/PriceTag'
 import { Metadata } from 'next'
 
 interface Props {
@@ -107,7 +108,7 @@ export default async function PortDetailPage({ params }: Props) {
 
                             {priceAmount != null && (
                                 <div className="text-2xl font-bold text-blue-700 mb-6">
-                                    {port.priceCurrency ?? 'USD'} {priceAmount.toFixed(2)}
+                                    <PriceTag amount={priceAmount} currency={port.priceCurrency ?? 'USD'} />
                                 </div>
                             )}
 

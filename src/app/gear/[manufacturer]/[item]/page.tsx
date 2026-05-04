@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { HousingImage } from '@/components/HousingImage'
 import { getPortImagePathWithFallback } from '@/lib/images'
+import PriceTag from '@/components/PriceTag'
 import { Metadata } from 'next'
 
 interface Props {
@@ -155,7 +156,7 @@ export default async function GearItemPage({ params }: Props) {
 
                             {priceAmount != null && (
                                 <div className="text-2xl font-bold text-blue-700 mb-6">
-                                    {priceCurrency} {priceAmount.toFixed(2)}
+                                    <PriceTag amount={priceAmount} currency={priceCurrency} />
                                 </div>
                             )}
 
