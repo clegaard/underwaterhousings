@@ -85,6 +85,7 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
         imageInfo: getHousingImagePathWithFallback(h.productPhotos),
         productId: h.productId ?? null,
         productUrl: h.productUrl ?? null,
+        cameraMountRecession: h.cameraMountRecession ?? null,
     }))
 
     const portsData = manufacturer.ports.map(p => ({
@@ -100,6 +101,7 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
         portRadius: p.portRadius ?? null,
         portDepth: p.portDepth ?? null,
         radiusOfCurvature: p.radiusOfCurvature ?? null,
+        depthRating: p.depthRating ?? null,
     }))
 
     const extensionRingsData = manufacturer.extensionRings.map(r => ({

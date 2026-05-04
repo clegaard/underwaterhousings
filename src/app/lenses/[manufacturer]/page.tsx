@@ -46,6 +46,10 @@ export default async function LensManufacturerPage({ params }: LensManufacturerP
         productId: lens.productId ?? null,
         productUrl: lens.productUrl ?? null,
         imageInfo: getLensImagePathWithFallback(lens.productPhotos),
+        isZoomLens: lens.isZoomLens,
+        focalLengthTele: lens.focalLengthTele,
+        focalLengthWide: lens.focalLengthWide ?? null,
+        maximumMagnification: lens.maximumMagnification ?? null,
     }))
 
     return (

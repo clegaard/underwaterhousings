@@ -19,6 +19,7 @@ interface Port {
     portRadius: number | null
     portDepth: number | null
     radiusOfCurvature: number | null
+    depthRating: number | null
 }
 
 interface Manufacturer {
@@ -64,6 +65,7 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
     const [portDepth, setPortDepth] = useState('')
     const [radiusOfCurvature, setRadiusOfCurvature] = useState('')
     const [opticsTab, setOpticsTab] = useState<'dome' | 'flat'>('dome')
+    const [depthRatingInput, setDepthRatingInput] = useState('')
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -83,6 +85,7 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
         setPortDepth('')
         setRadiusOfCurvature('')
         setOpticsTab('dome')
+        setDepthRatingInput('')
     }
 
     function openAdd() { resetForm(); setError(null); setModal('add') }
@@ -100,6 +103,7 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
         setPortDepth(p.portDepth != null ? String(p.portDepth) : '')
         setRadiusOfCurvature(p.radiusOfCurvature != null ? String(p.radiusOfCurvature) : '')
         setOpticsTab(p.isFlatPort ? 'flat' : 'dome')
+        setDepthRatingInput(p.depthRating != null ? String(p.depthRating) : '')
         setError(null)
         setModal('edit')
     }
@@ -195,12 +199,12 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
             const res = await fetch('/api/admin/ports', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: nameInput.trim(), manufacturerId: manufacturer.id, housingMountId: mountId || null, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, isFlatPort, portRadius: portRadius || null, portDepth: portDepth || null, radiusOfCurvature: radiusOfCurvature || null }),
+                body: JSON.stringify({ name: nameInput.trim(), manufacturerId: manufacturer.id, housingMountId: mountId || null, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, isFlatPort, portRadius: portRadius || null, portDepth: portDepth || null, radiusOfCurvature: radiusOfCurvature || null, depthRating: depthRatingInput || null }),
             })
             const data = await res.json()
             if (!res.ok) { setError(data.error ?? 'Failed to create'); return }
             const resolvedMount = housingMounts.find(m => m.id === mountId) ?? null
-            setPorts(prev => [...prev, { id: data.id, name: nameInput.trim(), slug: data.slug, housingMount: resolvedMount, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, imageInfo: getPortImagePathWithFallback(productPhotos), isFlatPort, portRadius: portRadius ? parseFloat(portRadius) : null, portDepth: portDepth ? parseFloat(portDepth) : null, radiusOfCurvature: radiusOfCurvature ? parseFloat(radiusOfCurvature) : null }])
+            setPorts(prev => [...prev, { id: data.id, name: nameInput.trim(), slug: data.slug, housingMount: resolvedMount, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, imageInfo: getPortImagePathWithFallback(productPhotos), isFlatPort, portRadius: portRadius ? parseFloat(portRadius) : null, portDepth: portDepth ? parseFloat(portDepth) : null, radiusOfCurvature: radiusOfCurvature ? parseFloat(radiusOfCurvature) : null, depthRating: depthRatingInput ? parseInt(depthRatingInput) : null }])
             router.refresh(); close()
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Network error')
@@ -215,12 +219,12 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
             const res = await fetch(`/api/admin/ports?id=${target.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: nameInput.trim(), manufacturerId: manufacturer.id, housingMountId: mountId || null, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, isFlatPort, portRadius: portRadius || null, portDepth: portDepth || null, radiusOfCurvature: radiusOfCurvature || null }),
+                body: JSON.stringify({ name: nameInput.trim(), manufacturerId: manufacturer.id, housingMountId: mountId || null, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, isFlatPort, portRadius: portRadius || null, portDepth: portDepth || null, radiusOfCurvature: radiusOfCurvature || null, depthRating: depthRatingInput || null }),
             })
             const data = await res.json()
             if (!res.ok) { setError(data.error ?? 'Failed to update'); return }
             const resolvedMount = housingMounts.find(m => m.id === mountId) ?? null
-            setPorts(prev => prev.map(p => p.id !== target.id ? p : { ...p, name: nameInput.trim(), slug: data.slug, housingMount: resolvedMount, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, imageInfo: getPortImagePathWithFallback(productPhotos), isFlatPort, portRadius: portRadius ? parseFloat(portRadius) : null, portDepth: portDepth ? parseFloat(portDepth) : null, radiusOfCurvature: radiusOfCurvature ? parseFloat(radiusOfCurvature) : null }))
+            setPorts(prev => prev.map(p => p.id !== target.id ? p : { ...p, name: nameInput.trim(), slug: data.slug, housingMount: resolvedMount, productPhotos, productId: productIdInput.trim() || null, productUrl: productUrlInput.trim() || null, imageInfo: getPortImagePathWithFallback(productPhotos), isFlatPort, portRadius: portRadius ? parseFloat(portRadius) : null, portDepth: portDepth ? parseFloat(portDepth) : null, radiusOfCurvature: radiusOfCurvature ? parseFloat(radiusOfCurvature) : null, depthRating: depthRatingInput ? parseInt(depthRatingInput) : null }))
             router.refresh(); close()
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Network error')
@@ -343,6 +347,16 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
                             <option value="">— None —</option>
                             {housingMounts.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                         </select>
+
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Max depth rating (m)</label>
+                        <input
+                            type="number"
+                            min="0"
+                            value={depthRatingInput}
+                            onChange={e => setDepthRatingInput(e.target.value)}
+                            placeholder="e.g. 100"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
 
                         {/* ── Optics section ── */}
                         <div className="mb-4">

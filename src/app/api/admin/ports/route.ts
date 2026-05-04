@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json()
-        const { name, manufacturerId, housingMountId, productPhotos, productId, productUrl, isFlatPort, portRadius, portDepth, radiusOfCurvature } = body
+        const { name, manufacturerId, housingMountId, productPhotos, productId, productUrl, isFlatPort, portRadius, portDepth, radiusOfCurvature, depthRating } = body
 
         if (!name || !manufacturerId) {
             return NextResponse.json({ error: 'Name and manufacturer are required' }, { status: 400 })
@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
                 portRadius: parsedPortRadius,
                 portDepth: parsedPortDepth,
                 radiusOfCurvature: parsedRoc,
+                depthRating: depthRating != null ? parseInt(depthRating) : null,
             },
             include: { manufacturer: true, housingMount: true },
         })
@@ -98,7 +99,7 @@ export async function PUT(request: NextRequest) {
         if (!id) return NextResponse.json({ error: 'Port ID is required' }, { status: 400 })
 
         const body = await request.json()
-        const { name, manufacturerId, housingMountId, productPhotos, productId, productUrl, isFlatPort, portRadius, portDepth, radiusOfCurvature } = body
+        const { name, manufacturerId, housingMountId, productPhotos, productId, productUrl, isFlatPort, portRadius, portDepth, radiusOfCurvature, depthRating } = body
 
         if (!name || !manufacturerId) {
             return NextResponse.json({ error: 'Name and manufacturer are required' }, { status: 400 })
@@ -140,6 +141,7 @@ export async function PUT(request: NextRequest) {
                 portRadius: parsedPortRadius,
                 portDepth: parsedPortDepth,
                 radiusOfCurvature: parsedRoc,
+                depthRating: depthRating != null ? parseInt(depthRating) : null,
             },
             include: { manufacturer: true, housingMount: true },
         })

@@ -22,6 +22,7 @@ interface Housing {
     interchangeablePort: boolean
     cameras: Array<{ id: number; name: string; brand: { name: string } }>
     imageInfo: { src: string; fallback: string }
+    cameraMountRecession: number | null
 }
 
 interface Manufacturer {
@@ -77,6 +78,7 @@ export default function HousingManufacturerHousingsClient({
     const [priceAmount, setPriceAmount] = useState('')
     const [priceCurrency, setPriceCurrency] = useState('USD')
     const [interchangeablePort, setInterchangeablePort] = useState(true)
+    const [cameraMountRecession, setCameraMountRecession] = useState('')
     const [photos, setPhotos] = useState<PhotoSlot[]>([])
     const [productIdInput, setProductIdInput] = useState('')
     const [productUrlInput, setProductUrlInput] = useState('')
@@ -100,6 +102,7 @@ export default function HousingManufacturerHousingsClient({
         setPriceAmount('')
         setPriceCurrency('USD')
         setInterchangeablePort(true)
+        setCameraMountRecession('')
         setPhotos(prev => {
             prev.forEach(p => { if (p.kind === 'new') URL.revokeObjectURL(p.previewUrl) })
             return []
@@ -126,6 +129,7 @@ export default function HousingManufacturerHousingsClient({
         setPriceAmount(h.priceAmount != null ? String(h.priceAmount) : '')
         setPriceCurrency(h.priceCurrency ?? 'USD')
         setInterchangeablePort(h.interchangeablePort)
+        setCameraMountRecession(h.cameraMountRecession != null ? String(h.cameraMountRecession) : '')
         setPhotos(h.productPhotos.map(path => ({ kind: 'existing' as const, path })))
         setProductIdInput(h.productId ?? '')
         setProductUrlInput(h.productUrl ?? '')
@@ -261,6 +265,7 @@ export default function HousingManufacturerHousingsClient({
                     productPhotos,
                     productId: productIdInput.trim() || null,
                     productUrl: productUrlInput.trim() || null,
+                    cameraMountRecession: cameraMountRecession ? parseFloat(cameraMountRecession) : null,
                 }),
             })
             const data = await res.json()
@@ -282,6 +287,7 @@ export default function HousingManufacturerHousingsClient({
                 productUrl: productUrlInput.trim() || null,
                 cameras: selectedCameras.map(c => ({ id: c.id, name: c.name, brand: c.brand })),
                 imageInfo: getHousingImagePathWithFallback(productPhotos),
+                cameraMountRecession: cameraMountRecession ? parseFloat(cameraMountRecession) : null,
             }
             setHousings(prev => [...prev, newHousing])
             router.refresh()
@@ -314,6 +320,7 @@ export default function HousingManufacturerHousingsClient({
                     productPhotos,
                     productId: productIdInput.trim() || null,
                     productUrl: productUrlInput.trim() || null,
+                    cameraMountRecession: cameraMountRecession ? parseFloat(cameraMountRecession) : null,
                 }),
             })
             const data = await res.json()
@@ -333,6 +340,7 @@ export default function HousingManufacturerHousingsClient({
                 productUrl: productUrlInput.trim() || null,
                 cameras: selectedCameras.map(c => ({ id: c.id, name: c.name, brand: c.brand })),
                 imageInfo: getHousingImagePathWithFallback(productPhotos),
+                cameraMountRecession: cameraMountRecession ? parseFloat(cameraMountRecession) : null,
             }))
             router.refresh()
             close()
@@ -566,6 +574,29 @@ export default function HousingManufacturerHousingsClient({
                             value={depthRating}
                             onChange={e => setDepthRating(e.target.value)}
                             placeholder="e.g. 100"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                        />
+
+                        {/* Camera mount recession */}
+                        <div className="flex items-center gap-1 mb-1">
+                            <label className="block text-sm font-medium text-gray-700">Camera mount recession (mm)</label>
+                            <div className="relative group/tt inline-block">
+                                <svg className="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 hidden group-hover/tt:block z-50 shadow-lg pointer-events-none">
+                                    The distance from the camera&apos;s lens mount flange to the front face of the housing&apos;s port mount along the optical axis, in mm. This measurement is needed to calculate how much extension is required to place a dome port&apos;s centre of curvature at the lens entrance pupil.
+                                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900" />
+                                </div>
+                            </div>
+                        </div>
+                        <input
+                            type="number"
+                            min="0"
+                            step="0.1"
+                            value={cameraMountRecession}
+                            onChange={e => setCameraMountRecession(e.target.value)}
+                            placeholder="e.g. 28.5"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 

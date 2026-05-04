@@ -16,6 +16,10 @@ interface Lens {
     productId: string | null
     productUrl: string | null
     imageInfo: { src: string; fallback: string }
+    isZoomLens: boolean
+    focalLengthTele: number | null
+    focalLengthWide: number | null
+    maximumMagnification: number | null
 }
 
 interface Manufacturer {
@@ -56,6 +60,11 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
     const [productUrlInput, setProductUrlInput] = useState('')
     const [photos, setPhotos] = useState<PhotoSlot[]>([])
     const [dragPhotoIdx, setDragPhotoIdx] = useState<number | null>(null)
+    // Optics
+    const [lensType, setLensType] = useState<'prime' | 'zoom'>('prime')
+    const [focalLengthTele, setFocalLengthTele] = useState('')
+    const [focalLengthWide, setFocalLengthWide] = useState('')
+    const [maximumMagnification, setMaximumMagnification] = useState('')
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -71,6 +80,10 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
             return []
         })
         setDragPhotoIdx(null)
+        setLensType('prime')
+        setFocalLengthTele('')
+        setFocalLengthWide('')
+        setMaximumMagnification('')
     }
 
     function openAdd() {
@@ -88,6 +101,10 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
         setProductUrlInput(l.productUrl ?? '')
         setPhotos(l.productPhotos.map(path => ({ kind: 'existing' as const, path })))
         setDragPhotoIdx(null)
+        setLensType(l.isZoomLens ? 'zoom' : 'prime')
+        setFocalLengthTele(l.focalLengthTele != null ? String(l.focalLengthTele) : '')
+        setFocalLengthWide(l.focalLengthWide != null ? String(l.focalLengthWide) : '')
+        setMaximumMagnification(l.maximumMagnification != null ? String(l.maximumMagnification) : '')
         setError(null)
         setModal('edit')
     }
@@ -215,6 +232,10 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                     exifId: exifIdInput.trim() || null,
                     productId: productIdInput.trim() || null,
                     productUrl: productUrlInput.trim() || null,
+                    isZoomLens: lensType === 'zoom',
+                    focalLengthTele: focalLengthTele ? parseInt(focalLengthTele) : null,
+                    focalLengthWide: lensType === 'zoom' && focalLengthWide ? parseInt(focalLengthWide) : null,
+                    maximumMagnification: maximumMagnification ? parseFloat(maximumMagnification) : null,
                 }),
             })
             const data = await res.json()
@@ -230,6 +251,10 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                 productId: productIdInput.trim() || null,
                 productUrl: productUrlInput.trim() || null,
                 imageInfo: getLensImagePathWithFallback(productPhotos),
+                isZoomLens: lensType === 'zoom',
+                focalLengthTele: focalLengthTele ? parseInt(focalLengthTele) : null,
+                focalLengthWide: lensType === 'zoom' && focalLengthWide ? parseInt(focalLengthWide) : null,
+                maximumMagnification: maximumMagnification ? parseFloat(maximumMagnification) : null,
             }
             setLenses(prev => [...prev, newLens])
             router.refresh()
@@ -258,6 +283,10 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                     exifId: exifIdInput.trim() || null,
                     productId: productIdInput.trim() || null,
                     productUrl: productUrlInput.trim() || null,
+                    isZoomLens: lensType === 'zoom',
+                    focalLengthTele: focalLengthTele ? parseInt(focalLengthTele) : null,
+                    focalLengthWide: lensType === 'zoom' && focalLengthWide ? parseInt(focalLengthWide) : null,
+                    maximumMagnification: maximumMagnification ? parseFloat(maximumMagnification) : null,
                 }),
             })
             const data = await res.json()
@@ -273,6 +302,10 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                 productId: productIdInput.trim() || null,
                 productUrl: productUrlInput.trim() || null,
                 imageInfo: getLensImagePathWithFallback(productPhotos),
+                isZoomLens: lensType === 'zoom',
+                focalLengthTele: focalLengthTele ? parseInt(focalLengthTele) : null,
+                focalLengthWide: lensType === 'zoom' && focalLengthWide ? parseInt(focalLengthWide) : null,
+                maximumMagnification: maximumMagnification ? parseFloat(maximumMagnification) : null,
             }))
             router.refresh()
             close()
@@ -452,6 +485,95 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                             placeholder="e.g. FE 24-70mm F2.8 GM"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
+
+                        {/* ── Optics section ── */}
+                        <div className="mb-4">
+                            <p className="text-sm font-medium text-gray-700 mb-2">Optics</p>
+
+                            {/* Prime / Zoom tabs */}
+                            <div className="flex rounded-lg border border-gray-200 overflow-hidden mb-4">
+                                <button
+                                    type="button"
+                                    onClick={() => { setLensType('prime'); setFocalLengthWide('') }}
+                                    className={`flex-1 py-2 text-sm font-medium transition-colors ${lensType === 'prime' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                                >
+                                    Prime
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setLensType('zoom')}
+                                    className={`flex-1 py-2 text-sm font-medium transition-colors ${lensType === 'zoom' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                                >
+                                    Zoom
+                                </button>
+                            </div>
+
+                            {lensType === 'prime' ? (
+                                <>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Focal length (mm)</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        step="1"
+                                        value={focalLengthTele}
+                                        onChange={e => setFocalLengthTele(e.target.value)}
+                                        placeholder="e.g. 50"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
+                                    />
+                                </>
+                            ) : (() => {
+                                const wide = parseInt(focalLengthWide)
+                                const tele = parseInt(focalLengthTele)
+                                const rangeError = !isNaN(wide) && !isNaN(tele) && wide >= tele
+                                return (
+                                    <div>
+                                        <div className="flex gap-3 mb-1">
+                                            <div className="flex-1">
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Wide end (mm)</label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    step="1"
+                                                    value={focalLengthWide}
+                                                    onChange={e => setFocalLengthWide(e.target.value)}
+                                                    placeholder="e.g. 24"
+                                                    className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 ${rangeError ? 'border-red-400' : 'border-gray-300'}`}
+                                                />
+                                            </div>
+                                            <div className="flex-1">
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Tele end (mm)</label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    step="1"
+                                                    value={focalLengthTele}
+                                                    onChange={e => setFocalLengthTele(e.target.value)}
+                                                    placeholder="e.g. 70"
+                                                    className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 ${rangeError ? 'border-red-400' : 'border-gray-300'}`}
+                                                />
+                                            </div>
+                                        </div>
+                                        {rangeError && (
+                                            <p className="text-xs text-red-500 mb-3">Wide end must be less than the tele end.</p>
+                                        )}
+                                        {!rangeError && <div className="mb-3" />}
+                                    </div>
+                                )
+                            })()}
+
+                            {/* Maximum magnification */}
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Maximum magnification (×)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={maximumMagnification}
+                                onChange={e => setMaximumMagnification(e.target.value)}
+                                placeholder="e.g. 0.30"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-1"
+                            />
+                            <p className="text-xs text-gray-400 mb-2">Reproduction ratio at closest focus, e.g. 0.30 for 0.30× (1:3.3).</p>
+                        </div>
 
                         <label className="block text-sm font-medium text-gray-700 mb-1">Product photos</label>
                         <div

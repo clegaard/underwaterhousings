@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
             interchangeablePort = true,
             productId,
             productUrl,
+            cameraMountRecession,
         } = body
 
         if (!name || !manufacturerId || !cameraIds?.length) {
@@ -131,6 +132,7 @@ export async function POST(request: NextRequest) {
                 interchangeablePort,
                 productId: productId?.trim() || null,
                 productUrl: productUrl?.trim() || null,
+                cameraMountRecession: cameraMountRecession != null ? parseFloat(cameraMountRecession) : null,
             },
             include: {
                 manufacturer: true,
@@ -182,6 +184,7 @@ export async function PUT(request: NextRequest) {
             interchangeablePort = true,
             productId,
             productUrl,
+            cameraMountRecession,
         } = body
 
         // Validate required fields
@@ -247,6 +250,7 @@ export async function PUT(request: NextRequest) {
                 interchangeablePort,
                 productId: productId?.trim() || null,
                 productUrl: productUrl?.trim() || null,
+                cameraMountRecession: cameraMountRecession != null ? parseFloat(cameraMountRecession) : null,
             },
             include: {
                 manufacturer: true,

@@ -96,25 +96,26 @@ model Camera {
 }
 
 model Housing {
-    id                  Int           @id @default(autoincrement())
-    name                String
-    slug                String        @unique
-    description         String?
-    priceAmount         Decimal?      @db.Decimal(10, 2)
-    priceCurrency       String?       @default("USD")
-    depthRating         Int
-    material            String?
-    manufacturerId      Int
-    housingMountId      Int?
-    productPhotos       String[]
-    interchangeablePort Boolean       @default(true)
-    productId           String? // Manufacturer product ID / SKU (unique within manufacturer)
-    productUrl          String? // Link to the product page on the manufacturer's website
-    rigReviews          RigReview[]
-    cameraRigs          CameraRig[]
-    cameras             Camera[]
-    housingMount        HousingMount? @relation(fields: [housingMountId], references: [id])
-    manufacturer        Manufacturer  @relation(fields: [manufacturerId], references: [id])
+    id                   Int           @id @default(autoincrement())
+    name                 String
+    slug                 String        @unique
+    description          String?
+    priceAmount          Decimal?      @db.Decimal(10, 2)
+    priceCurrency        String?       @default("USD")
+    depthRating          Int
+    material             String?
+    manufacturerId       Int
+    housingMountId       Int?
+    productPhotos        String[]
+    interchangeablePort  Boolean       @default(true)
+    productId            String? // Manufacturer product ID / SKU (unique within manufacturer)
+    productUrl           String? // Link to the product page on the manufacturer's website
+    cameraMountRecession Float? // Distance from the camera body mount to the housing port flange along the optical axis, in mm
+    rigReviews           RigReview[]
+    cameraRigs           CameraRig[]
+    cameras              Camera[]
+    housingMount         HousingMount? @relation(fields: [housingMountId], references: [id])
+    manufacturer         Manufacturer  @relation(fields: [manufacturerId], references: [id])
 
     @@map("housings")
 }

@@ -90,7 +90,7 @@ export async function PUT(request: NextRequest) {
         if (!id) return NextResponse.json({ error: 'Lens ID is required' }, { status: 400 })
 
         const body = await request.json()
-        const { name, manufacturerId, cameraMountId, exifId, productPhotos, productId, productUrl } = body
+        const { name, manufacturerId, cameraMountId, exifId, productPhotos, productId, productUrl, isZoomLens, focalLengthTele, focalLengthWide, maximumMagnification } = body
 
         if (!name || !manufacturerId || !cameraMountId) {
             return NextResponse.json({ error: 'Name, manufacturer and camera mount are required' }, { status: 400 })
@@ -121,6 +121,10 @@ export async function PUT(request: NextRequest) {
                 exifId: exifId?.trim() || null,
                 productId: productId?.trim() || null,
                 productUrl: productUrl?.trim() || null,
+                isZoomLens: Boolean(isZoomLens),
+                focalLengthTele: focalLengthTele != null ? parseInt(focalLengthTele) : undefined,
+                focalLengthWide: focalLengthWide != null ? parseInt(focalLengthWide) : null,
+                maximumMagnification: maximumMagnification != null ? parseFloat(maximumMagnification) : null,
             },
             include: { manufacturer: true, cameraMount: true },
         })
