@@ -170,13 +170,12 @@ function FovFanChart({
 // ──────────────────────────────────────────────────────────────────────────────
 
 // Client-side component for advanced filtering
-export default function HousingFilters({ initialHousings, cameras, manufacturers, lenses, ports, portChartEntries }: {
+export default function HousingFilters({ initialHousings, cameras, manufacturers, lenses, ports }: {
     initialHousings: any[],
     cameras: any[],
     manufacturers: any[],
     lenses: any[],
     ports: any[],
-    portChartEntries: any[]
 }) {
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -273,43 +272,13 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         [ports, portName]
     )
 
-    // ── Port chart entry matching ─────────────────────────────────────────
-    const matchingEntries = useMemo(() => {
-        if (!selectedHousing || !selectedLens) return []
-        return portChartEntries.filter((e: any) =>
-            e.lensId === selectedLens.id &&
-            e.manufacturerId === selectedHousing.manufacturerId
-        )
-    }, [portChartEntries, selectedHousing, selectedLens])
-
     const availablePorts = useMemo(() => {
         if (!selectedHousing?.housingMount) return []
-        if (isFixedLens) {
-            return ports
-                .filter((port: any) => port.housingMountId === selectedHousing.housingMount.id)
-                .sort((a: any, b: any) => a.name.localeCompare(b.name))
-        }
-        if (!selectedLens) return []
-        // Use port chart entries to determine available ports
-        const portIds = new Set(matchingEntries.filter((e: any) => e.port).map((e: any) => e.port.id))
+        if (!isFixedLens && !selectedLens) return []
         return ports
-            .filter((port: any) => portIds.has(port.id))
-            .filter((port: any, index: number, self: any[]) =>
-                index === self.findIndex((p: any) => p.id === port.id)
-            )
-            .sort((a: any, b: any) => {
-                // Sort recommended first
-                const aRec = matchingEntries.some((e: any) => e.port?.id === a.id && e.isRecommended)
-                const bRec = matchingEntries.some((e: any) => e.port?.id === b.id && e.isRecommended)
-                if (aRec !== bRec) return aRec ? -1 : 1
-                return a.name.localeCompare(b.name)
-            })
-    }, [ports, selectedHousing, selectedLens, isFixedLens, matchingEntries])
-
-    const selectedEntry = useMemo(() => {
-        if (!selectedPort || matchingEntries.length === 0) return null
-        return matchingEntries.find((e: any) => e.port?.id === selectedPort.id) ?? null
-    }, [matchingEntries, selectedPort])
+            .filter((port: any) => port.housingMountId === selectedHousing.housingMount.id)
+            .sort((a: any, b: any) => a.name.localeCompare(b.name))
+    }, [ports, selectedHousing, selectedLens, isFixedLens])
 
     // Compute valid combinations from current URL selections
     const filteredCombinations = useMemo(() => {
@@ -356,25 +325,17 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                     )
                     compatiblePorts.forEach((port: any) => combinations.push(makeCombination(lens, port)))
                 } else {
-                    // Use port chart entries for compatibility
-                    const entries = portChartEntries.filter((e: any) =>
-                        e.lensId === lens?.id &&
-                        e.manufacturerId === housing.manufacturerId &&
-                        e.port &&
-                        (!portName || e.port.name === portName)
+                    // Filter ports by matching housing mount type
+                    const compatiblePorts = ports.filter((port: any) =>
+                        port.housingMountId === housing.housingMount?.id &&
+                        (!portName || port.name === portName)
                     )
-                    const seenPortIds = new Set<number>()
-                    entries.forEach((entry: any) => {
-                        if (!seenPortIds.has(entry.port.id)) {
-                            seenPortIds.add(entry.port.id)
-                            combinations.push(makeCombination(lens, entry.port))
-                        }
-                    })
+                    compatiblePorts.forEach((port: any) => combinations.push(makeCombination(lens, port)))
                 }
             })
         })
         return combinations
-    }, [initialHousings, cameras, lenses, ports, portChartEntries, cameraBrand, cameraModel, lensName, housingName, portName])
+    }, [initialHousings, cameras, lenses, ports, cameraBrand, cameraModel, lensName, housingName, portName])
 
     const hasActiveFilters = !!(cameraBrand || cameraModel || lensName || housingName || portName)
 
@@ -411,14 +372,8 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         if (selectedLens?.priceAmount) total += Number(selectedLens.priceAmount)
         if (selectedHousing?.priceAmount) total += Number(selectedHousing.priceAmount)
         if (selectedPort?.priceAmount) total += Number(selectedPort.priceAmount)
-        if (selectedEntry) {
-            for (const step of selectedEntry.steps) {
-                if (step.extensionRing?.priceAmount) total += Number(step.extensionRing.priceAmount)
-                if (step.portAdapter?.priceAmount) total += Number(step.portAdapter.priceAmount)
-            }
-        }
         return total
-    }, [selectedCamera, selectedLens, selectedHousing, selectedPort, selectedEntry])
+    }, [selectedCamera, selectedLens, selectedHousing, selectedPort])
 
     const relevantReviews = useMemo((): any[] => {
         if ((selectedHousing as any)?.rigReviews?.length) return (selectedHousing as any).rigReviews
@@ -839,14 +794,9 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                         <option value="">
                                             {!housingName ? 'Select housing first' : availablePorts.length === 0 ? 'No compatible ports' : 'Port…'}
                                         </option>
-                                        {availablePorts.map(port => {
-                                            const isRec = matchingEntries.some((e: any) => e.port?.id === port.id && e.isRecommended)
-                                            return (
-                                                <option key={port.id} value={port.name}>
-                                                    {port.name}{isRec ? ' ★ Recommended' : ''}
-                                                </option>
-                                            )
-                                        })}
+                                        {availablePorts.map(port => (
+                                            <option key={port.id} value={port.name}>{port.name}</option>
+                                        ))}
                                     </select>
                                 </div>
                             </div>
@@ -961,41 +911,6 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                     }
                                                 </div>
                                             )}
-
-                                            {/* Extension rings & adapters from port chart entry */}
-                                            {selectedEntry?.steps?.map((step: any, i: number) => {
-                                                if (step.extensionRing) {
-                                                    return (
-                                                        <div key={`ring-${i}`} className="flex items-center justify-between">
-                                                            <div className="flex items-center gap-2 min-w-0">
-                                                                <div className="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0"></div>
-                                                                <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Ring</span>
-                                                                <span className="text-sm text-gray-600 truncate">{step.extensionRing.name}</span>
-                                                            </div>
-                                                            {step.extensionRing.priceAmount
-                                                                ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4 shrink-0">${Number(step.extensionRing.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
-                                                                : <span className="text-xs text-gray-400 pl-4 shrink-0">&mdash;</span>
-                                                            }
-                                                        </div>
-                                                    )
-                                                }
-                                                if (step.portAdapter) {
-                                                    return (
-                                                        <div key={`adapter-${i}`} className="flex items-center justify-between">
-                                                            <div className="flex items-center gap-2 min-w-0">
-                                                                <div className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0"></div>
-                                                                <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Adapter</span>
-                                                                <span className="text-sm text-gray-600 truncate">{step.portAdapter.name}</span>
-                                                            </div>
-                                                            {step.portAdapter.priceAmount
-                                                                ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4 shrink-0">${Number(step.portAdapter.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
-                                                                : <span className="text-xs text-gray-400 pl-4 shrink-0">&mdash;</span>
-                                                            }
-                                                        </div>
-                                                    )
-                                                }
-                                                return null
-                                            })}
 
                                             {/* Total */}
                                             {totalPrice > 0 && (
