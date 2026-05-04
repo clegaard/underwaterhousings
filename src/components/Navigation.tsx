@@ -5,6 +5,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 import UserAvatar from '@/components/UserAvatar'
+import { useCurrency } from '@/components/CurrencyContext'
+import { SUPPORTED_CURRENCIES } from '@/lib/currency'
 
 interface Manufacturer {
     id: string
@@ -21,17 +23,22 @@ interface NavigationProps {
 
 export default function Navigation({ manufacturers, cameraManufacturers, lensManufacturers, portManufacturers }: NavigationProps) {
     const { data: session } = useSession()
+    const { userCurrency, setUserCurrency } = useCurrency()
     const [profilePicture, setProfilePicture] = useState<string | null>(null)
     const [isCamerasOpen, setIsCamerasOpen] = useState(false)
     const [isLensesOpen, setIsLensesOpen] = useState(false)
     const [isHousingsOpen, setIsHousingsOpen] = useState(false)
     const [isPortsOpen, setIsPortsOpen] = useState(false)
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+    const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
     const userMenuRef = useRef<HTMLDivElement>(null)
     const camerasDropdownRef = useRef<HTMLDivElement>(null)
     const lensesDropdownRef = useRef<HTMLDivElement>(null)
     const housingsDropdownRef = useRef<HTMLDivElement>(null)
     const portsDropdownRef = useRef<HTMLDivElement>(null)
+    const currencyDropdownRef = useRef<HTMLDivElement>(null)
+
+    const selectedCurrencyMeta = SUPPORTED_CURRENCIES.find(c => c.code === userCurrency) ?? SUPPORTED_CURRENCIES[0]
 
     function closeAll() {
         setIsCamerasOpen(false)
@@ -69,6 +76,9 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
             }
             if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
                 setIsUserMenuOpen(false)
+            }
+            if (currencyDropdownRef.current && !currencyDropdownRef.current.contains(event.target as Node)) {
+                setIsCurrencyOpen(false)
             }
         }
 
@@ -212,6 +222,46 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
                         <Link href="/about" className="text-gray-700 hover:text-blue-900 transition-colors font-medium">
                             About
                         </Link>
+
+                        {/* Currency selector */}
+                        <div className="relative" ref={currencyDropdownRef}>
+                            <button
+                                onClick={() => setIsCurrencyOpen(v => !v)}
+                                className="flex items-center gap-1.5 text-sm border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-700 bg-white hover:border-indigo-400 hover:text-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                aria-label="Select currency"
+                            >
+                                <span className="text-base leading-none">{selectedCurrencyMeta.flag}</span>
+                                <span className="font-medium tracking-wide">{selectedCurrencyMeta.code}</span>
+                                <span className="text-gray-400 text-xs">({selectedCurrencyMeta.symbol})</span>
+                                <svg className={`w-3 h-3 text-gray-400 ml-0.5 transition-transform ${isCurrencyOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            {isCurrencyOpen && (
+                                <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg ring-1 ring-black/10 z-50 overflow-hidden">
+                                    {SUPPORTED_CURRENCIES.map((c, i) => {
+                                        const isSelected = c.code === userCurrency
+                                        return (
+                                            <button
+                                                key={c.code}
+                                                onClick={() => { setUserCurrency(c.code); setIsCurrencyOpen(false) }}
+                                                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${isSelected
+                                                        ? 'bg-indigo-600 text-white'
+                                                        : 'text-gray-700 hover:bg-gray-50'
+                                                    } ${i > 0 && !isSelected ? 'border-t border-gray-100' : ''}`}
+                                            >
+                                                <span className="text-lg leading-none">{c.flag}</span>
+                                                <span className="flex-1 text-left font-medium">
+                                                    {c.code}
+                                                    {c.code === 'USD' && <span className={`ml-1 text-xs font-normal ${isSelected ? 'text-indigo-200' : 'text-gray-400'}`}>(Default)</span>}
+                                                </span>
+                                                <span className={`text-xs ${isSelected ? 'text-indigo-200' : 'text-gray-400'}`}>({c.symbol})</span>
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                            )}
+                        </div>
 
                         {/* Auth */}
                         {session ? (

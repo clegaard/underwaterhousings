@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { HousingImage } from '@/components/HousingImage'
 import { withBase, getCameraImagePathWithFallback } from '@/lib/images'
+import { useCurrency } from '@/components/CurrencyContext'
 
 interface Camera {
     id: number
@@ -63,6 +64,7 @@ interface Props {
 
 export default function CameraManufacturerCamerasClient({ cameras: initial, manufacturer, cameraMounts, isSuperuser }: Props) {
     const router = useRouter()
+    const { formatMoney } = useCurrency()
     const [cameras, setCameras] = useState(initial)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -474,7 +476,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                                     )}
                                     {camera.priceAmount && (
                                         <p className="text-xs font-medium text-green-600 mt-1">
-                                            ${parseFloat(camera.priceAmount).toLocaleString()}
+                                            {formatMoney(parseFloat(camera.priceAmount), camera.priceCurrency)}
                                         </p>
                                     )}
                                 </div>

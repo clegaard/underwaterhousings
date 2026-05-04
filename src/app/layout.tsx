@@ -2,6 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import NavigationWrapper from '@/components/NavigationWrapper'
 import AuthProvider from '@/components/AuthProvider'
+import { CurrencyProvider } from '@/components/CurrencyContext'
 import { auth } from '@/auth'
 
 export const metadata: Metadata = {
@@ -19,8 +20,10 @@ export default async function RootLayout({
         <html lang="en">
             <body className="antialiased">
                 <AuthProvider session={session}>
-                    <NavigationWrapper />
-                    {children}
+                    <CurrencyProvider>
+                        <NavigationWrapper />
+                        {children}
+                    </CurrencyProvider>
                 </AuthProvider>
             </body>
         </html>

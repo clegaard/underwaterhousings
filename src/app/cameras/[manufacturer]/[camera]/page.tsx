@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { HousingImage } from '@/components/HousingImage'
 import { getCameraImagePathWithFallback } from '@/lib/images'
+import PriceTag from '@/components/PriceTag'
 
 interface CameraDetailPageProps {
     params: {
@@ -318,7 +319,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
                                     </div>
                                     {housing.priceAmount && (
                                         <span className="text-sm font-semibold text-green-600 ml-4 flex-shrink-0">
-                                            ${Number(housing.priceAmount).toLocaleString()}
+                                            <PriceTag amount={housing.priceAmount} currency={housing.priceCurrency} />
                                         </span>
                                     )}
                                 </Link>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { withBase, getHousingImagePathWithFallback } from '@/lib/images'
 import { HousingImage } from '@/components/HousingImage'
+import { useCurrency } from '@/components/CurrencyContext'
 
 interface Housing {
     id: number
@@ -53,6 +54,7 @@ interface Props {
 
 export default function HousingManufacturersClient({ manufacturers: initial, cameras, isSuperuser }: Props) {
     const router = useRouter()
+    const { formatMoney } = useCurrency()
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [manufacturers, setManufacturers] = useState(initial)
 
@@ -420,7 +422,7 @@ export default function HousingManufacturersClient({ manufacturers: initial, cam
                                                 )}
                                                 {housing.priceAmount != null && (
                                                     <p className="text-xs font-medium text-green-600 mt-1">
-                                                        ${housing.priceAmount.toLocaleString()}
+                                                        {formatMoney(housing.priceAmount, housing.priceCurrency)}
                                                     </p>
                                                 )}
                                             </div>

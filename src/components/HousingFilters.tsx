@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import UserAvatar from '@/components/UserAvatar'
 import { HousingImage } from '@/components/HousingImage'
+import { useCurrency } from '@/components/CurrencyContext'
 
 // ─── FOV Fan Chart ────────────────────────────────────────────────────────────
 const FOV_REF_FL = [
@@ -187,6 +188,8 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
     const housingName = searchParams.get('housing') ?? ''
     const portName = searchParams.get('port') ?? ''
 
+    const { formatMoney, convertAmount, userCurrency } = useCurrency()
+
     // Write one or more params at once, clearing downstream keys as needed
     function setParams(updates: Record<string, string>) {
         const params = new URLSearchParams(searchParams.toString())
@@ -366,14 +369,12 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
         return 'Housing & port combination'
     }, [selectedHousing, selectedPort])
 
-    const totalPrice = useMemo(() => {
-        let total = 0
-        if (selectedCamera?.priceAmount) total += Number(selectedCamera.priceAmount)
-        if (selectedLens?.priceAmount) total += Number(selectedLens.priceAmount)
-        if (selectedHousing?.priceAmount) total += Number(selectedHousing.priceAmount)
-        if (selectedPort?.priceAmount) total += Number(selectedPort.priceAmount)
-        return total
-    }, [selectedCamera, selectedLens, selectedHousing, selectedPort])
+    const totalPrice = useMemo(() =>
+        convertAmount(selectedCamera?.priceAmount, selectedCamera?.priceCurrency) +
+        convertAmount(selectedLens?.priceAmount, selectedLens?.priceCurrency) +
+        convertAmount(selectedHousing?.priceAmount, selectedHousing?.priceCurrency) +
+        convertAmount(selectedPort?.priceAmount, (selectedPort as any)?.priceCurrency),
+        [selectedCamera, selectedLens, selectedHousing, selectedPort, convertAmount])
 
     const relevantReviews = useMemo((): any[] => {
         if ((selectedHousing as any)?.rigReviews?.length) return (selectedHousing as any).rigReviews
@@ -512,6 +513,63 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
             maximumMagnification: opticalSource.maximumMagnification ?? null,
         }
     }, [selectedCamera, selectedLens, selectedPort, isFixedLens])
+    // ────────────────────────────────────────────────────────────────────────
+
+    // ── Compatibility checks ─────────────────────────────────────────────────
+    const compatibilityChecks = useMemo(() => {
+        const opticalSource: any = isFixedLens ? selectedCamera : selectedLens
+        if (!selectedPort || !opticalSource) return null
+
+        const isFlatPort: boolean = !!(selectedPort as any).isFlatPort
+        const portDepth: number | null = (selectedPort as any).portDepth ?? null
+        const sensorW: number | null = (selectedCamera as any)?.sensorWidth ?? null
+        // cameraMountRecession: distance from camera body mount flange to housing port mount face (mm)
+        const mountRecession: number | null = (selectedHousing as any)?.cameraMountRecession ?? null
+
+        const isPrime: boolean = opticalSource.focalLengthWide == null
+        const fWide: number = isPrime ? opticalSource.focalLengthTele : opticalSource.focalLengthWide!
+        const fTele: number = opticalSource.focalLengthTele
+        // Entrance pupil distances (from lens mount flange, in mm)
+        const epWide: number | null = opticalSource.entrancePupilDistanceWide ?? null
+        const epTele: number | null = opticalSource.entrancePupilDistanceTele ?? null
+        // For a prime lens, tele == wide
+        const epSole: number | null = epTele ?? epWide
+
+        if (isFlatPort) {
+            // Flat port check: horizontal FOV in air must exceed 60° to avoid excessive distortion
+            // Source: oceanity.com.au/articles/view/understanding-flat-port-and-dome-port-theory
+            const fovWide = sensorW ? 2 * Math.atan(sensorW / (2 * fWide)) * (180 / Math.PI) : null
+            return {
+                type: 'flat' as const,
+                isPrime,
+                fWide,
+                fovWide,
+                fovWidePass: fovWide !== null ? fovWide > 60 : null,
+            }
+        } else {
+            // Dome port: required extension stack depth so the entrance pupil sits at the dome's centre of curvature.
+            // Formula: d_ext = d_pupil − d_mount_recession + d_port_depth
+            // Source: interceptor121.com/2024/01/06/methods-to-determine-the-appropriate-dome-port-...
+            const calcExt = (ep: number | null): number | null =>
+                ep !== null && mountRecession !== null && portDepth !== null
+                    ? ep - mountRecession + portDepth
+                    : null
+
+            return {
+                type: 'dome' as const,
+                isPrime,
+                fWide,
+                fTele,
+                mountRecession,
+                portDepth,
+                epWide: isPrime ? null : epWide,
+                epTele: isPrime ? epSole : epTele,
+                extWide: isPrime ? null : calcExt(epWide),
+                extTele: calcExt(isPrime ? epSole : epTele),
+                hasData: mountRecession !== null && portDepth !== null,
+            }
+        }
+    }, [selectedPort, selectedLens, selectedCamera, selectedHousing, isFixedLens])
     // ────────────────────────────────────────────────────────────────────────
 
     const clearFilters = () => {
@@ -831,7 +889,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                     </Link>
                                                 </div>
                                                 {selectedCamera.priceAmount
-                                                    ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4 shrink-0">${Number(selectedCamera.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                                    ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4 shrink-0">{formatMoney(Number(selectedCamera.priceAmount), selectedCamera.priceCurrency)}</span>
                                                     : <span className="text-xs text-gray-400 pl-4 shrink-0">&mdash;</span>
                                                 }
                                             </div>
@@ -856,7 +914,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                         )}
                                                     </div>
                                                     {selectedLens?.priceAmount
-                                                        ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4 shrink-0">${Number(selectedLens.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                                        ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4 shrink-0">{formatMoney(Number(selectedLens.priceAmount), selectedLens.priceCurrency)}</span>
                                                         : <span className="text-xs text-gray-400 pl-4 shrink-0">{selectedLens ? '\u2014' : 'Not selected'}</span>
                                                     }
                                                 </div>
@@ -880,7 +938,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                         )}
                                                     </div>
                                                     {selectedHousing?.priceAmount
-                                                        ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4 shrink-0">${Number(selectedHousing.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                                        ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4 shrink-0">{formatMoney(Number(selectedHousing.priceAmount), selectedHousing.priceCurrency)}</span>
                                                         : <span className="text-xs text-gray-400 pl-4 shrink-0">{selectedHousing ? '\u2014' : 'Not selected'}</span>
                                                     }
                                                 </div>
@@ -894,7 +952,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                         <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Port</span>
                                                         {selectedPort?.manufacturer?.slug ? (
                                                             <Link
-                                                                href={`/gear/${selectedPort.manufacturer.slug}`}
+                                                                href={`/gear/${selectedPort.manufacturer.slug}/${selectedPort.slug}`}
                                                                 className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 truncate transition-colors"
                                                             >
                                                                 {selectedPort.name}
@@ -906,7 +964,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                         )}
                                                     </div>
                                                     {selectedPort?.priceAmount
-                                                        ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4">${Number(selectedPort.priceAmount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+                                                        ? <span className="text-sm font-medium text-gray-800 tabular-nums pl-4">{formatMoney(Number(selectedPort.priceAmount), (selectedPort as any).priceCurrency)}</span>
                                                         : <span className="text-xs text-gray-400 pl-4">{selectedPort ? '\u2014' : 'Not selected'}</span>
                                                     }
                                                 </div>
@@ -917,8 +975,12 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                                 <div className="pt-3 mt-1 border-t border-gray-100 flex items-center justify-between">
                                                     <span className="text-sm font-semibold text-gray-900">Total</span>
                                                     <span className="text-lg font-bold text-gray-900 tabular-nums">
-                                                        ${totalPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
-                                                        <span className="text-xs font-normal text-gray-400 ml-1">USD</span>
+                                                        {new Intl.NumberFormat(undefined, {
+                                                            style: 'currency',
+                                                            currency: userCurrency,
+                                                            minimumFractionDigits: 0,
+                                                            maximumFractionDigits: 0,
+                                                        }).format(totalPrice)}
                                                     </span>
                                                 </div>
                                             )}
@@ -1129,6 +1191,95 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                                     </p>
                                 )}
                             </div>
+                            {/* ──────────────────────────────────────────────────────── */}
+
+                            {/* ── Compatibility ────────────────────────────────────── */}
+                            {compatibilityChecks && (
+                                <div className="border-t border-gray-100 px-6 py-5">
+                                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Compatibility</h4>
+                                    <div className="space-y-3.5">
+
+                                        {compatibilityChecks.type === 'flat' && (
+                                            <>
+                                                {/* Flat port: FOV ≥ 60° check */}
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-1.5">
+                                                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${compatibilityChecks.fovWidePass === null ? 'bg-gray-300' : compatibilityChecks.fovWidePass ? 'bg-green-400' : 'bg-amber-400'}`} />
+                                                        <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Flat port FOV check</span>
+                                                        {compatibilityChecks.fovWidePass !== null && (
+                                                            <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${compatibilityChecks.fovWidePass ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
+                                                                {compatibilityChecks.fovWidePass ? 'Pass' : 'Caution'}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="ml-5 space-y-1">
+                                                        {compatibilityChecks.fovWide !== null ? (
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-xs text-gray-400">
+                                                                    Horizontal FOV at {compatibilityChecks.fWide} mm (in air)
+                                                                </span>
+                                                                <span className={`text-sm font-medium tabular-nums ${compatibilityChecks.fovWidePass ? 'text-gray-700' : 'text-amber-700'}`}>
+                                                                    {compatibilityChecks.fovWide.toFixed(1)}° {compatibilityChecks.fovWidePass === false ? '< 60°' : '≥ 60°'}
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            <p className="text-xs text-gray-300 italic">No sensor width available — add it to run check</p>
+                                                        )}
+                                                        {compatibilityChecks.fovWidePass === false && (
+                                                            <p className="text-xs text-amber-600 leading-relaxed mt-1">
+                                                                FOV below 60° through a flat port typically produces significant distortion and chromatic aberration. Consider a dome port for this lens.
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {compatibilityChecks.type === 'dome' && (
+                                            <>
+                                                {/* Dome port: entrance pupil extension calculation */}
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-1.5">
+                                                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${compatibilityChecks.hasData ? 'bg-violet-400' : 'bg-gray-300'}`} />
+                                                        <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Dome port extension</span>
+                                                        <span className="text-xs text-gray-300">entrance pupil at dome centre</span>
+                                                    </div>
+                                                    {compatibilityChecks.hasData ? (
+                                                        <div className="ml-5 space-y-1">
+                                                            <p className="text-xs text-gray-400 mb-2">
+                                                                Required extension stack depth (housing recession&nbsp;=&nbsp;{compatibilityChecks.mountRecession}&nbsp;mm, port depth&nbsp;=&nbsp;{compatibilityChecks.portDepth}&nbsp;mm):
+                                                            </p>
+                                                            {!compatibilityChecks.isPrime && compatibilityChecks.extWide !== null ? (
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-xs text-gray-400">Wide end — {compatibilityChecks.fWide} mm (EP {compatibilityChecks.epWide} mm)</span>
+                                                                    <span className="text-sm font-medium text-gray-700 tabular-nums">{Math.round(compatibilityChecks.extWide)} mm</span>
+                                                                </div>
+                                                            ) : !compatibilityChecks.isPrime ? (
+                                                                <p className="text-xs text-gray-300 italic">Wide end: no entrance pupil data</p>
+                                                            ) : null}
+                                                            {compatibilityChecks.extTele !== null ? (
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-xs text-gray-400">
+                                                                        {compatibilityChecks.isPrime ? `${compatibilityChecks.fTele} mm (EP ${compatibilityChecks.epTele} mm)` : `Tele end — ${compatibilityChecks.fTele} mm (EP ${compatibilityChecks.epTele} mm)`}
+                                                                    </span>
+                                                                    <span className="text-sm font-medium text-gray-700 tabular-nums">{Math.round(compatibilityChecks.extTele)} mm</span>
+                                                                </div>
+                                                            ) : (
+                                                                <p className="text-xs text-gray-300 italic">{compatibilityChecks.isPrime ? 'No entrance pupil data for this lens' : 'Tele end: no entrance pupil data'}</p>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="ml-5 text-xs text-gray-300 italic">
+                                                            {!compatibilityChecks.mountRecession ? 'Housing mount recession not set' : 'Port depth not set'} — add it to calculate extension
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </>
+                                        )}
+
+                                    </div>
+                                </div>
+                            )}
                             {/* ──────────────────────────────────────────────────────── */}
 
                             {/* Reviews */}

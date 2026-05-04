@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { HousingImage } from '@/components/HousingImage'
 import { withBase, getHousingImagePathWithFallback } from '@/lib/images'
+import { useCurrency } from '@/components/CurrencyContext'
 
 interface Housing {
     id: number
@@ -64,6 +65,7 @@ export default function HousingManufacturerHousingsClient({
 }: Props) {
     const router = useRouter()
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const { formatMoney } = useCurrency()
 
     const [housings, setHousings] = useState(initial)
     const [modal, setModal] = useState<'add' | 'edit' | 'delete' | null>(null)
@@ -401,7 +403,7 @@ export default function HousingManufacturerHousingsClient({
                                 )}
                                 {housing.priceAmount != null && (
                                     <p className="text-xs font-medium text-green-600 mt-1">
-                                        ${housing.priceAmount.toLocaleString()}
+                                        {formatMoney(housing.priceAmount, housing.priceCurrency)}
                                     </p>
                                 )}
                             </div>

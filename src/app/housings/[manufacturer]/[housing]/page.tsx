@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { HousingImage } from '@/components/HousingImage'
 import ImageGallery from '@/components/ImageGallery'
 import { getAllHousingImages } from '@/lib/images'
+import PriceTag from '@/components/PriceTag'
 
 interface HousingDetailPageProps {
     params: {
@@ -105,9 +106,8 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                             {housing.priceAmount && (
                                 <div className="text-right">
                                     <div className="text-3xl font-bold text-green-600">
-                                        ${Number(housing.priceAmount).toLocaleString()}
+                                        <PriceTag amount={housing.priceAmount} currency={housing.priceCurrency} />
                                     </div>
-                                    <div className="text-sm text-gray-600">{housing.priceCurrency}</div>
                                 </div>
                             )}
                         </div>
@@ -168,7 +168,7 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                                             <div>
                                                 <h4 className="font-semibold text-gray-900 mb-1">Price</h4>
                                                 <p className="text-gray-700">
-                                                    ${Number(housing.priceAmount).toLocaleString()} {housing.priceCurrency}
+                                                    <PriceTag amount={housing.priceAmount} currency={housing.priceCurrency} />
                                                 </p>
                                             </div>
                                         )}

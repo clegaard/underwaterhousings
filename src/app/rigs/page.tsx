@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import { HousingImage } from '@/components/HousingImage'
 import RigReviewsSection, { type RigReviewData } from '@/components/RigReviewsSection'
+import PriceTag from '@/components/PriceTag'
 import {
     getHousingImagePathWithFallback,
     getCameraImagePathWithFallback,
@@ -157,7 +158,7 @@ export default async function RigBuilderPage({ searchParams }: RigBuilderPagePro
                                 {camera.priceAmount && (
                                     <div className="flex justify-between">
                                         <span className="text-gray-600">Camera price</span>
-                                        <span className="font-medium">${Number(camera.priceAmount).toLocaleString()} {camera.priceCurrency ?? 'USD'}</span>
+                                        <span className="font-medium"><PriceTag amount={camera.priceAmount} currency={camera.priceCurrency} /></span>
                                     </div>
                                 )}
                             </div>

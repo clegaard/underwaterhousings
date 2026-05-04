@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { HousingImage } from '@/components/HousingImage'
 import { getLensImagePathWithFallback, withBase } from '@/lib/images'
+import PriceTag from '@/components/PriceTag'
 
 interface LensDetailPageProps {
     params: {
@@ -258,7 +259,7 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                                     <div className="flex items-center gap-3 shrink-0">
                                         {port.priceAmount && (
                                             <span className="text-sm font-medium text-gray-700">
-                                                ${Number(port.priceAmount).toLocaleString()}
+                                                <PriceTag amount={port.priceAmount} currency={port.priceCurrency} />
                                             </span>
                                         )}
                                         {port.depthRating && (
