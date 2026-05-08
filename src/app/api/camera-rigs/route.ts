@@ -6,6 +6,8 @@ const rigInclude = {
     camera: { include: { brand: true } },
     lens: true,
     housing: { include: { manufacturer: true } },
+    portAdapter: { include: { manufacturer: true, inputHousingMount: true, outputHousingMount: true } },
+    extensionRings: { include: { manufacturer: true } },
     port: true,
 }
 
@@ -27,13 +29,13 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ success: true, data: { rigs, defaultRigId: user?.defaultRigId ?? null } })
         }
 
-        const [cameras, housings, lenses, ports] = await Promise.all([
+        const [cameras, housings, lenses, ports, portAdapters, extensionRings] = await Promise.all([
             prisma.camera.findMany({
                 include: { brand: true, cameraMount: true },
                 orderBy: { name: 'asc' },
             }),
             prisma.housing.findMany({
-                include: { manufacturer: true, housingMount: true },
+                include: { manufacturer: true, housingMount: true, cameras: { select: { id: true } } },
                 orderBy: { name: 'asc' },
             }),
             prisma.lens.findMany({
@@ -44,8 +46,16 @@ export async function GET(request: NextRequest) {
                 include: { lens: true },
                 orderBy: { name: 'asc' },
             }),
+            prisma.portAdapter.findMany({
+                include: { manufacturer: true, inputHousingMount: true, outputHousingMount: true },
+                orderBy: { name: 'asc' },
+            }),
+            prisma.extensionRing.findMany({
+                include: { manufacturer: true, housingMount: true },
+                orderBy: { name: 'asc' },
+            }),
         ])
-        return NextResponse.json({ success: true, data: { cameras, housings, lenses, ports } })
+        return NextResponse.json({ success: true, data: { cameras, housings, lenses, ports, portAdapters, extensionRings } })
     } catch (error) {
         console.error('Error fetching equipment:', error)
         return NextResponse.json({ success: false, error: 'Failed to fetch equipment' }, { status: 500 })
@@ -60,7 +70,7 @@ export async function POST(request: NextRequest) {
         }
         const userId = parseInt(session.user.id)
         const body = await request.json()
-        const { name, cameraId, lensId, housingId, portId, imagePath } = body
+        const { name, cameraId, lensId, housingId, portAdapterId, extensionRingIds, portId, imagePath } = body
         if (!name || !cameraId) {
             return NextResponse.json({ success: false, error: 'name and cameraId are required' }, { status: 400 })
         }
@@ -71,6 +81,10 @@ export async function POST(request: NextRequest) {
                 cameraId: parseInt(cameraId),
                 lensId: lensId ? parseInt(lensId) : null,
                 housingId: housingId ? parseInt(housingId) : null,
+                portAdapterId: portAdapterId ? parseInt(portAdapterId) : null,
+                extensionRings: Array.isArray(extensionRingIds) && extensionRingIds.length > 0
+                    ? { connect: extensionRingIds.map((id: number) => ({ id })) }
+                    : undefined,
                 portId: portId ? parseInt(portId) : null,
                 imagePath: imagePath ?? null,
             },
@@ -104,7 +118,7 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ success: false, error: 'Not found or forbidden' }, { status: 403 })
         }
         const body = await request.json()
-        const { name, cameraId, lensId, housingId, portId, imagePath } = body
+        const { name, cameraId, lensId, housingId, portAdapterId, extensionRingIds, portId, imagePath } = body
         const rig = await prisma.cameraRig.update({
             where: { id: parseInt(id) },
             data: {
@@ -112,6 +126,10 @@ export async function PUT(request: NextRequest) {
                 cameraId: cameraId ? parseInt(cameraId) : undefined,
                 lensId: lensId ? parseInt(lensId) : null,
                 housingId: housingId ? parseInt(housingId) : null,
+                portAdapterId: portAdapterId ? parseInt(portAdapterId) : null,
+                extensionRings: Array.isArray(extensionRingIds)
+                    ? { set: extensionRingIds.map((id: number) => ({ id })) }
+                    : undefined,
                 portId: portId ? parseInt(portId) : null,
                 imagePath: imagePath !== undefined ? imagePath : undefined,
             },

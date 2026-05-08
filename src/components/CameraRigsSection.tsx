@@ -6,6 +6,8 @@ import CameraRigPicker, {
     type PickerCamera,
     type PickerLens,
     type PickerHousing,
+    type PickerPortAdapter,
+    type PickerExtensionRing,
     type PickerPort,
     type RigSavePayload,
     type RigInitialValues,
@@ -40,6 +42,17 @@ interface SavedRig {
         productPhotos: string[]
         manufacturer: { name: string }
     } | null
+    portAdapter: {
+        id: number
+        name: string
+        productPhotos: string[]
+        manufacturer: { name: string }
+    } | null
+    extensionRings: {
+        id: number
+        name: string
+        productPhotos: string[]
+    }[]
     port: {
         id: number
         name: string
@@ -51,6 +64,8 @@ interface EquipmentData {
     cameras: PickerCamera[]
     lenses: PickerLens[]
     housings: PickerHousing[]
+    portAdapters: PickerPortAdapter[]
+    extensionRings: PickerExtensionRing[]
     ports: PickerPort[]
 }
 
@@ -87,6 +102,10 @@ function RigCard({
         ...(rig.housing
             ? [{ label: 'Housing', name: rig.housing.name, subtitle: rig.housing.manufacturer.name, img: housingImg! }]
             : []),
+        ...(rig.portAdapter
+            ? [{ label: 'Adapter', name: rig.portAdapter.name, subtitle: rig.portAdapter.manufacturer.name, img: getPortImagePathWithFallback(rig.portAdapter.productPhotos) }]
+            : []),
+        ...rig.extensionRings.map(r => ({ label: 'Ring', name: r.name, subtitle: '', img: getPortImagePathWithFallback(r.productPhotos) })),
         ...(rig.port ? [{ label: 'Port', name: rig.port.name, subtitle: '', img: portImg! }] : []),
     ]
 
@@ -99,11 +118,10 @@ function RigCard({
                         type="button"
                         onClick={onSetFavorite}
                         aria-label={isFavorite ? 'Default rig' : 'Set as default rig'}
-                        className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${
-                            isFavorite
+                        className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${isFavorite
                                 ? 'bg-amber-100 text-amber-500 hover:bg-amber-200'
                                 : 'bg-white/80 text-gray-300 hover:text-amber-400 hover:bg-white shadow-sm'
-                        }`}
+                            }`}
                     >
                         <svg
                             viewBox="0 0 24 24"
@@ -293,6 +311,8 @@ export default function CameraRigsSection({ userId, isOwnProfile }: Props) {
                         cameraId: payload.cameraId,
                         lensId: payload.lensId,
                         housingId: payload.housingId,
+                        portAdapterId: payload.portAdapterId,
+                        extensionRingIds: payload.extensionRingIds,
                         portId: payload.portId,
                         imagePath,
                     }),
@@ -306,6 +326,8 @@ export default function CameraRigsSection({ userId, isOwnProfile }: Props) {
                         cameraId: payload.cameraId,
                         lensId: payload.lensId,
                         housingId: payload.housingId,
+                        portAdapterId: payload.portAdapterId,
+                        extensionRingIds: payload.extensionRingIds,
                         portId: payload.portId,
                         imagePath,
                     }),
@@ -362,6 +384,8 @@ export default function CameraRigsSection({ userId, isOwnProfile }: Props) {
             cameraId: editingRig.camera.id,
             lensId: editingRig.lens?.id ?? null,
             housingId: editingRig.housing?.id ?? null,
+            portAdapterId: editingRig.portAdapter?.id ?? null,
+            extensionRingIds: editingRig.extensionRings.map(r => r.id),
             portId: editingRig.port?.id ?? null,
         }
         : undefined
@@ -414,6 +438,8 @@ export default function CameraRigsSection({ userId, isOwnProfile }: Props) {
                         cameras={equipment.cameras}
                         lenses={equipment.lenses}
                         housings={equipment.housings}
+                        portAdapters={equipment.portAdapters}
+                        extensionRings={equipment.extensionRings}
                         ports={equipment.ports}
                         initialValues={editingInitialValues}
                         onSave={handleSave}

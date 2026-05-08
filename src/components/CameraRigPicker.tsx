@@ -61,6 +61,28 @@ export interface PickerHousing {
     manufacturer: Manufacturer
 }
 
+export interface PickerPortAdapter {
+    id: number
+    name: string
+    slug: string
+    productPhotos: string[]
+    inputHousingMountId: number | null
+    outputHousingMountId: number | null
+    inputHousingMount: HousingMount | null
+    outputHousingMount: HousingMount | null
+    manufacturer: Manufacturer
+}
+
+export interface PickerExtensionRing {
+    id: number
+    name: string
+    slug: string
+    productPhotos: string[]
+    housingMountId: number | null
+    lengthMm: number | null
+    manufacturer: Manufacturer
+}
+
 export interface PickerPort {
     id: number
     name: string
@@ -77,6 +99,8 @@ export interface RigInitialValues {
     cameraId: number | null
     lensId: number | null
     housingId: number | null
+    portAdapterId: number | null
+    extensionRingIds: number[]
     portId: number | null
 }
 
@@ -85,6 +109,8 @@ export interface RigSavePayload {
     cameraId: number
     lensId: number | null
     housingId: number | null
+    portAdapterId: number | null
+    extensionRingIds: number[]
     portId: number | null
     rigPhoto: File | null
     imagePath: string | null
@@ -94,6 +120,8 @@ interface Props {
     cameras: PickerCamera[]
     lenses: PickerLens[]
     housings: PickerHousing[]
+    portAdapters: PickerPortAdapter[]
+    extensionRings: PickerExtensionRing[]
     ports: PickerPort[]
     initialValues?: RigInitialValues
     onSave: (payload: RigSavePayload) => void
@@ -151,6 +179,8 @@ export default function CameraRigPicker({
     cameras,
     lenses,
     housings,
+    portAdapters,
+    extensionRings,
     ports,
     initialValues,
     onSave,
@@ -217,6 +247,8 @@ export default function CameraRigPicker({
     const [selectedCameraId, setSelectedCameraId] = useState<number | null>(initialValues?.cameraId ?? null)
     const [selectedLensId, setSelectedLensId] = useState<number | null>(initialValues?.lensId ?? null)
     const [selectedHousingId, setSelectedHousingId] = useState<number | null>(initialValues?.housingId ?? null)
+    const [selectedAdapterId, setSelectedAdapterId] = useState<number | null>(initialValues?.portAdapterId ?? null)
+    const [selectedRingIds, setSelectedRingIds] = useState<number[]>(initialValues?.extensionRingIds ?? [])
     const [selectedPortId, setSelectedPortId] = useState<number | null>(initialValues?.portId ?? null)
 
     // ── Derived selections ────────────────────────────────────────────────────
@@ -233,6 +265,10 @@ export default function CameraRigPicker({
         () => housings.find(h => h.id === selectedHousingId) ?? null,
         [housings, selectedHousingId]
     )
+    const selectedAdapter = useMemo(
+        () => portAdapters.find(a => a.id === selectedAdapterId) ?? null,
+        [portAdapters, selectedAdapterId]
+    )
     const selectedPort = useMemo(
         () => ports.find(p => p.id === selectedPortId) ?? null,
         [ports, selectedPortId]
@@ -241,6 +277,13 @@ export default function CameraRigPicker({
     const isFixedLens = selectedCamera?.interchangeableLens === false
     const canSkipHousing = selectedCamera?.canBeUsedWithoutAHousing === true
     const isFixedPort = selectedHousing?.interchangeablePort === false
+
+    // Effective housing-mount ID for rings and ports:
+    // use adapter output mount if an adapter is selected, otherwise use the housing mount
+    const effectiveMountId = useMemo(() => {
+        if (selectedAdapter) return selectedAdapter.outputHousingMountId
+        return selectedHousing?.housingMount?.id ?? null
+    }, [selectedAdapter, selectedHousing])
 
     // ── Available items (cascade filtered) ───────────────────────────────────
 
@@ -265,24 +308,29 @@ export default function CameraRigPicker({
         [housings, selectedCamera]
     )
 
-    const availablePorts = useMemo(() => {
+    const availableAdapters = useMemo(() => {
         if (!selectedHousing?.housingMount) return []
-        if (isFixedLens) {
-            return ports.filter(p => p.housingMountId === selectedHousing.housingMount!.id)
-        }
-        if (!selectedLens) return []
-        return ports.filter(
-            p =>
-                p.housingMountId === selectedHousing.housingMount!.id &&
-                p.lens.some(l => l.id === selectedLens.id)
-        )
-    }, [ports, selectedHousing, selectedLens, isFixedLens])
+        return portAdapters.filter(a => a.inputHousingMountId === selectedHousing.housingMount!.id)
+    }, [portAdapters, selectedHousing])
+
+    const availableRings = useMemo(() => {
+        if (!effectiveMountId) return []
+        return extensionRings.filter(r => r.housingMountId === effectiveMountId)
+    }, [extensionRings, effectiveMountId])
+
+    const availablePorts = useMemo(() => {
+        if (!effectiveMountId) return []
+        if (!isFixedLens && !selectedLens) return []
+        return ports.filter(p => p.housingMountId === effectiveMountId)
+    }, [ports, effectiveMountId, selectedLens, isFixedLens])
 
     // ── Step visibility ───────────────────────────────────────────────────────
 
     const showLensStep = !!selectedCamera && !isFixedLens
     const showHousingStep = !!selectedCamera && !canSkipHousing
-    const showPortStep = !!selectedHousing && !isFixedPort && availablePorts.length > 0
+    const showAdapterStep = !!selectedHousing && !isFixedPort && availableAdapters.length > 0
+    const showRingsStep = !!selectedHousing && !isFixedPort && availableRings.length > 0
+    const showPortStep = !!selectedHousing && !isFixedPort && effectiveMountId !== null
 
     const canSave =
         rigName.trim().length > 0 &&
@@ -320,7 +368,21 @@ export default function CameraRigPicker({
 
     function handleHousingSelect(housingId: number) {
         setSelectedHousingId(housingId === selectedHousingId ? null : housingId)
+        setSelectedAdapterId(null)
+        setSelectedRingIds([])
         setSelectedPortId(null)
+    }
+
+    function handleAdapterSelect(adapterId: number) {
+        setSelectedAdapterId(adapterId === selectedAdapterId ? null : adapterId)
+        setSelectedRingIds([])
+        setSelectedPortId(null)
+    }
+
+    function handleRingToggle(ringId: number) {
+        setSelectedRingIds(prev =>
+            prev.includes(ringId) ? prev.filter(id => id !== ringId) : [...prev, ringId]
+        )
     }
 
     function handlePortSelect(portId: number) {
@@ -334,6 +396,8 @@ export default function CameraRigPicker({
             cameraId: selectedCameraId,
             lensId: isFixedLens ? null : selectedLensId,
             housingId: selectedHousingId,
+            portAdapterId: selectedAdapterId,
+            extensionRingIds: selectedRingIds,
             portId: selectedPortId,
             rigPhoto: rigPhotoFile,
             imagePath: rigPhotoFile ? null : (rigPhotoRemoved ? null : (initialValues?.imagePath ?? null)),
@@ -369,8 +433,8 @@ export default function CameraRigPicker({
                         onDrop={handleRigDrop}
                         onClick={() => rigFileInputRef.current?.click()}
                         className={`border-2 border-dashed rounded-xl py-8 px-6 text-center cursor-pointer transition-colors ${rigIsDragging
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
                             }`}
                     >
                         <svg className="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -533,7 +597,89 @@ export default function CameraRigPicker({
                 </section>
             )}
 
-            {/* Step 5 – Port */}
+            {/* Step 5 – Port adapter (optional) */}
+            {showAdapterStep && (
+                <section>
+                    <h3 className="text-sm font-semibold text-gray-700 mb-1">Port adapter <span className="text-gray-400 font-normal">(optional)</span></h3>
+                    <p className="text-xs text-gray-500 mb-2">
+                        A port adapter lets you use ports from a different mount system on this housing.
+                        {selectedAdapterId && (
+                            <button
+                                type="button"
+                                onClick={() => handleAdapterSelect(selectedAdapterId)}
+                                className="ml-2 text-blue-500 hover:underline"
+                            >
+                                Clear
+                            </button>
+                        )}
+                    </p>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                        {availableAdapters.map(adapter => {
+                            const img = getPortImagePathWithFallback(adapter.productPhotos)
+                            return (
+                                <EquipmentCard
+                                    key={adapter.id}
+                                    name={adapter.name}
+                                    subtitle={adapter.manufacturer.name}
+                                    imageSrc={img.src}
+                                    imageFallback={img.fallback}
+                                    selected={selectedAdapterId === adapter.id}
+                                    onClick={() => handleAdapterSelect(adapter.id)}
+                                />
+                            )
+                        })}
+                    </div>
+                </section>
+            )}
+
+            {/* Step 6 – Extension rings (multi-select, optional) */}
+            {showRingsStep && (
+                <section>
+                    <h3 className="text-sm font-semibold text-gray-700 mb-1">
+                        Extension rings <span className="text-gray-400 font-normal">(optional — select all that apply)</span>
+                    </h3>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                        {availableRings.map(ring => {
+                            const img = getPortImagePathWithFallback(ring.productPhotos)
+                            const isSelected = selectedRingIds.includes(ring.id)
+                            return (
+                                <button
+                                    key={ring.id}
+                                    type="button"
+                                    onClick={() => handleRingToggle(ring.id)}
+                                    className={`relative flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all text-left w-full ${isSelected
+                                        ? 'border-blue-500 bg-blue-50'
+                                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                                        }`}
+                                >
+                                    {isSelected && (
+                                        <span className="absolute top-1 right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                                            <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </span>
+                                    )}
+                                    <div className="relative w-full aspect-square rounded overflow-hidden bg-gray-100">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={img.src}
+                                            alt={ring.name}
+                                            className="w-full h-full object-contain p-1"
+                                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = img.fallback }}
+                                        />
+                                    </div>
+                                    <p className="text-xs font-medium text-gray-800 text-center leading-tight line-clamp-2">{ring.name}</p>
+                                    {ring.lengthMm != null && (
+                                        <p className="text-xs text-amber-600 text-center">{ring.lengthMm} mm</p>
+                                    )}
+                                </button>
+                            )
+                        })}
+                    </div>
+                </section>
+            )}
+
+            {/* Step 7 – Port */}
             {showPortStep && (
                 <section>
                     <h3 className="text-sm font-semibold text-gray-700 mb-2">Port</h3>
