@@ -39,6 +39,7 @@ export interface PickerCamera {
     cameraMount: CameraMount | null
     interchangeableLens: boolean
     canBeUsedWithoutAHousing: boolean
+    exifId: string | null
 }
 
 export interface PickerLens {
@@ -48,6 +49,7 @@ export interface PickerLens {
     productPhotos: string[]
     cameraMountId: number
     ports: { id: number }[]
+    exifId: string | null
 }
 
 export interface PickerHousing {

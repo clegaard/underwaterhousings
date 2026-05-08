@@ -72,6 +72,8 @@ interface EquipmentData {
 interface Props {
     userId: number
     isOwnProfile: boolean
+    prefillCamera?: string
+    prefillLens?: string
 }
 
 // ─── Rig Card ─────────────────────────────────────────────────────────────────
@@ -119,8 +121,8 @@ function RigCard({
                         onClick={onSetFavorite}
                         aria-label={isFavorite ? 'Default rig' : 'Set as default rig'}
                         className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${isFavorite
-                                ? 'bg-amber-100 text-amber-500 hover:bg-amber-200'
-                                : 'bg-white/80 text-gray-300 hover:text-amber-400 hover:bg-white shadow-sm'
+                            ? 'bg-amber-100 text-amber-500 hover:bg-amber-200'
+                            : 'bg-white/80 text-gray-300 hover:text-amber-400 hover:bg-white shadow-sm'
                             }`}
                     >
                         <svg
@@ -222,7 +224,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function CameraRigsSection({ userId, isOwnProfile }: Props) {
+export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera, prefillLens }: Props) {
     const [rigs, setRigs] = useState<SavedRig[]>([])
     const [equipment, setEquipment] = useState<EquipmentData | null>(null)
     const [defaultRigId, setDefaultRigId] = useState<number | null>(null)
@@ -231,6 +233,8 @@ export default function CameraRigsSection({ userId, isOwnProfile }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingRig, setEditingRig] = useState<SavedRig | null>(null)
     const [isSaving, setIsSaving] = useState(false)
+    // Banner shown when prefill params are present and no rig matched
+    const [showPrefillBanner, setShowPrefillBanner] = useState(!!(prefillCamera || prefillLens))
 
     const fetchRigs = useCallback(async () => {
         try {
@@ -257,6 +261,10 @@ export default function CameraRigsSection({ userId, isOwnProfile }: Props) {
                 if (rigsJson.success) {
                     setRigs(rigsJson.data.rigs)
                     setDefaultRigId(rigsJson.data.defaultRigId)
+                }
+                // Auto-open the add-rig modal when arriving from the gallery upload "create rig" link
+                if (isOwnProfile && (prefillCamera || prefillLens)) {
+                    setIsModalOpen(true)
                 }
             } catch {
                 setError('Failed to load camera rigs')
@@ -388,11 +396,55 @@ export default function CameraRigsSection({ userId, isOwnProfile }: Props) {
             extensionRingIds: editingRig.extensionRings.map(r => r.id),
             portId: editingRig.port?.id ?? null,
         }
-        : undefined
+        : (() => {
+            // When adding a new rig, pre-select camera/lens by EXIF id if prefill params are present
+            if (!equipment || (!prefillCamera && !prefillLens)) return undefined
+            const matchedCamera = prefillCamera
+                ? equipment.cameras.find((c: { exifId: string | null }) => c.exifId === prefillCamera) ?? null
+                : null
+            const matchedLens = prefillLens
+                ? equipment.lenses.find((l: { exifId: string | null }) => l.exifId === prefillLens) ?? null
+                : null
+            if (!matchedCamera && !matchedLens) return undefined
+            return {
+                name: '',
+                cameraId: matchedCamera?.id ?? null,
+                lensId: matchedLens?.id ?? null,
+                housingId: null,
+                portAdapterId: null,
+                extensionRingIds: [],
+                portId: null,
+            } satisfies RigInitialValues
+        })()
 
     return (
         <section className="mt-8">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">Camera Rigs</h2>
+
+            {/* Prefill banner — shown when arriving from gallery upload "create rig" link */}
+            {showPrefillBanner && isOwnProfile && (
+                <div className="mb-4 flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+                    <svg className="w-4 h-4 mt-0.5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20A10 10 0 0112 2z" />
+                    </svg>
+                    <div className="flex-1 text-sm text-blue-800">
+                        <p className="font-medium">Create a rig for your camera</p>
+                        <p className="text-xs text-blue-600 mt-0.5">
+                            {[prefillCamera, prefillLens].filter(Boolean).join(' · ')}
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setShowPrefillBanner(false)}
+                        className="text-blue-400 hover:text-blue-600"
+                        aria-label="Dismiss"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            )}
 
             {loading && <p className="text-sm text-gray-400">Loading rigs…</p>}
             {error && <p className="text-sm text-red-500">{error}</p>}

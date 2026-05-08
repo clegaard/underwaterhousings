@@ -10,6 +10,7 @@ import CameraRigsSection from '@/components/CameraRigsSection'
 
 interface UserProfilePageProps {
     params: Promise<{ userId: string }>
+    searchParams: Promise<{ prefillCamera?: string; prefillLens?: string }>
 }
 
 async function getUserWithPhotos(userId: number) {
@@ -43,8 +44,9 @@ export async function generateMetadata({ params }: UserProfilePageProps) {
     }
 }
 
-export default async function UserProfilePage({ params }: UserProfilePageProps) {
+export default async function UserProfilePage({ params, searchParams }: UserProfilePageProps) {
     const { userId } = await params
+    const { prefillCamera, prefillLens } = await searchParams
     const id = parseInt(userId, 10)
     if (isNaN(id)) notFound()
 
@@ -118,7 +120,12 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
                 </div>
 
                 {/* Camera Rigs */}
-                <CameraRigsSection userId={user.id} isOwnProfile={isOwnProfile} />
+                <CameraRigsSection
+                    userId={user.id}
+                    isOwnProfile={isOwnProfile}
+                    prefillCamera={isOwnProfile ? prefillCamera : undefined}
+                    prefillLens={isOwnProfile ? prefillLens : undefined}
+                />
 
                 {/* Divider */}
                 <hr className="my-10 border-blue-200" />

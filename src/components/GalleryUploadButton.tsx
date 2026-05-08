@@ -62,6 +62,8 @@ export default function GalleryUploadButton() {
     const [isUploading, setIsUploading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [exifLoading, setExifLoading] = useState(false)
+    const [rigTab, setRigTab] = useState<'auto' | 'manual'>('auto')
+    const [rigsLoaded, setRigsLoaded] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const previewUrlRef = useRef<string | null>(null)
 
@@ -69,6 +71,7 @@ export default function GalleryUploadButton() {
         if (!isOpen) return
         const userId = session?.user?.id
         if (!userId) return
+        setRigsLoaded(false)
         fetch(`/api/camera-rigs?userId=${userId}`)
             .then(r => r.json())
             .then(rigsJson => {
@@ -82,6 +85,7 @@ export default function GalleryUploadButton() {
                 }
             })
             .catch(() => { })
+            .finally(() => setRigsLoaded(true))
     }, [isOpen, session])
 
     // Cleanup preview URL on unmount
@@ -91,18 +95,18 @@ export default function GalleryUploadButton() {
         }
     }, [])
 
-    // Auto-select rig when EXIF camera/lens matches a saved rig
+    // Auto-select rig only when EXIF is an exact match:
+    // - camera must match
+    // - if EXIF has a lens, the rig's lens must also match (no fallback to camera-only)
     useEffect(() => {
-        if (!exifCameraModel || userRigs.length === 0 || selectedRigId) return
-        const matches = userRigs.filter(r => r.camera.exifId === exifCameraModel)
-        if (matches.length === 0) return
-        let best = matches[0]
-        if (exifLensModel) {
-            const withLens = matches.find(r => r.lens?.exifId === exifLensModel)
-            if (withLens) best = withLens
-        }
-        setSelectedRigId(String(best.id))
-    }, [exifCameraModel, exifLensModel, userRigs, selectedRigId])
+        if (!exifCameraModel || userRigs.length === 0) return
+        const exactMatch = userRigs.find(r => {
+            if (r.camera.exifId !== exifCameraModel) return false
+            if (exifLensModel) return r.lens?.exifId === exifLensModel
+            return true
+        })
+        setSelectedRigId(exactMatch ? String(exactMatch.id) : '')
+    }, [exifCameraModel, exifLensModel, userRigs])
 
     const extractExif = useCallback(async (f: File) => {
         setExifLoading(true)
@@ -199,7 +203,9 @@ export default function GalleryUploadButton() {
         setExifCameraModel(null)
         setExifLensModel(null)
         setUserRigs([])
+        setRigsLoaded(false)
         setSelectedRigId('')
+        setRigTab('auto')
 
         if (previewUrlRef.current) {
             URL.revokeObjectURL(previewUrlRef.current)
@@ -207,7 +213,16 @@ export default function GalleryUploadButton() {
         }
     }
 
-    const field = (key: keyof UploadForm, label: string, placeholder?: string, type = 'text') => (
+    const readonlyField = (label: string, value: string) => (
+        <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
+            <div className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700 bg-gray-50 min-h-[2rem]">
+                {value || <span className="text-gray-400 italic">—</span>}
+            </div>
+        </div>
+    )
+
+    const editableField = (key: keyof UploadForm, label: string, placeholder?: string, type = 'text') => (
         <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
             <input
@@ -219,6 +234,28 @@ export default function GalleryUploadButton() {
             />
         </div>
     )
+
+    const exifDone = !exifLoading && file !== null
+    // A rig is only considered an auto-match if the EXIF camera (and lens, if present) match exactly
+    const autoMatchedRig = (() => {
+        if (!selectedRigId || !exifCameraModel) return null
+        const rig = userRigs.find(r => String(r.id) === selectedRigId) ?? null
+        if (!rig) return null
+        if (rig.camera.exifId !== exifCameraModel) return null
+        if (exifLensModel && rig.lens?.exifId !== exifLensModel) return null
+        return rig
+    })()
+    const showNoMatch = exifDone && rigsLoaded && exifCameraModel !== null && userRigs.length > 0 && autoMatchedRig === null
+    const showNoRigs = exifDone && rigsLoaded && userRigs.length === 0
+
+    const createRigUrl = (() => {
+        const uid = session?.user?.id
+        if (!uid) return '#'
+        const params = new URLSearchParams()
+        if (exifCameraModel) params.set('prefillCamera', exifCameraModel)
+        if (exifLensModel) params.set('prefillLens', exifLensModel)
+        return `/users/${uid}?${params.toString()}`
+    })()
 
     return (
         <>
@@ -316,10 +353,10 @@ export default function GalleryUploadButton() {
 
                             {file && (
                                 <>
-                                    {/* Details */}
+                                    {/* Title / location / description — always editable */}
                                     <div className="grid grid-cols-2 gap-3">
-                                        {field('title', 'Title', 'e.g. Nudibranch on coral')}
-                                        {field('location', 'Location', 'e.g. Red Sea')}
+                                        {editableField('title', 'Title', 'e.g. Nudibranch on coral')}
+                                        {editableField('location', 'Location', 'e.g. Red Sea')}
                                         <div className="col-span-2">
                                             <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
                                             <textarea
@@ -330,47 +367,164 @@ export default function GalleryUploadButton() {
                                                 className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 resize-none"
                                             />
                                         </div>
-                                        {field('takenAt', 'Date taken', '', 'datetime-local')}
                                     </div>
 
-                                    {/* EXIF / Camera settings */}
-                                    <div>
-                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Camera settings {exifLoading && <span className="font-normal normal-case text-blue-500">(reading…)</span>}</p>
-                                        <div className="grid grid-cols-3 gap-3">
-                                            {field('focalLength', 'Focal length (mm)', 'e.g. 24')}
-                                            {field('aperture', 'Aperture (f/)', 'e.g. 8')}
-                                            {field('shutterSpeed', 'Shutter speed', 'e.g. 1/200')}
-                                        </div>
-                                    </div>
-
-                                    {/* Equipment */}
-                                    <div>
-                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Camera rig (optional)</p>
-                                        {userRigs.length === 0 ? (
-                                            <p className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-                                                No rigs set up yet.{' '}
-                                                <a
-                                                    href={`/users/${session?.user?.id}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-600 hover:underline"
+                                    {/* Automatic / Manual tabbed box */}
+                                    <div className="border border-gray-200 rounded-xl overflow-hidden">
+                                        {/* Tab bar */}
+                                        <div className="flex border-b border-gray-200 bg-gray-50">
+                                            {(['auto', 'manual'] as const).map(tab => (
+                                                <button
+                                                    key={tab}
+                                                    type="button"
+                                                    onClick={() => setRigTab(tab)}
+                                                    className={`flex-1 py-2.5 text-xs font-semibold tracking-wide uppercase transition-colors ${rigTab === tab
+                                                        ? 'bg-white text-blue-600 border-b-2 border-blue-500 -mb-px'
+                                                        : 'text-gray-500 hover:text-gray-700'
+                                                        }`}
                                                 >
-                                                    Create one on your profile
-                                                </a>{' '}
-                                                to tag photos with your equipment.
-                                            </p>
-                                        ) : (
-                                            <select
-                                                value={selectedRigId}
-                                                onChange={e => setSelectedRigId(e.target.value)}
-                                                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                                            >
-                                                <option value="">Select a rig (optional)</option>
-                                                {userRigs.map(r => (
-                                                    <option key={r.id} value={String(r.id)}>{r.name}</option>
-                                                ))}
-                                            </select>
-                                        )}
+                                                    {tab === 'auto' ? 'Automatic' : 'Manual'}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        <div className="p-4 space-y-4">
+                                            {rigTab === 'auto' ? (
+                                                <>
+                                                    {/* Read-only EXIF grid */}
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                                                            Extracted from photo
+                                                            {exifLoading && <span className="font-normal normal-case text-blue-500 ml-1">(reading…)</span>}
+                                                        </p>
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            {readonlyField('Camera', exifCameraModel ?? '')}
+                                                            {readonlyField('Lens', exifLensModel ?? '')}
+                                                            {readonlyField('Date taken', form.takenAt.replace('T', ' '))}
+                                                            {readonlyField('Focal length (mm)', form.focalLength)}
+                                                            {readonlyField('Aperture (f/)', form.aperture)}
+                                                            {readonlyField('Shutter speed', form.shutterSpeed)}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Rig match status */}
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Camera rig</p>
+
+                                                        {(exifLoading || !rigsLoaded) && (
+                                                            <p className="text-xs text-gray-400 italic">Matching rig…</p>
+                                                        )}
+
+                                                        {exifDone && rigsLoaded && autoMatchedRig && (
+                                                            <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                                                                <svg className="w-4 h-4 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                                </svg>
+                                                                <div className="min-w-0">
+                                                                    <p className="text-xs font-medium text-green-800 truncate">{autoMatchedRig.name}</p>
+                                                                    <p className="text-[10px] text-green-600 truncate">
+                                                                        {autoMatchedRig.camera.brand.name} {autoMatchedRig.camera.name}
+                                                                        {autoMatchedRig.lens ? ` · ${autoMatchedRig.lens.name}` : ''}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {showNoMatch && (
+                                                            <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-3 space-y-1.5">
+                                                                <div className="flex items-start gap-2">
+                                                                    <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                                                                    </svg>
+                                                                    <p className="text-xs text-amber-800">
+                                                                        No saved rig matched{exifCameraModel ? ` camera "${exifCameraModel}"` : ''}
+                                                                        {exifLensModel ? ` with lens "${exifLensModel}"` : ''}.
+                                                                    </p>
+                                                                </div>
+                                                                <a
+                                                                    href={createRigUrl}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium hover:underline"
+                                                                >
+                                                                    Create a rig for this camera
+                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                                    </svg>
+                                                                </a>
+                                                            </div>
+                                                        )}
+
+                                                        {showNoRigs && (
+                                                            <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-3 space-y-1.5">
+                                                                <div className="flex items-start gap-2">
+                                                                    <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                                                                    </svg>
+                                                                    <p className="text-xs text-amber-800">You have no camera rigs set up yet.</p>
+                                                                </div>
+                                                                <a
+                                                                    href={createRigUrl}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium hover:underline"
+                                                                >
+                                                                    Create a rig on your profile
+                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                                    </svg>
+                                                                </a>
+                                                            </div>
+                                                        )}
+
+                                                        {exifDone && rigsLoaded && !autoMatchedRig && !showNoMatch && !showNoRigs && (
+                                                            <p className="text-xs text-gray-400 italic">No camera data in EXIF. Switch to Manual to pick a rig.</p>
+                                                        )}
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    {/* Manual: editable shot details + rig picker */}
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Shot details</p>
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            {editableField('takenAt', 'Date taken', '', 'datetime-local')}
+                                                            {editableField('focalLength', 'Focal length (mm)', 'e.g. 24')}
+                                                            {editableField('aperture', 'Aperture (f/)', 'e.g. 8')}
+                                                            {editableField('shutterSpeed', 'Shutter speed', 'e.g. 1/200')}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Camera rig (optional)</p>
+                                                        {userRigs.length === 0 ? (
+                                                            <p className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                                                                No rigs set up yet.{' '}
+                                                                <a
+                                                                    href={`/users/${session?.user?.id}`}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-600 hover:underline"
+                                                                >
+                                                                    Create one on your profile
+                                                                </a>{' '}
+                                                                to tag photos with your equipment.
+                                                            </p>
+                                                        ) : (
+                                                            <select
+                                                                value={selectedRigId}
+                                                                onChange={e => setSelectedRigId(e.target.value)}
+                                                                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                                                            >
+                                                                <option value="">None</option>
+                                                                {userRigs.map(r => (
+                                                                    <option key={r.id} value={String(r.id)}>{r.name}</option>
+                                                                ))}
+                                                            </select>
+                                                        )}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 </>
                             )}
