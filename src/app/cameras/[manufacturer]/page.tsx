@@ -5,9 +5,9 @@ import { getCameraImagePathWithFallback } from '@/lib/images'
 import CameraManufacturerCamerasClient from '@/components/CameraManufacturerCamerasClient'
 
 interface CameraManufacturerPageProps {
-    params: {
+    params: Promise<{
         manufacturer: string
-    }
+    }>
 }
 
 async function getCameraManufacturerCameras(manufacturerSlug: string) {
@@ -41,8 +41,9 @@ async function getCameraManufacturerCameras(manufacturerSlug: string) {
 }
 
 export default async function CameraManufacturerPage({ params }: CameraManufacturerPageProps) {
+    const { manufacturer: manufacturerSlug } = await params
     const [manufacturer, session, cameraMounts] = await Promise.all([
-        getCameraManufacturerCameras(params.manufacturer),
+        getCameraManufacturerCameras(manufacturerSlug),
         auth(),
         prisma.cameraMount.findMany({ orderBy: { name: 'asc' } }),
     ])

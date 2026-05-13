@@ -8,10 +8,10 @@ import { getAllHousingImages } from '@/lib/images'
 import PriceTag from '@/components/PriceTag'
 
 interface HousingDetailPageProps {
-    params: {
+    params: Promise<{
         manufacturer: string
         housing: string
-    }
+    }>
 }
 
 async function getHousingDetail(manufacturerSlug: string, housingSlug: string) {
@@ -47,7 +47,8 @@ async function getHousingDetail(manufacturerSlug: string, housingSlug: string) {
 }
 
 export default async function HousingDetailPage({ params }: HousingDetailPageProps) {
-    const housing = await getHousingDetail(params.manufacturer, params.housing)
+    const { manufacturer: manufacturerSlug, housing: housingSlug } = await params
+    const housing = await getHousingDetail(manufacturerSlug, housingSlug)
 
     if (!housing) {
         notFound()
@@ -80,7 +81,7 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                             </Link>
                             <span>→</span>
                             <Link
-                                href={`/gear/${params.manufacturer}`}
+                                href={`/gear/${manufacturerSlug}`}
                                 className="hover:text-blue-600 transition-colors capitalize"
                             >
                                 {housing.manufacturer.name}
@@ -189,13 +190,13 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                                         ← Back to Search
                                     </Link>
                                     <Link
-                                        href={`/${params.manufacturer}`}
+                                        href={`/${manufacturerSlug}`}
                                         className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors text-center block"
                                     >
                                         View All {housing.manufacturer.name} Housings
                                     </Link>
                                     <Link
-                                        href={`/gallery?housing=${params.housing}`}
+                                        href={`/gallery?housing=${housingSlug}`}
                                         className="w-full bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors text-center block"
                                     >
                                         📷 View Photos

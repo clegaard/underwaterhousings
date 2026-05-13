@@ -11,7 +11,7 @@ import PortAdaptersClient from '@/components/PortAdaptersClient'
 import GearsClient from '@/components/GearsClient'
 
 interface GearManufacturerPageProps {
-    params: { manufacturer: string }
+    params: Promise<{ manufacturer: string }>
 }
 
 async function getData(slug: string) {
@@ -51,7 +51,8 @@ async function getData(slug: string) {
 }
 
 export async function generateMetadata({ params }: GearManufacturerPageProps) {
-    const { manufacturer } = await getData(params.manufacturer)
+    const { manufacturer: mSlug } = await params
+    const { manufacturer } = await getData(mSlug)
     if (!manufacturer) return {}
     return {
         title: `${manufacturer.name} - Housings, Ports & Accessories`,
@@ -60,8 +61,9 @@ export async function generateMetadata({ params }: GearManufacturerPageProps) {
 }
 
 export default async function GearManufacturerPage({ params }: GearManufacturerPageProps) {
+    const { manufacturer: mSlug } = await params
     const [{ manufacturer, allCameras, allHousingMounts, allLenses }, session] = await Promise.all([
-        getData(params.manufacturer),
+        getData(mSlug),
         auth(),
     ])
 
@@ -199,7 +201,7 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
                                 </div>
                             )}
                             {manufacturer._count.ports > 0 && (
-                                <Link href={`/gear/${params.manufacturer}/ports`}>
+                                <Link href={`/gear/${mSlug}/ports`}>
                                     <div className="text-2xl font-bold text-emerald-600 hover:text-emerald-700 transition-colors">{manufacturer._count.ports}</div>
                                     <div className="text-xs text-gray-500 hover:text-gray-700 transition-colors">Port{manufacturer._count.ports !== 1 ? 's' : ''}</div>
                                 </Link>
@@ -278,7 +280,7 @@ export default async function GearManufacturerPage({ params }: GearManufacturerP
                 {(portsData.length > 0 || isSuperuser) && (
                     <section id="ports">
                         <h2 className="text-2xl font-bold text-blue-900 mb-6">
-                            <Link href={`/gear/${params.manufacturer}/ports`} className="hover:text-blue-700 transition-colors">Ports</Link>
+                            <Link href={`/gear/${mSlug}/ports`} className="hover:text-blue-700 transition-colors">Ports</Link>
                         </h2>
                         <PortManufacturerPortsClient
                             ports={portsData}

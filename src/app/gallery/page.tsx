@@ -91,15 +91,17 @@ async function getGalleryPhotos(currentUserId?: number): Promise<GalleryPhotoDat
 export default async function GalleryPage({
     searchParams,
 }: {
-    searchParams?: { camera?: string; housing?: string; lens?: string; port?: string }
+    searchParams?: Promise<{ camera?: string; housing?: string; lens?: string; port?: string }>
 }) {
     const session = await auth()
     const currentUserId = session?.user?.id ? parseInt(session.user.id) : undefined
 
+    const resolvedSearchParams = await searchParams
+
     const [photos, initialFilters] = await Promise.all([
         getGalleryPhotos(currentUserId),
         (async (): Promise<InitialFilterOptions> => {
-            const { camera: cameraSlug, housing: housingSlug, lens: lensSlug, port: portSlug } = searchParams ?? {}
+            const { camera: cameraSlug, housing: housingSlug, lens: lensSlug, port: portSlug } = resolvedSearchParams ?? {}
             const [camera, housing, lens, port] = await Promise.all([
                 cameraSlug
                     ? prisma.camera.findUnique({ where: { slug: cameraSlug }, include: { brand: true } })

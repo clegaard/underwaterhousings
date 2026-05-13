@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
-interface Props { params: { manufacturer: string } }
-export default function HousingManufacturerPage({ params }: Props) {
-    redirect(`/gear/${params.manufacturer}`)
+interface Props { params: Promise<{ manufacturer: string }> }
+export default async function HousingManufacturerPage({ params }: Props) {
+    const { manufacturer } = await params
+    redirect(`/gear/${manufacturer}`)
 }

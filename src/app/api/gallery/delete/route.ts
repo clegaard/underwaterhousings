@@ -38,15 +38,15 @@ export async function POST(request: NextRequest) {
     }
 
     await prisma.galleryPhoto.deleteMany({
-        where: { id: { in: photos.map(p => p.id) } },
+        where: { id: { in: photos.map((p: { id: number; imagePath: string }) => p.id) } },
     })
 
     // Clean up uploaded files from disk (only for user-uploaded paths, not seeded assets)
     const uploadPrefix = '/gallery/uploads/'
     await Promise.allSettled(
         photos
-            .filter(p => p.imagePath.startsWith(uploadPrefix))
-            .map(p => unlink(path.join(process.cwd(), 'public', p.imagePath)))
+            .filter((p: { id: number; imagePath: string }) => p.imagePath.startsWith(uploadPrefix))
+            .map((p: { id: number; imagePath: string }) => unlink(path.join(process.cwd(), 'public', p.imagePath)))
     )
 
     return NextResponse.json({ success: true, deleted: photos.length })

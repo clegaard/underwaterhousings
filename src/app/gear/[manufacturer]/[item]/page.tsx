@@ -7,7 +7,7 @@ import PriceTag from '@/components/PriceTag'
 import { Metadata } from 'next'
 
 interface Props {
-    params: { manufacturer: string; item: string }
+    params: Promise<{ manufacturer: string; item: string }>
 }
 
 async function findItem(manufacturerSlug: string, itemSlug: string) {
@@ -39,7 +39,8 @@ async function findItem(manufacturerSlug: string, itemSlug: string) {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { item, manufacturer } = await findItem(params.manufacturer, params.item)
+    const { manufacturer: mSlug, item: itemSlug } = await params
+    const { item, manufacturer } = await findItem(mSlug, itemSlug)
     if (!item || !manufacturer) return {}
     return {
         title: `${item.name} - ${manufacturer.name}`,
@@ -48,7 +49,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function GearItemPage({ params }: Props) {
-    const { kind, item, manufacturer } = await findItem(params.manufacturer, params.item)
+    const { manufacturer: mSlug, item: itemSlug } = await params
+    const { kind, item, manufacturer } = await findItem(mSlug, itemSlug)
 
     if (!item || !manufacturer || !kind) notFound()
 
@@ -110,7 +112,7 @@ export default async function GearItemPage({ params }: Props) {
                         <span>/</span>
                         <Link href="/gear" className="hover:text-blue-600 transition-colors">Gear</Link>
                         <span>/</span>
-                        <Link href={`/gear/${params.manufacturer}`} className="hover:text-blue-600 transition-colors capitalize">
+                        <Link href={`/gear/${mSlug}`} className="hover:text-blue-600 transition-colors capitalize">
                             {manufacturer.name}
                         </Link>
                         <span>/</span>
@@ -176,7 +178,7 @@ export default async function GearItemPage({ params }: Props) {
 
                             <div className="mt-auto">
                                 <Link
-                                    href={`/gear/${params.manufacturer}`}
+                                    href={`/gear/${mSlug}`}
                                     className="inline-block bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                                 >
                                     ← Back to {manufacturer.name}

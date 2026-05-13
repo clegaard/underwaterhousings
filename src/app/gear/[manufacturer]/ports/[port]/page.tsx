@@ -7,12 +7,13 @@ import PriceTag from '@/components/PriceTag'
 import { Metadata } from 'next'
 
 interface Props {
-    params: { manufacturer: string; port: string }
+    params: Promise<{ manufacturer: string; port: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { manufacturer: mSlug, port: portSlug } = await params
     const port = await prisma.port.findFirst({
-        where: { slug: params.port, manufacturer: { slug: params.manufacturer } },
+        where: { slug: portSlug, manufacturer: { slug: mSlug } },
         include: { manufacturer: true },
     })
     if (!port) return {}
@@ -23,10 +24,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PortDetailPage({ params }: Props) {
+    const { manufacturer: mSlug, port: portSlug } = await params
     const [manufacturer, port] = await Promise.all([
-        prisma.manufacturer.findUnique({ where: { slug: params.manufacturer } }),
+        prisma.manufacturer.findUnique({ where: { slug: mSlug } }),
         prisma.port.findFirst({
-            where: { slug: params.port, manufacturer: { slug: params.manufacturer } },
+            where: { slug: portSlug, manufacturer: { slug: mSlug } },
             include: {
                 housingMount: true,
                 manufacturer: true,
@@ -62,9 +64,9 @@ export default async function PortDetailPage({ params }: Props) {
                         <span>/</span>
                         <Link href="/gear" className="hover:text-blue-600 transition-colors">Gear</Link>
                         <span>/</span>
-                        <Link href={`/gear/${params.manufacturer}`} className="hover:text-blue-600 transition-colors">{manufacturer.name}</Link>
+                        <Link href={`/gear/${mSlug}`} className="hover:text-blue-600 transition-colors">{manufacturer.name}</Link>
                         <span>/</span>
-                        <Link href={`/gear/${params.manufacturer}/ports`} className="hover:text-blue-600 transition-colors">Ports</Link>
+                        <Link href={`/gear/${mSlug}/ports`} className="hover:text-blue-600 transition-colors">Ports</Link>
                         <span>/</span>
                         <span className="text-gray-700 font-medium">{port.name}</span>
                     </nav>
@@ -136,7 +138,7 @@ export default async function PortDetailPage({ params }: Props) {
 
                             <div className="mt-auto">
                                 <Link
-                                    href={`/gear/${params.manufacturer}/ports`}
+                                    href={`/gear/${mSlug}/ports`}
                                     className="inline-block bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                                 >
                                     ← Back to {manufacturer.name} Ports

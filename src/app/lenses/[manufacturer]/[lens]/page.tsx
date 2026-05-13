@@ -7,10 +7,10 @@ import { getLensImagePathWithFallback, withBase } from '@/lib/images'
 import PriceTag from '@/components/PriceTag'
 
 interface LensDetailPageProps {
-    params: {
+    params: Promise<{
         manufacturer: string
         lens: string
-    }
+    }>
 }
 
 async function getLensDetail(manufacturerSlug: string, lensSlug: string) {
@@ -36,7 +36,8 @@ async function getLensDetail(manufacturerSlug: string, lensSlug: string) {
 }
 
 export async function generateMetadata({ params }: LensDetailPageProps) {
-    const lens = await getLensDetail(params.manufacturer, params.lens)
+    const { manufacturer: manufacturerSlug, lens: lensSlug } = await params
+    const lens = await getLensDetail(manufacturerSlug, lensSlug)
     if (!lens) return {}
     return {
         title: `${lens.name} | Underwater Camera Housings`,
@@ -45,11 +46,12 @@ export async function generateMetadata({ params }: LensDetailPageProps) {
 }
 
 export default async function LensDetailPage({ params }: LensDetailPageProps) {
+    const { manufacturer: manufacturerSlug, lens: lensSlug } = await params
     const [lens, galleryPhotos] = await Promise.all([
-        getLensDetail(params.manufacturer, params.lens),
+        getLensDetail(manufacturerSlug, lensSlug),
         prisma.galleryPhoto.findMany({
             where: {
-                rig: { lens: { slug: params.lens } },
+                rig: { lens: { slug: lensSlug } },
             },
             orderBy: { takenAt: 'desc' },
             take: 12,
@@ -71,7 +73,7 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                         <span>→</span>
                         <Link href="/lenses" className="hover:text-blue-600 transition-colors">Lenses</Link>
                         <span>→</span>
-                        <Link href={`/lenses/${params.manufacturer}`} className="hover:text-blue-600 transition-colors">
+                        <Link href={`/lenses/${manufacturerSlug}`} className="hover:text-blue-600 transition-colors">
                             {lens.manufacturer?.name}
                         </Link>
                         <span>→</span>
@@ -223,7 +225,7 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                                 </svg>
                             </Link>
                             <Link
-                                href={`/lenses/${params.manufacturer}`}
+                                href={`/lenses/${manufacturerSlug}`}
                                 className="flex items-center justify-center w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
                             >
                                 All {lens.manufacturer?.name} lenses

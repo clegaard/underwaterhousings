@@ -50,6 +50,7 @@ function CommentPanel({
     likedByMe,
     onLikeToggle,
     onCommentCountChange,
+    focusInputSignal,
 }: {
     photo: GalleryPhotoData
     currentUserId?: number
@@ -57,6 +58,7 @@ function CommentPanel({
     likedByMe: boolean
     onLikeToggle: () => void
     onCommentCountChange?: (delta: number) => void
+    focusInputSignal?: number
 }) {
     const [comments, setComments] = useState<Comment[]>([])
     const [commentCount, setCommentCount] = useState(photo.commentCount ?? 0)
@@ -67,6 +69,12 @@ function CommentPanel({
     const [submitting, setSubmitting] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
     const commentsEndRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (!focusInputSignal) return
+        const t = setTimeout(() => inputRef.current?.focus(), 80)
+        return () => clearTimeout(t)
+    }, [focusInputSignal])
 
     useEffect(() => {
         if (!photo.photoId) return
@@ -224,7 +232,7 @@ function CommentPanel({
                                 </p>
                                 <div className="flex items-center gap-3 mt-0.5">
                                     <span className="text-[11px] text-gray-400">{formatDate(comment.createdAt)}</span>
-                                    {currentUserId && (
+                                    {currentUserId && currentUserId !== comment.user.id && (
                                         <button type="button" onClick={() => startReply(comment)} className="text-[11px] text-gray-500 font-semibold hover:text-gray-700">
                                             Reply
                                         </button>
@@ -250,7 +258,7 @@ function CommentPanel({
                                     </p>
                                     <div className="flex items-center gap-3 mt-0.5">
                                         <span className="text-[11px] text-gray-400">{formatDate(reply.createdAt)}</span>
-                                        {currentUserId && (
+                                        {currentUserId && currentUserId !== reply.user.id && (
                                             <button type="button" onClick={() => startReply(reply)} className="text-[11px] text-gray-500 font-semibold hover:text-gray-700">
                                                 Reply
                                             </button>
@@ -375,9 +383,10 @@ interface GalleryPhotoTileProps {
     onOpenLightbox: (index: number) => void
     liveState?: PhotoLiveState
     onLikeToggle?: () => void
+    onOpenWithComment?: () => void
 }
 
-function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUserId, onPhotoClick, onOpenLightbox, liveState, onLikeToggle }: GalleryPhotoTileProps) {
+function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUserId, onPhotoClick, onOpenLightbox, liveState, onLikeToggle, onOpenWithComment }: GalleryPhotoTileProps) {
     const liveLikeCount = liveState?.count ?? photo.likeCount ?? 0
     const liveCommentCount = liveState?.commentCount ?? photo.commentCount ?? 0
     const likedByMe = liveState?.liked ?? photo.likedByMe ?? false
@@ -459,13 +468,18 @@ function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUse
                             <span>{liveLikeCount}</span>
                         </span>
                     )}
-                    {/* Comment count */}
-                    <span className="flex items-center gap-1 text-white/80 text-sm drop-shadow">
+                    {/* Comment count — click to open lightbox and focus comment box */}
+                    <button
+                        type="button"
+                        onClick={e => { e.stopPropagation(); onOpenWithComment ? onOpenWithComment() : onOpenLightbox(index) }}
+                        aria-label="View comments"
+                        className="flex items-center gap-1 text-white/80 text-sm drop-shadow hover:text-white transition-colors"
+                    >
                         <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
                         <span>{liveCommentCount}</span>
-                    </span>
+                    </button>
                     {/* User badge */}
                     {photo.userId && photo.userName && (
                         <Link
@@ -487,6 +501,7 @@ function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUse
 export default function GalleryGrid({ photos, selectionMode = false, selectedIds, currentUserId, onPhotoClick, onExitSelection }: GalleryGridProps) {
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
     const [lightboxLoaded, setLightboxLoaded] = useState(false)
+    const [commentFocusSignal, setCommentFocusSignal] = useState(0)
 
     // Per-photo live state — keyed by photoId, initialised from props
     const [photoState, setPhotoState] = useState<Record<number, PhotoLiveState>>(() => {
@@ -582,6 +597,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                             onOpenLightbox={setLightboxIndex}
                             liveState={photo.photoId != null ? photoState[photo.photoId] : undefined}
                             onLikeToggle={photo.photoId != null ? () => toggleLike(photo.photoId!) : undefined}
+                            onOpenWithComment={() => { setLightboxIndex(index); setCommentFocusSignal(s => s + 1) }}
                         />
                     ),
                 }}
@@ -648,6 +664,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                         likedByMe={ls.liked}
                                         onLikeToggle={() => toggleLike(photoId)}
                                         onCommentCountChange={(delta) => handleCommentCountChange(photoId, delta)}
+                                        focusInputSignal={commentFocusSignal}
                                     />
                                 ) : (
                                     <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">No data</div>

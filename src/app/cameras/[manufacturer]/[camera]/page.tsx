@@ -7,10 +7,10 @@ import { getCameraImagePathWithFallback } from '@/lib/images'
 import PriceTag from '@/components/PriceTag'
 
 interface CameraDetailPageProps {
-    params: {
+    params: Promise<{
         manufacturer: string
         camera: string
-    }
+    }>
 }
 
 async function getCameraDetail(manufacturerSlug: string, cameraSlug: string) {
@@ -46,7 +46,8 @@ async function getCameraDetail(manufacturerSlug: string, cameraSlug: string) {
 }
 
 export default async function CameraDetailPage({ params }: CameraDetailPageProps) {
-    const camera = await getCameraDetail(params.manufacturer, params.camera)
+    const { manufacturer: manufacturerSlug, camera: cameraSlug } = await params
+    const camera = await getCameraDetail(manufacturerSlug, cameraSlug)
 
     if (!camera) {
         notFound()
@@ -82,7 +83,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
                         </Link>
                         <span>→</span>
                         <Link
-                            href={`/cameras/${params.manufacturer}`}
+                            href={`/cameras/${manufacturerSlug}`}
                             className="hover:text-blue-600 transition-colors"
                         >
                             {camera.brand.name}
@@ -272,7 +273,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
 
                         <div className="mt-auto pt-4 border-t border-gray-100 space-y-2">
                             <Link
-                                href={`/cameras/${params.manufacturer}`}
+                                href={`/cameras/${manufacturerSlug}`}
                                 className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors"
                             >
                                 All {camera.brand.name} cameras

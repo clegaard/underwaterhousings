@@ -6,7 +6,7 @@ import { getPortImagePathWithFallback } from '@/lib/images'
 import PortManufacturerPortsClient from '@/components/PortManufacturerPortsClient'
 
 interface Props {
-    params: { manufacturer: string }
+    params: Promise<{ manufacturer: string }>
 }
 
 async function getData(slug: string) {
@@ -25,7 +25,8 @@ async function getData(slug: string) {
 }
 
 export async function generateMetadata({ params }: Props) {
-    const { manufacturer } = await getData(params.manufacturer)
+    const { manufacturer: mSlug } = await params
+    const { manufacturer } = await getData(mSlug)
     if (!manufacturer) return {}
     return {
         title: `${manufacturer.name} Ports`,
@@ -34,8 +35,9 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function PortsListingPage({ params }: Props) {
+    const { manufacturer: mSlug } = await params
     const [{ manufacturer }, session] = await Promise.all([
-        getData(params.manufacturer),
+        getData(mSlug),
         auth(),
     ])
 
@@ -74,7 +76,7 @@ export default async function PortsListingPage({ params }: Props) {
                         {' / '}
                         <Link href="/gear" className="hover:text-blue-600 transition-colors">Gear</Link>
                         {' / '}
-                        <Link href={`/gear/${params.manufacturer}`} className="hover:text-blue-600 transition-colors">{manufacturer.name}</Link>
+                        <Link href={`/gear/${mSlug}`} className="hover:text-blue-600 transition-colors">{manufacturer.name}</Link>
                         {' / '}
                         <span className="text-gray-700">Ports</span>
                     </nav>
