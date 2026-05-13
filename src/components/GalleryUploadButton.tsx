@@ -7,7 +7,8 @@ import { useRouter } from 'next/navigation'
 interface UserRig {
     id: number
     name: string
-    camera: { id: number; name: string; brand: { name: string }; exifId: string | null }
+    isActive: boolean
+    camera: { id: number; name: string; brand: { name: string }; exifId: string | null; interchangeableLens: boolean }
     lens: { id: number; name: string; exifId: string | null } | null
     housing: { id: number; name: string; manufacturer: { name: string } } | null
     port: { id: number; name: string } | null
@@ -95,17 +96,20 @@ export default function GalleryUploadButton() {
         }
     }, [])
 
-    // Auto-select rig only when EXIF is an exact match:
-    // - camera must match
-    // - if EXIF has a lens, the rig's lens must also match (no fallback to camera-only)
+    // Auto-select only among active rigs with an exact camera+lens match.
+    // Lens filter only applies when: rig has a lens configured AND camera is interchangeable AND EXIF has lens data.
+    // If there are multiple matches the user must disambiguate, so selectedRigId stays empty.
     useEffect(() => {
         if (!exifCameraModel || userRigs.length === 0) return
-        const exactMatch = userRigs.find(r => {
+        const activeRigs = userRigs.filter(r => r.isActive)
+        const matches = activeRigs.filter(r => {
             if (r.camera.exifId !== exifCameraModel) return false
-            if (exifLensModel) return r.lens?.exifId === exifLensModel
+            if (exifLensModel && r.camera.interchangeableLens && r.lens !== null) {
+                return r.lens.exifId === exifLensModel
+            }
             return true
         })
-        setSelectedRigId(exactMatch ? String(exactMatch.id) : '')
+        setSelectedRigId(matches.length === 1 ? String(matches[0].id) : '')
     }, [exifCameraModel, exifLensModel, userRigs])
 
     const extractExif = useCallback(async (f: File) => {
@@ -236,17 +240,28 @@ export default function GalleryUploadButton() {
     )
 
     const exifDone = !exifLoading && file !== null
-    // A rig is only considered an auto-match if the EXIF camera (and lens, if present) match exactly
-    const autoMatchedRig = (() => {
-        if (!selectedRigId || !exifCameraModel) return null
-        const rig = userRigs.find(r => String(r.id) === selectedRigId) ?? null
-        if (!rig) return null
-        if (rig.camera.exifId !== exifCameraModel) return null
-        if (exifLensModel && rig.lens?.exifId !== exifLensModel) return null
-        return rig
-    })()
-    const showNoMatch = exifDone && rigsLoaded && exifCameraModel !== null && userRigs.length > 0 && autoMatchedRig === null
-    const showNoRigs = exifDone && rigsLoaded && userRigs.length === 0
+    // Only active rigs are candidates for auto-matching
+    const activeRigs = userRigs.filter(r => r.isActive)
+    // Detect if the EXIF camera is a fixed-lens camera (exifId: string | null is on the camera property of the first rig that matches)
+    const exifCameraRig = exifCameraModel ? activeRigs.find(r => r.camera.exifId === exifCameraModel) : undefined
+    const isFixedLensCamera = exifCameraRig ? !exifCameraRig.camera.interchangeableLens : false
+    // All active rigs that match EXIF: lens filter only when rig has a lens AND camera is interchangeable AND EXIF has lens data
+    const autoMatches = exifCameraModel
+        ? activeRigs.filter(r => {
+            if (r.camera.exifId !== exifCameraModel) return false
+            if (exifLensModel && r.camera.interchangeableLens && r.lens !== null) {
+                return r.lens.exifId === exifLensModel
+            }
+            return true
+        })
+        : []
+    // The rig the user has confirmed (either auto-selected when unique, or manually picked)
+    const autoMatchedRig = selectedRigId
+        ? autoMatches.find(r => String(r.id) === selectedRigId) ?? null
+        : null
+    const showDisambiguation = exifDone && rigsLoaded && autoMatches.length > 1 && !autoMatchedRig
+    const showNoMatch = exifDone && rigsLoaded && exifCameraModel !== null && activeRigs.length > 0 && autoMatches.length === 0
+    const showNoRigs = exifDone && rigsLoaded && activeRigs.length === 0
 
     const createRigUrl = (() => {
         const uid = session?.user?.id
@@ -399,7 +414,7 @@ export default function GalleryUploadButton() {
                                                         </p>
                                                         <div className="grid grid-cols-2 gap-3">
                                                             {readonlyField('Camera', exifCameraModel ?? '')}
-                                                            {readonlyField('Lens', exifLensModel ?? '')}
+                                                            {!isFixedLensCamera && readonlyField('Lens', exifLensModel ?? '')}
                                                             {readonlyField('Date taken', form.takenAt.replace('T', ' '))}
                                                             {readonlyField('Focal length (mm)', form.focalLength)}
                                                             {readonlyField('Aperture (f/)', form.aperture)}
@@ -415,18 +430,53 @@ export default function GalleryUploadButton() {
                                                             <p className="text-xs text-gray-400 italic">Matching rig…</p>
                                                         )}
 
+                                                        {/* Multiple matches — user must pick one */}
+                                                        {showDisambiguation && (
+                                                            <div className="space-y-2">
+                                                                <p className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                                                                    Multiple rigs match this camera and lens. Please select one:
+                                                                </p>
+                                                                {autoMatches.map(r => (
+                                                                    <button
+                                                                        key={r.id}
+                                                                        type="button"
+                                                                        onClick={() => setSelectedRigId(String(r.id))}
+                                                                        className="w-full flex items-center gap-3 px-3 py-2.5 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors text-left"
+                                                                    >
+                                                                        <div className="min-w-0">
+                                                                            <p className="text-xs font-medium text-gray-800 truncate">{r.name}</p>
+                                                                            <p className="text-[10px] text-gray-500 truncate">
+                                                                                {r.camera.brand.name} {r.camera.name}
+                                                                                {r.lens ? ` · ${r.lens.name}` : ''}
+                                                                                {r.housing ? ` · ${r.housing.manufacturer.name} ${r.housing.name}` : ''}
+                                                                            </p>
+                                                                        </div>
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
                                                         {exifDone && rigsLoaded && autoMatchedRig && (
                                                             <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
                                                                 <svg className="w-4 h-4 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                                 </svg>
-                                                                <div className="min-w-0">
+                                                                <div className="min-w-0 flex-1">
                                                                     <p className="text-xs font-medium text-green-800 truncate">{autoMatchedRig.name}</p>
                                                                     <p className="text-[10px] text-green-600 truncate">
                                                                         {autoMatchedRig.camera.brand.name} {autoMatchedRig.camera.name}
                                                                         {autoMatchedRig.lens ? ` · ${autoMatchedRig.lens.name}` : ''}
                                                                     </p>
                                                                 </div>
+                                                                {autoMatches.length > 1 && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setSelectedRigId('')}
+                                                                        className="text-[10px] text-blue-600 hover:underline shrink-0"
+                                                                    >
+                                                                        Change
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         )}
 
@@ -477,7 +527,7 @@ export default function GalleryUploadButton() {
                                                             </div>
                                                         )}
 
-                                                        {exifDone && rigsLoaded && !autoMatchedRig && !showNoMatch && !showNoRigs && (
+                                                        {exifDone && rigsLoaded && !autoMatchedRig && !showNoMatch && !showNoRigs && !showDisambiguation && (
                                                             <p className="text-xs text-gray-400 italic">No camera data in EXIF. Switch to Manual to pick a rig.</p>
                                                         )}
                                                     </div>

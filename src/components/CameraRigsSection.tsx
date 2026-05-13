@@ -25,6 +25,7 @@ interface SavedRig {
     id: number
     name: string
     imagePath: string | null
+    isActive: boolean
     camera: {
         id: number
         name: string
@@ -83,6 +84,7 @@ function RigCard({
     isOwnProfile,
     isFavorite,
     onSetFavorite,
+    onToggleActive,
     onEdit,
     onDelete,
 }: {
@@ -90,6 +92,7 @@ function RigCard({
     isOwnProfile: boolean
     isFavorite: boolean
     onSetFavorite: () => void
+    onToggleActive: () => void
     onEdit: () => void
     onDelete: () => void
 }) {
@@ -112,35 +115,66 @@ function RigCard({
     ]
 
     return (
-        <div className="relative border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
-            {/* Star / favorite button */}
+        <div className={`relative border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm transition-opacity ${rig.isActive ? '' : 'opacity-60'}`}>
+            {/* Active toggle + favorite buttons */}
             {isOwnProfile && (
-                <div className="group absolute top-2 right-2 z-10">
-                    <button
-                        type="button"
-                        onClick={onSetFavorite}
-                        aria-label={isFavorite ? 'Default rig' : 'Set as default rig'}
-                        className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${isFavorite
-                            ? 'bg-amber-100 text-amber-500 hover:bg-amber-200'
-                            : 'bg-white/80 text-gray-300 hover:text-amber-400 hover:bg-white shadow-sm'
-                            }`}
-                    >
-                        <svg
-                            viewBox="0 0 24 24"
-                            className="w-4 h-4"
-                            fill={isFavorite ? 'currentColor' : 'none'}
-                            stroke="currentColor"
-                            strokeWidth={2}
+                <div className="absolute top-2 right-2 z-10 flex gap-1">
+                    {/* Activate / deactivate toggle */}
+                    <div className="group relative flex items-center h-7">
+                        <button
+                            type="button"
+                            role="switch"
+                            aria-checked={rig.isActive}
+                            onClick={onToggleActive}
+                            aria-label={rig.isActive ? 'Deactivate rig' : 'Activate rig'}
+                            className={`relative inline-flex h-6 w-20 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-1 ${rig.isActive ? 'bg-green-500' : 'bg-gray-400'}`}
                         >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                        </svg>
-                    </button>
-                    {/* Tooltip */}
-                    <div className="pointer-events-none absolute right-0 top-full mt-1.5 w-56 rounded-lg bg-gray-800 px-3 py-2 text-xs text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                        {isFavorite
-                            ? 'This is your default rig. It is pre-selected when uploading photos to the gallery.'
-                            : 'Set as default rig. Your default rig is pre-selected when uploading photos to the gallery.'}
-                        <div className="absolute right-2 -top-1.5 border-4 border-transparent border-b-gray-800" />
+                            {/* Sliding thumb */}
+                            <span
+                                className={`pointer-events-none absolute top-0 h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${rig.isActive ? 'translate-x-14' : 'translate-x-0'}`}
+                            />
+                            {/* Label */}
+                            <span
+                                className={`pointer-events-none absolute inset-0 flex items-center text-[8px] font-semibold uppercase tracking-wide text-white transition-all duration-200 ${rig.isActive ? 'justify-start pl-2' : 'justify-end pr-2'}`}
+                            >
+                                {rig.isActive ? 'active' : 'inactive'}
+                            </span>
+                        </button>
+                        <div className="pointer-events-none absolute right-0 top-full mt-1.5 w-52 rounded-lg bg-gray-800 px-3 py-2 text-xs text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                            {rig.isActive
+                                ? 'Rig is active. It will be matched automatically when uploading photos. Click to deactivate.'
+                                : 'Rig is inactive and will not be matched when uploading photos. Click to activate.'}
+                            <div className="absolute right-2 -top-1.5 border-4 border-transparent border-b-gray-800" />
+                        </div>
+                    </div>
+
+                    {/* Star / favorite button */}
+                    <div className="group relative">
+                        <button
+                            type="button"
+                            onClick={onSetFavorite}
+                            aria-label={isFavorite ? 'Default rig' : 'Set as default rig'}
+                            className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${isFavorite
+                                ? 'bg-amber-100 text-amber-500 hover:bg-amber-200'
+                                : 'bg-white/80 text-gray-300 hover:text-amber-400 hover:bg-white shadow-sm'
+                                }`}
+                        >
+                            <svg
+                                viewBox="0 0 24 24"
+                                className="w-4 h-4"
+                                fill={isFavorite ? 'currentColor' : 'none'}
+                                stroke="currentColor"
+                                strokeWidth={2}
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                            </svg>
+                        </button>
+                        <div className="pointer-events-none absolute right-0 top-full mt-1.5 w-56 rounded-lg bg-gray-800 px-3 py-2 text-xs text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                            {isFavorite
+                                ? 'This is your default rig. It is pre-selected when uploading photos to the gallery.'
+                                : 'Set as default rig. Your default rig is pre-selected when uploading photos to the gallery.'}
+                            <div className="absolute right-2 -top-1.5 border-4 border-transparent border-b-gray-800" />
+                        </div>
                     </div>
                 </div>
             )}            {/* Rig cover photo */}
@@ -369,6 +403,20 @@ export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera,
         }
     }
 
+    async function handleToggleActive(rigId: number) {
+        try {
+            const res = await fetch(`/api/camera-rigs/active?id=${rigId}`, { method: 'PATCH' })
+            if (res.ok) {
+                const json = await res.json()
+                setRigs(prev => prev.map(r => r.id === rigId ? { ...r, isActive: json.isActive } : r))
+            } else {
+                setError('Failed to update rig')
+            }
+        } catch {
+            setError('Failed to update rig')
+        }
+    }
+
     async function handleDelete(rigId: number) {
         if (!confirm('Delete this rig?')) return
         try {
@@ -462,6 +510,7 @@ export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera,
                             isOwnProfile={isOwnProfile}
                             isFavorite={rig.id === defaultRigId}
                             onSetFavorite={() => handleSetFavorite(rig.id)}
+                            onToggleActive={() => handleToggleActive(rig.id)}
                             onEdit={() => openEdit(rig)}
                             onDelete={() => handleDelete(rig.id)}
                         />

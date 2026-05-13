@@ -104,7 +104,6 @@ async function main() {
     await prisma.housingMount.deleteMany()
     await prisma.housing.deleteMany()
     await prisma.camera.deleteMany()
-    await prisma.portChartEntry.deleteMany()
     await prisma.lens.deleteMany()
     await prisma.cameraMount.deleteMany()
     await prisma.extensionRing.deleteMany()
@@ -369,7 +368,7 @@ async function main() {
             focalLengthTele: 18,         // 100 mm equiv (native: ~18 mm)
             minimumFocusDistanceWide: 0.10,
             minimumFocusDistanceTele: 0.20,
-            maximumMagnification: 4.0,   // Super-macro mode
+            maximumMagnificationWide: 4.0,   // Super-macro mode
         }
     })
 
@@ -405,7 +404,7 @@ async function main() {
             sensorHeight: 4.55,
             focalLengthTele: 3,          // Prime wide-angle (~16 mm equiv on 1/2.3" sensor)
             minimumFocusDistanceTele: 0.01,
-            maximumMagnification: 1.5,
+            maximumMagnificationWide: 1.5,
         }
     })
 
@@ -426,7 +425,7 @@ async function main() {
             focalLengthWide: 24,
             focalLengthTele: 70,
             minimumFocusDistanceWide: 0.19,
-            maximumMagnification: 0.30,
+            maximumMagnificationWide: 0.30,
             productPhotos: ['/lenses/a024-24-70-28-ii.png']
         }
     })
@@ -441,7 +440,7 @@ async function main() {
             priceAmount: 1098,
             focalLengthTele: 90,
             minimumFocusDistanceWide: 0.28,
-            maximumMagnification: 1.00,
+            maximumMagnificationWide: 1.00,
             productPhotos: ['/lenses/sel90m28g.avif']
         }
     })
@@ -460,7 +459,7 @@ async function main() {
             focalLengthTele: 70,
             minimumFocusDistanceWide: 0.21,
             minimumFocusDistanceTele: 0.30,
-            maximumMagnification: 0.32,
+            maximumMagnificationWide: 0.32,
             productPhotos: ['/lenses/sel2470gmii.jpg']
         }
     })
@@ -477,7 +476,7 @@ async function main() {
             focalLengthWide: 16,
             focalLengthTele: 35,
             minimumFocusDistanceWide: 0.28,
-            maximumMagnification: 0.19,
+            maximumMagnificationWide: 0.19,
             productPhotos: ['/lenses/sel1635gm.avif']
 
         }
@@ -495,7 +494,7 @@ async function main() {
             focalLengthWide: 16,
             focalLengthTele: 35,
             minimumFocusDistanceWide: 0.22,
-            maximumMagnification: 0.22,
+            maximumMagnificationWide: 0.22,
             productPhotos: ['/lenses/sel1635gm2.webp']
         }
     })
@@ -513,7 +512,7 @@ async function main() {
             focalLengthTele: 200,
             minimumFocusDistanceWide: 0.40,
             minimumFocusDistanceTele: 0.82,
-            maximumMagnification: 0.30,
+            maximumMagnificationWide: 0.30,
             productPhotos: ['/lenses/sel70200gm2.webp']
         }
     })
@@ -531,7 +530,7 @@ async function main() {
             focalLengthWide: 24,
             focalLengthTele: 105,
             minimumFocusDistanceWide: 0.38,
-            maximumMagnification: 0.31,
+            maximumMagnificationWide: 0.31,
             productPhotos: ['/lenses/sel24105.avif']
         }
     })
@@ -548,7 +547,7 @@ async function main() {
             focalLengthWide: 28,
             focalLengthTele: 70,
             minimumFocusDistanceWide: 0.30,
-            maximumMagnification: 0.21,
+            maximumMagnificationWide: 0.21,
             productPhotos: ['/lenses/sel28702.avif']
         }
     })
@@ -565,7 +564,7 @@ async function main() {
             focalLengthWide: 16,
             focalLengthTele: 35,
             minimumFocusDistanceWide: 0.24,
-            maximumMagnification: 0.20,
+            maximumMagnificationWide: 0.20,
             productPhotos: ['/lenses/sel1635z.avif']
         }
     })
@@ -582,7 +581,7 @@ async function main() {
             focalLengthWide: 24,
             focalLengthTele: 70,
             minimumFocusDistanceWide: 0.40,
-            maximumMagnification: 0.20,
+            maximumMagnificationWide: 0.20,
             productPhotos: ['/lenses/sel2470f4za.avif']
         }
     })
@@ -599,7 +598,7 @@ async function main() {
             focalLengthWide: 12,
             focalLengthTele: 24,
             minimumFocusDistanceWide: 0.28,
-            maximumMagnification: 0.14,
+            maximumMagnificationWide: 0.14,
             productPhotos: ['/lenses/sel1224g.avif']
         }
     })
@@ -616,7 +615,7 @@ async function main() {
             focalLengthWide: 24,
             focalLengthTele: 70,
             minimumFocusDistanceWide: 0.38,
-            maximumMagnification: 0.24,
+            maximumMagnificationWide: 0.24,
             productPhotos: ['/lenses/sel2470gm.avif']
         }
     })
@@ -633,7 +632,7 @@ async function main() {
             focalLengthWide: 16,
             focalLengthTele: 35,
             minimumFocusDistanceWide: 0.30,
-            maximumMagnification: 0.20,
+            maximumMagnificationWide: 0.20,
             productPhotos: ['/lenses/sel1635z.avif']
         }
     })
@@ -650,7 +649,7 @@ async function main() {
             focalLengthWide: 18,
             focalLengthTele: 105,
             minimumFocusDistanceWide: 0.45,
-            maximumMagnification: 0.24,
+            maximumMagnificationWide: 0.24,
             productPhotos: ['/lenses/selp18105g.avif']
         }
     })
@@ -667,7 +666,7 @@ async function main() {
             focalLengthWide: 15,
             focalLengthTele: 35,
             minimumFocusDistanceWide: 0.28,
-            maximumMagnification: 0.21,
+            maximumMagnificationWide: 0.21,
             productPhotos: ['/lenses/rf1535.png']
         }
     })
@@ -684,7 +683,7 @@ async function main() {
             focalLengthWide: 24,
             focalLengthTele: 70,
             minimumFocusDistanceWide: 0.21,
-            maximumMagnification: 0.30,
+            maximumMagnificationWide: 0.30,
             productPhotos: ['/lenses/rf2470.png']
         }
     })
@@ -699,7 +698,7 @@ async function main() {
             priceAmount: 1499,
             focalLengthTele: 100,
             minimumFocusDistanceWide: 0.26,
-            maximumMagnification: 1.40,
+            maximumMagnificationWide: 1.40,
             productPhotos: ['/lenses/rf100.png']
         }
     })

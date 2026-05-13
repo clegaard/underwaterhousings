@@ -264,6 +264,7 @@ model CameraRig {
     id             Int             @id @default(autoincrement())
     name           String
     imagePath      String?
+    isActive       Boolean         @default(true)
     userId         Int
     cameraId       Int
     lensId         Int?

@@ -165,6 +165,12 @@ function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUse
 
 export default function GalleryGrid({ photos, selectionMode = false, selectedIds, currentUserId, onPhotoClick, onExitSelection }: GalleryGridProps) {
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+    const [lightboxLoaded, setLightboxLoaded] = useState(false)
+
+    // Reset loaded state whenever the displayed image changes
+    useEffect(() => {
+        setLightboxLoaded(false)
+    }, [lightboxIndex])
 
     const closeLightbox = useCallback(() => setLightboxIndex(null), [])
 
@@ -249,13 +255,18 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="relative rounded-t-lg overflow-hidden shadow-2xl" style={{ width: '90vw', maxWidth: '1200px', height: '75vh' }}>
+                            {/* Shimmer while image is loading */}
+                            {!lightboxLoaded && (
+                                <div className="absolute inset-0 bg-gray-800 animate-pulse" />
+                            )}
                             <Image
                                 src={photos[lightboxIndex].src}
                                 alt={photos[lightboxIndex].title ?? photos[lightboxIndex].description ?? 'Gallery photo'}
                                 fill
                                 sizes="min(90vw, 1200px)"
-                                className="object-contain"
+                                className={`object-contain transition-opacity duration-300 ${lightboxLoaded ? 'opacity-100' : 'opacity-0'}`}
                                 priority
+                                onLoad={() => setLightboxLoaded(true)}
                             />
                         </div>
 

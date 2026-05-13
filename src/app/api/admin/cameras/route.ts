@@ -45,11 +45,6 @@ export async function POST(request: NextRequest) {
     if (denied) return denied
     try {
         const body = await request.json()
-        const { name, description, manufacturerId, interchangeableLens, canBeUsedWithoutAHousing, cameraMountId, productPhotos, exifId,
-            priceAmount, priceCurrency, sensorWidth, sensorHeight, megapixels,
-            isZoomLens, productId, productUrl,
-            focalLengthTele, focalLengthWide, minimumFocusDistanceTele, minimumFocusDistanceWide, maximumMagnification, depthRating } = body
-
         if (!name || !manufacturerId) {
             return NextResponse.json(
                 { error: 'Name and camera manufacturer are required' },
@@ -89,10 +84,12 @@ export async function POST(request: NextRequest) {
                 name,
                 slug,
                 description: description?.trim() || null,
-                manufacturerId,
+                brand: { connect: { id: manufacturerId } },
                 interchangeableLens: interchangeableLens ?? true,
                 canBeUsedWithoutAHousing: canBeUsedWithoutAHousing ?? false,
-                cameraMountId: interchangeableLens && cameraMountId ? cameraMountId : null,
+                cameraMount: interchangeableLens && cameraMountId
+                    ? { connect: { id: cameraMountId } }
+                    : { disconnect: true },
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 exifId: exifId?.trim() || null,
                 priceAmount: priceAmount ?? null,
@@ -105,7 +102,8 @@ export async function POST(request: NextRequest) {
                 focalLengthWide: focalLengthWide ?? null,
                 minimumFocusDistanceTele: minimumFocusDistanceTele ?? null,
                 minimumFocusDistanceWide: minimumFocusDistanceWide ?? null,
-                maximumMagnification: maximumMagnification ?? null,
+                maximumMagnificationTele: maximumMagnificationTele ?? null,
+                maximumMagnificationWide: maximumMagnificationWide ?? null,
                 depthRating: depthRating ?? null,
                 productId: productId?.trim() || null,
                 productUrl: productUrl?.trim() || null,
@@ -144,7 +142,8 @@ export async function PUT(request: NextRequest) {
         const { name, description, manufacturerId, interchangeableLens, canBeUsedWithoutAHousing, cameraMountId, productPhotos, exifId,
             priceAmount, priceCurrency, sensorWidth, sensorHeight, megapixels,
             isZoomLens, productId, productUrl,
-            focalLengthTele, focalLengthWide, minimumFocusDistanceTele, minimumFocusDistanceWide, maximumMagnification, depthRating } = body
+            focalLengthTele, focalLengthWide, minimumFocusDistanceTele, minimumFocusDistanceWide,
+            maximumMagnificationTele, maximumMagnificationWide, depthRating } = body
 
         if (!name || !manufacturerId) {
             return NextResponse.json(
@@ -189,10 +188,12 @@ export async function PUT(request: NextRequest) {
                 name,
                 slug,
                 description: description?.trim() || null,
-                manufacturerId,
+                brand: { connect: { id: manufacturerId } },
                 interchangeableLens: interchangeableLens ?? true,
                 canBeUsedWithoutAHousing: canBeUsedWithoutAHousing ?? false,
-                cameraMountId: interchangeableLens && cameraMountId ? cameraMountId : null,
+                cameraMount: interchangeableLens && cameraMountId
+                    ? { connect: { id: cameraMountId } }
+                    : { disconnect: true },
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 exifId: exifId?.trim() || null,
                 priceAmount: priceAmount ?? null,
@@ -205,7 +206,8 @@ export async function PUT(request: NextRequest) {
                 focalLengthWide: focalLengthWide ?? null,
                 minimumFocusDistanceTele: minimumFocusDistanceTele ?? null,
                 minimumFocusDistanceWide: minimumFocusDistanceWide ?? null,
-                maximumMagnification: maximumMagnification ?? null,
+                maximumMagnificationTele: maximumMagnificationTele ?? null,
+                maximumMagnificationWide: maximumMagnificationWide ?? null,
                 depthRating: depthRating ?? null,
                 productId: productId?.trim() || null,
                 productUrl: productUrl?.trim() || null,
