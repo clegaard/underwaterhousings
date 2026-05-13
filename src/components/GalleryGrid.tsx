@@ -7,6 +7,7 @@ import { RowsPhotoAlbum } from 'react-photo-album'
 import type { Photo } from 'react-photo-album'
 import 'react-photo-album/rows.css'
 import UserAvatar from '@/components/UserAvatar'
+import { withBase } from '@/lib/images'
 
 export interface GalleryPhotoData extends Photo {
     title?: string
@@ -48,15 +49,18 @@ function CommentPanel({
     likeCount,
     likedByMe,
     onLikeToggle,
+    onCommentCountChange,
 }: {
     photo: GalleryPhotoData
     currentUserId?: number
     likeCount: number
     likedByMe: boolean
     onLikeToggle: () => void
+    onCommentCountChange?: (delta: number) => void
 }) {
     const [comments, setComments] = useState<Comment[]>([])
     const [commentCount, setCommentCount] = useState(photo.commentCount ?? 0)
+    const [likeAnimating, setLikeAnimating] = useState(false)
     const [loading, setLoading] = useState(true)
     const [input, setInput] = useState('')
     const [replyingTo, setReplyingTo] = useState<{ id: number; name: string } | null>(null)
@@ -103,6 +107,7 @@ function CommentPanel({
                 setComments(prev => [...prev, { ...comment, replies: [] }])
             }
             setCommentCount(n => n + 1)
+            onCommentCountChange?.(1)
             setInput('')
             setReplyingTo(null)
             setTimeout(() => commentsEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
@@ -125,6 +130,7 @@ function CommentPanel({
             setComments(prev => prev.filter(c => c.id !== commentId))
         }
         setCommentCount(n => Math.max(0, n - 1))
+        onCommentCountChange?.(-1)
     }
 
     function formatDate(iso: string) {
@@ -163,7 +169,11 @@ function CommentPanel({
                             <UserAvatar picture={photo.userProfilePicture} name={photo.userName} size="xs" className="flex-shrink-0 mt-0.5" />
                         )}
                         <div className="text-sm text-gray-800 leading-snug">
-                            {photo.title && <span className="font-semibold mr-1">{photo.userName ?? ''}</span>}
+                            {photo.title && photo.userId && (
+                                <Link href={`/users/${photo.userId}`} onClick={e => e.stopPropagation()} className="font-semibold mr-1 hover:underline">
+                                    {photo.userName ?? ''}
+                                </Link>
+                            )}
                             {photo.title || photo.description}
                         </div>
                     </div>
@@ -204,10 +214,12 @@ function CommentPanel({
                     <div key={comment.id} className="space-y-2">
                         {/* Top-level comment */}
                         <div className="flex gap-2.5 group/comment">
-                            <UserAvatar picture={comment.user.profilePicture} name={comment.user.name ?? 'User'} size="xs" className="flex-shrink-0 mt-0.5" />
+                            <Link href={`/users/${comment.user.id}`} onClick={e => e.stopPropagation()} className="flex-shrink-0 mt-0.5">
+                                <UserAvatar picture={comment.user.profilePicture ? withBase(comment.user.profilePicture) : null} name={comment.user.name ?? 'User'} size="xs" />
+                            </Link>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm text-gray-800 leading-snug">
-                                    <span className="font-semibold mr-1">{comment.user.name ?? 'User'}</span>
+                                    <Link href={`/users/${comment.user.id}`} onClick={e => e.stopPropagation()} className="font-semibold mr-1 hover:underline">{comment.user.name ?? 'User'}</Link>
                                     {comment.body}
                                 </p>
                                 <div className="flex items-center gap-3 mt-0.5">
@@ -228,10 +240,12 @@ function CommentPanel({
                         {/* Replies */}
                         {comment.replies.map(reply => (
                             <div key={reply.id} className="flex gap-2.5 ml-8 group/reply">
-                                <UserAvatar picture={reply.user.profilePicture} name={reply.user.name ?? 'User'} size="xs" className="flex-shrink-0 mt-0.5" />
+                                <Link href={`/users/${reply.user.id}`} onClick={e => e.stopPropagation()} className="flex-shrink-0 mt-0.5">
+                                    <UserAvatar picture={reply.user.profilePicture ? withBase(reply.user.profilePicture) : null} name={reply.user.name ?? 'User'} size="xs" />
+                                </Link>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm text-gray-800 leading-snug">
-                                        <span className="font-semibold mr-1">{reply.user.name ?? 'User'}</span>
+                                        <Link href={`/users/${reply.user.id}`} onClick={e => e.stopPropagation()} className="font-semibold mr-1 hover:underline">{reply.user.name ?? 'User'}</Link>
                                         {reply.body}
                                     </p>
                                     <div className="flex items-center gap-3 mt-0.5">
@@ -261,12 +275,27 @@ function CommentPanel({
                 <div className="flex items-center gap-4 px-4 pt-3 pb-1">
                     <button
                         type="button"
-                        onClick={e => { e.stopPropagation(); onLikeToggle() }}
+                        onClick={e => {
+                            e.stopPropagation()
+                            if (!likedByMe) {
+                                setLikeAnimating(false)
+                                // force re-trigger if double-clicking
+                                requestAnimationFrame(() => setLikeAnimating(true))
+                                setTimeout(() => setLikeAnimating(false), 450)
+                            }
+                            onLikeToggle()
+                        }}
                         disabled={!currentUserId}
                         aria-label={likedByMe ? 'Unlike' : 'Like'}
                         className={`flex items-center gap-1.5 transition-colors ${currentUserId ? 'cursor-pointer' : 'cursor-default'} ${likedByMe ? 'text-red-500' : 'text-gray-500 hover:text-red-400'}`}
                     >
-                        <svg viewBox="0 0 24 24" className="w-6 h-6" fill={likedByMe ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+                        <svg
+                            viewBox="0 0 24 24"
+                            className={`w-6 h-6 ${likeAnimating ? 'animate-like-pop' : ''}`}
+                            fill={likedByMe ? 'currentColor' : 'none'}
+                            stroke="currentColor"
+                            strokeWidth={2}
+                        >
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
                     </button>
@@ -334,6 +363,8 @@ interface GalleryGridProps {
     onExitSelection?: () => void
 }
 
+interface PhotoLiveState { count: number; liked: boolean; commentCount: number }
+
 interface GalleryPhotoTileProps {
     photo: GalleryPhotoData
     index: number
@@ -342,9 +373,14 @@ interface GalleryPhotoTileProps {
     currentUserId?: number
     onPhotoClick?: (photoId: number, index: number, shiftKey: boolean) => void
     onOpenLightbox: (index: number) => void
+    liveState?: PhotoLiveState
+    onLikeToggle?: () => void
 }
 
-function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUserId, onPhotoClick, onOpenLightbox }: GalleryPhotoTileProps) {
+function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUserId, onPhotoClick, onOpenLightbox, liveState, onLikeToggle }: GalleryPhotoTileProps) {
+    const liveLikeCount = liveState?.count ?? photo.likeCount ?? 0
+    const liveCommentCount = liveState?.commentCount ?? photo.commentCount ?? 0
+    const likedByMe = liveState?.liked ?? photo.likedByMe ?? false
     const [loaded, setLoaded] = useState(false)
 
     return (
@@ -399,58 +435,48 @@ function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUse
                 </>
             )}
 
-            {/* Hover overlay */}
-            <div className="absolute inset-x-0 bottom-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-2.5 py-2">
-                {photo.title && (
-                    <p className="text-white text-xs font-medium leading-tight mb-1 truncate">{photo.title}</p>
-                )}
-                <div className="flex items-center justify-between gap-2">
-                    {photo.rigLabel && photo.cameraSlug && photo.housingSlug ? (
-                        <Link
-                            href={`/rigs?${new URLSearchParams({
-                                camera: photo.cameraSlug,
-                                housing: photo.housingSlug,
-                                ...(photo.lensSlug ? { lens: photo.lensSlug } : {}),
-                                ...(photo.portSlug ? { port: photo.portSlug } : {}),
-                            }).toString()}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-gray-300 text-xs hover:text-white transition-colors truncate"
+            {/* Hover overlay — no banner, just floating badges bottom-right */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                <div className="absolute bottom-2 right-2 flex items-center gap-2.5 pointer-events-auto">
+                    {/* Like button */}
+                    {currentUserId && onLikeToggle ? (
+                        <button
+                            type="button"
+                            onClick={e => { e.stopPropagation(); onLikeToggle() }}
+                            aria-label={likedByMe ? 'Unlike' : 'Like'}
+                            className={`flex items-center gap-1 text-sm drop-shadow transition-colors ${likedByMe ? 'text-red-400' : 'text-white/80 hover:text-red-300'}`}
                         >
-                            {photo.rigLabel}
+                            <svg viewBox="0 0 24 24" className="w-4 h-4" fill={likedByMe ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            <span>{liveLikeCount}</span>
+                        </button>
+                    ) : (
+                        <span className="flex items-center gap-1 text-white/80 text-sm drop-shadow">
+                            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+                                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                            <span>{liveLikeCount}</span>
+                        </span>
+                    )}
+                    {/* Comment count */}
+                    <span className="flex items-center gap-1 text-white/80 text-sm drop-shadow">
+                        <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <span>{liveCommentCount}</span>
+                    </span>
+                    {/* User badge */}
+                    {photo.userId && photo.userName && (
+                        <Link
+                            href={`/users/${photo.userId}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex items-center gap-1 group/user"
+                        >
+                            <UserAvatar picture={photo.userProfilePicture} name={photo.userName} size="sm" className="ring-1 ring-white/60 drop-shadow" />
+                            <span className="text-white/80 text-sm group-hover/user:text-white transition-colors drop-shadow">{photo.userName}</span>
                         </Link>
-                    ) : photo.rigLabel ? (
-                        <span className="text-gray-300 text-xs truncate">{photo.rigLabel}</span>
-                    ) : null}
-
-                    {/* Like + comment counts */}
-                    <div className="flex items-center gap-2.5 flex-shrink-0">
-                        {(photo.likeCount ?? 0) > 0 && (
-                            <span className="flex items-center gap-1 text-white text-xs">
-                                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor">
-                                    <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                </svg>
-                                {photo.likeCount}
-                            </span>
-                        )}
-                        {(photo.commentCount ?? 0) > 0 && (
-                            <span className="flex items-center gap-1 text-white text-xs">
-                                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                </svg>
-                                {photo.commentCount}
-                            </span>
-                        )}
-                        {photo.userId && photo.userName && (
-                            <Link
-                                href={`/users/${photo.userId}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="flex items-center gap-1 group/user"
-                            >
-                                <UserAvatar picture={photo.userProfilePicture} name={photo.userName} size="xs" className="ring-1 ring-white/30" />
-                                <span className="text-gray-400 text-xs group-hover/user:text-white transition-colors truncate">{photo.userName}</span>
-                            </Link>
-                        )}
-                    </div>
+                    )}
                 </div>
             </div>
         </div>
@@ -462,12 +488,16 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
     const [lightboxLoaded, setLightboxLoaded] = useState(false)
 
-    // Per-photo like state — keyed by photoId, initialised lazily from props
-    const [likeState, setLikeState] = useState<Record<number, { count: number; liked: boolean }>>(() => {
-        const init: Record<number, { count: number; liked: boolean }> = {}
+    // Per-photo live state — keyed by photoId, initialised from props
+    const [photoState, setPhotoState] = useState<Record<number, PhotoLiveState>>(() => {
+        const init: Record<number, PhotoLiveState> = {}
         photos.forEach(p => {
             if (p.photoId != null) {
-                init[p.photoId] = { count: p.likeCount ?? 0, liked: p.likedByMe ?? false }
+                init[p.photoId] = {
+                    count: p.likeCount ?? 0,
+                    liked: p.likedByMe ?? false,
+                    commentCount: p.commentCount ?? 0,
+                }
             }
         })
         return init
@@ -478,7 +508,14 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
         const res = await fetch(`/api/gallery/${photoId}/like`, { method: 'POST' })
         if (!res.ok) return
         const { liked, likeCount } = await res.json()
-        setLikeState(prev => ({ ...prev, [photoId]: { count: likeCount, liked } }))
+        setPhotoState(prev => ({ ...prev, [photoId]: { ...prev[photoId], count: likeCount, liked } }))
+    }
+
+    function handleCommentCountChange(photoId: number, delta: number) {
+        setPhotoState(prev => ({
+            ...prev,
+            [photoId]: { ...prev[photoId], commentCount: Math.max(0, (prev[photoId]?.commentCount ?? 0) + delta) },
+        }))
     }
 
     // Reset loaded state whenever the displayed image changes
@@ -543,6 +580,8 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                             currentUserId={currentUserId}
                             onPhotoClick={onPhotoClick}
                             onOpenLightbox={setLightboxIndex}
+                            liveState={photo.photoId != null ? photoState[photo.photoId] : undefined}
+                            onLikeToggle={photo.photoId != null ? () => toggleLike(photo.photoId!) : undefined}
                         />
                     ),
                 }}
@@ -552,7 +591,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
             {lightboxIndex !== null && (() => {
                 const photo = photos[lightboxIndex]
                 const photoId = photo.photoId
-                const ls = photoId != null ? (likeState[photoId] ?? { count: photo.likeCount ?? 0, liked: photo.likedByMe ?? false }) : { count: 0, liked: false }
+                const ls = photoId != null ? (photoState[photoId] ?? { count: photo.likeCount ?? 0, liked: photo.likedByMe ?? false, commentCount: photo.commentCount ?? 0 }) : { count: 0, liked: false, commentCount: 0 }
                 return (
                     <div
                         className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
@@ -608,6 +647,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                         likeCount={ls.count}
                                         likedByMe={ls.liked}
                                         onLikeToggle={() => toggleLike(photoId)}
+                                        onCommentCountChange={(delta) => handleCommentCountChange(photoId, delta)}
                                     />
                                 ) : (
                                     <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">No data</div>
