@@ -35,21 +35,11 @@ function makePrismaClient() {
     const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
     return new PrismaClient({ adapter, log: process.env.NODE_ENV === 'development' ? ['query'] : [] })
         .$extends({
-            result: {
-                camera: { priceAmount: { needs: { priceAmount: true }, compute: (d) => toNum(d.priceAmount) } },
-                housing: { priceAmount: { needs: { priceAmount: true }, compute: (d) => toNum(d.priceAmount) } },
-                port: { priceAmount: { needs: { priceAmount: true }, compute: (d) => toNum(d.priceAmount) } },
-                lens: { priceAmount: { needs: { priceAmount: true }, compute: (d) => toNum(d.priceAmount) } },
-                extensionRing: { priceAmount: { needs: { priceAmount: true }, compute: (d) => toNum(d.priceAmount) } },
-                portAdapter: { priceAmount: { needs: { priceAmount: true }, compute: (d) => toNum(d.priceAmount) } },
-                gear: { priceAmount: { needs: { priceAmount: true }, compute: (d) => toNum(d.priceAmount) } },
-            },
-        })
-        .$extends({
             query: {
                 $allModels: {
-                    // Strip pg row symbols (nodejs.util.inspect.custom etc.) so plain objects
-                    // can safely cross the Server→Client Component boundary in React 19.
+                    // Strip pg row symbols (nodejs.util.inspect.custom etc.) and convert
+                    // Decimal instances to numbers so results are plain objects safe to
+                    // pass across the React 19 Server→Client Component boundary.
                     async $allOperations({ args, query }) {
                         const result = await query(args)
                         if (result == null) return result
