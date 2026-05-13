@@ -148,6 +148,7 @@ function EquipmentCard({
     selected: boolean
     onClick: () => void
 }) {
+    const errored = useRef(false)
     return (
         <button
             type="button"
@@ -164,7 +165,10 @@ function EquipmentCard({
                     fill
                     className="object-contain p-1"
                     onError={(e) => {
-                        ; (e.currentTarget as HTMLImageElement).src = imageFallback
+                        if (!errored.current) {
+                            errored.current = true;
+                            (e.currentTarget as HTMLImageElement).src = imageFallback
+                        }
                     }}
                     sizes="(max-width: 768px) 50vw, 120px"
                 />

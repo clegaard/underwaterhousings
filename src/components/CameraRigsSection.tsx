@@ -218,7 +218,8 @@ function RigCard({
                                     fill
                                     className="object-contain p-1"
                                     onError={(e) => {
-                                        ; (e.currentTarget as HTMLImageElement).src = item.img.fallback
+                                        const img = e.currentTarget as HTMLImageElement
+                                        if (img.src !== item.img.fallback) img.src = item.img.fallback
                                     }}
                                     sizes="56px"
                                 />
