@@ -106,7 +106,7 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                             {housing.priceAmount && (
                                 <div className="text-right">
                                     <div className="text-3xl font-bold text-green-600">
-                                        <PriceTag amount={housing.priceAmount} currency={housing.priceCurrency} />
+                                        <PriceTag amount={housing.priceAmount ? Number(housing.priceAmount) : null} currency={housing.priceCurrency} />
                                     </div>
                                 </div>
                             )}
@@ -168,7 +168,7 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                                             <div>
                                                 <h4 className="font-semibold text-gray-900 mb-1">Price</h4>
                                                 <p className="text-gray-700">
-                                                    <PriceTag amount={housing.priceAmount} currency={housing.priceCurrency} />
+                                                    <PriceTag amount={housing.priceAmount ? Number(housing.priceAmount) : null} currency={housing.priceCurrency} />
                                                 </p>
                                             </div>
                                         )}

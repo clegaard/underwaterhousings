@@ -14,7 +14,7 @@ async function getCameraManufacturers() {
             include: {
                 cameras: {
                     include: {
-                        housings: true,
+                        housings: { select: { id: true } },
                         cameraMount: true,
                     },
                     orderBy: { name: 'asc' },
@@ -72,13 +72,15 @@ export default async function CamerasPage() {
             {/* Content */}
             <div className="max-w-6xl mx-auto px-4 py-8">
                 <CameraManufacturersClient
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     manufacturers={manufacturers.map(m => ({
                         ...m,
                         cameras: m.cameras.map(c => ({
                             ...c,
                             priceAmount: c.priceAmount ? Number(c.priceAmount) : null,
+                            maximumMagnification: c.maximumMagnificationTele ?? null,
                         }))
-                    }))}
+                    })) as any}
                     cameraMounts={cameraMounts}
                     isSuperuser={isSuperuser}
                 />

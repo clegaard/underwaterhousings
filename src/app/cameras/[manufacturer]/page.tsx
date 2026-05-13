@@ -74,7 +74,7 @@ export default async function CameraManufacturerPage({ params }: CameraManufactu
         focalLengthWide: camera.focalLengthWide ?? null,
         minimumFocusDistanceTele: camera.minimumFocusDistanceTele ?? null,
         minimumFocusDistanceWide: camera.minimumFocusDistanceWide ?? null,
-        maximumMagnification: camera.maximumMagnification ?? null,
+        maximumMagnification: camera.maximumMagnificationTele ?? null,
         depthRating: camera.depthRating ?? null,
         productId: camera.productId ?? null,
         productUrl: camera.productUrl ?? null,

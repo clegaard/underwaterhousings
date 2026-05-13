@@ -45,6 +45,14 @@ export async function POST(request: NextRequest) {
     if (denied) return denied
     try {
         const body = await request.json()
+        const {
+            name, manufacturerId, description, interchangeableLens, cameraMountId,
+            productPhotos, exifId, priceAmount, priceCurrency, sensorWidth, sensorHeight,
+            megapixels, isZoomLens, focalLengthTele, focalLengthWide,
+            minimumFocusDistanceTele, minimumFocusDistanceWide,
+            maximumMagnificationTele, maximumMagnificationWide,
+            depthRating, productId, productUrl, canBeUsedWithoutAHousing
+        } = body
         if (!name || !manufacturerId) {
             return NextResponse.json(
                 { error: 'Name and camera manufacturer are required' },
@@ -89,7 +97,7 @@ export async function POST(request: NextRequest) {
                 canBeUsedWithoutAHousing: canBeUsedWithoutAHousing ?? false,
                 cameraMount: interchangeableLens && cameraMountId
                     ? { connect: { id: cameraMountId } }
-                    : { disconnect: true },
+                    : undefined,
                 productPhotos: Array.isArray(productPhotos) ? productPhotos : [],
                 exifId: exifId?.trim() || null,
                 priceAmount: priceAmount ?? null,

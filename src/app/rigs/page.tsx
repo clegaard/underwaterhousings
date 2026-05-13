@@ -158,7 +158,7 @@ export default async function RigBuilderPage({ searchParams }: RigBuilderPagePro
                                 {camera.priceAmount && (
                                     <div className="flex justify-between">
                                         <span className="text-gray-600">Camera price</span>
-                                        <span className="font-medium"><PriceTag amount={camera.priceAmount} currency={camera.priceCurrency} /></span>
+                                        <span className="font-medium"><PriceTag amount={camera.priceAmount ? Number(camera.priceAmount) : null} currency={camera.priceCurrency} /></span>
                                     </div>
                                 )}
                             </div>

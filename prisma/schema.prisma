@@ -242,20 +242,22 @@ model Gear {
 }
 
 model User {
-    id             Int            @id @default(autoincrement())
-    email          String         @unique
-    password       String
-    name           String?
-    bio            String?
-    profilePicture String?
-    isSuperuser    Boolean        @default(false)
-    isUser         Boolean        @default(true)
-    defaultRigId   Int?
-    createdAt      DateTime       @default(now())
-    updatedAt      DateTime       @updatedAt
-    rigReviews     RigReview[]
-    galleryPhotos  GalleryPhoto[]
-    cameraRigs     CameraRig[]
+    id              Int              @id @default(autoincrement())
+    email           String           @unique
+    password        String
+    name            String?
+    bio             String?
+    profilePicture  String?
+    isSuperuser     Boolean          @default(false)
+    isUser          Boolean          @default(true)
+    defaultRigId    Int?
+    createdAt       DateTime         @default(now())
+    updatedAt       DateTime         @updatedAt
+    rigReviews      RigReview[]
+    galleryPhotos   GalleryPhoto[]
+    cameraRigs      CameraRig[]
+    galleryComments GalleryComment[]
+    galleryLikes    GalleryLike[]
 
     @@map("users")
 }
@@ -286,7 +288,7 @@ model CameraRig {
 }
 
 model GalleryPhoto {
-    id           Int        @id @default(autoincrement())
+    id           Int              @id @default(autoincrement())
     title        String?
     description  String?
     imagePath    String
@@ -297,13 +299,40 @@ model GalleryPhoto {
     focalLength  Float?
     shutterSpeed String?
     aperture     Float?
-    createdAt    DateTime   @default(now())
+    createdAt    DateTime         @default(now())
     rigId        Int?
     userId       Int?
-    rig          CameraRig? @relation(fields: [rigId], references: [id])
-    user         User?      @relation(fields: [userId], references: [id])
+    rig          CameraRig?       @relation(fields: [rigId], references: [id])
+    user         User?            @relation(fields: [userId], references: [id])
+    comments     GalleryComment[]
+    likes        GalleryLike[]
 
     @@map("gallery_photos")
+}
+
+model GalleryComment {
+    id        Int              @id @default(autoincrement())
+    body      String
+    createdAt DateTime         @default(now())
+    photoId   Int
+    userId    Int
+    parentId  Int?
+    photo     GalleryPhoto     @relation(fields: [photoId], references: [id], onDelete: Cascade)
+    user      User             @relation(fields: [userId], references: [id])
+    parent    GalleryComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+    replies   GalleryComment[] @relation("CommentReplies")
+
+    @@map("gallery_comments")
+}
+
+model GalleryLike {
+    photoId Int
+    userId  Int
+    photo   GalleryPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
+    user    User         @relation(fields: [userId], references: [id])
+
+    @@id([photoId, userId])
+    @@map("gallery_likes")
 }
 
 model RigReview {

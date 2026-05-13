@@ -460,7 +460,7 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
                                 )
                             })}
 
-                            {/* Port adapter cards */}}
+                            {/* Port adapter cards */}
                             {manufacturer.portAdapters.map(adapter => {
                                 const imageInfo = getPortImagePathWithFallback(adapter.productPhotos)
                                 const price = adapter.priceAmount ? Number(adapter.priceAmount) : null

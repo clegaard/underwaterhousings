@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
 import GalleryPageClient from '@/components/GalleryPageClient'
 import { GalleryPhotoData } from '@/components/GalleryGrid'
 import { withBase } from '@/lib/images'
@@ -16,7 +17,7 @@ export interface InitialFilterOptions {
     port?: { slug: string; name: string }
 }
 
-async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
+async function getGalleryPhotos(currentUserId?: number): Promise<GalleryPhotoData[]> {
     try {
         const photos = await prisma.galleryPhoto.findMany({
             orderBy: { takenAt: 'desc' },
@@ -30,6 +31,10 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
                     },
                 },
                 user: true,
+                _count: { select: { likes: true, comments: true } },
+                ...(currentUserId
+                    ? { likes: { where: { userId: currentUserId }, select: { userId: true } } }
+                    : {}),
             },
         })
 
@@ -70,6 +75,11 @@ async function getGalleryPhotos(): Promise<GalleryPhotoData[]> {
                 userName: photo.user?.name ?? undefined,
                 userId: photo.user?.id ?? undefined,
                 userProfilePicture: photo.user?.profilePicture ? withBase(photo.user.profilePicture) : undefined,
+                likeCount: photo._count.likes,
+                commentCount: photo._count.comments,
+                likedByMe: currentUserId
+                    ? (photo as { likes?: { userId: number }[] }).likes?.some(l => l.userId === currentUserId) ?? false
+                    : false,
             }
         })
     } catch (error) {
@@ -83,8 +93,11 @@ export default async function GalleryPage({
 }: {
     searchParams?: { camera?: string; housing?: string; lens?: string; port?: string }
 }) {
+    const session = await auth()
+    const currentUserId = session?.user?.id ? parseInt(session.user.id) : undefined
+
     const [photos, initialFilters] = await Promise.all([
-        getGalleryPhotos(),
+        getGalleryPhotos(currentUserId),
         (async (): Promise<InitialFilterOptions> => {
             const { camera: cameraSlug, housing: housingSlug, lens: lensSlug, port: portSlug } = searchParams ?? {}
             const [camera, housing, lens, port] = await Promise.all([

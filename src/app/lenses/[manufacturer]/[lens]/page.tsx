@@ -142,11 +142,11 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                                             : `${lens.focalLengthTele} mm`}
                                     </dd>
                                 </div>
-                                {lens.maximumMagnification != null && (
+                                {lens.maximumMagnificationTele != null && (
                                     <div className="flex justify-between gap-4">
                                         <dt className="text-gray-500">Max magnification</dt>
                                         <dd className="font-medium text-gray-900 text-right">
-                                            {lens.maximumMagnification.toFixed(2)}×
+                                            {lens.maximumMagnificationTele.toFixed(2)}×
                                         </dd>
                                     </div>
                                 )}
@@ -259,7 +259,7 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                                     <div className="flex items-center gap-3 shrink-0">
                                         {port.priceAmount && (
                                             <span className="text-sm font-medium text-gray-700">
-                                                <PriceTag amount={port.priceAmount} currency={port.priceCurrency} />
+                                                <PriceTag amount={port.priceAmount ? Number(port.priceAmount) : null} currency={port.priceCurrency} />
                                             </span>
                                         )}
                                         {port.depthRating && (

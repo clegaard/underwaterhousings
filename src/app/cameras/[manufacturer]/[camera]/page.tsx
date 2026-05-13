@@ -186,11 +186,11 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
                                                 : `${camera.focalLengthTele} mm`}
                                         </dd>
                                     </div>
-                                    {camera.maximumMagnification != null && (
+                                    {camera.maximumMagnificationTele != null && (
                                         <div className="flex justify-between gap-4">
                                             <dt className="text-gray-500">Max magnification</dt>
                                             <dd className="font-medium text-gray-900 text-right">
-                                                {camera.maximumMagnification.toFixed(2)}×
+                                                {camera.maximumMagnificationTele.toFixed(2)}×
                                             </dd>
                                         </div>
                                     )}
@@ -319,7 +319,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
                                     </div>
                                     {housing.priceAmount && (
                                         <span className="text-sm font-semibold text-green-600 ml-4 flex-shrink-0">
-                                            <PriceTag amount={housing.priceAmount} currency={housing.priceCurrency} />
+                                            <PriceTag amount={housing.priceAmount ? Number(housing.priceAmount) : null} currency={housing.priceCurrency} />
                                         </span>
                                     )}
                                 </Link>
