@@ -1,10 +1,12 @@
 import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 import { S3Client, PutObjectCommand, HeadBucketCommand } from '@aws-sdk/client-s3'
 import * as fs from 'fs'
 import * as path from 'path'
 
-const prisma = new PrismaClient()
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' })
+const prisma = new PrismaClient({ adapter })
 
 const s3Configured = !!(
     process.env.S3_ENDPOINT &&
@@ -1056,7 +1058,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 47,
                 aperture: 16,
-                shutterSpeed: '1/200',
+                shutterSpeed: 0.005,
+                iso: 400,
             },
             {
                 imagePath: '/gallery/DSC01728.jpeg',
@@ -1066,7 +1069,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 70,
                 aperture: 13,
-                shutterSpeed: '1/200',
+                shutterSpeed: 0.005,
+                iso: 400,
             },
             {
                 imagePath: '/gallery/DSC01738.jpeg',
@@ -1076,7 +1080,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 70,
                 aperture: 11,
-                shutterSpeed: '1/200',
+                shutterSpeed: 0.005,
+                iso: 400,
             },
             {
                 imagePath: '/gallery/DSC01881.jpeg',
@@ -1086,7 +1091,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 70,
                 aperture: 3.2,
-                shutterSpeed: '1/200',
+                shutterSpeed: 0.005,
+                iso: 800,
             },
             {
                 imagePath: '/gallery/DSC02017.jpeg',
@@ -1096,7 +1102,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 70,
                 aperture: 14,
-                shutterSpeed: '1/60',
+                shutterSpeed: 0.01667,
+                iso: 400,
             },
             {
                 imagePath: '/gallery/DSC02035.jpeg',
@@ -1106,7 +1113,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 70,
                 aperture: 10,
-                shutterSpeed: '1/60',
+                shutterSpeed: 0.01667,
+                iso: 400,
             },
             {
                 imagePath: '/gallery/DSC02155.jpeg',
@@ -1116,7 +1124,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 53,
                 aperture: 9,
-                shutterSpeed: '1/200',
+                shutterSpeed: 0.005,
+                iso: 400,
             },
             {
                 imagePath: '/gallery/DSC02164.jpeg',
@@ -1126,7 +1135,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 30,
                 aperture: 14,
-                shutterSpeed: '1/160',
+                shutterSpeed: 0.00625,
+                iso: 400,
             },
             {
                 imagePath: '/gallery/DSC02174.jpeg',
@@ -1136,7 +1146,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 40,
                 aperture: 6.3,
-                shutterSpeed: '1/200',
+                shutterSpeed: 0.005,
+                iso: 400,
             },
             {
                 imagePath: '/gallery/DSC02476.jpeg',
@@ -1146,7 +1157,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 27,
                 aperture: 8,
-                shutterSpeed: '1/60',
+                shutterSpeed: 0.01667,
+                iso: 1600,
             },
             {
                 imagePath: '/gallery/DSC02560.jpeg',
@@ -1156,7 +1168,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 24,
                 aperture: 8,
-                shutterSpeed: '1/100',
+                shutterSpeed: 0.01,
+                iso: 400,
             },
             {
                 imagePath: '/gallery/DSC02640.jpeg',
@@ -1166,7 +1179,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 24,
                 aperture: 18,
-                shutterSpeed: '1/200',
+                shutterSpeed: 0.005,
+                iso: 400,
             },
             {
                 imagePath: '/gallery/DSC03346.jpeg',
@@ -1176,7 +1190,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 53,
                 aperture: 16,
-                shutterSpeed: '1/100',
+                shutterSpeed: 0.01,
+                iso: 400,
             },
             {
                 imagePath: '/gallery/DSC03402.jpeg',
@@ -1186,7 +1201,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 24,
                 aperture: 4.5,
-                shutterSpeed: '1/200',
+                shutterSpeed: 0.005,
+                iso: 400,
             },
             {
                 title: 'Nudibranch on coral',
@@ -1199,7 +1215,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 24,
                 aperture: 4,
-                shutterSpeed: '1/640',
+                shutterSpeed: 0.0015625,
+                iso: 3200,
             },
             {
                 title: 'Wide angle reef scene',
@@ -1212,7 +1229,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 70,
                 aperture: 4,
-                shutterSpeed: '1/160',
+                shutterSpeed: 0.00625,
+                iso: 1600,
             },
             {
                 imagePath: '/gallery/whale_shark.jpeg',
@@ -1222,7 +1240,8 @@ async function main() {
                 rigId: rigSonyA7IV.id,
                 focalLength: 24,
                 aperture: 4.5,
-                shutterSpeed: '1/200',
+                shutterSpeed: 0.005,
+                iso: 800,
             },
             // iPhone 14 Pro photos through DiveVolk SeaTouch 4 Pro
             {
@@ -1233,7 +1252,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/540',
+                shutterSpeed: 0.001852,
+                iso: 200,
             },
             {
                 imagePath: '/gallery/candy_crab.jpg',
@@ -1243,7 +1263,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/160',
+                shutterSpeed: 0.00625,
+                iso: 400,
             },
             {
                 imagePath: '/gallery/coconut_octopus.jpg',
@@ -1253,7 +1274,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/430',
+                shutterSpeed: 0.002326,
+                iso: 200,
             },
             {
                 imagePath: '/gallery/flamboyant_cuttlefish.jpg',
@@ -1263,7 +1285,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/250',
+                shutterSpeed: 0.004,
+                iso: 250,
             },
             {
                 imagePath: '/gallery/ghost_pipefish.jpg',
@@ -1273,7 +1296,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/100',
+                shutterSpeed: 0.01,
+                iso: 800,
             },
             {
                 imagePath: '/gallery/giant_frogfish.jpg',
@@ -1283,7 +1307,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/290',
+                shutterSpeed: 0.003448,
+                iso: 400,
             },
             {
                 imagePath: '/gallery/hairy_frogfish.jpg',
@@ -1293,7 +1318,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/100',
+                shutterSpeed: 0.01,
+                iso: 800,
             },
             {
                 imagePath: '/gallery/hairy_lobster.jpg',
@@ -1303,7 +1329,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/670',
+                shutterSpeed: 0.001493,
+                iso: 125,
             },
             {
                 imagePath: '/gallery/nudi.jpg',
@@ -1313,7 +1340,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/200',
+                shutterSpeed: 0.005,
+                iso: 250,
             },
             {
                 imagePath: '/gallery/nudi_cropped.jpg',
@@ -1323,7 +1351,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/200',
+                shutterSpeed: 0.005,
+                iso: 250,
             },
             {
                 imagePath: '/gallery/nudibranch_eggs.jpg',
@@ -1333,7 +1362,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/530',
+                shutterSpeed: 0.001887,
+                iso: 200,
             },
             {
                 imagePath: '/gallery/nudibranch_trunicate.jpg',
@@ -1343,7 +1373,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/470',
+                shutterSpeed: 0.002128,
+                iso: 200,
             },
             {
                 imagePath: '/gallery/painted_frogfish.jpg',
@@ -1353,7 +1384,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/100',
+                shutterSpeed: 0.01,
+                iso: 500,
             },
             {
                 imagePath: '/gallery/pano.jpg',
@@ -1363,7 +1395,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 6.9,
                 aperture: 1.8,
-                shutterSpeed: '1/900',
+                shutterSpeed: 0.001111,
+                iso: 64,
             },
             {
                 imagePath: '/gallery/pygmy_seahorse.jpg',
@@ -1373,7 +1406,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/560',
+                shutterSpeed: 0.001786,
+                iso: 200,
             },
             {
                 imagePath: '/gallery/shrimp.jpg',
@@ -1383,7 +1417,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/800',
+                shutterSpeed: 0.00125,
+                iso: 125,
             },
             {
                 imagePath: '/gallery/thresher.jpg',
@@ -1400,7 +1435,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 2.2,
                 aperture: 2.2,
-                shutterSpeed: '1/200',
+                shutterSpeed: 0.005,
+                iso: 400,
             },
             {
                 imagePath: '/gallery/turtle.jpg',
@@ -1410,7 +1446,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 6.9,
                 aperture: 1.8,
-                shutterSpeed: '1/60',
+                shutterSpeed: 0.01667,
+                iso: 400,
             },
             {
                 imagePath: '/gallery/wobbegong_drift_dive.jpg',
@@ -1420,7 +1457,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 6.9,
                 aperture: 1.8,
-                shutterSpeed: '1/120',
+                shutterSpeed: 0.008333,
+                iso: 250,
             },
             {
                 imagePath: '/gallery/wobbegong_top.jpg',
@@ -1430,7 +1468,8 @@ async function main() {
                 rigId: rigIphone.id,
                 focalLength: 6.9,
                 aperture: 1.8,
-                shutterSpeed: '1/170',
+                shutterSpeed: 0.005882,
+                iso: 200,
             },
         ],
     })

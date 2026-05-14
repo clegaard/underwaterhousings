@@ -23,8 +23,9 @@ export interface GalleryPhotoData extends Photo {
     housingSlug?: string
     portName?: string
     portSlug?: string
+    iso?: number
     focalLength?: number
-    shutterSpeed?: string
+    shutterSpeed?: number
     aperture?: number
     photoId?: number
     userName?: string
@@ -33,6 +34,12 @@ export interface GalleryPhotoData extends Photo {
     likeCount?: number
     commentCount?: number
     likedByMe?: boolean
+}
+
+function formatShutterSpeed(speed: number): string {
+    if (speed >= 1) return `${speed} s`
+    const denominator = Math.round(1 / speed)
+    return `1/${denominator} s`
 }
 
 // ─── Types for comment panel ─────────────────────────────────────────────────
@@ -208,11 +215,12 @@ function CommentPanel({
                 )}
 
                 {/* EXIF */}
-                {(photo.focalLength || photo.aperture || photo.shutterSpeed) && (
+                {(photo.iso || photo.focalLength || photo.aperture || photo.shutterSpeed) && (
                     <p className="text-xs text-gray-400 flex gap-2">
-                        {photo.focalLength && <span>{photo.focalLength}mm</span>}
-                        {photo.aperture && <span>f/{photo.aperture}</span>}
-                        {photo.shutterSpeed && <span>{photo.shutterSpeed}s</span>}
+                        {photo.iso && <span title="ISO Speed Rating">ISO {photo.iso}</span>}
+                        {photo.focalLength && <span title="Focal Length">{photo.focalLength}mm</span>}
+                        {photo.aperture && <span title="Aperture"><i>f</i>/{photo.aperture}</span>}
+                        {photo.shutterSpeed && <span title="Shutter Speed">{formatShutterSpeed(photo.shutterSpeed)}</span>}
                     </p>
                 )}
 

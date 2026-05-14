@@ -19,6 +19,7 @@ interface UploadForm {
     description: string
     location: string
     takenAt: string
+    iso: string
     focalLength: string
     aperture: string
     shutterSpeed: string
@@ -29,6 +30,7 @@ const EMPTY_FORM: UploadForm = {
     description: '',
     location: '',
     takenAt: '',
+    iso: '',
     focalLength: '',
     aperture: '',
     shutterSpeed: '',
@@ -117,10 +119,11 @@ export default function GalleryUploadButton() {
         try {
             const exifr = (await import('exifr')).default
             const exif = await exifr.parse(f, {
-                pick: ['FocalLength', 'FNumber', 'ExposureTime', 'DateTimeOriginal', 'Model', 'LensModel'],
+                pick: ['FocalLength', 'FNumber', 'ExposureTime', 'ISO', 'DateTimeOriginal', 'Model', 'LensModel'],
             })
             if (!exif) return
             const updates: Partial<UploadForm> = {}
+            if (exif.ISO != null) updates.iso = String(exif.ISO)
             if (exif.FocalLength != null) updates.focalLength = String(Math.round(exif.FocalLength))
             if (exif.FNumber != null) updates.aperture = String(exif.FNumber)
             if (exif.ExposureTime != null) updates.shutterSpeed = formatShutterSpeed(exif.ExposureTime)
@@ -179,6 +182,7 @@ export default function GalleryUploadButton() {
             if (form.description) fd.append('description', form.description)
             if (form.location) fd.append('location', form.location)
             if (form.takenAt) fd.append('takenAt', form.takenAt)
+            if (form.iso) fd.append('iso', form.iso)
             if (form.focalLength) fd.append('focalLength', form.focalLength)
             if (form.aperture) fd.append('aperture', form.aperture)
             if (form.shutterSpeed) fd.append('shutterSpeed', form.shutterSpeed)
@@ -416,6 +420,7 @@ export default function GalleryUploadButton() {
                                                             {readonlyField('Camera', exifCameraModel ?? '')}
                                                             {!isFixedLensCamera && readonlyField('Lens', exifLensModel ?? '')}
                                                             {readonlyField('Date taken', form.takenAt.replace('T', ' '))}
+                                                            {readonlyField('ISO Speed Rating', form.iso)}
                                                             {readonlyField('Focal length (mm)', form.focalLength)}
                                                             {readonlyField('Aperture (f/)', form.aperture)}
                                                             {readonlyField('Shutter speed', form.shutterSpeed)}
@@ -539,8 +544,9 @@ export default function GalleryUploadButton() {
                                                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Shot details</p>
                                                         <div className="grid grid-cols-2 gap-3">
                                                             {editableField('takenAt', 'Date taken', '', 'datetime-local')}
-                                                            {editableField('focalLength', 'Focal length (mm)', 'e.g. 24')}
-                                                            {editableField('aperture', 'Aperture (f/)', 'e.g. 8')}
+                                                            {editableField('iso', 'ISO Speed Rating', 'e.g. 400', 'number')}
+                                                            {editableField('focalLength', 'Focal length (mm)', 'e.g. 24', 'number')}
+                                                            {editableField('aperture', 'Aperture (f/)', 'e.g. 8', 'number')}
                                                             {editableField('shutterSpeed', 'Shutter speed', 'e.g. 1/200')}
                                                         </div>
                                                     </div>

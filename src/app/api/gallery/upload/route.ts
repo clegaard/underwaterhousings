@@ -67,7 +67,8 @@ export async function POST(request: NextRequest) {
     const takenAtStr = (formData.get('takenAt') as string)?.trim()
     const focalLengthStr = (formData.get('focalLength') as string)?.trim()
     const apertureStr = (formData.get('aperture') as string)?.trim()
-    const shutterSpeed = (formData.get('shutterSpeed') as string)?.trim() || null
+    const shutterSpeedStr = (formData.get('shutterSpeed') as string)?.trim()
+    const isoStr = (formData.get('iso') as string)?.trim()
     const rigIdStr = (formData.get('rigId') as string)?.trim()
 
     const photo = await prisma.galleryPhoto.create({
@@ -81,7 +82,8 @@ export async function POST(request: NextRequest) {
             takenAt: takenAtStr ? new Date(takenAtStr) : null,
             focalLength: focalLengthStr ? parseFloat(focalLengthStr) : null,
             aperture: apertureStr ? parseFloat(apertureStr) : null,
-            shutterSpeed,
+            shutterSpeed: shutterSpeedStr ? parseFloat(shutterSpeedStr) : null,
+            iso: isoStr ? parseInt(isoStr) : null,
             rigId: rigIdStr ? parseInt(rigIdStr) : null,
             userId: dbUser.id,
         },
