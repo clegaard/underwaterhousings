@@ -438,8 +438,8 @@ function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUse
                 </>
             )}
 
-            {/* Hover overlay — no banner, just floating badges bottom-right */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+            {/* Hover overlay — always visible on touch devices, hover-only on desktop */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 touch:opacity-100 transition-opacity duration-300 pointer-events-none">
                 <div className="absolute bottom-2 right-2 flex items-center gap-2.5 pointer-events-auto">
                     {/* Like button */}
                     {currentUserId && onLikeToggle ? (
@@ -496,6 +496,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
     const [lightboxLoaded, setLightboxLoaded] = useState(false)
     const [commentFocusSignal, setCommentFocusSignal] = useState(0)
+    const [isCommentSheetOpen, setIsCommentSheetOpen] = useState(false)
 
     // Per-photo live state — keyed by photoId, initialised from props
     const [photoState, setPhotoState] = useState<Record<number, PhotoLiveState>>(() => {
@@ -527,19 +528,22 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
         }))
     }
 
-    // Reset loaded state whenever the displayed image changes
+    // Reset loaded state and comment sheet whenever the displayed image changes
     useEffect(() => {
         setLightboxLoaded(false)
+        setIsCommentSheetOpen(false)
     }, [lightboxIndex])
 
-    const closeLightbox = useCallback(() => setLightboxIndex(null), [])
+    const closeLightbox = useCallback(() => { setLightboxIndex(null); setIsCommentSheetOpen(false) }, [])
 
     const goNext = useCallback(() => {
         setLightboxIndex((i) => (i === null ? null : (i + 1) % photos.length))
+        setIsCommentSheetOpen(false)
     }, [photos.length])
 
     const goPrev = useCallback(() => {
         setLightboxIndex((i) => (i === null ? null : (i - 1 + photos.length) % photos.length))
+        setIsCommentSheetOpen(false)
     }, [photos.length])
 
     useEffect(() => {
@@ -591,89 +595,204 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                             onOpenLightbox={setLightboxIndex}
                             liveState={photo.photoId != null ? photoState[photo.photoId] : undefined}
                             onLikeToggle={photo.photoId != null ? () => toggleLike(photo.photoId!) : undefined}
-                            onOpenWithComment={() => { setLightboxIndex(index); setCommentFocusSignal(s => s + 1) }}
+                            onOpenWithComment={() => { setLightboxIndex(index); setCommentFocusSignal(s => s + 1); setIsCommentSheetOpen(true) }}
                         />
                     ),
                 }}
             />
 
-            {/* Instagram-style lightbox */}
+            {/* Lightbox */}
             {lightboxIndex !== null && (() => {
                 const photo = photos[lightboxIndex]
                 const photoId = photo.photoId
-                const ls = photoId != null ? (photoState[photoId] ?? { count: photo.likeCount ?? 0, liked: photo.likedByMe ?? false, commentCount: photo.commentCount ?? 0 }) : { count: 0, liked: false, commentCount: 0 }
+                const stored = photoId != null ? photoState[photoId] : undefined
+                const ls = {
+                    count: stored?.count ?? photo.likeCount ?? 0,
+                    liked: stored?.liked ?? photo.likedByMe ?? false,
+                    commentCount: stored?.commentCount ?? photo.commentCount ?? 0,
+                }
                 return (
-                    <div
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
-                        onClick={closeLightbox}
-                    >
-                        {/* Main panel */}
-                        <div
-                            className="flex w-full max-w-6xl rounded-xl overflow-hidden shadow-2xl bg-black"
-                            style={{ maxHeight: '90vh', height: '90vh' }}
-                            onClick={e => e.stopPropagation()}
-                        >
-                            {/* Left: image */}
-                            <div className="flex-1 relative bg-black min-w-0">
-                                {!lightboxLoaded && (
-                                    <div className="absolute inset-0 bg-gray-800 animate-pulse" />
-                                )}
+                    <div className="fixed inset-0 z-50">
+
+                        {/* ── Mobile portrait layout (full-screen, Instagram-style) ── */}
+                        <div className="flex flex-col h-full bg-black md:hidden">
+
+                            {/* Top bar: back chevron + counter */}
+                            <div className="flex items-center justify-between px-4 py-2.5 shrink-0">
+                                <button onClick={closeLightbox} className="p-1 text-white/80 hover:text-white transition-colors" aria-label="Close">
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <span className="text-white/60 text-xs">{lightboxIndex + 1} / {photos.length}</span>
+                                <div className="w-8" />
+                            </div>
+
+                            {/* Image — takes top half of the screen */}
+                            <div className="relative bg-black shrink-0" style={{ height: '50%' }}>
+                                {!lightboxLoaded && <div className="absolute inset-0 bg-gray-800 animate-pulse" />}
                                 <Image
                                     src={photo.src}
                                     alt={photo.title ?? photo.description ?? 'Gallery photo'}
                                     fill
-                                    sizes="(max-width: 1200px) 70vw, 900px"
+                                    sizes="100vw"
                                     className={`object-contain transition-opacity duration-300 ${lightboxLoaded ? 'opacity-100' : 'opacity-0'}`}
                                     priority
                                     onLoad={() => setLightboxLoaded(true)}
                                 />
-                                {/* Prev / Next */}
-                                <button
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10 transition-colors"
-                                    onClick={goPrev}
-                                    aria-label="Previous photo"
-                                >
-                                    ‹
-                                </button>
-                                <button
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10 transition-colors"
-                                    onClick={goNext}
-                                    aria-label="Next photo"
-                                >
-                                    ›
-                                </button>
-                                {/* Counter */}
-                                <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white/60 text-xs">
-                                    {lightboxIndex + 1} / {photos.length}
-                                </span>
+                                <button className="absolute left-3 top-1/2 -translate-y-1/2 text-white bg-black/50 rounded-full w-9 h-9 flex items-center justify-center text-xl z-10" onClick={goPrev} aria-label="Previous photo">‹</button>
+                                <button className="absolute right-3 top-1/2 -translate-y-1/2 text-white bg-black/50 rounded-full w-9 h-9 flex items-center justify-center text-xl z-10" onClick={goNext} aria-label="Next photo">›</button>
                             </div>
 
-                            {/* Right: comment panel */}
-                            <div className="w-80 md:w-96 shrink-0 bg-white flex flex-col overflow-hidden">
-                                {photoId != null ? (
-                                    <CommentPanel
-                                        photo={photo}
-                                        currentUserId={currentUserId}
-                                        likeCount={ls.count}
-                                        likedByMe={ls.liked}
-                                        onLikeToggle={() => toggleLike(photoId)}
-                                        onCommentCountChange={(delta) => handleCommentCountChange(photoId, delta)}
-                                        focusInputSignal={commentFocusSignal}
-                                    />
-                                ) : (
-                                    <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">No data</div>
-                                )}
+                            {/* White info section — bottom half */}
+                            <div className="flex-1 bg-white flex flex-col overflow-hidden">
+
+                                {/* Author row + action buttons */}
+                                <div className="flex items-center gap-3 px-4 pt-3 pb-2.5 shrink-0 border-b border-gray-100">
+                                    {photo.userId && photo.userName && (
+                                        <Link href={`/users/${photo.userId}`} onClick={closeLightbox} className="shrink-0">
+                                            <UserAvatar picture={photo.userProfilePicture} name={photo.userName} size="sm" />
+                                        </Link>
+                                    )}
+                                    <p className="flex-1 min-w-0 text-sm font-semibold text-gray-900 truncate">{photo.userName ?? ''}</p>
+                                    <div className="flex items-center gap-4 shrink-0">
+                                        <button
+                                            type="button"
+                                            onClick={() => photoId != null && toggleLike(photoId)}
+                                            disabled={!currentUserId}
+                                            aria-label={ls.liked ? 'Unlike' : 'Like'}
+                                            className={`transition-colors ${currentUserId ? 'cursor-pointer' : 'cursor-default'} ${ls.liked ? 'text-red-500' : 'text-gray-500'}`}
+                                        >
+                                            <svg viewBox="0 0 24 24" className="w-6 h-6" fill={ls.liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsCommentSheetOpen(true)}
+                                            aria-label="Open comments"
+                                            className="text-gray-500 hover:text-gray-700 transition-colors"
+                                        >
+                                            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Like + comment counts */}
+                                <div className="flex gap-4 px-4 pt-2 pb-1 shrink-0">
+                                    <p className="text-sm font-semibold text-gray-900">{ls.count.toLocaleString()} {ls.count === 1 ? 'like' : 'likes'}</p>
+                                    <button type="button" onClick={() => setIsCommentSheetOpen(true)} className="text-sm text-gray-500">
+                                        {ls.commentCount.toLocaleString()} {ls.commentCount === 1 ? 'comment' : 'comments'}
+                                    </button>
+                                </div>
+
+                                {/* Scrollable: title, description, rig, exif */}
+                                <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+                                    {photo.title && <p className="text-sm font-semibold text-gray-900">{photo.title}</p>}
+                                    {photo.description && <p className="text-sm text-gray-700 leading-snug">{photo.description}</p>}
+                                    {photo.rigLabel && (
+                                        <p className="text-xs text-gray-400">
+                                            {photo.userId && photo.rigId ? (
+                                                <Link href={`/users/${photo.userId}/camera-rigs/${photo.rigId}`} onClick={closeLightbox} className="hover:text-blue-600 transition-colors">
+                                                    📷 {photo.rigLabel}
+                                                </Link>
+                                            ) : `📷 ${photo.rigLabel}`}
+                                        </p>
+                                    )}
+                                    {(photo.iso || photo.focalLength || photo.aperture || photo.shutterSpeed) && (
+                                        <p className="text-xs text-gray-400 flex gap-2 flex-wrap">
+                                            {photo.iso && <span>ISO {photo.iso}</span>}
+                                            {photo.focalLength && <span>{photo.focalLength}mm</span>}
+                                            {photo.aperture && <span><i>f</i>/{photo.aperture}</span>}
+                                            {photo.shutterSpeed && <span>{formatShutterSpeed(photo.shutterSpeed)}</span>}
+                                        </p>
+                                    )}
+                                    {ls.commentCount > 0 && (
+                                        <button type="button" onClick={() => setIsCommentSheetOpen(true)} className="text-sm text-gray-400 hover:text-gray-600 transition-colors text-left">
+                                            View all {ls.commentCount} comment{ls.commentCount === 1 ? '' : 's'}…
+                                        </button>
+                                    )}
+                                </div>
                             </div>
+
+                            {/* Comment bottom sheet — slides up from below */}
+                            {isCommentSheetOpen && (
+                                <div className="absolute inset-0 z-10 flex flex-col justify-end">
+                                    {/* Scrim */}
+                                    <div className="absolute inset-0 bg-black/50" onClick={() => setIsCommentSheetOpen(false)} />
+                                    {/* Sheet */}
+                                    <div className="relative bg-white rounded-t-2xl shadow-2xl flex flex-col overflow-hidden" style={{ maxHeight: '82%' }}>
+                                        {/* Drag handle */}
+                                        <div className="flex justify-center py-2.5 shrink-0 cursor-pointer" onClick={() => setIsCommentSheetOpen(false)}>
+                                            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+                                        </div>
+                                        <div className="px-4 pb-2.5 shrink-0 border-b border-gray-100">
+                                            <h3 className="text-sm font-semibold text-center text-gray-900">Comments</h3>
+                                        </div>
+                                        {photoId != null ? (
+                                            <CommentPanel
+                                                photo={photo}
+                                                currentUserId={currentUserId}
+                                                likeCount={ls.count}
+                                                likedByMe={ls.liked}
+                                                onLikeToggle={() => toggleLike(photoId)}
+                                                onCommentCountChange={(delta) => handleCommentCountChange(photoId, delta)}
+                                                focusInputSignal={commentFocusSignal}
+                                            />
+                                        ) : (
+                                            <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">No data</div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Close button */}
-                        <button
-                            className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/80 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10 transition-colors"
-                            onClick={closeLightbox}
-                            aria-label="Close"
-                        >
-                            ✕
-                        </button>
+                        {/* ── Desktop layout (side-by-side, unchanged) ──────────── */}
+                        <div className="hidden md:flex items-center justify-center bg-black/90 p-4 h-full" onClick={closeLightbox}>
+                            <div
+                                className="flex w-full max-w-6xl rounded-xl overflow-hidden shadow-2xl bg-black"
+                                style={{ maxHeight: '90vh', height: '90vh' }}
+                                onClick={e => e.stopPropagation()}
+                            >
+                                {/* Left: image */}
+                                <div className="flex-1 relative bg-black min-w-0">
+                                    {!lightboxLoaded && <div className="absolute inset-0 bg-gray-800 animate-pulse" />}
+                                    <Image
+                                        src={photo.src}
+                                        alt={photo.title ?? photo.description ?? 'Gallery photo'}
+                                        fill
+                                        sizes="(max-width: 1200px) 70vw, 900px"
+                                        className={`object-contain transition-opacity duration-300 ${lightboxLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                        priority
+                                        onLoad={() => setLightboxLoaded(true)}
+                                    />
+                                    <button className="absolute left-3 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10 transition-colors" onClick={goPrev} aria-label="Previous photo">‹</button>
+                                    <button className="absolute right-3 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10 transition-colors" onClick={goNext} aria-label="Next photo">›</button>
+                                    <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white/60 text-xs">{lightboxIndex + 1} / {photos.length}</span>
+                                </div>
+                                {/* Right: comment panel */}
+                                <div className="w-80 md:w-96 shrink-0 bg-white flex flex-col overflow-hidden">
+                                    {photoId != null ? (
+                                        <CommentPanel
+                                            photo={photo}
+                                            currentUserId={currentUserId}
+                                            likeCount={ls.count}
+                                            likedByMe={ls.liked}
+                                            onLikeToggle={() => toggleLike(photoId)}
+                                            onCommentCountChange={(delta) => handleCommentCountChange(photoId, delta)}
+                                            focusInputSignal={commentFocusSignal}
+                                        />
+                                    ) : (
+                                        <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">No data</div>
+                                    )}
+                                </div>
+                            </div>
+                            {/* Close button */}
+                            <button className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/80 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10 transition-colors" onClick={closeLightbox} aria-label="Close">✕</button>
+                        </div>
+
                     </div>
                 )
             })()}

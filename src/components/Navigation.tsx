@@ -98,7 +98,7 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
     }, [isMobileMenuOpen])
 
     return (
-        <nav className="bg-white shadow-lg border-b">
+        <nav className="sticky top-0 z-50 bg-white shadow-lg border-b">
             <div className="max-w-7xl mx-auto px-4">
                 <div className="flex justify-between items-center h-16 md:h-20">
                     {/* Logo/Brand */}
@@ -465,8 +465,8 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
                                             key={c.code}
                                             onClick={() => { setUserCurrency(c.code); setIsMobileMenuOpen(false) }}
                                             className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm border transition-colors ${c.code === userCurrency
-                                                    ? 'border-blue-500 bg-blue-50 text-blue-700 font-medium'
-                                                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                                                ? 'border-blue-500 bg-blue-50 text-blue-700 font-medium'
+                                                : 'border-gray-200 text-gray-700 hover:bg-gray-50'
                                                 }`}
                                         >
                                             <span>{c.flag}</span>
