@@ -64,6 +64,9 @@ export async function POST(request: NextRequest) {
     const title = (formData.get('title') as string)?.trim() || null
     const description = (formData.get('description') as string)?.trim() || null
     const location = (formData.get('location') as string)?.trim() || null
+    const locationLatStr = (formData.get('locationLat') as string)?.trim()
+    const locationLngStr = (formData.get('locationLng') as string)?.trim()
+    const locationRadiusStr = (formData.get('locationRadius') as string)?.trim()
     const takenAtStr = (formData.get('takenAt') as string)?.trim()
     const focalLengthStr = (formData.get('focalLength') as string)?.trim()
     const apertureStr = (formData.get('aperture') as string)?.trim()
@@ -79,6 +82,9 @@ export async function POST(request: NextRequest) {
             title,
             description,
             location,
+            locationLat: locationLatStr ? parseFloat(locationLatStr) : null,
+            locationLng: locationLngStr ? parseFloat(locationLngStr) : null,
+            locationRadius: locationRadiusStr ? parseInt(locationRadiusStr) : null,
             takenAt: takenAtStr ? new Date(takenAtStr) : null,
             focalLength: focalLengthStr ? parseFloat(focalLengthStr) : null,
             aperture: apertureStr ? parseFloat(apertureStr) : null,

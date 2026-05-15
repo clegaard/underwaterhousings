@@ -127,7 +127,7 @@ export default async function GalleryPage({
     ])
 
     return (
-        <main className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+        <main className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
             <div className="max-w-7xl mx-auto px-4 py-6">
                 <div className="mb-6">
                     <h1 className="text-3xl font-bold text-blue-900 mb-1">Gallery</h1>

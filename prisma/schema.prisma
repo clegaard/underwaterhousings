@@ -287,25 +287,28 @@ model CameraRig {
 }
 
 model GalleryPhoto {
-    id           Int              @id @default(autoincrement())
-    title        String?
-    description  String?
-    imagePath    String
-    width        Int
-    height       Int
-    takenAt      DateTime?
-    location     String?
-    focalLength  Float?
-    shutterSpeed Decimal?         @db.Decimal(10, 7)
-    aperture     Float?
-    iso          Int?
-    createdAt    DateTime         @default(now())
-    rigId        Int?
-    userId       Int?
-    rig          CameraRig?       @relation(fields: [rigId], references: [id])
-    user         User?            @relation(fields: [userId], references: [id])
-    comments     GalleryComment[]
-    likes        GalleryLike[]
+    id             Int              @id @default(autoincrement())
+    title          String?
+    description    String?
+    imagePath      String
+    width          Int
+    height         Int
+    takenAt        DateTime?
+    location       String?
+    locationLat    Float? // Decimal latitude of the photo location
+    locationLng    Float? // Decimal longitude of the photo location
+    locationRadius Int? // Accuracy radius in metres (like iNaturalist observations)
+    focalLength    Float?
+    shutterSpeed   Decimal?         @db.Decimal(10, 7)
+    aperture       Float?
+    iso            Int?
+    createdAt      DateTime         @default(now())
+    rigId          Int?
+    userId         Int?
+    rig            CameraRig?       @relation(fields: [rigId], references: [id])
+    user           User?            @relation(fields: [userId], references: [id])
+    comments       GalleryComment[]
+    likes          GalleryLike[]
 
     @@map("gallery_photos")
 }

@@ -33,7 +33,7 @@ function sanitize(val: unknown): unknown {
 
 function makePrismaClient() {
     const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
-    return new PrismaClient({ adapter, log: process.env.NODE_ENV === 'development' ? ['query'] : [] })
+    return new PrismaClient({ adapter, log: [] })
         .$extends({
             query: {
                 $allModels: {

@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import LocationPicker, { type LocationValue } from './LocationPicker'
 
 interface UserRig {
     id: number
@@ -17,7 +18,6 @@ interface UserRig {
 interface UploadForm {
     title: string
     description: string
-    location: string
     takenAt: string
     iso: string
     focalLength: string
@@ -28,7 +28,6 @@ interface UploadForm {
 const EMPTY_FORM: UploadForm = {
     title: '',
     description: '',
-    location: '',
     takenAt: '',
     iso: '',
     focalLength: '',
@@ -67,6 +66,7 @@ export default function GalleryUploadButton() {
     const [exifLoading, setExifLoading] = useState(false)
     const [rigTab, setRigTab] = useState<'auto' | 'manual'>('auto')
     const [rigsLoaded, setRigsLoaded] = useState(false)
+    const [locationValue, setLocationValue] = useState<LocationValue | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const previewUrlRef = useRef<string | null>(null)
 
@@ -118,19 +118,39 @@ export default function GalleryUploadButton() {
         setExifLoading(true)
         try {
             const exifr = (await import('exifr')).default
-            const exif = await exifr.parse(f, {
-                pick: ['FocalLength', 'FNumber', 'ExposureTime', 'ISO', 'DateTimeOriginal', 'Model', 'LensModel'],
-            })
-            if (!exif) return
-            const updates: Partial<UploadForm> = {}
-            if (exif.ISO != null) updates.iso = String(exif.ISO)
-            if (exif.FocalLength != null) updates.focalLength = String(Math.round(exif.FocalLength))
-            if (exif.FNumber != null) updates.aperture = String(exif.FNumber)
-            if (exif.ExposureTime != null) updates.shutterSpeed = formatShutterSpeed(exif.ExposureTime)
-            if (exif.DateTimeOriginal) updates.takenAt = toDatetimeLocal(new Date(exif.DateTimeOriginal))
-            if (exif.Model) setExifCameraModel(String(exif.Model).trim())
-            if (exif.LensModel) setExifLensModel(String(exif.LensModel).trim())
-            setForm(prev => ({ ...prev, ...updates }))
+            const [exif, gps] = await Promise.all([
+                exifr.parse(f, {
+                    pick: ['FocalLength', 'FNumber', 'ExposureTime', 'ISO', 'DateTimeOriginal', 'Model', 'LensModel'],
+                }),
+                exifr.gps(f).catch(() => null),
+            ])
+            if (exif) {
+                const updates: Partial<UploadForm> = {}
+                if (exif.ISO != null) updates.iso = String(exif.ISO)
+                if (exif.FocalLength != null) updates.focalLength = String(Math.round(exif.FocalLength))
+                if (exif.FNumber != null) updates.aperture = String(exif.FNumber)
+                if (exif.ExposureTime != null) updates.shutterSpeed = formatShutterSpeed(exif.ExposureTime)
+                if (exif.DateTimeOriginal) updates.takenAt = toDatetimeLocal(new Date(exif.DateTimeOriginal))
+                if (exif.Model) setExifCameraModel(String(exif.Model).trim())
+                if (exif.LensModel) setExifLensModel(String(exif.LensModel).trim())
+                setForm(prev => ({ ...prev, ...updates }))
+            }
+            // Pre-populate location from GPS EXIF when available (e.g. smartphone photos)
+            if (gps?.latitude != null && gps?.longitude != null) {
+                try {
+                    const res = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?lat=${gps.latitude}&lon=${gps.longitude}&format=json`,
+                        { headers: { 'Accept-Language': 'en', 'User-Agent': 'UnderwaterHousings/1.0' } }
+                    )
+                    const data = res.ok ? await res.json() : null
+                    const rawName: string = data?.display_name ?? ''
+                    const parts = rawName.split(',').map((s: string) => s.trim())
+                    const name = parts.length > 3 ? parts.slice(-3).join(', ') : rawName
+                    setLocationValue({ lat: gps.latitude, lng: gps.longitude, radius: 1000, name })
+                } catch {
+                    setLocationValue({ lat: gps.latitude, lng: gps.longitude, radius: 1000, name: '' })
+                }
+            }
         } catch {
             // EXIF extraction is non-critical
         } finally {
@@ -180,7 +200,12 @@ export default function GalleryUploadButton() {
             fd.append('height', String(dimensions.height))
             if (form.title) fd.append('title', form.title)
             if (form.description) fd.append('description', form.description)
-            if (form.location) fd.append('location', form.location)
+            if (locationValue) {
+                if (locationValue.name) fd.append('location', locationValue.name)
+                fd.append('locationLat', String(locationValue.lat))
+                fd.append('locationLng', String(locationValue.lng))
+                fd.append('locationRadius', String(locationValue.radius))
+            }
             if (form.takenAt) fd.append('takenAt', form.takenAt)
             if (form.iso) fd.append('iso', form.iso)
             if (form.focalLength) fd.append('focalLength', form.focalLength)
@@ -214,6 +239,7 @@ export default function GalleryUploadButton() {
         setRigsLoaded(false)
         setSelectedRigId('')
         setRigTab('auto')
+        setLocationValue(null)
 
         if (previewUrlRef.current) {
             URL.revokeObjectURL(previewUrlRef.current)
@@ -224,7 +250,7 @@ export default function GalleryUploadButton() {
     const readonlyField = (label: string, value: string) => (
         <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
-            <div className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700 bg-gray-50 min-h-[2rem]">
+            <div className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700 bg-gray-50 min-h-8">
                 {value || <span className="text-gray-400 italic">—</span>}
             </div>
         </div>
@@ -347,7 +373,7 @@ export default function GalleryUploadButton() {
                             ) : (
                                 <div className="flex gap-4 items-start">
                                     {/* Preview */}
-                                    <div className="relative flex-shrink-0 w-32 h-32 rounded-lg overflow-hidden bg-gray-100">
+                                    <div className="relative shrink-0 w-32 h-32 rounded-lg overflow-hidden bg-gray-100">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img src={preview!} alt="Preview" className="w-full h-full object-cover" />
                                     </div>
@@ -373,10 +399,13 @@ export default function GalleryUploadButton() {
                             {file && (
                                 <>
                                     {/* Title / location / description — always editable */}
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-3">
                                         {editableField('title', 'Title', 'e.g. Nudibranch on coral')}
-                                        {editableField('location', 'Location', 'e.g. Red Sea')}
-                                        <div className="col-span-2">
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">Location</label>
+                                            <LocationPicker value={locationValue} onChange={setLocationValue} />
+                                        </div>
+                                        <div>
                                             <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
                                             <textarea
                                                 value={form.description}
@@ -587,11 +616,11 @@ export default function GalleryUploadButton() {
 
                             {error && (
                                 <div className="flex items-start gap-2.5 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
-                                    <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                                     </svg>
                                     <span className="flex-1">{error}</span>
-                                    <button onClick={() => setError(null)} className="flex-shrink-0 text-red-400 hover:text-red-600 transition-colors">
+                                    <button onClick={() => setError(null)} className="shrink-0 text-red-400 hover:text-red-600 transition-colors">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                         </svg>
