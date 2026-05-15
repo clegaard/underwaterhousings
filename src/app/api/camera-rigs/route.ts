@@ -9,6 +9,7 @@ const rigInclude = {
     portAdapter: { include: { manufacturer: true, inputHousingMount: true, outputHousingMount: true } },
     extensionRings: { include: { manufacturer: true } },
     port: true,
+    _count: { select: { galleryPhotos: true } },
 }
 
 export async function GET(request: NextRequest) {
@@ -156,6 +157,13 @@ export async function DELETE(request: NextRequest) {
         const existing = await prisma.cameraRig.findUnique({ where: { id: parseInt(id) } })
         if (!existing || existing.userId !== userId) {
             return NextResponse.json({ success: false, error: 'Not found or forbidden' }, { status: 403 })
+        }
+        const photoCount = await prisma.galleryPhoto.count({ where: { rigId: parseInt(id) } })
+        if (photoCount > 0) {
+            return NextResponse.json(
+                { success: false, error: `This rig has ${photoCount} gallery photo${photoCount === 1 ? '' : 's'} and cannot be deleted.` },
+                { status: 409 }
+            )
         }
         await prisma.cameraRig.delete({ where: { id: parseInt(id) } })
         // Clear defaultRigId on the user if it pointed to this rig

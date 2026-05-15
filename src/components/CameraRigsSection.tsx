@@ -59,6 +59,7 @@ interface SavedRig {
         name: string
         productPhotos: string[]
     } | null
+    _count: { galleryPhotos: number }
 }
 
 interface EquipmentData {
@@ -81,6 +82,7 @@ interface Props {
 
 function RigCard({
     rig,
+    userId,
     isOwnProfile,
     isFavorite,
     onSetFavorite,
@@ -89,6 +91,7 @@ function RigCard({
     onDelete,
 }: {
     rig: SavedRig
+    userId: number
     isOwnProfile: boolean
     isFavorite: boolean
     onSetFavorite: () => void
@@ -208,6 +211,17 @@ function RigCard({
                         </div>
                     )}
                 </div>
+                {rig._count.galleryPhotos > 0 && (
+                    <a
+                        href={`/users/${userId}/camera-rigs/${rig.id}`}
+                        className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mb-3"
+                    >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        {rig._count.galleryPhotos} {rig._count.galleryPhotos === 1 ? 'photo' : 'photos'}
+                    </a>
+                )}
                 <div className="flex gap-3 flex-wrap">
                     {items.map(item => (
                         <div key={item.label} className="flex flex-col items-center gap-1 w-16">
@@ -426,7 +440,8 @@ export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera,
                 setRigs(prev => prev.filter(r => r.id !== rigId))
                 if (defaultRigId === rigId) setDefaultRigId(null)
             } else {
-                setError('Failed to delete rig')
+                const json = await res.json().catch(() => ({}))
+                setError((json as { error?: string }).error ?? 'Failed to delete rig')
             }
         } catch {
             setError('Failed to delete rig')
@@ -508,6 +523,7 @@ export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera,
                         <RigCard
                             key={rig.id}
                             rig={rig}
+                            userId={userId}
                             isOwnProfile={isOwnProfile}
                             isFavorite={rig.id === defaultRigId}
                             onSetFavorite={() => handleSetFavorite(rig.id)}

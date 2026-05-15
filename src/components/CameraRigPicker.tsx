@@ -8,6 +8,8 @@ import {
     getHousingImagePathWithFallback,
     getPortImagePathWithFallback,
 } from '@/lib/images'
+import { isHeicFile, convertHeicToAvif, type ConversionStage } from '@/lib/heicConvert'
+import { HeicProgressBar } from '@/components/HeicProgressBar'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -198,6 +200,7 @@ export default function CameraRigPicker({
     const [rigPhotoPreview, setRigPhotoPreview] = useState<string | null>(null)
     const [rigIsDragging, setRigIsDragging] = useState(false)
     const [rigPhotoError, setRigPhotoError] = useState<string | null>(null)
+    const [heicStage, setHeicStage] = useState<ConversionStage | null>(null)
     const [rigPhotoRemoved, setRigPhotoRemoved] = useState(false)
     const rigFileInputRef = useRef<HTMLInputElement>(null)
     const rigPreviewUrlRef = useRef<string | null>(null)
@@ -208,8 +211,9 @@ export default function CameraRigPicker({
         }
     }, [])
 
-    const processRigPhoto = useCallback((f: File) => {
-        if (!f.type.startsWith('image/')) {
+    const processRigPhoto = useCallback(async (f: File) => {
+        const isHeic = isHeicFile(f)
+        if (!f.type.startsWith('image/') && !isHeic) {
             setRigPhotoError('Please select an image file.')
             return
         }
@@ -218,9 +222,21 @@ export default function CameraRigPicker({
             return
         }
         setRigPhotoError(null)
-        setRigPhotoFile(f)
+        let processedFile = f
+        if (isHeic) {
+            try {
+                setHeicStage({ label: 'Starting…', progress: 0 })
+                processedFile = await convertHeicToAvif(f, stage => setHeicStage(stage))
+            } catch (err) {
+                setRigPhotoError(err instanceof Error ? err.message : 'HEIC conversion failed')
+                setHeicStage(null)
+                return
+            }
+            setHeicStage(null)
+        }
+        setRigPhotoFile(processedFile)
         if (rigPreviewUrlRef.current) URL.revokeObjectURL(rigPreviewUrlRef.current)
-        const url = URL.createObjectURL(f)
+        const url = URL.createObjectURL(processedFile)
         rigPreviewUrlRef.current = url
         setRigPhotoPreview(url)
     }, [])
@@ -451,7 +467,7 @@ export default function CameraRigPicker({
                         <input
                             ref={rigFileInputRef}
                             type="file"
-                            accept="image/*"
+                            accept="image/*,.heic,.heif"
                             className="hidden"
                             onChange={e => { const f = e.target.files?.[0]; if (f) processRigPhoto(f) }}
                         />
@@ -489,13 +505,14 @@ export default function CameraRigPicker({
                             <input
                                 ref={rigFileInputRef}
                                 type="file"
-                                accept="image/*"
+                                accept="image/*,.heic,.heif"
                                 className="hidden"
                                 onChange={e => { const f = e.target.files?.[0]; if (f) processRigPhoto(f) }}
                             />
                         </div>
                     </div>
                 )}
+                <HeicProgressBar stage={heicStage} />
                 {rigPhotoError && <p className="mt-1 text-xs text-red-500">{rigPhotoError}</p>}
             </div>
 

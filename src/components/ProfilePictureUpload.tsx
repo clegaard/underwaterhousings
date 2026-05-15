@@ -3,6 +3,8 @@
 import { useRef, useState, useEffect } from 'react'
 import { withBase } from '@/lib/images'
 import UserAvatar from '@/components/UserAvatar'
+import { isHeicFile, convertHeicToAvif, type ConversionStage } from '@/lib/heicConvert'
+import { HeicProgressBar } from '@/components/HeicProgressBar'
 
 // Canvas size for the crop preview shown in the modal (CSS px = canvas px on non-retina)
 const CANVAS_PX = 320
@@ -31,6 +33,7 @@ export default function ProfilePictureUpload({
     const dragRef = useRef({ x: 0, y: 0, ox: 0, oy: 0 })
     const [uploading, setUploading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [heicStage, setHeicStage] = useState<ConversionStage | null>(null)
     const [picturePath, setPicturePath] = useState(currentPicture)
 
     const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -89,10 +92,22 @@ export default function ProfilePictureUpload({
     }, [stage])
 
     // ── File selection ──────────────────────────────────────────────────────
-    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0]
         if (!file) return
-        const url = URL.createObjectURL(file)
+        let processedFile = file
+        if (isHeicFile(file)) {
+            try {
+                setHeicStage({ label: 'Starting…', progress: 0 })
+                processedFile = await convertHeicToAvif(file, stage => setHeicStage(stage))
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'HEIC conversion failed')
+                setHeicStage(null)
+                return
+            }
+            setHeicStage(null)
+        }
+        const url = URL.createObjectURL(processedFile)
         const img = new window.Image()
         img.onload = () => {
             imgElRef.current = img
@@ -250,7 +265,7 @@ export default function ProfilePictureUpload({
                                 <input
                                     ref={fileInputRef}
                                     type="file"
-                                    accept="image/*"
+                                    accept="image/*,.heic,.heif"
                                     className="hidden"
                                     onChange={handleFileChange}
                                 />
@@ -265,6 +280,7 @@ export default function ProfilePictureUpload({
                                     <span className="text-sm font-medium text-gray-700">Choose a photo</span>
                                     <span className="text-xs text-gray-400">JPG, PNG, WebP · up to 5 MB</span>
                                 </button>
+                                <HeicProgressBar stage={heicStage} />
                             </div>
                         )}
 

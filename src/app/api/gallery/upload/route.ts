@@ -73,6 +73,9 @@ export async function POST(request: NextRequest) {
     const shutterSpeedStr = (formData.get('shutterSpeed') as string)?.trim()
     const isoStr = (formData.get('iso') as string)?.trim()
     const rigIdStr = (formData.get('rigId') as string)?.trim()
+    if (!rigIdStr) {
+        return NextResponse.json({ error: 'A rig must be selected to upload a photo' }, { status: 400 })
+    }
 
     const photo = await prisma.galleryPhoto.create({
         data: {
@@ -90,7 +93,7 @@ export async function POST(request: NextRequest) {
             aperture: apertureStr ? parseFloat(apertureStr) : null,
             shutterSpeed: shutterSpeedStr ? parseFloat(shutterSpeedStr) : null,
             iso: isoStr ? parseInt(isoStr) : null,
-            rigId: rigIdStr ? parseInt(rigIdStr) : null,
+            rigId: parseInt(rigIdStr),
             userId: dbUser.id,
         },
     })

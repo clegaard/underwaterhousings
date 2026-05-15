@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { isHeicFile, convertHeicToAvif, type MultiFileProgress } from '@/lib/heicConvert'
+import { HeicMultiProgressBar } from '@/components/HeicProgressBar'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { withBase, getPortImagePathWithFallback } from '@/lib/images'
@@ -126,6 +128,7 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
     const [portName, setPortName] = useState('')
     const [mountId, setMountId] = useState<number | ''>('')
     const [photos, setPhotos] = useState<PhotoSlot[]>([])
+    const [heicProgress, setHeicProgress] = useState<MultiFileProgress | null>(null)
     const [dragPhotoIdx, setDragPhotoIdx] = useState<number | null>(null)
     const [portLoading, setPortLoading] = useState(false)
     const [portError, setPortError] = useState<string | null>(null)
@@ -158,16 +161,24 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
         resetPortForm(); setPortModal(null); setPortTarget(null); setPortTargetMfr(null); setPortError(null)
     }
 
-    function handleFilesAdd(files: FileList | null) {
+    async function handleFilesAdd(files: FileList | null) {
         if (!files) return
-        const items: PhotoSlot[] = Array.from(files)
-            .filter(f => f.type.startsWith('image/'))
-            .map(file => ({
-                kind: 'new' as const,
-                id: Math.random().toString(36).slice(2),
-                file,
-                previewUrl: URL.createObjectURL(file),
-            }))
+        const allFiles = Array.from(files).filter(f => f.type.startsWith('image/') || isHeicFile(f))
+        if (allFiles.length === 0) return
+        const heicFiles = allFiles.filter(isHeicFile)
+        let heicIdx = 0
+        const items: PhotoSlot[] = []
+        for (const file of allFiles) {
+            let converted = file
+            if (isHeicFile(file)) {
+                converted = await convertHeicToAvif(file, stage =>
+                    setHeicProgress({ current: heicIdx, total: heicFiles.length, stage })
+                )
+                heicIdx++
+            }
+            items.push({ kind: 'new' as const, id: Math.random().toString(36).slice(2), file: converted, previewUrl: URL.createObjectURL(converted) })
+        }
+        setHeicProgress(null)
         setPhotos(prev => [...prev, ...items])
     }
 
@@ -600,9 +611,10 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
                             onDrop={e => { e.preventDefault(); handleFilesAdd(e.dataTransfer.files) }}
                         >
                             <p className="text-sm text-gray-500">Click, drag & drop, or paste images here</p>
-                            <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={e => handleFilesAdd(e.target.files)} />
+                            <input ref={fileInputRef} type="file" accept="image/*,.heic,.heif" multiple className="hidden" onChange={e => handleFilesAdd(e.target.files)} />
                         </div>
 
+                        <HeicMultiProgressBar progress={heicProgress} />
                         {photos.length > 0 && (
                             <div className="flex flex-wrap gap-2 mb-4">
                                 {photos.map((slot, idx) => (

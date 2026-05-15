@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { isHeicFile, convertHeicToAvif, type MultiFileProgress } from '@/lib/heicConvert'
+import { HeicMultiProgressBar } from '@/components/HeicProgressBar'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { withBase, getLensImagePathWithFallback } from '@/lib/images'
@@ -113,6 +115,7 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
     const [mountId, setMountId] = useState<number | ''>('')
     const [exifIdInput, setExifIdInput] = useState('')
     const [photos, setPhotos] = useState<PhotoSlot[]>([])
+    const [heicProgress, setHeicProgress] = useState<MultiFileProgress | null>(null)
     const [dragPhotoIdx, setDragPhotoIdx] = useState<number | null>(null)
     const [lensLoading, setLensLoading] = useState(false)
     const [lensError, setLensError] = useState<string | null>(null)
@@ -173,16 +176,24 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
         resetLensForm(); setLensModal(null); setLensTarget(null); setLensTargetMfr(null); setLensError(null)
     }
 
-    function handleFilesAdd(files: FileList | null) {
+    async function handleFilesAdd(files: FileList | null) {
         if (!files) return
-        const items: PhotoSlot[] = Array.from(files)
-            .filter(f => f.type.startsWith('image/'))
-            .map(file => ({
-                kind: 'new' as const,
-                id: Math.random().toString(36).slice(2),
-                file,
-                previewUrl: URL.createObjectURL(file),
-            }))
+        const allFiles = Array.from(files).filter(f => f.type.startsWith('image/') || isHeicFile(f))
+        if (allFiles.length === 0) return
+        const heicFiles = allFiles.filter(isHeicFile)
+        let heicIdx = 0
+        const items: PhotoSlot[] = []
+        for (const file of allFiles) {
+            let converted = file
+            if (isHeicFile(file)) {
+                converted = await convertHeicToAvif(file, stage =>
+                    setHeicProgress({ current: heicIdx, total: heicFiles.length, stage })
+                )
+                heicIdx++
+            }
+            items.push({ kind: 'new' as const, id: Math.random().toString(36).slice(2), file: converted, previewUrl: URL.createObjectURL(converted) })
+        }
+        setHeicProgress(null)
         setPhotos(prev => [...prev, ...items])
     }
 
@@ -781,8 +792,9 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                             <p className="text-sm text-gray-500">Click, drag, or paste images here</p>
                             <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP, AVIF · max 20 MB each</p>
                         </div>
-                        <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={e => handleFilesAdd(e.target.files)} />
+                        <input ref={fileInputRef} type="file" accept="image/*,.heic,.heif" multiple className="hidden" onChange={e => handleFilesAdd(e.target.files)} />
 
+                        <HeicMultiProgressBar progress={heicProgress} />
                         {photos.length > 0 && (
                             <div className="grid grid-cols-4 gap-2 mb-4">
                                 {photos.map((slot, idx) => (

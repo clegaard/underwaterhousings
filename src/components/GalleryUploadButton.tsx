@@ -4,6 +4,8 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import LocationPicker, { type LocationValue } from './LocationPicker'
+import { isHeicFile, convertHeicToAvif, type ConversionStage } from '@/lib/heicConvert'
+import { HeicProgressBar } from '@/components/HeicProgressBar'
 
 interface UserRig {
     id: number
@@ -63,6 +65,7 @@ export default function GalleryUploadButton() {
     const [exifLensModel, setExifLensModel] = useState<string | null>(null)
     const [isUploading, setIsUploading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [heicStage, setHeicStage] = useState<ConversionStage | null>(null)
     const [exifLoading, setExifLoading] = useState(false)
     const [rigTab, setRigTab] = useState<'auto' | 'manual'>('auto')
     const [rigsLoaded, setRigsLoaded] = useState(false)
@@ -164,8 +167,9 @@ export default function GalleryUploadButton() {
         }
     }, [])
 
-    const processFile = useCallback((f: File) => {
-        if (!f.type.startsWith('image/')) {
+    const processFile = useCallback(async (f: File) => {
+        const isHeic = isHeicFile(f)
+        if (!f.type.startsWith('image/') && !isHeic) {
             setError('Please select an image file.')
             return
         }
@@ -174,18 +178,29 @@ export default function GalleryUploadButton() {
             return
         }
         setError(null)
-        setFile(f)
+        extractExif(f) // run on original file — exifr supports HEIC
+        let processedFile = f
+        if (isHeic) {
+            try {
+                setHeicStage({ label: 'Starting…', progress: 0 })
+                processedFile = await convertHeicToAvif(f, stage => setHeicStage(stage))
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'HEIC conversion failed')
+                setHeicStage(null)
+                return
+            }
+            setHeicStage(null)
+        }
+        setFile(processedFile)
 
         if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
-        const url = URL.createObjectURL(f)
+        const url = URL.createObjectURL(processedFile)
         previewUrlRef.current = url
         setPreview(url)
 
         const img = new Image()
         img.onload = () => setDimensions({ width: img.naturalWidth, height: img.naturalHeight })
         img.src = url
-
-        extractExif(f)
     }, [extractExif])
 
     const onDrop = useCallback((e: React.DragEvent) => {
@@ -394,7 +409,7 @@ export default function GalleryUploadButton() {
                                     <input
                                         ref={fileInputRef}
                                         type="file"
-                                        accept="image/*"
+                                        accept="image/*,.heic,.heif"
                                         className="hidden"
                                         onChange={e => { const f = e.target.files?.[0]; if (f) processFile(f) }}
                                     />
@@ -424,6 +439,8 @@ export default function GalleryUploadButton() {
                                     </div>
                                 </div>
                             )}
+
+                            <HeicProgressBar stage={heicStage} />
 
                             {file && (
                                 <>
@@ -674,7 +691,7 @@ export default function GalleryUploadButton() {
                             </button>
                             <button
                                 onClick={handleSubmit}
-                                disabled={!file || !dimensions || isUploading}
+                                disabled={!file || !dimensions || isUploading || !selectedRigId}
                                 className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                             >
                                 {isUploading && (

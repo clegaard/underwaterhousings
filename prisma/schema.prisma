@@ -303,10 +303,10 @@ model GalleryPhoto {
     aperture       Float?
     iso            Int?
     createdAt      DateTime         @default(now())
-    rigId          Int?
-    userId         Int?
-    rig            CameraRig?       @relation(fields: [rigId], references: [id])
-    user           User?            @relation(fields: [userId], references: [id])
+    rigId          Int
+    userId         Int
+    rig            CameraRig        @relation(fields: [rigId], references: [id], onDelete: Restrict)
+    user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
     comments       GalleryComment[]
     likes          GalleryLike[]
 
