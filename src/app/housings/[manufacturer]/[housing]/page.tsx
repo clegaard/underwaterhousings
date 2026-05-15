@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { HousingImage } from '@/components/HousingImage'
 import ImageGallery from '@/components/ImageGallery'
-import { getAllHousingImages } from '@/lib/images'
+import { getAllHousingImages, withBase } from '@/lib/images'
 import PriceTag from '@/components/PriceTag'
 
 interface HousingDetailPageProps {
@@ -255,7 +255,7 @@ export default async function HousingDetailPage({ params }: HousingDetailPagePro
                             {galleryPhotos.map((photo) => (
                                 <div key={photo.id} className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
                                     <Image
-                                        src={photo.imagePath}
+                                        src={withBase(photo.imagePath)}
                                         alt={photo.title ?? photo.description ?? 'Gallery photo'}
                                         fill
                                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"

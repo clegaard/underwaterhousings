@@ -27,13 +27,16 @@
 
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { S3Client, PutObjectCommand, HeadObjectCommand, HeadBucketCommand } from "@aws-sdk/client-s3";
 import * as fs from "fs";
 import * as path from "path";
 import * as https from "https";
 import * as http from "http";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+    adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
+});
 
 // ---------------------------------------------------------------------------
 // S3 setup
@@ -690,7 +693,7 @@ async function main(): Promise<void> {
                 where: { slug: g.slug },
                 update: {
                     name: g.name,
-                    sku: g.sku || null,
+                    productId: g.sku || null,
                     description: g.description || null,
                     priceAmount: g.priceAmount,
                     priceCurrency: g.priceCurrency,
@@ -701,7 +704,7 @@ async function main(): Promise<void> {
                 create: {
                     name: g.name,
                     slug: g.slug,
-                    sku: g.sku || null,
+                    productId: g.sku || null,
                     description: g.description || null,
                     priceAmount: g.priceAmount,
                     priceCurrency: g.priceCurrency,

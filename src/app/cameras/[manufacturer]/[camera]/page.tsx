@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { HousingImage } from '@/components/HousingImage'
-import { getCameraImagePathWithFallback } from '@/lib/images'
+import { getCameraImagePathWithFallback, withBase } from '@/lib/images'
 import PriceTag from '@/components/PriceTag'
 
 interface CameraDetailPageProps {
@@ -374,7 +374,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
                             {galleryPhotos.map((photo) => (
                                 <div key={photo.id} className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
                                     <Image
-                                        src={photo.imagePath}
+                                        src={withBase(photo.imagePath)}
                                         alt={photo.title ?? photo.description ?? 'Gallery photo'}
                                         fill
                                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"

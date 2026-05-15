@@ -164,35 +164,25 @@ function CommentPanel({
             {/* Author */}
             {photo.userId && photo.userName && (
                 <div className="flex items-center gap-2.5 px-4 py-3 border-b border-gray-100 shrink-0">
-                    <Link href={`/users/${photo.userId}`} onClick={e => e.stopPropagation()}>
+                    <Link href={`/users/${photo.userId}`} onClick={e => e.stopPropagation()} className="shrink-0">
                         <UserAvatar picture={photo.userProfilePicture} name={photo.userName} size="sm" />
                     </Link>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                         <Link href={`/users/${photo.userId}`} onClick={e => e.stopPropagation()} className="text-sm font-semibold text-gray-900 hover:underline truncate block">
                             {photo.userName}
                         </Link>
-                        {photo.location && <p className="text-xs text-gray-500 truncate">{photo.location}</p>}
+                        {photo.title && <p className="text-sm text-gray-800 leading-snug line-clamp-2 mt-0.5">{photo.title}</p>}
+                        {photo.description && !photo.title && <p className="text-xs text-gray-500 leading-snug line-clamp-2 mt-0.5">{photo.description}</p>}
+                        {photo.location && <p className="text-xs text-gray-500 truncate mt-0.5">📍 {photo.location}</p>}
                     </div>
                 </div>
             )}
 
             {/* Comments list */}
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 min-h-0">
-                {/* Caption as first entry */}
-                {(photo.title || photo.description) && (
-                    <div className="flex gap-2.5">
-                        {photo.userId && photo.userName && (
-                            <UserAvatar picture={photo.userProfilePicture} name={photo.userName} size="xs" className="shrink-0 mt-0.5" />
-                        )}
-                        <div className="text-sm text-gray-800 leading-snug">
-                            {photo.title && photo.userId && (
-                                <Link href={`/users/${photo.userId}`} onClick={e => e.stopPropagation()} className="font-semibold mr-1 hover:underline">
-                                    {photo.userName ?? ''}
-                                </Link>
-                            )}
-                            {photo.title || photo.description}
-                        </div>
-                    </div>
+                {/* Description (shown only when both title and description are set) */}
+                {photo.title && photo.description && (
+                    <p className="text-sm text-gray-600 leading-snug">{photo.description}</p>
                 )}
 
                 {/* Rig */}

@@ -71,7 +71,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
                                 src={images[0].src}
                                 fallback={images[0].fallback}
                                 alt={images[0].alt}
-                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                className="object-contain p-4"
                             />
                             <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-xs font-medium capitalize">
                                 {images[0].type} view
@@ -97,7 +97,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
                                             src={image.src}
                                             fallback={image.fallback}
                                             alt={image.alt}
-                                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                            className="object-contain p-3"
                                         />
                                         <div className="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-xs font-medium capitalize">
                                             {image.type}
