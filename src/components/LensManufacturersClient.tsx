@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
-import { isHeicFile, convertHeicToAvif, type MultiFileProgress } from '@/lib/heicConvert'
-import { HeicMultiProgressBar } from '@/components/HeicProgressBar'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { withBase, getLensImagePathWithFallback } from '@/lib/images'
 import { useCurrency } from '@/components/CurrencyContext'
 import { HousingImage } from '@/components/HousingImage'
+import PhotoUploadField from '@/components/PhotoUploadField'
+import { uploadPhotoSlots, type PhotoSlot } from '@/lib/photoUpload'
 
 interface Lens {
     id: number
@@ -44,9 +44,6 @@ interface CameraMount {
     slug: string
 }
 
-type PhotoSlot =
-    | { kind: 'existing'; path: string }
-    | { kind: 'new'; id: string; file: File; previewUrl: string }
 
 interface Props {
     manufacturers: Manufacturer[]
@@ -57,7 +54,6 @@ interface Props {
 export default function LensManufacturersClient({ manufacturers: initial, cameraMounts, isSuperuser }: Props) {
     const router = useRouter()
     const { formatMoney } = useCurrency()
-    const fileInputRef = useRef<HTMLInputElement>(null)
     const [manufacturers, setManufacturers] = useState(initial)
 
     // ── Manufacturer modal state ──────────────────────────────────────────────
@@ -115,8 +111,6 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
     const [mountId, setMountId] = useState<number | ''>('')
     const [exifIdInput, setExifIdInput] = useState('')
     const [photos, setPhotos] = useState<PhotoSlot[]>([])
-    const [heicProgress, setHeicProgress] = useState<MultiFileProgress | null>(null)
-    const [dragPhotoIdx, setDragPhotoIdx] = useState<number | null>(null)
     const [lensLoading, setLensLoading] = useState(false)
     const [lensError, setLensError] = useState<string | null>(null)
     // Optics
@@ -137,7 +131,6 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
     function resetLensForm() {
         setLensName(''); setMountId(''); setExifIdInput('')
         setPhotos(prev => { prev.forEach(p => { if (p.kind === 'new') URL.revokeObjectURL(p.previewUrl) }); return [] })
-        setDragPhotoIdx(null)
         setLensType('prime'); setFocalLengthTele(''); setFocalLengthWide('')
         setMinimumFocusDistanceTele(''); setMinimumFocusDistanceWide('')
         setMaximumMagnificationTele(''); setMaximumMagnificationWide('')
@@ -155,7 +148,7 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
         setMountId(l.cameraMount?.id ?? '')
         setExifIdInput(l.exifId ?? '')
         setPhotos(l.productPhotos.map(path => ({ kind: 'existing' as const, path })))
-        setDragPhotoIdx(null); setLensError(null)
+        setLensError(null)
         setLensType(l.isZoomLens ? 'zoom' : 'prime')
         setFocalLengthTele(l.focalLengthTele != null ? String(l.focalLengthTele) : '')
         setFocalLengthWide(l.focalLengthWide != null ? String(l.focalLengthWide) : '')
@@ -176,90 +169,11 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
         resetLensForm(); setLensModal(null); setLensTarget(null); setLensTargetMfr(null); setLensError(null)
     }
 
-    async function handleFilesAdd(files: FileList | null) {
-        if (!files) return
-        const allFiles = Array.from(files).filter(f => f.type.startsWith('image/') || isHeicFile(f))
-        if (allFiles.length === 0) return
-        const heicFiles = allFiles.filter(isHeicFile)
-        let heicIdx = 0
-        const items: PhotoSlot[] = []
-        for (const file of allFiles) {
-            let converted = file
-            if (isHeicFile(file)) {
-                converted = await convertHeicToAvif(file, stage =>
-                    setHeicProgress({ current: heicIdx, total: heicFiles.length, stage })
-                )
-                heicIdx++
-            }
-            items.push({ kind: 'new' as const, id: Math.random().toString(36).slice(2), file: converted, previewUrl: URL.createObjectURL(converted) })
-        }
-        setHeicProgress(null)
-        setPhotos(prev => [...prev, ...items])
-    }
-
-    const handlePasteEvent = useCallback((e: ClipboardEvent) => {
-        const items = Array.from(e.clipboardData?.items ?? [])
-        const imageItems: PhotoSlot[] = []
-        for (const item of items) {
-            if (!item.type.startsWith('image/')) continue
-            const file = item.getAsFile()
-            if (!file) continue
-            const ext = item.type.split('/')[1] ?? 'png'
-            const renamedFile = new File([file], `paste-${Date.now()}.${ext}`, { type: item.type })
-            imageItems.push({ kind: 'new' as const, id: Math.random().toString(36).slice(2), file: renamedFile, previewUrl: URL.createObjectURL(renamedFile) })
-        }
-        if (imageItems.length > 0) { e.preventDefault(); setPhotos(prev => [...prev, ...imageItems]) }
-    }, [])
-
-    useEffect(() => {
-        if (!lensModal) return
-        document.addEventListener('paste', handlePasteEvent)
-        return () => document.removeEventListener('paste', handlePasteEvent)
-    }, [lensModal, handlePasteEvent])
-
-    function removePhoto(idx: number) {
-        setPhotos(prev => {
-            const item = prev[idx]
-            if (item?.kind === 'new') URL.revokeObjectURL(item.previewUrl)
-            return prev.filter((_, i) => i !== idx)
-        })
-    }
-
-    function handlePhotoDragStart(e: React.DragEvent, idx: number) {
-        e.dataTransfer.effectAllowed = 'move'; setDragPhotoIdx(idx)
-    }
-    function handlePhotoDragOver(e: React.DragEvent, idx: number) {
-        e.preventDefault(); e.dataTransfer.dropEffect = 'move'
-        if (dragPhotoIdx === null || dragPhotoIdx === idx) return
-        setPhotos(prev => { const arr = [...prev]; const [item] = arr.splice(dragPhotoIdx, 1); arr.splice(idx, 0, item); return arr })
-        setDragPhotoIdx(idx)
-    }
-    function handlePhotoDragEnd() { setDragPhotoIdx(null) }
-    function getSlotPreview(slot: PhotoSlot) { return slot.kind === 'existing' ? withBase(slot.path) : slot.previewUrl }
-
-    async function buildFinalPhotoPaths(mfrSlug: string): Promise<string[]> {
-        const paths: string[] = []
-        for (const slot of photos) {
-            if (slot.kind === 'existing') {
-                paths.push(slot.path)
-            } else {
-                const fd = new FormData()
-                fd.append('file', slot.file)
-                fd.append('manufacturerSlug', mfrSlug)
-                const res = await fetch('/api/admin/lenses/photos', { method: 'POST', body: fd })
-                const data = await res.json()
-                if (!res.ok) throw new Error(data.error ?? 'Failed to upload image')
-                paths.push(data.path)
-            }
-        }
-        return paths
-    }
-
     async function handleLensAdd() {
         if (!lensName.trim() || mountId === '' || !lensTargetMfr) return
         setLensLoading(true); setLensError(null)
         try {
-            const productPhotos = await buildFinalPhotoPaths(lensTargetMfr.slug)
+            const productPhotos = await uploadPhotoSlots(photos, '/api/admin/lenses/photos', { manufacturerSlug: lensTargetMfr.slug })
             const res = await fetch('/api/admin/lenses', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -308,7 +222,7 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
         if (!lensTarget || !lensTargetMfr || !lensName.trim() || mountId === '') return
         setLensLoading(true); setLensError(null)
         try {
-            const productPhotos = await buildFinalPhotoPaths(lensTargetMfr.slug)
+            const productPhotos = await uploadPhotoSlots(photos, '/api/admin/lenses/photos', { manufacturerSlug: lensTargetMfr!.slug })
             const res = await fetch(`/api/admin/lenses?id=${lensTarget.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -779,46 +693,7 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                             )}
                         </div>
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product photos</label>
-                        <div
-                            className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors mb-3"
-                            onClick={() => fileInputRef.current?.click()}
-                            onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy' }}
-                            onDrop={e => { e.preventDefault(); handleFilesAdd(e.dataTransfer.files) }}
-                        >
-                            <svg className="w-6 h-6 mx-auto text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4-4a3 3 0 014.24 0L16 16m-2-2l2-2a3 3 0 014.24 0L22 16M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <p className="text-sm text-gray-500">Click, drag, or paste images here</p>
-                            <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP, AVIF · max 20 MB each</p>
-                        </div>
-                        <input ref={fileInputRef} type="file" accept="image/*,.heic,.heif" multiple className="hidden" onChange={e => handleFilesAdd(e.target.files)} />
-
-                        <HeicMultiProgressBar progress={heicProgress} />
-                        {photos.length > 0 && (
-                            <div className="grid grid-cols-4 gap-2 mb-4">
-                                {photos.map((slot, idx) => (
-                                    <div
-                                        key={slot.kind === 'new' ? slot.id : slot.path + idx}
-                                        draggable
-                                        onDragStart={e => handlePhotoDragStart(e, idx)}
-                                        onDragOver={e => handlePhotoDragOver(e, idx)}
-                                        onDragEnd={handlePhotoDragEnd}
-                                        className={`relative group/photo aspect-square rounded-lg overflow-hidden border-2 cursor-grab active:cursor-grabbing transition-all ${dragPhotoIdx === idx ? 'opacity-40 border-blue-400 scale-95' : 'border-gray-200 hover:border-gray-400'}`}
-                                    >
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={getSlotPreview(slot)} alt="" className="w-full h-full object-cover" />
-                                        {idx === 0 && (
-                                            <span className="absolute bottom-0 left-0 right-0 text-center bg-blue-600 text-white text-xs py-0.5 font-medium">Cover</span>
-                                        )}
-                                        <button type="button" onClick={() => removePhoto(idx)}
-                                            className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover/photo:opacity-100 transition-opacity text-xs leading-none">
-                                            ×
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        <PhotoUploadField variant="rich" showCoverLabel value={photos} onChange={setPhotos} pasteListenerActive={!!lensModal} />
 
                         {lensError && <p className="text-sm text-red-600 mb-3">{lensError}</p>}
                         <div className="flex justify-end gap-3">
