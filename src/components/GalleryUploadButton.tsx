@@ -67,6 +67,7 @@ export default function GalleryUploadButton() {
     const [rigTab, setRigTab] = useState<'auto' | 'manual'>('auto')
     const [rigsLoaded, setRigsLoaded] = useState(false)
     const [locationValue, setLocationValue] = useState<LocationValue | null>(null)
+    const [exifCheckResult, setExifCheckResult] = useState<{ cameraExists: boolean | null; lensExists: boolean | null } | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const previewUrlRef = useRef<string | null>(null)
 
@@ -104,9 +105,14 @@ export default function GalleryUploadButton() {
     useEffect(() => {
         if (!exifCameraModel || userRigs.length === 0) return
         const activeRigs = userRigs.filter(r => r.isActive)
+        // Heuristic: if the EXIF lens model starts with the camera model name, the lens is built-in
+        // (e.g. "iPhone 14 Pro back triple camera 6.86mm f/1.78" starts with "iPhone 14 Pro")
+        const builtInLens = !!(exifLensModel && exifLensModel.startsWith(exifCameraModel))
         const matches = activeRigs.filter(r => {
             if (r.camera.exifId !== exifCameraModel) return false
-            if (exifLensModel && r.camera.interchangeableLens && r.lens !== null) {
+            // Fixed-lens cameras (by database flag or EXIF heuristic): match on camera body only
+            if (!r.camera.interchangeableLens || builtInLens) return true
+            if (exifLensModel && r.lens !== null) {
                 return r.lens.exifId === exifLensModel
             }
             return true
@@ -275,11 +281,16 @@ export default function GalleryUploadButton() {
     // Detect if the EXIF camera is a fixed-lens camera (exifId: string | null is on the camera property of the first rig that matches)
     const exifCameraRig = exifCameraModel ? activeRigs.find(r => r.camera.exifId === exifCameraModel) : undefined
     const isFixedLensCamera = exifCameraRig ? !exifCameraRig.camera.interchangeableLens : false
+    // Heuristic: lens model starts with camera model → built-in/non-interchangeable lens (e.g. iPhone)
+    const isBuiltInLensFromExif = !!(exifCameraModel && exifLensModel && exifLensModel.startsWith(exifCameraModel))
+    const lensIsFixed = isFixedLensCamera || isBuiltInLensFromExif
     // All active rigs that match EXIF: lens filter only when rig has a lens AND camera is interchangeable AND EXIF has lens data
     const autoMatches = exifCameraModel
         ? activeRigs.filter(r => {
             if (r.camera.exifId !== exifCameraModel) return false
-            if (exifLensModel && r.camera.interchangeableLens && r.lens !== null) {
+            // Fixed-lens cameras (by database flag or EXIF heuristic): match on camera body only
+            if (!r.camera.interchangeableLens || isBuiltInLensFromExif) return true
+            if (exifLensModel && r.lens !== null) {
                 return r.lens.exifId === exifLensModel
             }
             return true
@@ -292,6 +303,24 @@ export default function GalleryUploadButton() {
     const showDisambiguation = exifDone && rigsLoaded && autoMatches.length > 1 && !autoMatchedRig
     const showNoMatch = exifDone && rigsLoaded && exifCameraModel !== null && activeRigs.length > 0 && autoMatches.length === 0
     const showNoRigs = exifDone && rigsLoaded && activeRigs.length === 0
+
+    // When no rig matched, query the database to check whether the EXIF camera / lens
+    // even exist — so we can show a more specific message to the user.
+    useEffect(() => {
+        if (!showNoMatch || !exifCameraModel) {
+            setExifCheckResult(null)
+            return
+        }
+        const params = new URLSearchParams()
+        params.set('camera', exifCameraModel)
+        // Skip the lens check for built-in lenses (phones etc.) — they are identified by camera only
+        const isBuiltIn = !!(exifLensModel && exifLensModel.startsWith(exifCameraModel))
+        if (exifLensModel && !isBuiltIn) params.set('lens', exifLensModel)
+        fetch(`/api/exif-check?${params}`)
+            .then(r => r.json())
+            .then(data => setExifCheckResult(data))
+            .catch(() => setExifCheckResult(null))
+    }, [showNoMatch, exifCameraModel, exifLensModel])
 
     const createRigUrl = (() => {
         const uid = session?.user?.id
@@ -521,21 +550,27 @@ export default function GalleryUploadButton() {
                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                                                                     </svg>
                                                                     <p className="text-xs text-amber-800">
-                                                                        No saved rig matched{exifCameraModel ? ` camera "${exifCameraModel}"` : ''}
-                                                                        {exifLensModel ? ` with lens "${exifLensModel}"` : ''}.
+                                                                        {exifCheckResult?.cameraExists === false
+                                                                            ? <>Camera &quot;{exifCameraModel}&quot; is not yet in the database — it needs to be added with its EXIF name set before rigs can be matched.</>
+                                                                            : exifCheckResult?.lensExists === false
+                                                                                ? <>Lens &quot;{exifLensModel}&quot; is not yet in the database — it needs to be added with its EXIF name set before rigs can be matched.</>
+                                                                                : <>No saved rig matched{exifCameraModel ? ` camera "${exifCameraModel}"` : ''}{exifLensModel && !lensIsFixed ? ` with lens "${exifLensModel}"` : ''}.</>
+                                                                        }
                                                                     </p>
                                                                 </div>
-                                                                <a
-                                                                    href={createRigUrl}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium hover:underline"
-                                                                >
-                                                                    Create a rig for this camera
-                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                                    </svg>
-                                                                </a>
+                                                                {exifCheckResult?.cameraExists !== false && (
+                                                                    <a
+                                                                        href={createRigUrl}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium hover:underline"
+                                                                    >
+                                                                        Create a rig for this camera
+                                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                                        </svg>
+                                                                    </a>
+                                                                )}
                                                             </div>
                                                         )}
 
