@@ -87,18 +87,19 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
             portName: rig?.port?.name ?? undefined,
             portSlug: rig?.port?.slug ?? undefined,
             focalLength: photo.focalLength ?? undefined,
-            shutterSpeed: photo.shutterSpeed ?? undefined,
+            shutterSpeed: photo.shutterSpeed ? Number(photo.shutterSpeed) : undefined,
             aperture: photo.aperture ?? undefined,
             userName: user.name ?? undefined,
             userId: user.id,
             userProfilePicture: user.profilePicture ? withBase(user.profilePicture) : undefined,
+            rigId: rig?.id ?? undefined,
         }
     })
 
     const displayName = user.name ?? user.email
 
     return (
-        <main className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+        <main className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
             <div className="max-w-7xl mx-auto px-4 py-8">
                 {/* Profile header */}
                 <div className="flex items-center gap-5 mb-8">

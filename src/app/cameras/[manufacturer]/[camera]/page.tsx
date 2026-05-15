@@ -73,7 +73,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
         (camera.minimumFocusDistanceWide != null || camera.minimumFocusDistanceTele != null)
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+        <div className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
             {/* Header */}
             <div className="bg-white shadow-sm border-b">
                 <div className="max-w-5xl mx-auto px-4 py-6">
@@ -117,7 +117,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
                             </div>
                         </div>
                         {price !== null && (
-                            <div className="text-right flex-shrink-0">
+                            <div className="text-right shrink-0">
                                 <p className="text-2xl font-bold text-green-600">${price.toLocaleString()}</p>
                                 <p className="text-xs text-gray-400">{camera.priceCurrency ?? 'USD'}</p>
                             </div>
@@ -319,7 +319,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
                                         <p className="text-xs text-cyan-600 mt-0.5">Rated to {housing.depthRating} m</p>
                                     </div>
                                     {housing.priceAmount && (
-                                        <span className="text-sm font-semibold text-green-600 ml-4 flex-shrink-0">
+                                        <span className="text-sm font-semibold text-green-600 ml-4 shrink-0">
                                             <PriceTag amount={housing.priceAmount ? Number(housing.priceAmount) : null} currency={housing.priceCurrency} />
                                         </span>
                                     )}
@@ -349,7 +349,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
                                                 <p className="text-xs text-gray-500 mt-0.5">{lens.manufacturer.name}</p>
                                             )}
                                         </div>
-                                        <span className="text-xs text-gray-400 ml-4 flex-shrink-0">
+                                        <span className="text-xs text-gray-400 ml-4 shrink-0">
                                             {lens.isZoomLens && lens.focalLengthWide != null
                                                 ? `${lens.focalLengthWide}–${lens.focalLengthTele} mm`
                                                 : `${lens.focalLengthTele} mm`}

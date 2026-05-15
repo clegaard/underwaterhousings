@@ -34,6 +34,7 @@ export interface GalleryPhotoData extends Photo {
     likeCount?: number
     commentCount?: number
     likedByMe?: boolean
+    rigId?: number
 }
 
 function formatShutterSpeed(speed: number): string {
@@ -162,7 +163,7 @@ function CommentPanel({
         <div className="flex flex-col h-full">
             {/* Author */}
             {photo.userId && photo.userName && (
-                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-gray-100 flex-shrink-0">
+                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-gray-100 shrink-0">
                     <Link href={`/users/${photo.userId}`} onClick={e => e.stopPropagation()}>
                         <UserAvatar picture={photo.userProfilePicture} name={photo.userName} size="sm" />
                     </Link>
@@ -181,7 +182,7 @@ function CommentPanel({
                 {(photo.title || photo.description) && (
                     <div className="flex gap-2.5">
                         {photo.userId && photo.userName && (
-                            <UserAvatar picture={photo.userProfilePicture} name={photo.userName} size="xs" className="flex-shrink-0 mt-0.5" />
+                            <UserAvatar picture={photo.userProfilePicture} name={photo.userName} size="xs" className="shrink-0 mt-0.5" />
                         )}
                         <div className="text-sm text-gray-800 leading-snug">
                             {photo.title && photo.userId && (
@@ -197,14 +198,9 @@ function CommentPanel({
                 {/* Rig */}
                 {photo.rigLabel && (
                     <p className="text-xs text-gray-400">
-                        {photo.cameraSlug && photo.housingSlug ? (
+                        {photo.userId && photo.rigId ? (
                             <Link
-                                href={`/rigs?${new URLSearchParams({
-                                    camera: photo.cameraSlug,
-                                    housing: photo.housingSlug,
-                                    ...(photo.lensSlug ? { lens: photo.lensSlug } : {}),
-                                    ...(photo.portSlug ? { port: photo.portSlug } : {}),
-                                }).toString()}`}
+                                href={`/users/${photo.userId}/camera-rigs/${photo.rigId}`}
                                 onClick={e => e.stopPropagation()}
                                 className="hover:text-blue-600 transition-colors"
                             >
@@ -230,7 +226,7 @@ function CommentPanel({
                     <div key={comment.id} className="space-y-2">
                         {/* Top-level comment */}
                         <div className="flex gap-2.5 group/comment">
-                            <Link href={`/users/${comment.user.id}`} onClick={e => e.stopPropagation()} className="flex-shrink-0 mt-0.5">
+                            <Link href={`/users/${comment.user.id}`} onClick={e => e.stopPropagation()} className="shrink-0 mt-0.5">
                                 <UserAvatar picture={comment.user.profilePicture ? withBase(comment.user.profilePicture) : null} name={comment.user.name ?? 'User'} size="xs" />
                             </Link>
                             <div className="flex-1 min-w-0">
@@ -256,7 +252,7 @@ function CommentPanel({
                         {/* Replies */}
                         {comment.replies.map(reply => (
                             <div key={reply.id} className="flex gap-2.5 ml-8 group/reply">
-                                <Link href={`/users/${reply.user.id}`} onClick={e => e.stopPropagation()} className="flex-shrink-0 mt-0.5">
+                                <Link href={`/users/${reply.user.id}`} onClick={e => e.stopPropagation()} className="shrink-0 mt-0.5">
                                     <UserAvatar picture={reply.user.profilePicture ? withBase(reply.user.profilePicture) : null} name={reply.user.name ?? 'User'} size="xs" />
                                 </Link>
                                 <div className="flex-1 min-w-0">
@@ -286,7 +282,7 @@ function CommentPanel({
             </div>
 
             {/* Action bar */}
-            <div className="border-t border-gray-100 flex-shrink-0">
+            <div className="border-t border-gray-100 shrink-0">
                 {/* Like + comment counts */}
                 <div className="flex items-center gap-4 px-4 pt-3 pb-1">
                     <button
@@ -663,7 +659,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                             </div>
 
                             {/* Right: comment panel */}
-                            <div className="w-80 md:w-96 flex-shrink-0 bg-white flex flex-col overflow-hidden">
+                            <div className="w-80 md:w-96 shrink-0 bg-white flex flex-col overflow-hidden">
                                 {photoId != null ? (
                                     <CommentPanel
                                         photo={photo}

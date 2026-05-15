@@ -286,8 +286,11 @@ export default function LocationPicker({ value, onChange }: Props) {
                                 type="button"
                                 onClick={useCurrentLocation}
                                 disabled={isGeolocating}
-                                title="Use my current location"
-                                className="p-1.5 border border-gray-300 bg-white rounded-lg text-gray-500 hover:text-blue-600 hover:border-blue-400 transition-colors shrink-0 disabled:opacity-50"
+                                title={isGeolocating ? 'Locating…' : 'Use my current location'}
+                                className={`p-1.5 border rounded-lg transition-all shrink-0 ${isGeolocating
+                                        ? 'border-blue-400 bg-blue-50 text-blue-500 animate-pulse cursor-wait'
+                                        : 'border-gray-300 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-400'
+                                    }`}
                             >
                                 {isGeolocating ? (
                                     <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />

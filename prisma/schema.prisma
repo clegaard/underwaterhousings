@@ -294,7 +294,7 @@ model GalleryPhoto {
     width          Int
     height         Int
     takenAt        DateTime?
-    location       String?
+    location       String? // Human-readable location name
     locationLat    Float? // Decimal latitude of the photo location
     locationLng    Float? // Decimal longitude of the photo location
     locationRadius Int? // Accuracy radius in metres (like iNaturalist observations)

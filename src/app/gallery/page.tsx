@@ -81,6 +81,7 @@ async function getGalleryPhotos(currentUserId?: number): Promise<GalleryPhotoDat
                 likedByMe: currentUserId
                     ? (photo as { likes?: { userId: number }[] }).likes?.some(l => l.userId === currentUserId) ?? false
                     : false,
+                rigId: rig?.id ?? undefined,
             }
         })
     } catch (error) {
