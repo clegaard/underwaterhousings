@@ -175,7 +175,7 @@ export default async function CameraRigDetailPage({ params }: PageProps) {
                                 label="Housing"
                                 name={`${rig.housing.manufacturer.name} ${rig.housing.name}`}
                                 img={housingImg}
-                                href={`/housings/${rig.housing.manufacturer.slug}/${rig.housing.slug}`}
+                                href={`/gear/${rig.housing.manufacturer.slug}/housings/${rig.housing.slug}`}
                             />
                         )}
 

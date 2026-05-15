@@ -284,7 +284,7 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
                 {adapters.map((adapter) => (
                     <div key={adapter.id} className="group/card relative">
                         <Link
-                            href={`/gear/${manufacturer.slug}/${adapter.slug}`}
+                            href={`/gear/${manufacturer.slug}/port-adapters/${adapter.slug}`}
                             className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all overflow-hidden block"
                         >
                             <div className="relative h-28 bg-gray-50">

@@ -395,7 +395,7 @@ export default function HousingManufacturersClient({ manufacturers: initial, cam
                                 return (
                                     <div key={housing.id} className="group/card relative">
                                         <Link
-                                            href={`/housings/${manufacturer.slug}/${housing.slug}`}
+                                            href={`/gear/${manufacturer.slug}/housings/${housing.slug}`}
                                             className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all overflow-hidden block"
                                         >
                                             <div className="relative h-28 bg-gray-50">

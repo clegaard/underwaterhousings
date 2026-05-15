@@ -310,7 +310,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
                             {camera.housings.map((housing) => (
                                 <Link
                                     key={housing.id}
-                                    href={`/housings/${housing.manufacturer.slug}/${housing.slug}`}
+                                    href={`/gear/${housing.manufacturer.slug}/housings/${housing.slug}`}
                                     className="flex items-center justify-between p-4 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors group"
                                 >
                                     <div>
