@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useRenderTracker } from '@/lib/useRenderTracker'
 
 interface HousingImageProps {
     src: string
@@ -10,27 +11,22 @@ interface HousingImageProps {
 }
 
 export function HousingImage({ src, fallback, alt, className }: HousingImageProps) {
-    const [imageSrc, setImageSrc] = useState(src)
-    const [hasError, setHasError] = useState(false)
-
-    useEffect(() => {
-        setImageSrc(src)
-        setHasError(false)
-    }, [src])
-
-    const handleError = () => {
-        if (!hasError) {
-            setHasError(true)
-            setImageSrc(fallback)
-        }
+    useRenderTracker('HousingImage', { src, fallback, alt })
+    const [failed, setFailed] = useState(false)
+    // Derived-state pattern: reset failed flag synchronously during render when src changes,
+    // avoiding an extra useEffect render cycle (critical for grids with many cards).
+    const [prevSrc, setPrevSrc] = useState(src)
+    if (src !== prevSrc) {
+        setPrevSrc(src)
+        setFailed(false)
     }
 
     return (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-            src={imageSrc}
+            src={failed ? fallback : src}
             alt={alt}
-            onError={handleError}
+            onError={() => { if (!failed) setFailed(true) }}
             className={`absolute inset-0 w-full h-full ${className ?? ''}`}
         />
     )

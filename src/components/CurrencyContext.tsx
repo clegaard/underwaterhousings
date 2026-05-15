@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
+import { useRenderTracker } from '@/lib/useRenderTracker'
 import { SUPPORTED_CURRENCIES, FALLBACK_RATES, guessCurrencyFromLocale } from '@/lib/currency'
 
 const STORAGE_KEY = 'preferredCurrency'
@@ -20,6 +21,7 @@ const CurrencyContext = createContext<CurrencyContextValue>({
 })
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
+    useRenderTracker('CurrencyProvider')
     const [userCurrency, _setUserCurrency] = useState<string>('USD')
     const [fxRates, setFxRates] = useState<Record<string, number>>(FALLBACK_RATES)
 

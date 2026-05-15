@@ -72,7 +72,8 @@ function FovFanChart({
         const tx = apexX + R * Math.cos(h)
         const uy = apexY - R * Math.sin(h)
         const ly = apexY + R * Math.sin(h)
-        return `M ${apexX} ${apexY} L ${tx.toFixed(1)} ${uy.toFixed(1)} A ${R} ${R} 0 0 1 ${tx.toFixed(1)} ${ly.toFixed(1)} Z`
+        const r = R.toFixed(4)
+        return `M ${apexX} ${apexY} L ${tx.toFixed(1)} ${uy.toFixed(1)} A ${r} ${r} 0 0 1 ${tx.toFixed(1)} ${ly.toFixed(1)} Z`
     }
 
     // Draw narrowest FOV (largest FL, longest arm) first so it sits behind,

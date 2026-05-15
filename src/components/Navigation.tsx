@@ -9,7 +9,7 @@ import { useCurrency } from '@/components/CurrencyContext'
 import { SUPPORTED_CURRENCIES } from '@/lib/currency'
 
 interface Manufacturer {
-    id: string
+    id: number | string
     name: string
     slug: string
 }
