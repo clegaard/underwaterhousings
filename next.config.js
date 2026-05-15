@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    allowedDevOrigins: ['macbook-pro-3.local'],
     images: {
         formats: ['image/webp'],
         remotePatterns: [

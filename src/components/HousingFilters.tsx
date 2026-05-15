@@ -599,11 +599,11 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
 
 
-                        <div className="flex items-start gap-2 sm:gap-4">
+                        <div className="flex flex-col md:flex-row items-start gap-4">
 
                             {/* Step 1 — Camera */}
-                            <div className="flex-1 flex flex-col items-center">
-                                <div className={`relative w-full h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedCamera
+                            <div className="w-full md:flex-1 flex flex-col items-center">
+                                <div className={`relative w-full h-36 md:h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedCamera
                                     ? 'border-blue-400 bg-blue-50'
                                     : 'border-dashed border-gray-300 bg-gray-50'
                                     }`}>
@@ -657,7 +657,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
                             {/* Arrow 1→2 — hidden when fixed-lens */}
                             <div
-                                className="flex-none overflow-hidden transition-all duration-300 ease-in-out"
+                                className="hidden md:block flex-none overflow-hidden transition-all duration-300 ease-in-out"
                                 style={{ maxWidth: isFixedLens ? 0 : '2rem', opacity: isFixedLens ? 0 : 1 }}
                             >
                                 <div className="flex items-center" style={{ paddingTop: 'calc(96px - 0.625rem)' }}>
@@ -669,11 +669,11 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
                             {/* Step 2 — Lens (slides away for fixed-lens cameras) */}
                             <div
-                                className="flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out"
+                                className={`${isFixedLens ? 'hidden md:block' : 'w-full'} md:flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out`}
                                 style={{ maxWidth: isFixedLens ? 0 : '500px', opacity: isFixedLens ? 0 : 1, pointerEvents: isFixedLens ? 'none' : undefined }}
                             >
                                 <div className="flex flex-col items-center">
-                                    <div className={`relative w-full h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedLens
+                                    <div className={`relative w-full h-36 md:h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedLens
                                         ? 'border-blue-400 bg-blue-50'
                                         : selectedCamera
                                             ? 'border-dashed border-gray-300 bg-gray-50'
@@ -724,7 +724,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
                             {/* Arrow 2→3 — hidden when fixed-lens */}
                             <div
-                                className="flex-none overflow-hidden transition-all duration-300 ease-in-out"
+                                className="hidden md:block flex-none overflow-hidden transition-all duration-300 ease-in-out"
                                 style={{ maxWidth: isFixedLens ? 0 : '2rem', opacity: isFixedLens ? 0 : 1 }}
                             >
                                 <div className="flex items-center" style={{ paddingTop: 'calc(96px - 0.625rem)' }}>
@@ -736,9 +736,9 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
                             {/* Step 3 — Housing */}
                             <div
-                                className="flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out flex flex-col items-center"
+                                className="w-full md:flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out flex flex-col items-center"
                             >
-                                <div className={`relative w-full h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedHousing
+                                <div className={`relative w-full h-36 md:h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedHousing
                                     ? 'border-blue-400 bg-blue-50'
                                     : (selectedCamera && (isFixedLens || selectedLens || canUseWithoutHousing))
                                         ? 'border-dashed border-gray-300 bg-gray-50'
@@ -794,7 +794,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
                             {/* Arrow 3→4 — hidden when fixed-port or using without housing */}
                             <div
-                                className="flex-none overflow-hidden transition-all duration-300 ease-in-out"
+                                className="hidden md:block flex-none overflow-hidden transition-all duration-300 ease-in-out"
                                 style={{ maxWidth: (isFixedPort || usingWithoutHousing) ? 0 : '2rem', opacity: (isFixedPort || usingWithoutHousing) ? 0 : 1 }}
                             >
                                 <div className="flex items-center" style={{ paddingTop: 'calc(96px - 0.625rem)' }}>
@@ -806,11 +806,11 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
 
                             {/* Step 4 — Port (slides away for fixed-port housings or when using without housing) */}
                             <div
-                                className="flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out"
+                                className={`${(isFixedPort || usingWithoutHousing) ? 'hidden md:block' : 'w-full'} md:flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out`}
                                 style={{ maxWidth: (isFixedPort || usingWithoutHousing) ? 0 : '500px', opacity: (isFixedPort || usingWithoutHousing) ? 0 : 1, pointerEvents: (isFixedPort || usingWithoutHousing) ? 'none' : undefined }}
                             >
                                 <div className="flex flex-col items-center">
-                                    <div className={`relative w-full h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedPort
+                                    <div className={`relative w-full h-36 md:h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedPort
                                         ? 'border-blue-400 bg-blue-50'
                                         : selectedHousing
                                             ? 'border-dashed border-gray-300 bg-gray-50'

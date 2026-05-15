@@ -23,6 +23,7 @@ export default function GalleryPageClient({ photos, initialFilters }: GalleryPag
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
     const [isDeleting, setIsDeleting] = useState(false)
     const [deleteError, setDeleteError] = useState<string | null>(null)
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const lastSelectedIndex = useRef<number | null>(null)
     const filteredRef = useRef<GalleryPhotoData[]>([])
 
@@ -158,7 +159,22 @@ export default function GalleryPageClient({ photos, initialFilters }: GalleryPag
         <div className="flex flex-col lg:flex-row gap-6">
             {/* Filters Sidebar */}
             <div className="lg:w-72 flex-shrink-0">
-                <div className="bg-white rounded-lg shadow-sm p-6 sticky top-6">
+                {/* Mobile toggle */}
+                <button
+                    onClick={() => setIsSidebarOpen(v => !v)}
+                    className="lg:hidden w-full flex items-center justify-between px-4 py-3 bg-white rounded-lg shadow-sm border border-gray-200 mb-2 text-sm font-medium text-gray-700"
+                >
+                    <span className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+                        </svg>
+                        Filters{hasActiveFilter ? ` (active)` : ''}
+                    </span>
+                    <svg className={`w-4 h-4 transition-transform ${isSidebarOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <div className={`${isSidebarOpen ? 'block' : 'hidden'} lg:block bg-white rounded-lg shadow-sm p-6 sticky top-6`}>
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-xl font-semibold text-gray-900">Filters</h2>
                         {hasActiveFilter && (

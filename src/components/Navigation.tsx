@@ -32,6 +32,7 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
     const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
     const [currencySearch, setCurrencySearch] = useState('')
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const currencySearchRef = useRef<HTMLInputElement>(null)
     const userMenuRef = useRef<HTMLDivElement>(null)
     const camerasDropdownRef = useRef<HTMLDivElement>(null)
@@ -91,10 +92,15 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
         }
     }, [])
 
+    useEffect(() => {
+        document.body.style.overflow = isMobileMenuOpen ? 'hidden' : ''
+        return () => { document.body.style.overflow = '' }
+    }, [isMobileMenuOpen])
+
     return (
         <nav className="bg-white shadow-lg border-b">
             <div className="max-w-7xl mx-auto px-4">
-                <div className="flex justify-between items-center h-20">
+                <div className="flex justify-between items-center h-16 md:h-20">
                     {/* Logo/Brand */}
                     <div className="flex items-center">
                         <Link href="/" className="flex items-center">
@@ -103,14 +109,31 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
                                 alt="Underwater Housings System Builder"
                                 height={56}
                                 width={224}
-                                className="h-14 w-auto"
+                                className="h-10 md:h-14 w-auto"
                                 priority
                             />
                         </Link>
                     </div>
 
-                    {/* Navigation Menu */}
-                    <div className="flex items-center space-x-8">
+                    {/* Mobile hamburger */}
+                    <button
+                        className="md:hidden flex items-center justify-center w-10 h-10 text-gray-700 hover:text-blue-900 rounded-lg hover:bg-gray-100 transition-colors"
+                        onClick={() => setIsMobileMenuOpen(v => !v)}
+                        aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+                    >
+                        {isMobileMenuOpen ? (
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        ) : (
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        )}
+                    </button>
+
+                    {/* Navigation Menu (desktop) */}
+                    <div className="hidden md:flex items-center space-x-8">
 
                         {/* Cameras Dropdown */}
                         <div className="relative" ref={camerasDropdownRef}>
@@ -349,6 +372,137 @@ export default function Navigation({ manufacturers, cameraManufacturers, lensMan
                     </div>
                 </div>
             </div>
+
+            {/* Mobile drawer */}
+            {isMobileMenuOpen && (
+                <div className="fixed top-16 inset-x-0 bottom-0 z-40 md:hidden">
+                    <div className="absolute inset-0 bg-black/40" onClick={() => setIsMobileMenuOpen(false)} />
+                    <div className="absolute top-0 left-0 right-0 bg-white shadow-xl overflow-y-auto max-h-full">
+                        <div className="px-4 py-2 divide-y divide-gray-100">
+
+                            {/* Cameras */}
+                            <div>
+                                <button
+                                    onClick={() => { closeAll(); setIsCamerasOpen(v => !v) }}
+                                    className="flex items-center justify-between w-full py-4 text-base font-medium text-gray-900"
+                                >
+                                    Cameras
+                                    <svg className={`w-4 h-4 text-gray-400 transition-transform ${isCamerasOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                {isCamerasOpen && (
+                                    <div className="pb-3 pl-4 space-y-1">
+                                        <Link href="/cameras" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm text-blue-600 font-medium">All Cameras</Link>
+                                        {cameraManufacturers.map(m => (
+                                            <Link key={m.id} href={`/cameras/${m.slug}`} onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm text-gray-700">
+                                                {m.name}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Lenses */}
+                            <div>
+                                <button
+                                    onClick={() => { closeAll(); setIsLensesOpen(v => !v) }}
+                                    className="flex items-center justify-between w-full py-4 text-base font-medium text-gray-900"
+                                >
+                                    Lenses
+                                    <svg className={`w-4 h-4 text-gray-400 transition-transform ${isLensesOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                {isLensesOpen && (
+                                    <div className="pb-3 pl-4 space-y-1">
+                                        <Link href="/lenses" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm text-blue-600 font-medium">All Lenses</Link>
+                                        {lensManufacturers.map(m => (
+                                            <Link key={m.id} href={`/lenses/${m.slug}`} onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm text-gray-700">
+                                                {m.name}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Underwater Products */}
+                            <div>
+                                <button
+                                    onClick={() => { closeAll(); setIsHousingsOpen(v => !v) }}
+                                    className="flex items-center justify-between w-full py-4 text-base font-medium text-gray-900"
+                                >
+                                    Underwater Products
+                                    <svg className={`w-4 h-4 text-gray-400 transition-transform ${isHousingsOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                {isHousingsOpen && (
+                                    <div className="pb-3 pl-4 space-y-1">
+                                        <Link href="/gear" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm text-blue-600 font-medium">All Products</Link>
+                                        {manufacturers.map(m => (
+                                            <Link key={m.id} href={`/gear/${m.slug}`} onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm text-gray-700">
+                                                {m.name}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Flat links */}
+                            <div className="py-2 space-y-1">
+                                <Link href="/manufacturers" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900">Manufacturers</Link>
+                                <Link href="/gallery" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900">Gallery</Link>
+                                <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900">About</Link>
+                            </div>
+
+                            {/* Currency picker */}
+                            <div className="py-4">
+                                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Currency</p>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {SUPPORTED_CURRENCIES.slice(0, 9).map(c => (
+                                        <button
+                                            key={c.code}
+                                            onClick={() => { setUserCurrency(c.code); setIsMobileMenuOpen(false) }}
+                                            className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm border transition-colors ${c.code === userCurrency
+                                                    ? 'border-blue-500 bg-blue-50 text-blue-700 font-medium'
+                                                    : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                                                }`}
+                                        >
+                                            <span>{c.flag}</span>
+                                            <span>{c.code}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                                <p className="text-xs text-gray-400 mt-2">Use desktop nav for more currencies</p>
+                            </div>
+
+                            {/* User section */}
+                            <div className="py-4">
+                                {session ? (
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex items-center gap-3">
+                                            <UserAvatar picture={profilePicture} name={session.user?.name ?? session.user?.email ?? '?'} size="base" />
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-900">{session.user?.name}</p>
+                                                <p className="text-xs text-gray-500">{session.user?.email}</p>
+                                            </div>
+                                        </div>
+                                        <Link href={`/users/${session.user?.id}`} onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm text-gray-700">Profile</Link>
+                                        <button onClick={() => { setIsMobileMenuOpen(false); signOut({ callbackUrl: '/' }) }} className="w-full text-left py-2 text-sm text-red-600">Sign out</button>
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-3">
+                                        <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)} className="flex-1 text-center py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700">Log in</Link>
+                                        <Link href="/auth/signup" onClick={() => setIsMobileMenuOpen(false)} className="flex-1 text-center py-2.5 bg-blue-600 rounded-lg text-sm font-medium text-white">Sign up</Link>
+                                    </div>
+                                )}
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            )}
         </nav>
     )
 }
