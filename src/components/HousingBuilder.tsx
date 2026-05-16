@@ -171,8 +171,8 @@ function FovFanChart({
 }
 // ──────────────────────────────────────────────────────────────────────────────
 
-// Client-side component for advanced filtering
-export default function HousingFilters({ initialHousings, cameras, manufacturers, lenses, ports }: {
+// Client-side component for building an underwater rig
+export default function HousingBuilder({ initialHousings, cameras, manufacturers, lenses, ports }: {
     initialHousings: any[],
     cameras: any[],
     manufacturers: any[],
@@ -207,7 +207,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
                 else params.delete(k)
             })
             params.delete('port')
-            router.replace(`/?${params.toString()}`, { scroll: false })
+            router.replace(`/builder?${params.toString()}`, { scroll: false })
             return
         }
 
@@ -219,7 +219,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
             if (v) params.set(k, v)
             else params.delete(k)
         })
-        router.replace(`/?${params.toString()}`, { scroll: false })
+        router.replace(`/builder?${params.toString()}`, { scroll: false })
     }
 
     // Derived selections
@@ -574,7 +574,7 @@ export default function HousingFilters({ initialHousings, cameras, manufacturers
     // ────────────────────────────────────────────────────────────────────────
 
     const clearFilters = () => {
-        router.replace('/', { scroll: false })
+        router.replace('/builder', { scroll: false })
     }
 
     return (
