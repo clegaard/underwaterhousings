@@ -13,11 +13,13 @@ export default function Navigation() {
     const { userCurrency, setUserCurrency } = useCurrency()
     const [profilePicture, setProfilePicture] = useState<string | null>(null)
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+    const [isMobileUserMenuOpen, setIsMobileUserMenuOpen] = useState(false)
     const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
     const [currencySearch, setCurrencySearch] = useState('')
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const currencySearchRef = useRef<HTMLInputElement>(null)
     const userMenuRef = useRef<HTMLDivElement>(null)
+    const mobileUserMenuRef = useRef<HTMLDivElement>(null)
     const currencyDropdownRef = useRef<HTMLDivElement>(null)
 
     const selectedCurrencyMeta = SUPPORTED_CURRENCIES.find(c => c.code === userCurrency) ?? SUPPORTED_CURRENCIES[0]
@@ -40,6 +42,9 @@ export default function Navigation() {
         function handleClickOutside(event: MouseEvent) {
             if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
                 setIsUserMenuOpen(false)
+            }
+            if (mobileUserMenuRef.current && !mobileUserMenuRef.current.contains(event.target as Node)) {
+                setIsMobileUserMenuOpen(false)
             }
             if (currencyDropdownRef.current && !currencyDropdownRef.current.contains(event.target as Node)) {
                 setIsCurrencyOpen(false)
@@ -73,22 +78,75 @@ export default function Navigation() {
                         </Link>
                     </div>
 
-                    {/* Mobile hamburger */}
-                    <button
-                        className="md:hidden flex items-center justify-center w-10 h-10 text-gray-700 hover:text-blue-900 rounded-lg hover:bg-gray-100 transition-colors"
-                        onClick={() => setIsMobileMenuOpen(v => !v)}
-                        aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-                    >
-                        {isMobileMenuOpen ? (
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        ) : (
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        )}
-                    </button>
+                    {/* Mobile: user avatar / login icon + hamburger */}
+                    <div className="flex items-center gap-1 md:hidden">
+                        {/* User button — always visible in top bar on mobile */}
+                        <div className="relative" ref={mobileUserMenuRef}>
+                            {session ? (
+                                <>
+                                    <button
+                                        onClick={() => setIsMobileUserMenuOpen(v => !v)}
+                                        className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors"
+                                        aria-label="Account menu"
+                                    >
+                                        <UserAvatar
+                                            picture={profilePicture}
+                                            name={session.user?.name ?? session.user?.email ?? '?'}
+                                            size="base"
+                                        />
+                                    </button>
+                                    {isMobileUserMenuOpen && (
+                                        <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl ring-1 ring-black/10 z-50 overflow-hidden">
+                                            <div className="px-4 py-3 border-b border-gray-100">
+                                                <p className="text-sm font-medium text-gray-900 truncate">{session.user?.name}</p>
+                                                <p className="text-xs text-gray-500 truncate">{session.user?.email}</p>
+                                            </div>
+                                            <Link
+                                                href={`/users/${session.user?.id}`}
+                                                onClick={() => setIsMobileUserMenuOpen(false)}
+                                                className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                            >
+                                                Profile
+                                            </Link>
+                                            <button
+                                                onClick={() => { setIsMobileUserMenuOpen(false); signOut({ callbackUrl: '/' }) }}
+                                                className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
+                                            >
+                                                Sign out
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <Link
+                                    href="/auth/login"
+                                    className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:text-blue-900 hover:bg-gray-100 transition-colors"
+                                    aria-label="Log in"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                    </svg>
+                                </Link>
+                            )}
+                        </div>
+
+                        {/* Hamburger */}
+                        <button
+                            className="flex items-center justify-center w-10 h-10 text-gray-700 hover:text-blue-900 rounded-lg hover:bg-gray-100 transition-colors"
+                            onClick={() => setIsMobileMenuOpen(v => !v)}
+                            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+                        >
+                            {isMobileMenuOpen ? (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            ) : (
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            )}
+                        </button>
+                    </div>
 
                     {/* Navigation Menu (desktop) */}
                     <div className="hidden md:flex items-center space-x-8">
@@ -282,28 +340,6 @@ export default function Navigation() {
                                     ))}
                                 </div>
                                 <p className="text-xs text-gray-400 mt-2">Use desktop nav for more currencies</p>
-                            </div>
-
-                            {/* User section */}
-                            <div className="py-4">
-                                {session ? (
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex items-center gap-3">
-                                            <UserAvatar picture={profilePicture} name={session.user?.name ?? session.user?.email ?? '?'} size="base" />
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-900">{session.user?.name}</p>
-                                                <p className="text-xs text-gray-500">{session.user?.email}</p>
-                                            </div>
-                                        </div>
-                                        <Link href={`/users/${session.user?.id}`} onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm text-gray-700">Profile</Link>
-                                        <button onClick={() => { setIsMobileMenuOpen(false); signOut({ callbackUrl: '/' }) }} className="w-full text-left py-2 text-sm text-red-600">Sign out</button>
-                                    </div>
-                                ) : (
-                                    <div className="flex gap-3">
-                                        <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)} className="flex-1 text-center py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700">Log in</Link>
-                                        <Link href="/auth/signup" onClick={() => setIsMobileMenuOpen(false)} className="flex-1 text-center py-2.5 bg-blue-600 rounded-lg text-sm font-medium text-white">Sign up</Link>
-                                    </div>
-                                )}
                             </div>
 
                         </div>
