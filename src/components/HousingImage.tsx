@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRenderTracker } from '@/lib/useRenderTracker'
 
 interface HousingImageProps {
     src: string
@@ -11,7 +10,6 @@ interface HousingImageProps {
 }
 
 export function HousingImage({ src, fallback, alt, className }: HousingImageProps) {
-    useRenderTracker('HousingImage', { src, fallback, alt })
     const [failed, setFailed] = useState(false)
     // Derived-state pattern: reset failed flag synchronously during render when src changes,
     // avoiding an extra useEffect render cycle (critical for grids with many cards).
