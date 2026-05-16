@@ -19,6 +19,29 @@ function parseFocalLength(q: string): { wide: number | null; tele: number | null
     return null
 }
 
+/**
+ * Split a query into tokens and build an AND-of-ORs Prisma where clause so that
+ * each token must appear in at least one of the provided field paths.
+ *
+ * Example: "Sony A7V" → tokens ["Sony", "A7V"]
+ *   AND [ (name contains "Sony" OR brand.name contains "Sony"),
+ *         (name contains "A7V"  OR brand.name contains "A7V") ]
+ *
+ * This correctly finds a camera whose name="A7V" and brand.name="Sony" even
+ * though neither field alone contains the full phrase "Sony A7V".
+ */
+function multiTokenWhere(q: string, fields: ((token: string) => object)[]): object {
+    const tokens = q.trim().split(/\s+/).filter(t => t.length > 0)
+    return {
+        AND: tokens.map(token => ({
+            OR: fields.map(f => f(token)),
+        })),
+    }
+}
+
+/** Convenience: contains case-insensitive clause for a nested path */
+const ci = (token: string) => ({ contains: token, mode: 'insensitive' as const })
+
 export async function GET(request: NextRequest) {
     const q = request.nextUrl.searchParams.get('q')?.trim() ?? ''
 
@@ -31,29 +54,30 @@ export async function GET(request: NextRequest) {
 
     const fl = parseFocalLength(q)
 
-    // Build lens where clause: name match OR focal length range match
-    const lensWhere: any = { OR: [{ name: { contains: q, mode: 'insensitive' } }] }
-    if (fl) {
-        if (fl.wide !== null && fl.tele !== null) {
-            // Zoom range: match lenses whose range overlaps
-            lensWhere.OR.push({
-                focalLengthWide: { lte: fl.wide + 5, gte: fl.wide - 5 },
-                focalLengthTele: { lte: fl.tele + 5, gte: fl.tele - 5 },
-            })
-        } else if (fl.tele !== null) {
-            // Single focal length: match prime or zoom tele end
-            lensWhere.OR.push({ focalLengthTele: { lte: fl.tele + 5, gte: fl.tele - 5 } })
+    // Lens where: multi-token text match OR focal length range match
+    const lensTextWhere = multiTokenWhere(q, [
+        token => ({ name: ci(token) }),
+        token => ({ manufacturer: { name: ci(token) } }),
+    ])
+    const lensWhere: any = fl
+        ? {
+            OR: [
+                lensTextWhere,
+                ...(fl.wide !== null && fl.tele !== null
+                    ? [{ focalLengthWide: { lte: fl.wide + 5, gte: fl.wide - 5 }, focalLengthTele: { lte: fl.tele + 5, gte: fl.tele - 5 } }]
+                    : fl.tele !== null
+                        ? [{ focalLengthTele: { lte: fl.tele + 5, gte: fl.tele - 5 } }]
+                        : []),
+            ],
         }
-    }
+        : lensTextWhere
 
     const [cameras, lenses, housings, manufacturers, ports, portAdapters, gears] = await Promise.all([
         prisma.camera.findMany({
-            where: {
-                OR: [
-                    { name: { contains: q, mode: 'insensitive' } },
-                    { brand: { name: { contains: q, mode: 'insensitive' } } },
-                ]
-            },
+            where: multiTokenWhere(q, [
+                token => ({ name: ci(token) }),
+                token => ({ brand: { name: ci(token) } }),
+            ]),
             include: { brand: { select: { name: true, slug: true } } },
             take: 5,
             orderBy: { name: 'asc' },
@@ -65,18 +89,16 @@ export async function GET(request: NextRequest) {
             orderBy: { name: 'asc' },
         }),
         prisma.housing.findMany({
-            where: {
-                OR: [
-                    { name: { contains: q, mode: 'insensitive' } },
-                    { manufacturer: { name: { contains: q, mode: 'insensitive' } } },
-                ]
-            },
+            where: multiTokenWhere(q, [
+                token => ({ name: ci(token) }),
+                token => ({ manufacturer: { name: ci(token) } }),
+            ]),
             include: { manufacturer: { select: { name: true, slug: true } } },
             take: 5,
             orderBy: { name: 'asc' },
         }),
         prisma.manufacturer.findMany({
-            where: { name: { contains: q, mode: 'insensitive' } },
+            where: multiTokenWhere(q, [token => ({ name: ci(token) })]),
             include: {
                 _count: { select: { housings: true, cameras: true } }
             },
@@ -84,34 +106,28 @@ export async function GET(request: NextRequest) {
             orderBy: { name: 'asc' },
         }),
         prisma.port.findMany({
-            where: {
-                OR: [
-                    { name: { contains: q, mode: 'insensitive' } },
-                    { manufacturer: { name: { contains: q, mode: 'insensitive' } } },
-                ]
-            },
+            where: multiTokenWhere(q, [
+                token => ({ name: ci(token) }),
+                token => ({ manufacturer: { name: ci(token) } }),
+            ]),
             include: { manufacturer: { select: { name: true, slug: true } } },
             take: 4,
             orderBy: { name: 'asc' },
         }),
         prisma.portAdapter.findMany({
-            where: {
-                OR: [
-                    { name: { contains: q, mode: 'insensitive' } },
-                    { manufacturer: { name: { contains: q, mode: 'insensitive' } } },
-                ]
-            },
+            where: multiTokenWhere(q, [
+                token => ({ name: ci(token) }),
+                token => ({ manufacturer: { name: ci(token) } }),
+            ]),
             include: { manufacturer: { select: { name: true } } },
             take: 4,
             orderBy: { name: 'asc' },
         }),
         prisma.gear.findMany({
-            where: {
-                OR: [
-                    { name: { contains: q, mode: 'insensitive' } },
-                    { manufacturer: { name: { contains: q, mode: 'insensitive' } } },
-                ]
-            },
+            where: multiTokenWhere(q, [
+                token => ({ name: ci(token) }),
+                token => ({ manufacturer: { name: ci(token) } }),
+            ]),
             include: { manufacturer: { select: { name: true } } },
             take: 4,
             orderBy: { name: 'asc' },
