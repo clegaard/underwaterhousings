@@ -20,27 +20,23 @@ function parseFocalLength(q: string): { wide: number | null; tele: number | null
 }
 
 /**
- * Split a query into tokens and build an AND-of-ORs Prisma where clause so that
- * each token must appear in at least one of the provided field paths.
+ * Build a Prisma where clause that requires every token in the query to appear
+ * in at least one of the provided field conditions.
  *
- * Example: "Sony A7V" → tokens ["Sony", "A7V"]
- *   AND [ (name contains "Sony" OR brand.name contains "Sony"),
- *         (name contains "A7V"  OR brand.name contains "A7V") ]
- *
- * This correctly finds a camera whose name="A7V" and brand.name="Sony" even
- * though neither field alone contains the full phrase "Sony A7V".
+ * e.g. "Sony A7V" splits into ["Sony", "A7V"]. For each token we emit an OR
+ * over the candidate fields, then AND all those ORs together. This means
+ * "Sony" can match the brand name while "A7V" matches the camera name.
  */
-function multiTokenWhere(q: string, fields: ((token: string) => object)[]): object {
-    const tokens = q.trim().split(/\s+/).filter(t => t.length > 0)
+function tokenAnd(
+    tokens: string[],
+    fields: (token: string) => object[]
+): object {
     return {
         AND: tokens.map(token => ({
-            OR: fields.map(f => f(token)),
+            OR: fields(token),
         })),
     }
 }
-
-/** Convenience: contains case-insensitive clause for a nested path */
-const ci = (token: string) => ({ contains: token, mode: 'insensitive' as const })
 
 export async function GET(request: NextRequest) {
     const q = request.nextUrl.searchParams.get('q')?.trim() ?? ''
@@ -52,31 +48,33 @@ export async function GET(request: NextRequest) {
         )
     }
 
+    // Split into tokens; filter out empty strings from multiple spaces
+    const tokens = q.split(/\s+/).filter(Boolean)
+
     const fl = parseFocalLength(q)
 
-    // Lens where: multi-token text match OR focal length range match
-    const lensTextWhere = multiTokenWhere(q, [
-        token => ({ name: ci(token) }),
-        token => ({ manufacturer: { name: ci(token) } }),
+    // Lens where: token-AND match OR focal length range match
+    const lensTokenClause = tokenAnd(tokens, token => [
+        { name: { contains: token, mode: 'insensitive' } },
+        { manufacturer: { name: { contains: token, mode: 'insensitive' } } },
     ])
-    const lensWhere: any = fl
-        ? {
-            OR: [
-                lensTextWhere,
-                ...(fl.wide !== null && fl.tele !== null
-                    ? [{ focalLengthWide: { lte: fl.wide + 5, gte: fl.wide - 5 }, focalLengthTele: { lte: fl.tele + 5, gte: fl.tele - 5 } }]
-                    : fl.tele !== null
-                        ? [{ focalLengthTele: { lte: fl.tele + 5, gte: fl.tele - 5 } }]
-                        : []),
-            ],
+    const lensWhere: any = { OR: [lensTokenClause] }
+    if (fl) {
+        if (fl.wide !== null && fl.tele !== null) {
+            lensWhere.OR.push({
+                focalLengthWide: { lte: fl.wide + 5, gte: fl.wide - 5 },
+                focalLengthTele: { lte: fl.tele + 5, gte: fl.tele - 5 },
+            })
+        } else if (fl.tele !== null) {
+            lensWhere.OR.push({ focalLengthTele: { lte: fl.tele + 5, gte: fl.tele - 5 } })
         }
-        : lensTextWhere
+    }
 
     const [cameras, lenses, housings, manufacturers, ports, portAdapters, gears] = await Promise.all([
         prisma.camera.findMany({
-            where: multiTokenWhere(q, [
-                token => ({ name: ci(token) }),
-                token => ({ brand: { name: ci(token) } }),
+            where: tokenAnd(tokens, token => [
+                { name: { contains: token, mode: 'insensitive' } },
+                { brand: { name: { contains: token, mode: 'insensitive' } } },
             ]),
             include: { brand: { select: { name: true, slug: true } } },
             take: 5,
@@ -89,16 +87,16 @@ export async function GET(request: NextRequest) {
             orderBy: { name: 'asc' },
         }),
         prisma.housing.findMany({
-            where: multiTokenWhere(q, [
-                token => ({ name: ci(token) }),
-                token => ({ manufacturer: { name: ci(token) } }),
+            where: tokenAnd(tokens, token => [
+                { name: { contains: token, mode: 'insensitive' } },
+                { manufacturer: { name: { contains: token, mode: 'insensitive' } } },
             ]),
             include: { manufacturer: { select: { name: true, slug: true } } },
             take: 5,
             orderBy: { name: 'asc' },
         }),
         prisma.manufacturer.findMany({
-            where: multiTokenWhere(q, [token => ({ name: ci(token) })]),
+            where: { name: { contains: q, mode: 'insensitive' } },
             include: {
                 _count: { select: { housings: true, cameras: true } }
             },
@@ -106,27 +104,27 @@ export async function GET(request: NextRequest) {
             orderBy: { name: 'asc' },
         }),
         prisma.port.findMany({
-            where: multiTokenWhere(q, [
-                token => ({ name: ci(token) }),
-                token => ({ manufacturer: { name: ci(token) } }),
+            where: tokenAnd(tokens, token => [
+                { name: { contains: token, mode: 'insensitive' } },
+                { manufacturer: { name: { contains: token, mode: 'insensitive' } } },
             ]),
             include: { manufacturer: { select: { name: true, slug: true } } },
             take: 4,
             orderBy: { name: 'asc' },
         }),
         prisma.portAdapter.findMany({
-            where: multiTokenWhere(q, [
-                token => ({ name: ci(token) }),
-                token => ({ manufacturer: { name: ci(token) } }),
+            where: tokenAnd(tokens, token => [
+                { name: { contains: token, mode: 'insensitive' } },
+                { manufacturer: { name: { contains: token, mode: 'insensitive' } } },
             ]),
             include: { manufacturer: { select: { name: true } } },
             take: 4,
             orderBy: { name: 'asc' },
         }),
         prisma.gear.findMany({
-            where: multiTokenWhere(q, [
-                token => ({ name: ci(token) }),
-                token => ({ manufacturer: { name: ci(token) } }),
+            where: tokenAnd(tokens, token => [
+                { name: { contains: token, mode: 'insensitive' } },
+                { manufacturer: { name: { contains: token, mode: 'insensitive' } } },
             ]),
             include: { manufacturer: { select: { name: true } } },
             take: 4,
