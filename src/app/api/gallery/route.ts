@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
             select: {
                 id: true,
                 imagePath: true,
-                title: true,
+                caption: true,
                 location: true,
             },
         })
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
             photos: photos.map(p => ({
                 id: p.id,
                 src: withBase(p.imagePath),
-                title: p.title,
+                caption: p.caption,
                 location: p.location,
             })),
         })

@@ -288,8 +288,7 @@ model CameraRig {
 
 model GalleryPhoto {
     id             Int              @id @default(autoincrement())
-    title          String?
-    description    String?
+    caption        String?
     imagePath      String
     width          Int
     height         Int

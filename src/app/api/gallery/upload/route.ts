@@ -61,8 +61,7 @@ export async function POST(request: NextRequest) {
     const width = parseInt(formData.get('width') as string) || 1280
     const height = parseInt(formData.get('height') as string) || 854
 
-    const title = (formData.get('title') as string)?.trim() || null
-    const description = (formData.get('description') as string)?.trim() || null
+    const caption = (formData.get('caption') as string)?.trim() || null
     const location = (formData.get('location') as string)?.trim() || null
     const locationLatStr = (formData.get('locationLat') as string)?.trim()
     const locationLngStr = (formData.get('locationLng') as string)?.trim()
@@ -82,8 +81,7 @@ export async function POST(request: NextRequest) {
             imagePath,
             width,
             height,
-            title,
-            description,
+            caption,
             location,
             locationLat: locationLatStr ? parseFloat(locationLatStr) : null,
             locationLng: locationLngStr ? parseFloat(locationLngStr) : null,

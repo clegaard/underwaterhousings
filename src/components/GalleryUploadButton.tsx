@@ -18,8 +18,7 @@ interface UserRig {
 }
 
 interface UploadForm {
-    title: string
-    description: string
+    caption: string
     takenAt: string
     iso: string
     focalLength: string
@@ -28,8 +27,7 @@ interface UploadForm {
 }
 
 const EMPTY_FORM: UploadForm = {
-    title: '',
-    description: '',
+    caption: '',
     takenAt: '',
     iso: '',
     focalLength: '',
@@ -219,8 +217,7 @@ export default function GalleryUploadButton() {
             fd.append('file', file)
             fd.append('width', String(dimensions.width))
             fd.append('height', String(dimensions.height))
-            if (form.title) fd.append('title', form.title)
-            if (form.description) fd.append('description', form.description)
+            if (form.caption) fd.append('caption', form.caption)
             if (locationValue) {
                 if (locationValue.name) fd.append('location', locationValue.name)
                 fd.append('locationLat', String(locationValue.lat))
@@ -444,22 +441,21 @@ export default function GalleryUploadButton() {
 
                             {file && (
                                 <>
-                                    {/* Title / location / description — always editable */}
+                                    {/* Caption / location — always editable */}
                                     <div className="space-y-3">
-                                        {editableField('title', 'Title', 'e.g. Nudibranch on coral')}
                                         <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">Location</label>
-                                            <LocationPicker value={locationValue} onChange={setLocationValue} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">Caption</label>
                                             <textarea
-                                                value={form.description}
-                                                onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
-                                                placeholder="Optional description"
+                                                value={form.caption}
+                                                onChange={e => setForm(prev => ({ ...prev, caption: e.target.value }))}
+                                                placeholder="e.g. Nudibranch on coral"
                                                 rows={2}
                                                 className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 resize-none"
                                             />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">Location</label>
+                                            <LocationPicker value={locationValue} onChange={setLocationValue} />
                                         </div>
                                     </div>
 

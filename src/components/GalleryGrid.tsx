@@ -10,8 +10,7 @@ import UserAvatar from '@/components/UserAvatar'
 import { withBase } from '@/lib/images'
 
 export interface GalleryPhotoData extends Photo {
-    title?: string
-    description?: string
+    caption?: string
     location?: string
     takenAt?: string
     rigLabel?: string
@@ -163,7 +162,7 @@ function CommentPanel({
         <div className="flex flex-col h-full">
             {/* Author */}
             {photo.userId && photo.userName && (
-                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-gray-100 shrink-0">
+                <div className="flex items-start gap-2.5 px-4 py-3 border-b border-gray-100 shrink-0">
                     <Link href={`/users/${photo.userId}`} onClick={e => e.stopPropagation()} className="shrink-0">
                         <UserAvatar picture={photo.userProfilePicture} name={photo.userName} size="sm" />
                     </Link>
@@ -171,45 +170,31 @@ function CommentPanel({
                         <Link href={`/users/${photo.userId}`} onClick={e => e.stopPropagation()} className="text-sm font-semibold text-gray-900 hover:underline truncate block">
                             {photo.userName}
                         </Link>
-                        {photo.title && <p className="text-sm text-gray-800 leading-snug line-clamp-2 mt-0.5">{photo.title}</p>}
-                        {photo.description && !photo.title && <p className="text-xs text-gray-500 leading-snug line-clamp-2 mt-0.5">{photo.description}</p>}
+                        {photo.caption && <p className="text-xs text-gray-500 leading-snug line-clamp-3 mt-0.5">{photo.caption}</p>}
                         {photo.location && <p className="text-xs text-gray-500 truncate mt-0.5">📍 {photo.location}</p>}
+                        {photo.rigLabel && (
+                            <p className="text-xs text-gray-400 mt-0.5">
+                                {photo.userId && photo.rigId ? (
+                                    <Link href={`/users/${photo.userId}/camera-rigs/${photo.rigId}`} onClick={e => e.stopPropagation()} className="hover:text-blue-600 transition-colors">
+                                        📷 {photo.rigLabel}
+                                    </Link>
+                                ) : `📷 ${photo.rigLabel}`}
+                            </p>
+                        )}
+                        {(photo.iso || photo.focalLength || photo.aperture || photo.shutterSpeed) && (
+                            <p className="text-xs text-gray-400 flex gap-2 mt-0.5">
+                                {photo.iso && <span title="ISO Speed Rating">ISO {photo.iso}</span>}
+                                {photo.focalLength && <span title="Focal Length">{photo.focalLength}mm</span>}
+                                {photo.aperture && <span title="Aperture"><i>f</i>/{photo.aperture}</span>}
+                                {photo.shutterSpeed && <span title="Shutter Speed">{formatShutterSpeed(photo.shutterSpeed)}</span>}
+                            </p>
+                        )}
                     </div>
                 </div>
             )}
 
             {/* Comments list */}
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 min-h-0">
-                {/* Description (shown only when both title and description are set) */}
-                {photo.title && photo.description && (
-                    <p className="text-sm text-gray-600 leading-snug">{photo.description}</p>
-                )}
-
-                {/* Rig */}
-                {photo.rigLabel && (
-                    <p className="text-xs text-gray-400">
-                        {photo.userId && photo.rigId ? (
-                            <Link
-                                href={`/users/${photo.userId}/camera-rigs/${photo.rigId}`}
-                                onClick={e => e.stopPropagation()}
-                                className="hover:text-blue-600 transition-colors"
-                            >
-                                📷 {photo.rigLabel}
-                            </Link>
-                        ) : `📷 ${photo.rigLabel}`}
-                    </p>
-                )}
-
-                {/* EXIF */}
-                {(photo.iso || photo.focalLength || photo.aperture || photo.shutterSpeed) && (
-                    <p className="text-xs text-gray-400 flex gap-2">
-                        {photo.iso && <span title="ISO Speed Rating">ISO {photo.iso}</span>}
-                        {photo.focalLength && <span title="Focal Length">{photo.focalLength}mm</span>}
-                        {photo.aperture && <span title="Aperture"><i>f</i>/{photo.aperture}</span>}
-                        {photo.shutterSpeed && <span title="Shutter Speed">{formatShutterSpeed(photo.shutterSpeed)}</span>}
-                    </p>
-                )}
-
                 {loading && <p className="text-xs text-gray-400">Loading comments…</p>}
 
                 {!loading && comments.map(comment => (
@@ -438,8 +423,8 @@ function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUse
                 </>
             )}
 
-            {/* Hover overlay — always visible on touch devices, hover-only on desktop */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 touch:opacity-100 transition-opacity duration-300 pointer-events-none">
+            {/* Hover overlay — always visible on touch devices, hover-only on pointer devices */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity duration-300 pointer-events-none">
                 <div className="absolute bottom-2 right-2 flex items-center gap-2.5 pointer-events-auto">
                     {/* Like button */}
                     {currentUserId && onLikeToggle ? (
