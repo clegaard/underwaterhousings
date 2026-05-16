@@ -488,6 +488,18 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
     const [isDraggingSheet, setIsDraggingSheet] = useState(false)
     const sheetTouchStartY = useRef(0)
     const sheetTouchCurrentY = useRef(0)
+    const [swipeDeltaX, setSwipeDeltaX] = useState(0)
+    const [isSwipingImage, setIsSwipingImage] = useState(false)
+    const imageTouchStartX = useRef(0)
+    const imageTouchStartY = useRef(0)
+    const imageTouchCurrentX = useRef(0)
+    const imageTouchLastX = useRef(0)
+    const imageTouchLastTime = useRef(0)
+    const swipeVelocityX = useRef(0)
+    const swipeDirectionLocked = useRef<'h' | 'v' | null>(null)
+    const [hasTouchInput, setHasTouchInput] = useState(false)
+    const [isSwipeSettling, setIsSwipeSettling] = useState(false)
+    const [disableSwipeTransition, setDisableSwipeTransition] = useState(false)
 
     // Per-photo live state — keyed by photoId, initialised from props
     const [photoState, setPhotoState] = useState<Record<number, PhotoLiveState>>(() => {
@@ -524,7 +536,20 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
         setLightboxLoaded(false)
         setIsCommentSheetOpen(false)
         setSheetDragOffset(0)
+        setSwipeDeltaX(0)
+        setIsSwipingImage(false)
+        setIsSwipeSettling(false)
+        setDisableSwipeTransition(false)
     }, [lightboxIndex])
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return
+        const supportsTouch =
+            ('ontouchstart' in window) ||
+            navigator.maxTouchPoints > 0 ||
+            window.matchMedia('(any-pointer: coarse)').matches
+        setHasTouchInput(supportsTouch)
+    }, [])
 
     function handleSheetTouchStart(e: React.TouchEvent) {
         sheetTouchStartY.current = e.touches[0].clientY
@@ -551,6 +576,79 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
         } else {
             setSheetDragOffset(0)
         }
+    }
+
+    function handleImageTouchStart(e: React.TouchEvent) {
+        if (isSwipeSettling) return
+        const now = performance.now()
+        imageTouchStartX.current = e.touches[0].clientX
+        imageTouchStartY.current = e.touches[0].clientY
+        imageTouchCurrentX.current = e.touches[0].clientX
+        imageTouchLastX.current = e.touches[0].clientX
+        imageTouchLastTime.current = now
+        swipeVelocityX.current = 0
+        swipeDirectionLocked.current = null
+    }
+
+    function handleImageTouchMove(e: React.TouchEvent) {
+        if (isSwipeSettling) return
+        const dx = e.touches[0].clientX - imageTouchStartX.current
+        const dy = e.touches[0].clientY - imageTouchStartY.current
+        imageTouchCurrentX.current = e.touches[0].clientX
+        const now = performance.now()
+        const dt = Math.max(1, now - imageTouchLastTime.current)
+        swipeVelocityX.current = (e.touches[0].clientX - imageTouchLastX.current) / dt
+        imageTouchLastX.current = e.touches[0].clientX
+        imageTouchLastTime.current = now
+        if (swipeDirectionLocked.current === null) {
+            if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
+                swipeDirectionLocked.current = Math.abs(dx) >= Math.abs(dy) ? 'h' : 'v'
+            }
+            return
+        }
+        if (swipeDirectionLocked.current === 'h') {
+            setIsSwipingImage(true)
+            setSwipeDeltaX(dx * 0.95)
+        }
+    }
+
+    function handleImageTouchEnd() {
+        if (isSwipeSettling) return
+        if (swipeDirectionLocked.current === 'h') {
+            const delta = imageTouchCurrentX.current - imageTouchStartX.current
+            const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1
+            const distanceThreshold = viewportWidth * 0.18
+            const velocityThreshold = 0.45
+            const shouldAdvanceByDistance = Math.abs(delta) > distanceThreshold
+            const shouldAdvanceByVelocity = Math.abs(swipeVelocityX.current) > velocityThreshold
+            setIsSwipingImage(false)
+            if (delta < 0 && (shouldAdvanceByDistance || shouldAdvanceByVelocity)) {
+                setIsSwipeSettling(true)
+                setSwipeDeltaX(-viewportWidth)
+                setTimeout(() => {
+                    setDisableSwipeTransition(true)
+                    goNext()
+                    setSwipeDeltaX(0)
+                    requestAnimationFrame(() => {
+                        setDisableSwipeTransition(false)
+                    })
+                }, 320)
+            } else if (delta > 0 && (shouldAdvanceByDistance || shouldAdvanceByVelocity)) {
+                setIsSwipeSettling(true)
+                setSwipeDeltaX(viewportWidth)
+                setTimeout(() => {
+                    setDisableSwipeTransition(true)
+                    goPrev()
+                    setSwipeDeltaX(0)
+                    requestAnimationFrame(() => {
+                        setDisableSwipeTransition(false)
+                    })
+                }, 320)
+            } else {
+                setSwipeDeltaX(0)
+            }
+        }
+        swipeDirectionLocked.current = null
     }
 
     const closeLightbox = useCallback(() => { setLightboxIndex(null); setIsCommentSheetOpen(false) }, [])
@@ -623,6 +721,10 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
             {/* Lightbox */}
             {lightboxIndex !== null && (() => {
                 const photo = photos[lightboxIndex]
+                const prevIndex = (lightboxIndex - 1 + photos.length) % photos.length
+                const nextIndex = (lightboxIndex + 1) % photos.length
+                const prevPhoto = photos[prevIndex]
+                const nextPhoto = photos[nextIndex]
                 const photoId = photo.photoId
                 const stored = photoId != null ? photoState[photoId] : undefined
                 const ls = {
@@ -637,11 +739,22 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                         <div className="flex flex-col bg-black md:hidden overflow-hidden" style={{ height: '100dvh' }}>
 
                             {/* Image — always flex-1: fills all space not taken by the bottom panel */}
-                            <div className="flex-1 relative bg-black min-h-0">
-                                {/* Back button + counter overlaid on image */}
-                                <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 pt-2.5">
+                            <div
+                                className="flex-1 relative bg-black min-h-0 overflow-hidden"
+                                onTouchStart={handleImageTouchStart}
+                                onTouchMove={handleImageTouchMove}
+                                onTouchEnd={handleImageTouchEnd}
+                            >
+                                {/* Back button + counter: fixed overlay, stays put during horizontal swipe */}
+                                <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3 pt-2.5">
                                     <button
                                         onClick={closeLightbox}
+                                        onTouchStart={(e) => e.stopPropagation()}
+                                        onTouchEnd={(e) => {
+                                            e.stopPropagation()
+                                            e.preventDefault()
+                                            closeLightbox()
+                                        }}
                                         className="p-1.5 text-white/80 hover:text-white transition-colors bg-black/30 rounded-full"
                                         aria-label="Close"
                                     >
@@ -653,18 +766,56 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                     <div className="w-8" />
                                 </div>
 
-                                {!lightboxLoaded && <div className="absolute inset-0 bg-gray-800 animate-pulse" />}
-                                <Image
-                                    src={photo.src}
-                                    alt={photo.caption ?? 'Gallery photo'}
-                                    fill
-                                    sizes="100vw"
-                                    className={`object-contain transition-opacity duration-300 ${lightboxLoaded ? 'opacity-100' : 'opacity-0'}`}
-                                    priority
-                                    onLoad={() => setLightboxLoaded(true)}
-                                />
-                                <button className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/40 rounded-full w-8 h-8 flex items-center justify-center text-xl z-10" onClick={goPrev} aria-label="Previous photo">‹</button>
-                                <button className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/40 rounded-full w-8 h-8 flex items-center justify-center text-xl z-10" onClick={goNext} aria-label="Next photo">›</button>
+                                {/* Slide wrapper: only the image content translates during swipe */}
+                                <div
+                                    className="absolute inset-0"
+                                    style={{
+                                        transform: `translateX(calc(-100% + ${swipeDeltaX}px))`,
+                                        transition: (isSwipingImage || disableSwipeTransition)
+                                            ? 'none'
+                                            : 'transform 320ms cubic-bezier(0.22, 0.61, 0.36, 1)',
+                                    }}
+                                >
+                                    <div className="flex h-full w-[300%]">
+                                        <div className="relative h-full w-full shrink-0">
+                                            <Image
+                                                src={prevPhoto.src}
+                                                alt={prevPhoto.caption ?? 'Previous gallery photo'}
+                                                fill
+                                                sizes="100vw"
+                                                className="object-contain opacity-70"
+                                            />
+                                        </div>
+                                        <div className="relative h-full w-full shrink-0">
+                                            {!lightboxLoaded && <div className="absolute inset-0 bg-gray-800 animate-pulse" />}
+                                            <Image
+                                                src={photo.src}
+                                                alt={photo.caption ?? 'Gallery photo'}
+                                                fill
+                                                sizes="100vw"
+                                                className={`object-contain transition-opacity duration-300 ${lightboxLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                                priority
+                                                onLoad={() => setLightboxLoaded(true)}
+                                            />
+                                        </div>
+                                        <div className="relative h-full w-full shrink-0">
+                                            <Image
+                                                src={nextPhoto.src}
+                                                alt={nextPhoto.caption ?? 'Next gallery photo'}
+                                                fill
+                                                sizes="100vw"
+                                                className="object-contain opacity-70"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {!hasTouchInput && (
+                                    <>
+                                        <button className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/40 rounded-full w-8 h-8 flex items-center justify-center text-xl z-10" onClick={goPrev} aria-label="Previous photo">‹</button>
+                                        <button className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/40 rounded-full w-8 h-8 flex items-center justify-center text-xl z-10" onClick={goNext} aria-label="Next photo">›</button>
+                                    </>
+                                )}
                             </div>
 
                             {/* Info strip — shrink-0 (auto height), shown when sheet is closed */}
