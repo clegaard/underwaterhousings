@@ -58,6 +58,7 @@ function CommentPanel({
     onLikeToggle,
     onCommentCountChange,
     focusInputSignal,
+    commentsOnly,
 }: {
     photo: GalleryPhotoData
     currentUserId?: number
@@ -66,6 +67,7 @@ function CommentPanel({
     onLikeToggle: () => void
     onCommentCountChange?: (delta: number) => void
     focusInputSignal?: number
+    commentsOnly?: boolean
 }) {
     const [comments, setComments] = useState<Comment[]>([])
     const [commentCount, setCommentCount] = useState(photo.commentCount ?? 0)
@@ -161,7 +163,7 @@ function CommentPanel({
     return (
         <div className="flex flex-col h-full">
             {/* Author */}
-            {photo.userId && photo.userName && (
+            {!commentsOnly && photo.userId && photo.userName && (
                 <div className="flex items-start gap-2.5 px-4 py-3 border-b border-gray-100 shrink-0">
                     <Link href={`/users/${photo.userId}`} onClick={e => e.stopPropagation()} className="shrink-0">
                         <UserAvatar picture={photo.userProfilePicture} name={photo.userName} size="sm" />
@@ -259,7 +261,7 @@ function CommentPanel({
             {/* Action bar */}
             <div className="border-t border-gray-100 shrink-0">
                 {/* Like + comment counts */}
-                <div className="flex items-center gap-4 px-4 pt-3 pb-1">
+                {!commentsOnly && <div className="flex items-center gap-4 px-4 pt-3 pb-1">
                     <button
                         type="button"
                         onClick={e => {
@@ -296,11 +298,11 @@ function CommentPanel({
                             <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
                     </button>
-                </div>
-                <div className="px-4 pb-1 flex gap-4">
+                </div>}
+                {!commentsOnly && <div className="px-4 pb-1 flex gap-4">
                     <p className="text-sm font-semibold text-gray-900">{likeCount.toLocaleString()} {likeCount === 1 ? 'like' : 'likes'}</p>
                     <p className="text-sm text-gray-500">{commentCount.toLocaleString()} {commentCount === 1 ? 'comment' : 'comments'}</p>
-                </div>
+                </div>}
 
                 {/* Comment input */}
                 {currentUserId ? (
@@ -388,7 +390,7 @@ function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUse
             {!loaded && <div className="absolute inset-0 bg-gray-200 animate-pulse" />}
             <Image
                 src={photo.src}
-                alt={photo.title ?? photo.description ?? 'Gallery photo'}
+                alt={photo.caption ?? 'Gallery photo'}
                 fill
                 sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw"
                 className={`object-cover transition-[opacity,transform] duration-300 group-hover:scale-105 ${loaded ? 'opacity-100' : 'opacity-0'}`}
@@ -618,7 +620,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                 {!lightboxLoaded && <div className="absolute inset-0 bg-gray-800 animate-pulse" />}
                                 <Image
                                     src={photo.src}
-                                    alt={photo.title ?? photo.description ?? 'Gallery photo'}
+                                    alt={photo.caption ?? 'Gallery photo'}
                                     fill
                                     sizes="100vw"
                                     className={`object-contain transition-opacity duration-300 ${lightboxLoaded ? 'opacity-100' : 'opacity-0'}`}
@@ -632,73 +634,70 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                             {/* White info section — bottom half */}
                             <div className="flex-1 bg-white flex flex-col overflow-hidden">
 
-                                {/* Author row + action buttons */}
-                                <div className="flex items-center gap-3 px-4 pt-3 pb-2.5 shrink-0 border-b border-gray-100">
-                                    {photo.userId && photo.userName && (
+                                {/* Author + metadata block (same grouping as desktop CommentPanel) */}
+                                {photo.userId && photo.userName && (
+                                    <div className="flex items-start gap-2.5 px-4 py-3 border-b border-gray-100 shrink-0">
                                         <Link href={`/users/${photo.userId}`} onClick={closeLightbox} className="shrink-0">
                                             <UserAvatar picture={photo.userProfilePicture} name={photo.userName} size="sm" />
                                         </Link>
-                                    )}
-                                    <p className="flex-1 min-w-0 text-sm font-semibold text-gray-900 truncate">{photo.userName ?? ''}</p>
-                                    <div className="flex items-center gap-4 shrink-0">
-                                        <button
-                                            type="button"
-                                            onClick={() => photoId != null && toggleLike(photoId)}
-                                            disabled={!currentUserId}
-                                            aria-label={ls.liked ? 'Unlike' : 'Like'}
-                                            className={`transition-colors ${currentUserId ? 'cursor-pointer' : 'cursor-default'} ${ls.liked ? 'text-red-500' : 'text-gray-500'}`}
-                                        >
-                                            <svg viewBox="0 0 24 24" className="w-6 h-6" fill={ls.liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                            </svg>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsCommentSheetOpen(true)}
-                                            aria-label="Open comments"
-                                            className="text-gray-500 hover:text-gray-700 transition-colors"
-                                        >
-                                            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                            </svg>
-                                        </button>
+                                        <div className="min-w-0 flex-1">
+                                            <Link href={`/users/${photo.userId}`} onClick={closeLightbox} className="text-sm font-semibold text-gray-900 hover:underline truncate block">
+                                                {photo.userName}
+                                            </Link>
+                                            {photo.caption && <p className="text-xs text-gray-500 leading-snug line-clamp-3 mt-0.5">{photo.caption}</p>}
+                                            {photo.location && <p className="text-xs text-gray-500 truncate mt-0.5">📍 {photo.location}</p>}
+                                            {photo.rigLabel && (
+                                                <p className="text-xs text-gray-400 mt-0.5">
+                                                    {photo.userId && photo.rigId ? (
+                                                        <Link href={`/users/${photo.userId}/camera-rigs/${photo.rigId}`} onClick={closeLightbox} className="hover:text-blue-600 transition-colors">
+                                                            📷 {photo.rigLabel}
+                                                        </Link>
+                                                    ) : `📷 ${photo.rigLabel}`}
+                                                </p>
+                                            )}
+                                            {(photo.iso || photo.focalLength || photo.aperture || photo.shutterSpeed) && (
+                                                <p className="text-xs text-gray-400 flex gap-2 mt-0.5">
+                                                    {photo.iso && <span title="ISO Speed Rating">ISO {photo.iso}</span>}
+                                                    {photo.focalLength && <span title="Focal Length">{photo.focalLength}mm</span>}
+                                                    {photo.aperture && <span title="Aperture"><i>f</i>/{photo.aperture}</span>}
+                                                    {photo.shutterSpeed && <span title="Shutter Speed">{formatShutterSpeed(photo.shutterSpeed)}</span>}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
+                                )}
+
+                                {/* Action buttons */}
+                                <div className="flex items-center gap-4 px-4 pt-3 pb-1 shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={() => photoId != null && toggleLike(photoId)}
+                                        disabled={!currentUserId}
+                                        aria-label={ls.liked ? 'Unlike' : 'Like'}
+                                        className={`transition-colors ${currentUserId ? 'cursor-pointer' : 'cursor-default'} ${ls.liked ? 'text-red-500' : 'text-gray-500'}`}
+                                    >
+                                        <svg viewBox="0 0 24 24" className="w-6 h-6" fill={ls.liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCommentSheetOpen(true)}
+                                        aria-label="Open comments"
+                                        className="text-gray-500 hover:text-gray-700 transition-colors"
+                                    >
+                                        <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                    </button>
                                 </div>
 
-                                {/* Like + comment counts */}
-                                <div className="flex gap-4 px-4 pt-2 pb-1 shrink-0">
+                                {/* Counts + view comments */}
+                                <div className="px-4 pb-2 flex gap-4 shrink-0">
                                     <p className="text-sm font-semibold text-gray-900">{ls.count.toLocaleString()} {ls.count === 1 ? 'like' : 'likes'}</p>
                                     <button type="button" onClick={() => setIsCommentSheetOpen(true)} className="text-sm text-gray-500">
                                         {ls.commentCount.toLocaleString()} {ls.commentCount === 1 ? 'comment' : 'comments'}
                                     </button>
-                                </div>
-
-                                {/* Scrollable: title, description, rig, exif */}
-                                <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
-                                    {photo.title && <p className="text-sm font-semibold text-gray-900">{photo.title}</p>}
-                                    {photo.description && <p className="text-sm text-gray-700 leading-snug">{photo.description}</p>}
-                                    {photo.rigLabel && (
-                                        <p className="text-xs text-gray-400">
-                                            {photo.userId && photo.rigId ? (
-                                                <Link href={`/users/${photo.userId}/camera-rigs/${photo.rigId}`} onClick={closeLightbox} className="hover:text-blue-600 transition-colors">
-                                                    📷 {photo.rigLabel}
-                                                </Link>
-                                            ) : `📷 ${photo.rigLabel}`}
-                                        </p>
-                                    )}
-                                    {(photo.iso || photo.focalLength || photo.aperture || photo.shutterSpeed) && (
-                                        <p className="text-xs text-gray-400 flex gap-2 flex-wrap">
-                                            {photo.iso && <span>ISO {photo.iso}</span>}
-                                            {photo.focalLength && <span>{photo.focalLength}mm</span>}
-                                            {photo.aperture && <span><i>f</i>/{photo.aperture}</span>}
-                                            {photo.shutterSpeed && <span>{formatShutterSpeed(photo.shutterSpeed)}</span>}
-                                        </p>
-                                    )}
-                                    {ls.commentCount > 0 && (
-                                        <button type="button" onClick={() => setIsCommentSheetOpen(true)} className="text-sm text-gray-400 hover:text-gray-600 transition-colors text-left">
-                                            View all {ls.commentCount} comment{ls.commentCount === 1 ? '' : 's'}…
-                                        </button>
-                                    )}
                                 </div>
                             </div>
 
@@ -725,6 +724,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                                 onLikeToggle={() => toggleLike(photoId)}
                                                 onCommentCountChange={(delta) => handleCommentCountChange(photoId, delta)}
                                                 focusInputSignal={commentFocusSignal}
+                                                commentsOnly
                                             />
                                         ) : (
                                             <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">No data</div>
@@ -746,7 +746,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                     {!lightboxLoaded && <div className="absolute inset-0 bg-gray-800 animate-pulse" />}
                                     <Image
                                         src={photo.src}
-                                        alt={photo.title ?? photo.description ?? 'Gallery photo'}
+                                        alt={photo.caption ?? 'Gallery photo'}
                                         fill
                                         sizes="(max-width: 1200px) 70vw, 900px"
                                         className={`object-contain transition-opacity duration-300 ${lightboxLoaded ? 'opacity-100' : 'opacity-0'}`}

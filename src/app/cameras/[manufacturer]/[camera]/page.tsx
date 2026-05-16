@@ -375,15 +375,15 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
                                 <div key={photo.id} className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
                                     <Image
                                         src={withBase(photo.imagePath)}
-                                        alt={photo.title ?? photo.description ?? 'Gallery photo'}
+                                        alt={photo.caption ?? 'Gallery photo'}
                                         fill
                                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                                     />
-                                    {(photo.title || photo.location) && (
+                                    {(photo.caption || photo.location) && (
                                         <div className="absolute inset-x-0 bottom-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-2 py-1.5">
-                                            {photo.title && (
-                                                <p className="text-white text-xs font-medium truncate">{photo.title}</p>
+                                            {photo.caption && (
+                                                <p className="text-white text-xs font-medium truncate">{photo.caption}</p>
                                             )}
                                             {photo.location && (
                                                 <p className="text-gray-300 text-xs">📍 {photo.location}</p>
