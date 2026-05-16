@@ -484,6 +484,10 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
     const [lightboxLoaded, setLightboxLoaded] = useState(false)
     const [commentFocusSignal, setCommentFocusSignal] = useState(0)
     const [isCommentSheetOpen, setIsCommentSheetOpen] = useState(false)
+    const [sheetDragOffset, setSheetDragOffset] = useState(0)
+    const [isDraggingSheet, setIsDraggingSheet] = useState(false)
+    const sheetTouchStartY = useRef(0)
+    const sheetTouchCurrentY = useRef(0)
 
     // Per-photo live state — keyed by photoId, initialised from props
     const [photoState, setPhotoState] = useState<Record<number, PhotoLiveState>>(() => {
@@ -519,7 +523,35 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
     useEffect(() => {
         setLightboxLoaded(false)
         setIsCommentSheetOpen(false)
+        setSheetDragOffset(0)
     }, [lightboxIndex])
+
+    function handleSheetTouchStart(e: React.TouchEvent) {
+        sheetTouchStartY.current = e.touches[0].clientY
+        sheetTouchCurrentY.current = e.touches[0].clientY
+        setIsDraggingSheet(true)
+    }
+
+    function handleSheetTouchMove(e: React.TouchEvent) {
+        const delta = e.touches[0].clientY - sheetTouchStartY.current
+        sheetTouchCurrentY.current = e.touches[0].clientY
+        setSheetDragOffset(Math.max(0, delta))
+    }
+
+    function handleSheetTouchEnd() {
+        setIsDraggingSheet(false)
+        const delta = sheetTouchCurrentY.current - sheetTouchStartY.current
+        if (delta > 80) {
+            // Collapse height to 0 (large offset makes calc(62dvh - X) go to 0), then unmount
+            setSheetDragOffset(window.innerHeight)
+            setTimeout(() => {
+                setIsCommentSheetOpen(false)
+                setSheetDragOffset(0)
+            }, 300)
+        } else {
+            setSheetDragOffset(0)
+        }
+    }
 
     const closeLightbox = useCallback(() => { setLightboxIndex(null); setIsCommentSheetOpen(false) }, [])
 
@@ -601,22 +633,26 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                 return (
                     <div className="fixed inset-0 z-50">
 
-                        {/* ── Mobile portrait layout (full-screen, Instagram-style) ── */}
-                        <div className="flex flex-col h-full bg-black md:hidden">
+                        {/* ── Mobile portrait layout ── */}
+                        <div className="flex flex-col bg-black md:hidden overflow-hidden" style={{ height: '100dvh' }}>
 
-                            {/* Top bar: back chevron + counter */}
-                            <div className="flex items-center justify-between px-4 py-2.5 shrink-0">
-                                <button onClick={closeLightbox} className="p-1 text-white/80 hover:text-white transition-colors" aria-label="Close">
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                </button>
-                                <span className="text-white/60 text-xs">{lightboxIndex + 1} / {photos.length}</span>
-                                <div className="w-8" />
-                            </div>
+                            {/* Image — always flex-1: fills all space not taken by the bottom panel */}
+                            <div className="flex-1 relative bg-black min-h-0">
+                                {/* Back button + counter overlaid on image */}
+                                <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 pt-2.5">
+                                    <button
+                                        onClick={closeLightbox}
+                                        className="p-1.5 text-white/80 hover:text-white transition-colors bg-black/30 rounded-full"
+                                        aria-label="Close"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+                                    <span className="text-white/70 text-xs bg-black/30 px-2 py-0.5 rounded-full">{lightboxIndex + 1} / {photos.length}</span>
+                                    <div className="w-8" />
+                                </div>
 
-                            {/* Image — takes top half of the screen */}
-                            <div className="relative bg-black shrink-0" style={{ height: '50%' }}>
                                 {!lightboxLoaded && <div className="absolute inset-0 bg-gray-800 animate-pulse" />}
                                 <Image
                                     src={photo.src}
@@ -627,109 +663,115 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                     priority
                                     onLoad={() => setLightboxLoaded(true)}
                                 />
-                                <button className="absolute left-3 top-1/2 -translate-y-1/2 text-white bg-black/50 rounded-full w-9 h-9 flex items-center justify-center text-xl z-10" onClick={goPrev} aria-label="Previous photo">‹</button>
-                                <button className="absolute right-3 top-1/2 -translate-y-1/2 text-white bg-black/50 rounded-full w-9 h-9 flex items-center justify-center text-xl z-10" onClick={goNext} aria-label="Next photo">›</button>
+                                <button className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/40 rounded-full w-8 h-8 flex items-center justify-center text-xl z-10" onClick={goPrev} aria-label="Previous photo">‹</button>
+                                <button className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/40 rounded-full w-8 h-8 flex items-center justify-center text-xl z-10" onClick={goNext} aria-label="Next photo">›</button>
                             </div>
 
-                            {/* White info section — bottom half */}
-                            <div className="flex-1 bg-white flex flex-col overflow-hidden">
-
-                                {/* Author + metadata block (same grouping as desktop CommentPanel) */}
-                                {photo.userId && photo.userName && (
-                                    <div className="flex items-start gap-2.5 px-4 py-3 border-b border-gray-100 shrink-0">
-                                        <Link href={`/users/${photo.userId}`} onClick={closeLightbox} className="shrink-0">
-                                            <UserAvatar picture={photo.userProfilePicture} name={photo.userName} size="sm" />
-                                        </Link>
-                                        <div className="min-w-0 flex-1">
-                                            <Link href={`/users/${photo.userId}`} onClick={closeLightbox} className="text-sm font-semibold text-gray-900 hover:underline truncate block">
-                                                {photo.userName}
+                            {/* Info strip — shrink-0 (auto height), shown when sheet is closed */}
+                            {!isCommentSheetOpen && (
+                                <div className="shrink-0 bg-white flex flex-col overflow-y-auto max-h-[40vh]">
+                                    {/* Author + metadata */}
+                                    {photo.userId && photo.userName && (
+                                        <div className="flex items-start gap-2.5 px-4 py-3 border-b border-gray-100 shrink-0">
+                                            <Link href={`/users/${photo.userId}`} onClick={closeLightbox} className="shrink-0">
+                                                <UserAvatar picture={photo.userProfilePicture} name={photo.userName} size="sm" />
                                             </Link>
-                                            {photo.caption && <p className="text-xs text-gray-500 leading-snug line-clamp-3 mt-0.5">{photo.caption}</p>}
-                                            {photo.location && <p className="text-xs text-gray-500 truncate mt-0.5">📍 {photo.location}</p>}
-                                            {photo.rigLabel && (
-                                                <p className="text-xs text-gray-400 mt-0.5">
-                                                    {photo.userId && photo.rigId ? (
-                                                        <Link href={`/users/${photo.userId}/camera-rigs/${photo.rigId}`} onClick={closeLightbox} className="hover:text-blue-600 transition-colors">
-                                                            📷 {photo.rigLabel}
-                                                        </Link>
-                                                    ) : `📷 ${photo.rigLabel}`}
-                                                </p>
-                                            )}
-                                            {(photo.iso || photo.focalLength || photo.aperture || photo.shutterSpeed) && (
-                                                <p className="text-xs text-gray-400 flex gap-2 mt-0.5">
-                                                    {photo.iso && <span title="ISO Speed Rating">ISO {photo.iso}</span>}
-                                                    {photo.focalLength && <span title="Focal Length">{photo.focalLength}mm</span>}
-                                                    {photo.aperture && <span title="Aperture"><i>f</i>/{photo.aperture}</span>}
-                                                    {photo.shutterSpeed && <span title="Shutter Speed">{formatShutterSpeed(photo.shutterSpeed)}</span>}
-                                                </p>
-                                            )}
+                                            <div className="min-w-0 flex-1">
+                                                <Link href={`/users/${photo.userId}`} onClick={closeLightbox} className="text-sm font-semibold text-gray-900 hover:underline truncate block">
+                                                    {photo.userName}
+                                                </Link>
+                                                {photo.caption && <p className="text-xs text-gray-500 leading-snug line-clamp-3 mt-0.5">{photo.caption}</p>}
+                                                {photo.location && <p className="text-xs text-gray-500 truncate mt-0.5">📍 {photo.location}</p>}
+                                                {photo.rigLabel && (
+                                                    <p className="text-xs text-gray-400 mt-0.5">
+                                                        {photo.userId && photo.rigId ? (
+                                                            <Link href={`/users/${photo.userId}/camera-rigs/${photo.rigId}`} onClick={closeLightbox} className="hover:text-blue-600 transition-colors">
+                                                                📷 {photo.rigLabel}
+                                                            </Link>
+                                                        ) : `📷 ${photo.rigLabel}`}
+                                                    </p>
+                                                )}
+                                                {(photo.iso || photo.focalLength || photo.aperture || photo.shutterSpeed) && (
+                                                    <p className="text-xs text-gray-400 flex gap-2 mt-0.5">
+                                                        {photo.iso && <span title="ISO Speed Rating">ISO {photo.iso}</span>}
+                                                        {photo.focalLength && <span title="Focal Length">{photo.focalLength}mm</span>}
+                                                        {photo.aperture && <span title="Aperture"><i>f</i>/{photo.aperture}</span>}
+                                                        {photo.shutterSpeed && <span title="Shutter Speed">{formatShutterSpeed(photo.shutterSpeed)}</span>}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
+                                    )}
+
+                                    {/* Action buttons */}
+                                    <div className="flex items-center gap-4 px-4 pt-3 pb-1 shrink-0">
+                                        <button
+                                            type="button"
+                                            onClick={() => photoId != null && toggleLike(photoId)}
+                                            disabled={!currentUserId}
+                                            aria-label={ls.liked ? 'Unlike' : 'Like'}
+                                            className={`transition-colors ${currentUserId ? 'cursor-pointer' : 'cursor-default'} ${ls.liked ? 'text-red-500' : 'text-gray-500'}`}
+                                        >
+                                            <svg viewBox="0 0 24 24" className="w-6 h-6" fill={ls.liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setIsCommentSheetOpen(true); setSheetDragOffset(0) }}
+                                            aria-label="Open comments"
+                                            className="text-gray-500 hover:text-gray-700 transition-colors"
+                                        >
+                                            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                            </svg>
+                                        </button>
                                     </div>
-                                )}
 
-                                {/* Action buttons */}
-                                <div className="flex items-center gap-4 px-4 pt-3 pb-1 shrink-0">
-                                    <button
-                                        type="button"
-                                        onClick={() => photoId != null && toggleLike(photoId)}
-                                        disabled={!currentUserId}
-                                        aria-label={ls.liked ? 'Unlike' : 'Like'}
-                                        className={`transition-colors ${currentUserId ? 'cursor-pointer' : 'cursor-default'} ${ls.liked ? 'text-red-500' : 'text-gray-500'}`}
-                                    >
-                                        <svg viewBox="0 0 24 24" className="w-6 h-6" fill={ls.liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                        </svg>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsCommentSheetOpen(true)}
-                                        aria-label="Open comments"
-                                        className="text-gray-500 hover:text-gray-700 transition-colors"
-                                    >
-                                        <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                        </svg>
-                                    </button>
+                                    {/* Counts */}
+                                    <div className="px-4 pb-3 flex gap-4 shrink-0">
+                                        <p className="text-sm font-semibold text-gray-900">{ls.count.toLocaleString()} {ls.count === 1 ? 'like' : 'likes'}</p>
+                                        <button type="button" onClick={() => { setIsCommentSheetOpen(true); setSheetDragOffset(0) }} className="text-sm text-gray-500">
+                                            {ls.commentCount.toLocaleString()} {ls.commentCount === 1 ? 'comment' : 'comments'}
+                                        </button>
+                                    </div>
                                 </div>
+                            )}
 
-                                {/* Counts + view comments */}
-                                <div className="px-4 pb-2 flex gap-4 shrink-0">
-                                    <p className="text-sm font-semibold text-gray-900">{ls.count.toLocaleString()} {ls.count === 1 ? 'like' : 'likes'}</p>
-                                    <button type="button" onClick={() => setIsCommentSheetOpen(true)} className="text-sm text-gray-500">
-                                        {ls.commentCount.toLocaleString()} {ls.commentCount === 1 ? 'comment' : 'comments'}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Comment bottom sheet — slides up from below */}
+                            {/* Comment sheet — shrink-0 with fixed height; image above fills remaining space */}
                             {isCommentSheetOpen && (
-                                <div className="absolute inset-0 z-10 flex flex-col justify-end">
-                                    {/* Scrim */}
-                                    <div className="absolute inset-0 bg-black/50" onClick={() => setIsCommentSheetOpen(false)} />
-                                    {/* Sheet */}
-                                    <div className="relative bg-white rounded-t-2xl shadow-2xl flex flex-col overflow-hidden" style={{ maxHeight: '82%' }}>
-                                        {/* Drag handle */}
-                                        <div className="flex justify-center py-2.5 shrink-0 cursor-pointer" onClick={() => setIsCommentSheetOpen(false)}>
-                                            <div className="w-10 h-1 bg-gray-300 rounded-full" />
-                                        </div>
-                                        <div className="px-4 pb-2.5 shrink-0 border-b border-gray-100">
-                                            <h3 className="text-sm font-semibold text-center text-gray-900">Comments</h3>
-                                        </div>
-                                        {photoId != null ? (
-                                            <CommentPanel
-                                                photo={photo}
-                                                currentUserId={currentUserId}
-                                                likeCount={ls.count}
-                                                likedByMe={ls.liked}
-                                                onLikeToggle={() => toggleLike(photoId)}
-                                                onCommentCountChange={(delta) => handleCommentCountChange(photoId, delta)}
-                                                focusInputSignal={commentFocusSignal}
-                                                commentsOnly
-                                            />
-                                        ) : (
-                                            <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">No data</div>
-                                        )}
+                                <div
+                                    className="shrink-0 bg-white flex flex-col rounded-t-2xl shadow-2xl overflow-hidden"
+                                    style={{
+                                        height: `max(0px, calc(62dvh - ${sheetDragOffset}px))`,
+                                        transition: isDraggingSheet ? 'none' : 'height 300ms ease-out',
+                                    }}
+                                >
+                                    {/* Drag handle — touch target for swipe-to-dismiss */}
+                                    <div
+                                        className="flex flex-col items-center pt-2.5 pb-1.5 shrink-0 select-none"
+                                        onTouchStart={handleSheetTouchStart}
+                                        onTouchMove={handleSheetTouchMove}
+                                        onTouchEnd={handleSheetTouchEnd}
+                                    >
+                                        <div className="w-10 h-1 bg-gray-300 rounded-full" />
+                                        <p className="text-xs font-semibold text-gray-500 mt-1.5 tracking-wide uppercase">Comments</p>
                                     </div>
+                                    <div className="h-px bg-gray-100 shrink-0" />
+                                    {photoId != null ? (
+                                        <CommentPanel
+                                            photo={photo}
+                                            currentUserId={currentUserId}
+                                            likeCount={ls.count}
+                                            likedByMe={ls.liked}
+                                            onLikeToggle={() => toggleLike(photoId)}
+                                            onCommentCountChange={(delta) => handleCommentCountChange(photoId, delta)}
+                                            focusInputSignal={commentFocusSignal}
+                                            commentsOnly
+                                        />
+                                    ) : (
+                                        <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">No data</div>
+                                    )}
                                 </div>
                             )}
                         </div>
