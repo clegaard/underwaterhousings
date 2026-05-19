@@ -362,7 +362,7 @@ interface GalleryPhotoTileProps {
     selectedIds?: Set<number>
     currentUserId?: number
     onPhotoClick?: (photoId: number, index: number, shiftKey: boolean) => void
-    onOpenLightbox: (index: number) => void
+    onOpenLightbox: () => void
     liveState?: PhotoLiveState
     onLikeToggle?: () => void
     onOpenWithComment?: () => void
@@ -384,7 +384,7 @@ function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUse
                         onPhotoClick?.(photo.photoId, index, e.shiftKey)
                     }
                 } else {
-                    onOpenLightbox(index)
+                    onOpenLightbox()
                 }
             }}
         >
@@ -453,7 +453,7 @@ function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUse
                     {/* Comment count — click to open lightbox and focus comment box */}
                     <button
                         type="button"
-                        onClick={e => { e.stopPropagation(); onOpenWithComment ? onOpenWithComment() : onOpenLightbox(index) }}
+                        onClick={e => { e.stopPropagation(); onOpenWithComment ? onOpenWithComment() : onOpenLightbox() }}
                         aria-label="View comments"
                         className="flex items-center gap-1 text-white/80 text-sm drop-shadow hover:text-white transition-colors"
                     >
@@ -480,6 +480,49 @@ function GalleryPhotoTile({ photo, index, selectionMode, selectedIds, currentUse
 }
 
 
+// ─── Loupe magnifier ─────────────────────────────────────────────────────────
+
+const LOUPE_SIZE = 220
+const LOUPE_ZOOM = 3
+
+function computeLoupeState(
+    mx: number, my: number,
+    cW: number, cH: number,
+    photoW: number, photoH: number,
+    mobile: boolean,
+    fullRes = false
+): { x: number; y: number; bgX: number; bgY: number; bgW: number; bgH: number } {
+    // Compute the actual rendered image bounds within the object-contain container
+    const iAspect = photoW / photoH
+    const cAspect = cW / cH
+    let imgW: number, imgH: number, imgL: number, imgT: number
+    if (iAspect > cAspect) {
+        imgW = cW; imgH = cW / iAspect; imgL = 0; imgT = (cH - imgH) / 2
+    } else {
+        imgH = cH; imgW = cH * iAspect; imgL = (cW - imgW) / 2; imgT = 0
+    }
+    // Fractional position within the image content (clamped to 0–1)
+    const relX = Math.max(0, Math.min(1, (mx - imgL) / imgW))
+    const relY = Math.max(0, Math.min(1, (my - imgT) / imgH))
+    // When zooming into the full-res image, use native pixel dimensions as the background
+    // size (clamped to at least LOUPE_ZOOM× the display size so low-res photos still zoom).
+    // Otherwise use the standard display-size × LOUPE_ZOOM.
+    const bgW = fullRes ? Math.max(imgW * LOUPE_ZOOM, photoW) : imgW * LOUPE_ZOOM
+    const bgH = fullRes ? Math.max(imgH * LOUPE_ZOOM, photoH) : imgH * LOUPE_ZOOM
+    // On mobile the loupe floats above the finger; on desktop it centers on the cursor
+    const displayMy = mobile ? my - LOUPE_SIZE - 16 : my
+    // Clamp loupe so it stays inside the container
+    const loupeCX = Math.max(LOUPE_SIZE / 2, Math.min(cW - LOUPE_SIZE / 2, mx))
+    const loupeCY = Math.max(LOUPE_SIZE / 2, Math.min(cH - LOUPE_SIZE / 2, displayMy))
+    return {
+        x: loupeCX - LOUPE_SIZE / 2,
+        y: loupeCY - LOUPE_SIZE / 2,
+        bgX: LOUPE_SIZE / 2 - relX * bgW,
+        bgY: LOUPE_SIZE / 2 - relY * bgH,
+        bgW, bgH,
+    }
+}
+
 export default function GalleryGrid({ photos, selectionMode = false, selectedIds, currentUserId, onPhotoClick, onExitSelection }: GalleryGridProps) {
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
     const [lightboxLoaded, setLightboxLoaded] = useState(false)
@@ -489,8 +532,6 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
     const [isDraggingSheet, setIsDraggingSheet] = useState(false)
     const sheetTouchStartY = useRef(0)
     const sheetTouchCurrentY = useRef(0)
-    const [swipeDeltaX, setSwipeDeltaX] = useState(0)
-    const [isSwipingImage, setIsSwipingImage] = useState(false)
     const imageTouchStartX = useRef(0)
     const imageTouchStartY = useRef(0)
     const imageTouchCurrentX = useRef(0)
@@ -499,13 +540,15 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
     const swipeVelocityX = useRef(0)
     const swipeDirectionLocked = useRef<'h' | 'v' | null>(null)
     const [hasTouchInput, setHasTouchInput] = useState(false)
-    const [isSwipeSettling, setIsSwipeSettling] = useState(false)
-    const [disableSwipeTransition, setDisableSwipeTransition] = useState(false)
 
     // Container width measurement — used to give RowsPhotoAlbum the real width before
     // first paint so it never flashes the wrong (desktop) column layout on mobile.
     const containerRef = useRef<HTMLDivElement>(null)
     const [containerWidth, setContainerWidth] = useState<number | null>(null)
+
+    // Loupe magnifier
+    const [isLoupeActive, setIsLoupeActive] = useState(false)
+    const [loupePos, setLoupePos] = useState<{ x: number; y: number; bgX: number; bgY: number; bgW: number; bgH: number } | null>(null)
 
     // Per-photo live state — keyed by photoId, initialised from props
     const [photoState, setPhotoState] = useState<Record<number, PhotoLiveState>>(() => {
@@ -542,10 +585,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
         setLightboxLoaded(false)
         setIsCommentSheetOpen(false)
         setSheetDragOffset(0)
-        setSwipeDeltaX(0)
-        setIsSwipingImage(false)
-        setIsSwipeSettling(false)
-        setDisableSwipeTransition(false)
+        setLoupePos(null)
     }, [lightboxIndex])
 
     useEffect(() => {
@@ -596,7 +636,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
     }
 
     function handleImageTouchStart(e: React.TouchEvent) {
-        if (isSwipeSettling) return
+        if (isLoupeActive) return
         const now = performance.now()
         imageTouchStartX.current = e.touches[0].clientX
         imageTouchStartY.current = e.touches[0].clientY
@@ -608,7 +648,18 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
     }
 
     function handleImageTouchMove(e: React.TouchEvent) {
-        if (isSwipeSettling) return
+        if (isLoupeActive && lightboxIndex != null) {
+            const t = e.touches[0]
+            const rect = e.currentTarget.getBoundingClientRect()
+            const currentPhoto = photos[lightboxIndex]
+            setLoupePos(computeLoupeState(
+                t.clientX - rect.left, t.clientY - rect.top,
+                rect.width, rect.height,
+                currentPhoto.width, currentPhoto.height, true,
+                currentPhoto.allowFullResDownload !== false
+            ))
+            return
+        }
         const dx = e.touches[0].clientX - imageTouchStartX.current
         const dy = e.touches[0].clientY - imageTouchStartY.current
         imageTouchCurrentX.current = e.touches[0].clientX
@@ -621,16 +672,11 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
             if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
                 swipeDirectionLocked.current = Math.abs(dx) >= Math.abs(dy) ? 'h' : 'v'
             }
-            return
-        }
-        if (swipeDirectionLocked.current === 'h') {
-            setIsSwipingImage(true)
-            setSwipeDeltaX(dx * 0.95)
         }
     }
 
     function handleImageTouchEnd() {
-        if (isSwipeSettling) return
+        if (isLoupeActive) { setLoupePos(null); return }
         if (swipeDirectionLocked.current === 'h') {
             const delta = imageTouchCurrentX.current - imageTouchStartX.current
             const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1
@@ -638,31 +684,10 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
             const velocityThreshold = 0.45
             const shouldAdvanceByDistance = Math.abs(delta) > distanceThreshold
             const shouldAdvanceByVelocity = Math.abs(swipeVelocityX.current) > velocityThreshold
-            setIsSwipingImage(false)
             if (delta < 0 && (shouldAdvanceByDistance || shouldAdvanceByVelocity)) {
-                setIsSwipeSettling(true)
-                setSwipeDeltaX(-viewportWidth)
-                setTimeout(() => {
-                    setDisableSwipeTransition(true)
-                    goNext()
-                    setSwipeDeltaX(0)
-                    requestAnimationFrame(() => {
-                        setDisableSwipeTransition(false)
-                    })
-                }, 320)
+                goNext()
             } else if (delta > 0 && (shouldAdvanceByDistance || shouldAdvanceByVelocity)) {
-                setIsSwipeSettling(true)
-                setSwipeDeltaX(viewportWidth)
-                setTimeout(() => {
-                    setDisableSwipeTransition(true)
-                    goPrev()
-                    setSwipeDeltaX(0)
-                    requestAnimationFrame(() => {
-                        setDisableSwipeTransition(false)
-                    })
-                }, 320)
-            } else {
-                setSwipeDeltaX(0)
+                goPrev()
             }
         }
         swipeDirectionLocked.current = null
@@ -723,27 +748,22 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                         breakpoints={[600, 900, 1200]}
                         defaultContainerWidth={containerWidth}
                         render={{
-                            image: (props, { photo: rawPhoto }) => {
+                            image: (props, { photo: rawPhoto, index }) => {
                                 const photo = rawPhoto as GalleryPhotoData
-                                // Look up index by stable photoId (or src fallback) so the
-                                // lightbox always opens the correct photo regardless of what
-                                // the library passes as its index param.
-                                const index = photo.photoId != null
-                                    ? photos.findIndex(p => p.photoId === photo.photoId)
-                                    : photos.findIndex(p => p.src === photo.src)
-                                const safeIndex = index !== -1 ? index : 0
+                                // Use the library's own index — it tracks photo positions
+                                // natively without any coordinate or search logic.
                                 return (
                                     <GalleryPhotoTile
                                         photo={photo}
-                                        index={safeIndex}
+                                        index={index}
                                         selectionMode={selectionMode}
                                         selectedIds={selectedIds}
                                         currentUserId={currentUserId}
                                         onPhotoClick={onPhotoClick}
-                                        onOpenLightbox={setLightboxIndex}
+                                        onOpenLightbox={() => setLightboxIndex(index)}
                                         liveState={photo.photoId != null ? photoState[photo.photoId] : undefined}
                                         onLikeToggle={photo.photoId != null ? () => toggleLike(photo.photoId!) : undefined}
-                                        onOpenWithComment={() => { setLightboxIndex(safeIndex); setCommentFocusSignal(s => s + 1); setIsCommentSheetOpen(true) }}
+                                        onOpenWithComment={() => { setLightboxIndex(index); setCommentFocusSignal(s => s + 1); setIsCommentSheetOpen(true) }}
                                     />
                                 )
                             },
@@ -755,10 +775,6 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
             {/* Lightbox */}
             {lightboxIndex !== null && (() => {
                 const photo = photos[lightboxIndex]
-                const prevIndex = (lightboxIndex - 1 + photos.length) % photos.length
-                const nextIndex = (lightboxIndex + 1) % photos.length
-                const prevPhoto = photos[prevIndex]
-                const nextPhoto = photos[nextIndex]
                 const photoId = photo.photoId
                 const stored = photoId != null ? photoState[photoId] : undefined
                 const ls = {
@@ -797,77 +813,79 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                         </svg>
                                     </button>
                                     <span className="text-white/70 text-xs bg-black/30 px-2 py-0.5 rounded-full">{lightboxIndex + 1} / {photos.length}</span>
-                                    {photo.allowFullResDownload !== false ? (
-                                        <a
-                                            href={photo.src}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            aria-label="View full resolution"
-                                            className="p-1.5 text-white/80 hover:text-white transition-colors bg-black/30 rounded-full"
+                                    <div className="flex items-center gap-1">
+                                        {/* Loupe button */}
+                                        <button
+                                            aria-label={isLoupeActive ? 'Disable loupe' : 'Enable loupe'}
                                             onTouchStart={e => e.stopPropagation()}
-                                            onTouchEnd={e => e.stopPropagation()}
+                                            onTouchEnd={e => { e.stopPropagation(); e.preventDefault(); setIsLoupeActive(v => !v); setLoupePos(null) }}
+                                            className={`p-1.5 rounded-full transition-colors ${isLoupeActive ? 'bg-blue-500/80 text-white' : 'bg-black/30 text-white/80'}`}
                                         >
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                                <path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607ZM10.5 7.5v6m3-3h-6" />
                                             </svg>
-                                        </a>
-                                    ) : (
-                                        <div
-                                            aria-label="Full resolution not available"
-                                            title="The uploader has not enabled full-resolution viewing"
-                                            className="p-1.5 text-white/25 bg-black/30 rounded-full cursor-not-allowed"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                                            </svg>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Slide wrapper: only the image content translates during swipe */}
-                                <div
-                                    className="absolute inset-0"
-                                    style={{
-                                        transform: `translateX(calc(-100% + ${swipeDeltaX}px))`,
-                                        transition: (isSwipingImage || disableSwipeTransition)
-                                            ? 'none'
-                                            : 'transform 320ms cubic-bezier(0.22, 0.61, 0.36, 1)',
-                                    }}
-                                >
-                                    <div className="flex h-full w-[300%]">
-                                        <div className="relative h-full w-full shrink-0">
-                                            <Image
-                                                src={prevPhoto.src}
-                                                alt={prevPhoto.caption ?? 'Previous gallery photo'}
-                                                fill
-                                                sizes="100vw"
-                                                className="object-contain opacity-70"
-                                            />
-                                        </div>
-                                        <div className="relative h-full w-full shrink-0">
-                                            {!lightboxLoaded && <div className="absolute inset-0 bg-gray-800 animate-pulse" />}
-                                            <Image
-                                                src={photo.src}
-                                                alt={photo.caption ?? 'Gallery photo'}
-                                                fill
-                                                sizes="100vw"
-                                                className={`object-contain transition-opacity duration-300 ${lightboxLoaded ? 'opacity-100' : 'opacity-0'}`}
-                                                priority
-                                                onLoad={() => setLightboxLoaded(true)}
-                                            />
-                                        </div>
-                                        <div className="relative h-full w-full shrink-0">
-                                            <Image
-                                                src={nextPhoto.src}
-                                                alt={nextPhoto.caption ?? 'Next gallery photo'}
-                                                fill
-                                                sizes="100vw"
-                                                className="object-contain opacity-70"
-                                            />
-                                        </div>
+                                        </button>
+                                        {/* Full-res button */}
+                                        {photo.allowFullResDownload !== false ? (
+                                            <a
+                                                href={photo.src}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                aria-label="View full resolution"
+                                                className="p-1.5 text-white/80 hover:text-white transition-colors bg-black/30 rounded-full"
+                                                onTouchStart={e => e.stopPropagation()}
+                                                onTouchEnd={e => e.stopPropagation()}
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                                </svg>
+                                            </a>
+                                        ) : (
+                                            <div
+                                                aria-label="Full resolution not available"
+                                                title="The uploader has not enabled full-resolution viewing"
+                                                className="p-1.5 text-white/25 bg-black/30 rounded-full cursor-not-allowed"
+                                            >
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                                </svg>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
+                                {/* Current photo — no carousel panels */}
+                                <div className="absolute inset-0">
+                                    {!lightboxLoaded && <div className="absolute inset-0 bg-gray-800 animate-pulse" />}
+                                    <Image
+                                        src={photo.src}
+                                        alt={photo.caption ?? 'Gallery photo'}
+                                        fill
+                                        sizes="100vw"
+                                        className={`object-contain transition-opacity duration-300 ${lightboxLoaded ? 'opacity-100' : 'opacity-0'}`}
+                                        priority
+                                        onLoad={() => setLightboxLoaded(true)}
+                                    />
+                                </div>
+
+                                {/* Mobile loupe overlay — floats above the finger */}
+                                {isLoupeActive && loupePos && (
+                                    <div
+                                        className="pointer-events-none absolute rounded-full overflow-hidden border-2 border-white/80 shadow-2xl"
+                                        style={{
+                                            width: LOUPE_SIZE,
+                                            height: LOUPE_SIZE,
+                                            left: loupePos.x,
+                                            top: loupePos.y,
+                                            zIndex: 15,
+                                            backgroundImage: `url(${photo.src})`,
+                                            backgroundSize: `${loupePos.bgW}px ${loupePos.bgH}px`,
+                                            backgroundPosition: `${loupePos.bgX}px ${loupePos.bgY}px`,
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundColor: '#000',
+                                        }}
+                                    />
+                                )}
                                 {!hasTouchInput && (
                                     <>
                                         <button className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/40 rounded-full w-8 h-8 flex items-center justify-center text-xl z-10" onClick={goPrev} aria-label="Previous photo">‹</button>
@@ -993,7 +1011,20 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                 onClick={e => e.stopPropagation()}
                             >
                                 {/* Left: image */}
-                                <div className="flex-1 relative bg-black min-w-0">
+                                <div
+                                    className="flex-1 relative bg-black min-w-0"
+                                    style={{ cursor: isLoupeActive ? 'crosshair' : undefined }}
+                                    onMouseMove={isLoupeActive ? (e: React.MouseEvent) => {
+                                        const rect = e.currentTarget.getBoundingClientRect()
+                                        setLoupePos(computeLoupeState(
+                                            e.clientX - rect.left, e.clientY - rect.top,
+                                            rect.width, rect.height,
+                                            photo.width, photo.height, false,
+                                            photo.allowFullResDownload !== false
+                                        ))
+                                    } : undefined}
+                                    onMouseLeave={isLoupeActive ? () => setLoupePos(null) : undefined}
+                                >
                                     {!lightboxLoaded && <div className="absolute inset-0 bg-gray-800 animate-pulse" />}
                                     <Image
                                         src={photo.src}
@@ -1007,6 +1038,20 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                     <button className="absolute left-3 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10 transition-colors" onClick={goPrev} aria-label="Previous photo">‹</button>
                                     <button className="absolute right-3 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10 transition-colors" onClick={goNext} aria-label="Next photo">›</button>
                                     <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white/60 text-xs">{lightboxIndex + 1} / {photos.length}</span>
+                                    {/* Loupe button */}
+                                    <button
+                                        onClick={() => { setIsLoupeActive(v => !v); setLoupePos(null) }}
+                                        aria-label={isLoupeActive ? 'Disable loupe' : 'Enable loupe'}
+                                        className={`absolute top-3 right-14 rounded-full w-10 h-10 flex items-center justify-center z-10 transition-colors ${isLoupeActive
+                                            ? 'text-white bg-blue-500/80 hover:bg-blue-600/80'
+                                            : 'text-white bg-black/50 hover:bg-black/80'
+                                            }`}
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607ZM10.5 7.5v6m3-3h-6" />
+                                        </svg>
+                                    </button>
+                                    {/* Full-res button */}
                                     {photo.allowFullResDownload !== false ? (
                                         <a
                                             href={photo.src}
@@ -1029,6 +1074,24 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                                 <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                                             </svg>
                                         </div>
+                                    )}
+                                    {/* Desktop loupe overlay */}
+                                    {isLoupeActive && loupePos && (
+                                        <div
+                                            className="pointer-events-none absolute rounded-full overflow-hidden border-2 border-white/80 shadow-2xl"
+                                            style={{
+                                                width: LOUPE_SIZE,
+                                                height: LOUPE_SIZE,
+                                                left: loupePos.x,
+                                                top: loupePos.y,
+                                                zIndex: 20,
+                                                backgroundImage: `url(${photo.src})`,
+                                                backgroundSize: `${loupePos.bgW}px ${loupePos.bgH}px`,
+                                                backgroundPosition: `${loupePos.bgX}px ${loupePos.bgY}px`,
+                                                backgroundRepeat: 'no-repeat',
+                                                backgroundColor: '#000',
+                                            }}
+                                        />
                                     )}
                                 </div>
                                 {/* Right: comment panel */}

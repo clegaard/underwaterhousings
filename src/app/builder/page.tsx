@@ -67,7 +67,6 @@ async function getBuilderData() {
             }),
             prisma.port.findMany({
                 include: {
-                    lens: true,
                     housingMount: true,
                     manufacturer: { select: { slug: true } },
                 },
