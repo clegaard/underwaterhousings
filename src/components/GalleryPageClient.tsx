@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import GalleryGrid, { GalleryPhotoData } from './GalleryGrid'
 import GalleryUploadButton from './GalleryUploadButton'
+import GallerySearchBar, { SearchToken, TokenType, SuggestionPool } from './GallerySearchBar'
 import { InitialFilterOptions } from '@/app/gallery/page'
 
 interface GalleryPageClientProps {
@@ -23,7 +24,6 @@ export default function GalleryPageClient({ photos, initialFilters }: GalleryPag
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
     const [isDeleting, setIsDeleting] = useState(false)
     const [deleteError, setDeleteError] = useState<string | null>(null)
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const lastSelectedIndex = useRef<number | null>(null)
     const filteredRef = useRef<GalleryPhotoData[]>([])
 
@@ -89,241 +89,197 @@ export default function GalleryPageClient({ photos, initialFilters }: GalleryPag
         }
     }
 
-    const cameraSlug = searchParams.get('camera') ?? ''
-    const lensSlug = searchParams.get('lens') ?? ''
-    const housingSlug = searchParams.get('housing') ?? ''
-    const portSlug = searchParams.get('port') ?? ''
+    // ─── Suggestion pool (derived from photos + initialFilters) ──────────────
 
-    function setParam(key: string, value: string) {
-        const params = new URLSearchParams(searchParams.toString())
-        if (value) {
-            params.set(key, value)
-        } else {
-            params.delete(key)
+    const pool = useMemo((): SuggestionPool => {
+        const cameras = new Map<string, string>()
+        const lenses = new Map<string, string>()
+        const housings = new Map<string, string>()
+        const ports = new Map<string, string>()
+        const users = new Map<string, string>()  // userId string → display name
+
+        if (initialFilters?.camera) cameras.set(initialFilters.camera.slug, initialFilters.camera.name)
+        if (initialFilters?.lens) lenses.set(initialFilters.lens.slug, initialFilters.lens.name)
+        if (initialFilters?.housing) housings.set(initialFilters.housing.slug, initialFilters.housing.name)
+        if (initialFilters?.port) ports.set(initialFilters.port.slug, initialFilters.port.name)
+
+        photos.forEach(p => {
+            if (p.cameraSlug && p.cameraName) cameras.set(p.cameraSlug, p.cameraName)
+            if (p.lensSlug && p.lensName) lenses.set(p.lensSlug, p.lensName)
+            if (p.housingSlug && p.housingName) housings.set(p.housingSlug, p.housingName)
+            if (p.portSlug && p.portName) ports.set(p.portSlug, p.portName)
+            if (p.userId != null && p.userName) users.set(String(p.userId), p.userName)
+        })
+
+        return {
+            cameras: Array.from(cameras.entries()).sort((a, b) => a[1].localeCompare(b[1])),
+            lenses: Array.from(lenses.entries()).sort((a, b) => a[1].localeCompare(b[1])),
+            housings: Array.from(housings.entries()).sort((a, b) => a[1].localeCompare(b[1])),
+            ports: Array.from(ports.entries()).sort((a, b) => a[1].localeCompare(b[1])),
+            users: Array.from(users.entries()).sort((a, b) => a[1].localeCompare(b[1])),
         }
+    }, [photos, initialFilters])
+
+    // ─── Active tokens (derived from URL search params) ──────────────────────
+
+    const tokens = useMemo((): SearchToken[] => {
+        const result: SearchToken[] = []
+
+        const cameraSlug = searchParams.get('camera')
+        if (cameraSlug) {
+            const label = pool.cameras.find(([s]) => s === cameraSlug)?.[1] ?? initialFilters?.camera?.name
+            if (label) result.push({ type: 'camera', slug: cameraSlug, label })
+        }
+
+        const lensSlug = searchParams.get('lens')
+        if (lensSlug) {
+            const label = pool.lenses.find(([s]) => s === lensSlug)?.[1] ?? initialFilters?.lens?.name
+            if (label) result.push({ type: 'lens', slug: lensSlug, label })
+        }
+
+        const housingSlug = searchParams.get('housing')
+        if (housingSlug) {
+            const label = pool.housings.find(([s]) => s === housingSlug)?.[1] ?? initialFilters?.housing?.name
+            if (label) result.push({ type: 'housing', slug: housingSlug, label })
+        }
+
+        const portSlug = searchParams.get('port')
+        if (portSlug) {
+            const label = pool.ports.find(([s]) => s === portSlug)?.[1] ?? initialFilters?.port?.name
+            if (label) result.push({ type: 'port', slug: portSlug, label })
+        }
+
+        const userId = searchParams.get('user')
+        if (userId) {
+            const label = pool.users.find(([s]) => s === userId)?.[1]
+            if (label) result.push({ type: 'user', slug: userId, label })
+        }
+
+        return result
+    }, [searchParams, pool, initialFilters])
+
+    // ─── URL mutation helpers ─────────────────────────────────────────────────
+
+    const PARAM_KEY: Record<TokenType, string> = {
+        camera: 'camera', lens: 'lens', housing: 'housing', port: 'port', user: 'user',
+    }
+
+    function addToken(token: SearchToken) {
+        const params = new URLSearchParams(searchParams.toString())
+        params.set(PARAM_KEY[token.type], token.slug)
         router.replace(`/gallery?${params.toString()}`, { scroll: false })
     }
 
-    // Derive unique [slug, displayName] pairs sorted by display name, merging in any initial filter option
-    const cameras = useMemo(() => {
-        const map = new Map<string, string>()
-        if (initialFilters?.camera) map.set(initialFilters.camera.slug, initialFilters.camera.name)
-        photos.forEach((p) => { if (p.cameraSlug && p.cameraName) map.set(p.cameraSlug, p.cameraName) })
-        return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]))
-    }, [photos, initialFilters?.camera])
-
-    const lenses = useMemo(() => {
-        const map = new Map<string, string>()
-        if (initialFilters?.lens) map.set(initialFilters.lens.slug, initialFilters.lens.name)
-        photos.forEach((p) => { if (p.lensSlug && p.lensName) map.set(p.lensSlug, p.lensName) })
-        return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]))
-    }, [photos, initialFilters?.lens])
-
-    const housings = useMemo(() => {
-        const map = new Map<string, string>()
-        if (initialFilters?.housing) map.set(initialFilters.housing.slug, initialFilters.housing.name)
-        photos.forEach((p) => { if (p.housingSlug && p.housingName) map.set(p.housingSlug, p.housingName) })
-        return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]))
-    }, [photos, initialFilters?.housing])
-
-    const ports = useMemo(
-        () => {
-            const map = new Map<string, string>()
-            if (initialFilters?.port) map.set(initialFilters.port.slug, initialFilters.port.name)
-            photos.forEach((p) => { if (p.portSlug && p.portName) map.set(p.portSlug, p.portName) })
-            return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]))
-        },
-        [photos, initialFilters?.port]
-    )
-
-    const filtered = useMemo(
-        () =>
-            photos.filter(
-                (p) =>
-                    (!cameraSlug || p.cameraSlug === cameraSlug) &&
-                    (!lensSlug || p.lensSlug === lensSlug) &&
-                    (!housingSlug || p.housingSlug === housingSlug) &&
-                    (!portSlug || p.portSlug === portSlug)
-            ),
-        [photos, cameraSlug, lensSlug, housingSlug, portSlug]
-    )
-    filteredRef.current = filtered
-
-    const hasActiveFilter = !!(cameraSlug || lensSlug || housingSlug || portSlug)
-
-    function clearAll() {
-        router.replace('/gallery', { scroll: false })
+    function removeToken(type: TokenType) {
+        const params = new URLSearchParams(searchParams.toString())
+        params.delete(PARAM_KEY[type])
+        const qs = params.toString()
+        router.replace(qs ? `/gallery?${qs}` : '/gallery', { scroll: false })
     }
 
+    // ─── Filtered photos ──────────────────────────────────────────────────────
+
+    const tokenMap = useMemo(() => {
+        const m: Partial<Record<TokenType, string>> = {}
+        for (const t of tokens) m[t.type] = t.slug
+        return m
+    }, [tokens])
+
+    const filtered = useMemo(() =>
+        photos.filter(p => {
+            if (tokenMap.camera && p.cameraSlug !== tokenMap.camera) return false
+            if (tokenMap.lens && p.lensSlug !== tokenMap.lens) return false
+            if (tokenMap.housing && p.housingSlug !== tokenMap.housing) return false
+            if (tokenMap.port && p.portSlug !== tokenMap.port) return false
+            if (tokenMap.user && String(p.userId) !== tokenMap.user) return false
+            return true
+        }),
+        [photos, tokenMap])
+
+    filteredRef.current = filtered
+
     return (
-        <div className="flex flex-col lg:flex-row gap-6">
-            {/* Filters Sidebar */}
-            <div className="lg:w-72 flex-shrink-0">
-                {/* Mobile toggle */}
-                <button
-                    onClick={() => setIsSidebarOpen(v => !v)}
-                    className="lg:hidden w-full flex items-center justify-between px-4 py-3 bg-white rounded-lg shadow-sm border border-gray-200 mb-2 text-sm font-medium text-gray-700"
-                >
-                    <span className="flex items-center gap-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
-                        </svg>
-                        Filters{hasActiveFilter ? ` (active)` : ''}
-                    </span>
-                    <svg className={`w-4 h-4 transition-transform ${isSidebarOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
-                <div className={`${isSidebarOpen ? 'block' : 'hidden'} lg:block bg-white rounded-lg shadow-sm p-6 sticky top-6`}>
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-xl font-semibold text-gray-900">Filters</h2>
-                        {hasActiveFilter && (
+        <div className="flex flex-col gap-4">
+            {/* Smart search / filter bar */}
+            <GallerySearchBar
+                tokens={tokens}
+                pool={pool}
+                onAdd={addToken}
+                onRemove={removeToken}
+                resultCount={filtered.length}
+                totalCount={photos.length}
+            />
+
+            {/* Action bar */}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    {selectionMode && (
+                        <>
                             <button
-                                onClick={clearAll}
-                                className="text-sm text-blue-600 hover:text-blue-800"
+                                onClick={exitSelection}
+                                className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
                             >
-                                Clear all
+                                Cancel
                             </button>
-                        )}
-                    </div>
-
-                    <div className="space-y-5">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Camera</label>
-                            <select
-                                value={cameraSlug}
-                                onChange={(e) => setParam('camera', e.target.value)}
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                            >
-                                <option value="">All cameras</option>
-                                {cameras.map(([slug, name]) => (
-                                    <option key={slug} value={slug}>{name}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Lens</label>
-                            <select
-                                value={lensSlug}
-                                onChange={(e) => setParam('lens', e.target.value)}
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                            >
-                                <option value="">All lenses</option>
-                                {lenses.map(([slug, name]) => (
-                                    <option key={slug} value={slug}>{name}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Housing</label>
-                            <select
-                                value={housingSlug}
-                                onChange={(e) => setParam('housing', e.target.value)}
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                            >
-                                <option value="">All housings</option>
-                                {housings.map(([slug, name]) => (
-                                    <option key={slug} value={slug}>{name}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {ports.length > 0 && (
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Port</label>
-                                <select
-                                    value={portSlug}
-                                    onChange={(e) => setParam('port', e.target.value)}
-                                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                                >
-                                    <option value="">All ports</option>
-                                    {ports.map(([slug, name]) => (
-                                        <option key={slug} value={slug}>{name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
-
-                        <p className="text-sm text-gray-500 pt-1">
-                            {filtered.length} / {photos.length} photos
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Gallery */}
-            <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                        {selectionMode && (
-                            <>
-                                <button
-                                    onClick={exitSelection}
-                                    className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <span className="text-sm text-gray-500">
-                                    {selectedIds.size} {selectedIds.size === 1 ? 'photo' : 'photos'} selected
-                                </span>
-                            </>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-3">
-                        {deleteError && (
-                            <span className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5">
-                                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                                </svg>
-                                {deleteError}
-                                <button onClick={() => setDeleteError(null)} className="text-red-400 hover:text-red-600 transition-colors ml-1">
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
+                            <span className="text-sm text-gray-500">
+                                {selectedIds.size} {selectedIds.size === 1 ? 'photo' : 'photos'} selected
                             </span>
-                        )}
-                        {selectionMode && selectedIds.size > 0 && (
-                            <button
-                                onClick={deleteSelected}
-                                disabled={isDeleting}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                                {isDeleting ? (
-                                    <>
-                                        <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                                        </svg>
-                                        Deleting…
-                                    </>
-                                ) : (
-                                    <>Delete {selectedIds.size}</>
-                                )}
-                            </button>
-                        )}
-                        {!selectionMode && currentUserId && (
-                            <button
-                                onClick={enterSelection}
-                                className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
-                            >
-                                Select
-                            </button>
-                        )}
-                        {!selectionMode && <GalleryUploadButton />}
-                    </div>
+                        </>
+                    )}
                 </div>
-                <GalleryGrid
-                    photos={filtered}
-                    selectionMode={selectionMode}
-                    selectedIds={selectedIds}
-                    currentUserId={currentUserId}
-                    onPhotoClick={handlePhotoClick}
-                    onExitSelection={exitSelection}
-                />
+                <div className="flex items-center gap-3">
+                    {deleteError && (
+                        <span className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5">
+                            <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                            </svg>
+                            {deleteError}
+                            <button onClick={() => setDeleteError(null)} className="text-red-400 hover:text-red-600 transition-colors ml-1">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </span>
+                    )}
+                    {selectionMode && selectedIds.size > 0 && (
+                        <button
+                            onClick={deleteSelected}
+                            disabled={isDeleting}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            {isDeleting ? (
+                                <>
+                                    <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                    </svg>
+                                    Deleting…
+                                </>
+                            ) : (
+                                <>Delete {selectedIds.size}</>
+                            )}
+                        </button>
+                    )}
+                    {!selectionMode && currentUserId && (
+                        <button
+                            onClick={enterSelection}
+                            className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                            Select
+                        </button>
+                    )}
+                    {!selectionMode && <GalleryUploadButton />}
+                </div>
             </div>
+
+            <GalleryGrid
+                photos={filtered}
+                selectionMode={selectionMode}
+                selectedIds={selectedIds}
+                currentUserId={currentUserId}
+                onPhotoClick={handlePhotoClick}
+                onExitSelection={exitSelection}
+            />
         </div>
     )
 }
