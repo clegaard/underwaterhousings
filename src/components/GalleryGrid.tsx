@@ -162,7 +162,7 @@ function CommentPanel({
     }
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
             {/* Author */}
             {!commentsOnly && photo.userId && photo.userName && (
                 <div className="flex items-start gap-2.5 px-4 py-3 border-b border-gray-100 shrink-0">
@@ -205,22 +205,22 @@ function CommentPanel({
                         {/* Top-level comment */}
                         <div className="flex gap-2.5 group/comment">
                             <Link href={`/users/${comment.user.id}`} onClick={e => e.stopPropagation()} className="shrink-0 mt-0.5">
-                                <UserAvatar picture={comment.user.profilePicture ? withBase(comment.user.profilePicture) : null} name={comment.user.name ?? 'User'} size="xs" />
+                                <UserAvatar picture={comment.user.profilePicture ? withBase(comment.user.profilePicture) : null} name={comment.user.name ?? 'User'} size="sm" />
                             </Link>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm text-gray-800 leading-snug">
+                                <p className="text-base text-gray-800 leading-snug">
                                     <Link href={`/users/${comment.user.id}`} onClick={e => e.stopPropagation()} className="font-semibold mr-1 hover:underline">{comment.user.name ?? 'User'}</Link>
                                     {comment.body}
                                 </p>
                                 <div className="flex items-center gap-3 mt-0.5">
-                                    <span className="text-[11px] text-gray-400">{formatDate(comment.createdAt)}</span>
+                                    <span className="text-xs text-gray-400">{formatDate(comment.createdAt)}</span>
                                     {currentUserId && currentUserId !== comment.user.id && (
-                                        <button type="button" onClick={() => startReply(comment)} className="text-[11px] text-gray-500 font-semibold hover:text-gray-700">
+                                        <button type="button" onClick={() => startReply(comment)} className="text-xs text-gray-500 font-semibold hover:text-gray-700">
                                             Reply
                                         </button>
                                     )}
                                     {currentUserId === comment.user.id && (
-                                        <button type="button" onClick={() => deleteComment(comment.id, null)} className="text-[11px] text-red-400 hover:text-red-600 opacity-0 group-hover/comment:opacity-100 transition-opacity">
+                                        <button type="button" onClick={() => deleteComment(comment.id, null)} className="text-xs text-red-400 hover:text-red-600 opacity-0 group-hover/comment:opacity-100 transition-opacity">
                                             Delete
                                         </button>
                                     )}
@@ -231,22 +231,22 @@ function CommentPanel({
                         {comment.replies.map(reply => (
                             <div key={reply.id} className="flex gap-2.5 ml-8 group/reply">
                                 <Link href={`/users/${reply.user.id}`} onClick={e => e.stopPropagation()} className="shrink-0 mt-0.5">
-                                    <UserAvatar picture={reply.user.profilePicture ? withBase(reply.user.profilePicture) : null} name={reply.user.name ?? 'User'} size="xs" />
+                                    <UserAvatar picture={reply.user.profilePicture ? withBase(reply.user.profilePicture) : null} name={reply.user.name ?? 'User'} size="sm" />
                                 </Link>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm text-gray-800 leading-snug">
+                                    <p className="text-base text-gray-800 leading-snug">
                                         <Link href={`/users/${reply.user.id}`} onClick={e => e.stopPropagation()} className="font-semibold mr-1 hover:underline">{reply.user.name ?? 'User'}</Link>
                                         {reply.body}
                                     </p>
                                     <div className="flex items-center gap-3 mt-0.5">
-                                        <span className="text-[11px] text-gray-400">{formatDate(reply.createdAt)}</span>
+                                        <span className="text-xs text-gray-400">{formatDate(reply.createdAt)}</span>
                                         {currentUserId && currentUserId !== reply.user.id && (
-                                            <button type="button" onClick={() => startReply(reply)} className="text-[11px] text-gray-500 font-semibold hover:text-gray-700">
+                                            <button type="button" onClick={() => startReply(reply)} className="text-xs text-gray-500 font-semibold hover:text-gray-700">
                                                 Reply
                                             </button>
                                         )}
                                         {currentUserId === reply.user.id && (
-                                            <button type="button" onClick={() => deleteComment(reply.id, comment.id)} className="text-[11px] text-red-400 hover:text-red-600 opacity-0 group-hover/reply:opacity-100 transition-opacity">
+                                            <button type="button" onClick={() => deleteComment(reply.id, comment.id)} className="text-xs text-red-400 hover:text-red-600 opacity-0 group-hover/reply:opacity-100 transition-opacity">
                                                 Delete
                                             </button>
                                         )}
@@ -851,64 +851,67 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                 onTouchMove={handleImageTouchMove}
                                 onTouchEnd={handleImageTouchEnd}
                             >
-                                {/* Back button + counter: fixed overlay, stays put during horizontal swipe */}
-                                <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3 pt-2.5">
-                                    <button
-                                        onClick={closeLightbox}
-                                        onTouchStart={(e) => e.stopPropagation()}
-                                        onTouchEnd={(e) => {
-                                            e.stopPropagation()
-                                            e.preventDefault()
-                                            closeLightbox()
-                                        }}
-                                        className="p-1.5 text-white/80 hover:text-white transition-colors bg-black/30 rounded-full"
-                                        aria-label="Close"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                        </svg>
-                                    </button>
-                                    <span className="text-white/70 text-xs bg-black/30 px-2 py-0.5 rounded-full">{lightboxIndex + 1} / {photos.length}</span>
-                                    <div className="flex items-center gap-1">
-                                        {/* Loupe button */}
+                                {/* Back button + counter — hidden when sheet is fully expanded
+                                     (the sheet header provides its own close button in that state) */}
+                                {!isSheetExpanded && (
+                                    <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-3 pt-2.5">
                                         <button
-                                            aria-label={isLoupeActive ? 'Disable loupe' : 'Enable loupe'}
-                                            onTouchStart={e => e.stopPropagation()}
-                                            onTouchEnd={e => { e.stopPropagation(); e.preventDefault(); setIsLoupeActive(v => !v); setLoupePos(null) }}
-                                            className={`p-1.5 rounded-full transition-colors ${isLoupeActive ? 'bg-blue-500/80 text-white' : 'bg-black/30 text-white/80'}`}
+                                            onClick={closeLightbox}
+                                            onTouchStart={(e) => e.stopPropagation()}
+                                            onTouchEnd={(e) => {
+                                                e.stopPropagation()
+                                                e.preventDefault()
+                                                closeLightbox()
+                                            }}
+                                            className="p-1.5 text-white/80 hover:text-white transition-colors bg-black/30 rounded-full"
+                                            aria-label="Close"
                                         >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607ZM10.5 7.5v6m3-3h-6" />
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                             </svg>
                                         </button>
-                                        {/* Full-res button */}
-                                        {photo.allowFullResDownload !== false ? (
-                                            <a
-                                                href={photo.src}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                aria-label="View full resolution"
-                                                className="p-1.5 text-white/80 hover:text-white transition-colors bg-black/30 rounded-full"
+                                        <span className="text-white/70 text-xs bg-black/30 px-2 py-0.5 rounded-full">{lightboxIndex + 1} / {photos.length}</span>
+                                        <div className="flex items-center gap-1">
+                                            {/* Loupe button */}
+                                            <button
+                                                aria-label={isLoupeActive ? 'Disable loupe' : 'Enable loupe'}
                                                 onTouchStart={e => e.stopPropagation()}
-                                                onTouchEnd={e => e.stopPropagation()}
+                                                onTouchEnd={e => { e.stopPropagation(); e.preventDefault(); setIsLoupeActive(v => !v); setLoupePos(null) }}
+                                                className={`p-1.5 rounded-full transition-colors ${isLoupeActive ? 'bg-blue-500/80 text-white' : 'bg-black/30 text-white/80'}`}
                                             >
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                                    <path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607ZM10.5 7.5v6m3-3h-6" />
                                                 </svg>
-                                            </a>
-                                        ) : (
-                                            <div
-                                                aria-label="Full resolution not available"
-                                                title="The uploader has not enabled full-resolution viewing"
-                                                className="p-1.5 text-white/25 bg-black/30 rounded-full cursor-not-allowed"
-                                            >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                                                </svg>
-                                            </div>
-                                        )}
+                                            </button>
+                                            {/* Full-res button */}
+                                            {photo.allowFullResDownload !== false ? (
+                                                <a
+                                                    href={photo.src}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    aria-label="View full resolution"
+                                                    className="p-1.5 text-white/80 hover:text-white transition-colors bg-black/30 rounded-full"
+                                                    onTouchStart={e => e.stopPropagation()}
+                                                    onTouchEnd={e => e.stopPropagation()}
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                                    </svg>
+                                                </a>
+                                            ) : (
+                                                <div
+                                                    aria-label="Full resolution not available"
+                                                    title="The uploader has not enabled full-resolution viewing"
+                                                    className="p-1.5 text-white/25 bg-black/30 rounded-full cursor-not-allowed"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                                    </svg>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                                 {/* Current photo — no carousel panels */}
                                 <div className="absolute inset-0">
@@ -1026,16 +1029,13 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                 <div
                                     className="shrink-0 bg-white flex flex-col rounded-t-[28px] shadow-2xl"
                                     style={{
-                                        // Two snap points: mid = 62dvh, max = 100dvh - 60px (leaves header visible)
+                                        // Two snap points: mid = 62dvh, expanded = 100dvh (image collapses to 0)
                                         // sheetDragOffset is signed: positive = dragged down, negative = dragged up
-                                        height: `min(
-                                            calc(100dvh - 44px),
-                                            max(0px, calc(${isSheetExpanded ? '100dvh - 60px' : '62dvh'} - ${sheetDragOffset}px))
-                                        )`,
+                                        height: `max(0px, calc(${isSheetExpanded ? '100dvh' : '62dvh'} - ${sheetDragOffset}px))`,
                                         transition: isDraggingSheet ? 'none' : 'height 300ms cubic-bezier(0.32, 0.72, 0, 1)',
                                     }}
                                 >
-                                    {/* Drag handle — touch target for swipe-to-dismiss */}
+                                    {/* Drag handle — pill only; swipe down to collapse when expanded */}
                                     <div
                                         className="flex flex-col items-center pt-2.5 pb-1.5 shrink-0 select-none"
                                         onTouchStart={handleSheetTouchStart}
@@ -1043,9 +1043,9 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                         onTouchEnd={handleSheetTouchEnd}
                                     >
                                         <div className="w-10 h-1 bg-gray-300 rounded-full" />
-                                        <p className="text-xs font-semibold text-gray-500 mt-1.5 tracking-wide uppercase">Comments</p>
+                                        {!isSheetExpanded && <p className="text-xs font-semibold text-gray-500 mt-1.5 tracking-wide uppercase">Comments</p>}
                                     </div>
-                                    <div className="h-px bg-gray-100 shrink-0" />
+                                    {!isSheetExpanded && <div className="h-px bg-gray-100 shrink-0" />}
                                     {photoId != null ? (
                                         <CommentPanel
                                             photo={photo}
