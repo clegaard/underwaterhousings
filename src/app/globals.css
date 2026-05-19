@@ -23,6 +23,17 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Prevent iOS Safari from auto-zooming focused form fields.
+   iOS zooms whenever the computed font-size is < 16px.
+   :not([type="hidden"]) raises specificity to (0,1,1) which beats
+   Tailwind utility class selectors (0,1,0) even when both are unlayered,
+   so this wins over text-sm / text-xs classes on input elements. */
+input:not([type="hidden"]),
+select,
+textarea {
+    font-size: max(1rem, 16px);
+}
+
 @layer utilities {
     .text-balance {
         text-wrap: balance;

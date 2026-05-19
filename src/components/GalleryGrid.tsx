@@ -102,8 +102,8 @@ function CommentPanel({
         inputRef.current?.focus()
     }
 
-    async function submitComment(e: React.FormEvent) {
-        e.preventDefault()
+    async function submitComment(e?: React.FormEvent | React.MouseEvent | React.KeyboardEvent) {
+        e?.preventDefault()
         const text = input.trim()
         if (!text || !photo.photoId || submitting) return
         setSubmitting(true)
@@ -305,31 +305,41 @@ function CommentPanel({
                     <p className="text-sm text-gray-500">{commentCount.toLocaleString()} {commentCount === 1 ? 'comment' : 'comments'}</p>
                 </div>}
 
-                {/* Comment input */}
+                {/* Comment input — intentionally NOT a <form> so iOS Safari does not
+                    show the "Previous / Next field" navigation toolbar. Submission is
+                    handled via Enter key and the Post button instead. */}
                 {currentUserId ? (
-                    <form onSubmit={submitComment} className="flex items-center gap-2 px-4 py-2 border-t border-gray-100">
+                    <div className="flex items-center gap-2.5 px-3 py-2.5 border-t border-gray-100">
                         {replyingTo && (
-                            <span className="text-xs text-blue-600 font-medium whitespace-nowrap">
+                            <span className="text-xs text-blue-600 font-medium whitespace-nowrap shrink-0">
                                 ↩ {replyingTo.name}
                                 <button type="button" onClick={() => { setReplyingTo(null); setInput('') }} className="ml-1 text-gray-400 hover:text-gray-600">✕</button>
                             </span>
                         )}
-                        <input
-                            ref={inputRef}
-                            value={input}
-                            onChange={e => setInput(e.target.value)}
-                            placeholder="Add a comment…"
-                            className="flex-1 text-sm outline-none placeholder-gray-400 bg-transparent min-w-0"
-                            maxLength={1000}
-                        />
+                        <div className="flex-1 flex items-center bg-gray-100 dark:bg-white/10 rounded-full px-4 py-3 min-w-0">
+                            <input
+                                ref={inputRef}
+                                value={input}
+                                onChange={e => setInput(e.target.value)}
+                                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) submitComment(e) }}
+                                placeholder="Add a comment…"
+                                enterKeyHint="send"
+                                autoComplete="off"
+                                autoCorrect="on"
+                                className="flex-1 outline-none placeholder-gray-400 dark:placeholder-gray-500 dark:text-white min-w-0"
+                                style={{ backgroundColor: 'transparent', fontSize: '16px' }}
+                                maxLength={1000}
+                            />
+                        </div>
                         <button
-                            type="submit"
+                            type="button"
+                            onClick={submitComment}
                             disabled={!input.trim() || submitting}
-                            className="text-sm font-semibold text-blue-500 disabled:opacity-40 hover:text-blue-700 transition-colors"
+                            className="text-base font-semibold text-blue-500 disabled:opacity-40 hover:text-blue-700 transition-colors shrink-0"
                         >
                             Post
                         </button>
-                    </form>
+                    </div>
                 ) : (
                     <p className="px-4 py-2 text-xs text-gray-400 border-t border-gray-100">
                         <Link href="/auth/login" className="text-blue-500 hover:underline">Log in</Link> to like and comment.
@@ -528,6 +538,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
     const [lightboxLoaded, setLightboxLoaded] = useState(false)
     const [commentFocusSignal, setCommentFocusSignal] = useState(0)
     const [isCommentSheetOpen, setIsCommentSheetOpen] = useState(false)
+    const [isSheetExpanded, setIsSheetExpanded] = useState(false)
     const [sheetDragOffset, setSheetDragOffset] = useState(0)
     const [isDraggingSheet, setIsDraggingSheet] = useState(false)
     const sheetTouchStartY = useRef(0)
@@ -584,8 +595,17 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
     useEffect(() => {
         setLightboxLoaded(false)
         setIsCommentSheetOpen(false)
+        setIsSheetExpanded(false)
         setSheetDragOffset(0)
         setLoupePos(null)
+    }, [lightboxIndex])
+
+    // Prevent background scroll while lightbox is open (Instagram-style)
+    useEffect(() => {
+        if (lightboxIndex !== null) {
+            document.body.style.overflow = 'hidden'
+        }
+        return () => { document.body.style.overflow = '' }
     }, [lightboxIndex])
 
     useEffect(() => {
@@ -596,6 +616,21 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
             window.matchMedia('(any-pointer: coarse)').matches
         setHasTouchInput(supportsTouch)
     }, [])
+
+    // When the comment sheet is open, prevent iOS Safari from showing its
+    // "Previous / Next field" keyboard toolbar by removing all background
+    // form controls from the tab order. The lightbox root is excluded so the
+    // comment input itself remains focusable.
+    useEffect(() => {
+        if (!isCommentSheetOpen) return
+        const lightboxEl = document.querySelector('[data-lightbox-root]')
+        const els = Array.from(
+            document.querySelectorAll<HTMLElement>('input, select, textarea')
+        ).filter(el => !lightboxEl?.contains(el))
+        const saved = els.map(el => ({ el, tabIndex: el.tabIndex }))
+        els.forEach(el => { el.tabIndex = -1 })
+        return () => { saved.forEach(({ el, tabIndex }) => { el.tabIndex = tabIndex }) }
+    }, [isCommentSheetOpen])
 
     useEffect(() => {
         const el = containerRef.current
@@ -617,21 +652,42 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
     function handleSheetTouchMove(e: React.TouchEvent) {
         const delta = e.touches[0].clientY - sheetTouchStartY.current
         sheetTouchCurrentY.current = e.touches[0].clientY
-        setSheetDragOffset(Math.max(0, delta))
+        // Allow full range: positive = dragged down (shrinks), negative = dragged up (grows)
+        setSheetDragOffset(delta)
     }
 
     function handleSheetTouchEnd() {
         setIsDraggingSheet(false)
         const delta = sheetTouchCurrentY.current - sheetTouchStartY.current
-        if (delta > 80) {
-            // Collapse height to 0 (large offset makes calc(62dvh - X) go to 0), then unmount
-            setSheetDragOffset(window.innerHeight)
-            setTimeout(() => {
-                setIsCommentSheetOpen(false)
+        if (isSheetExpanded) {
+            // From expanded: drag down > 80px → snap to mid; further down → dismiss
+            if (delta > 200) {
+                setSheetDragOffset(window.innerHeight)
+                setTimeout(() => {
+                    setIsCommentSheetOpen(false)
+                    setIsSheetExpanded(false)
+                    setSheetDragOffset(0)
+                }, 300)
+            } else if (delta > 80) {
+                setIsSheetExpanded(false)
                 setSheetDragOffset(0)
-            }, 300)
+            } else {
+                setSheetDragOffset(0)
+            }
         } else {
-            setSheetDragOffset(0)
+            // From mid: drag up > 60px → snap to expanded; drag down > 80px → dismiss
+            if (delta < -60) {
+                setIsSheetExpanded(true)
+                setSheetDragOffset(0)
+            } else if (delta > 80) {
+                setSheetDragOffset(window.innerHeight)
+                setTimeout(() => {
+                    setIsCommentSheetOpen(false)
+                    setSheetDragOffset(0)
+                }, 300)
+            } else {
+                setSheetDragOffset(0)
+            }
         }
     }
 
@@ -783,7 +839,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                     commentCount: stored?.commentCount ?? photo.commentCount ?? 0,
                 }
                 return (
-                    <div className="fixed inset-0 z-50">
+                    <div className="fixed inset-0 z-50" data-lightbox-root="">
 
                         {/* ── Mobile portrait layout ── */}
                         <div className="flex flex-col bg-black md:hidden overflow-hidden" style={{ height: '100dvh' }}>
@@ -931,7 +987,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                     )}
 
                                     {/* Action buttons */}
-                                    <div className="flex items-center gap-4 px-4 pt-3 pb-1 shrink-0">
+                                    <div className="flex items-center gap-5 px-4 pt-3 pb-1 shrink-0">
                                         <button
                                             type="button"
                                             onClick={() => photoId != null && toggleLike(photoId)}
@@ -939,7 +995,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                             aria-label={ls.liked ? 'Unlike' : 'Like'}
                                             className={`transition-colors ${currentUserId ? 'cursor-pointer' : 'cursor-default'} ${ls.liked ? 'text-red-500' : 'text-gray-500'}`}
                                         >
-                                            <svg viewBox="0 0 24 24" className="w-6 h-6" fill={ls.liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2}>
+                                            <svg viewBox="0 0 24 24" className="w-8 h-8" fill={ls.liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={1.75}>
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                             </svg>
                                         </button>
@@ -949,7 +1005,7 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                             aria-label="Open comments"
                                             className="text-gray-500 hover:text-gray-700 transition-colors"
                                         >
-                                            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2}>
+                                            <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth={1.75}>
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                             </svg>
                                         </button>
@@ -968,10 +1024,15 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                             {/* Comment sheet — shrink-0 with fixed height; image above fills remaining space */}
                             {isCommentSheetOpen && (
                                 <div
-                                    className="shrink-0 bg-white flex flex-col rounded-t-2xl shadow-2xl overflow-hidden"
+                                    className="shrink-0 bg-white flex flex-col rounded-t-[28px] shadow-2xl"
                                     style={{
-                                        height: `max(0px, calc(62dvh - ${sheetDragOffset}px))`,
-                                        transition: isDraggingSheet ? 'none' : 'height 300ms ease-out',
+                                        // Two snap points: mid = 62dvh, max = 100dvh - 60px (leaves header visible)
+                                        // sheetDragOffset is signed: positive = dragged down, negative = dragged up
+                                        height: `min(
+                                            calc(100dvh - 44px),
+                                            max(0px, calc(${isSheetExpanded ? '100dvh - 60px' : '62dvh'} - ${sheetDragOffset}px))
+                                        )`,
+                                        transition: isDraggingSheet ? 'none' : 'height 300ms cubic-bezier(0.32, 0.72, 0, 1)',
                                     }}
                                 >
                                     {/* Drag handle — touch target for swipe-to-dismiss */}
