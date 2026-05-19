@@ -34,6 +34,7 @@ export interface GalleryPhotoData extends Photo {
     commentCount?: number
     likedByMe?: boolean
     rigId?: number
+    allowFullResDownload?: boolean
 }
 
 function formatShutterSpeed(speed: number): string {
@@ -501,6 +502,11 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
     const [isSwipeSettling, setIsSwipeSettling] = useState(false)
     const [disableSwipeTransition, setDisableSwipeTransition] = useState(false)
 
+    // Container width measurement — used to give RowsPhotoAlbum the real width before
+    // first paint so it never flashes the wrong (desktop) column layout on mobile.
+    const containerRef = useRef<HTMLDivElement>(null)
+    const [containerWidth, setContainerWidth] = useState<number | null>(null)
+
     // Per-photo live state — keyed by photoId, initialised from props
     const [photoState, setPhotoState] = useState<Record<number, PhotoLiveState>>(() => {
         const init: Record<number, PhotoLiveState> = {}
@@ -549,6 +555,17 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
             navigator.maxTouchPoints > 0 ||
             window.matchMedia('(any-pointer: coarse)').matches
         setHasTouchInput(supportsTouch)
+    }, [])
+
+    useEffect(() => {
+        const el = containerRef.current
+        if (!el) return
+        const ro = new ResizeObserver(entries => {
+            const w = entries[0]?.contentRect.width
+            if (w) setContainerWidth(Math.round(w))
+        })
+        ro.observe(el)
+        return () => ro.disconnect()
     }, [])
 
     function handleSheetTouchStart(e: React.TouchEvent) {
@@ -694,29 +711,46 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
 
     return (
         <>
-            <RowsPhotoAlbum<GalleryPhotoData>
-                photos={photos}
-                targetRowHeight={300}
-                rowConstraints={{ minPhotos: 1, maxPhotos: 5 }}
-                breakpoints={[600, 900, 1200]}
-                defaultContainerWidth={1200}
-                render={{
-                    image: (props, { photo, index }) => (
-                        <GalleryPhotoTile
-                            photo={photo}
-                            index={index}
-                            selectionMode={selectionMode}
-                            selectedIds={selectedIds}
-                            currentUserId={currentUserId}
-                            onPhotoClick={onPhotoClick}
-                            onOpenLightbox={setLightboxIndex}
-                            liveState={photo.photoId != null ? photoState[photo.photoId] : undefined}
-                            onLikeToggle={photo.photoId != null ? () => toggleLike(photo.photoId!) : undefined}
-                            onOpenWithComment={() => { setLightboxIndex(index); setCommentFocusSignal(s => s + 1); setIsCommentSheetOpen(true) }}
-                        />
-                    ),
-                }}
-            />
+            {/* containerRef measures the real width so RowsPhotoAlbum never renders
+                with a desktop-width layout on mobile, which causes both the column-
+                layout flash and the wrong-photo-click bug. */}
+            <div ref={containerRef}>
+                {containerWidth !== null && (
+                    <RowsPhotoAlbum<GalleryPhotoData>
+                        photos={photos}
+                        targetRowHeight={300}
+                        rowConstraints={{ minPhotos: 1, maxPhotos: 5 }}
+                        breakpoints={[600, 900, 1200]}
+                        defaultContainerWidth={containerWidth}
+                        render={{
+                            image: (props, { photo: rawPhoto }) => {
+                                const photo = rawPhoto as GalleryPhotoData
+                                // Look up index by stable photoId (or src fallback) so the
+                                // lightbox always opens the correct photo regardless of what
+                                // the library passes as its index param.
+                                const index = photo.photoId != null
+                                    ? photos.findIndex(p => p.photoId === photo.photoId)
+                                    : photos.findIndex(p => p.src === photo.src)
+                                const safeIndex = index !== -1 ? index : 0
+                                return (
+                                    <GalleryPhotoTile
+                                        photo={photo}
+                                        index={safeIndex}
+                                        selectionMode={selectionMode}
+                                        selectedIds={selectedIds}
+                                        currentUserId={currentUserId}
+                                        onPhotoClick={onPhotoClick}
+                                        onOpenLightbox={setLightboxIndex}
+                                        liveState={photo.photoId != null ? photoState[photo.photoId] : undefined}
+                                        onLikeToggle={photo.photoId != null ? () => toggleLike(photo.photoId!) : undefined}
+                                        onOpenWithComment={() => { setLightboxIndex(safeIndex); setCommentFocusSignal(s => s + 1); setIsCommentSheetOpen(true) }}
+                                    />
+                                )
+                            },
+                        }}
+                    />
+                )}
+            </div>
 
             {/* Lightbox */}
             {lightboxIndex !== null && (() => {
@@ -763,7 +797,31 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                         </svg>
                                     </button>
                                     <span className="text-white/70 text-xs bg-black/30 px-2 py-0.5 rounded-full">{lightboxIndex + 1} / {photos.length}</span>
-                                    <div className="w-8" />
+                                    {photo.allowFullResDownload !== false ? (
+                                        <a
+                                            href={photo.src}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            aria-label="View full resolution"
+                                            className="p-1.5 text-white/80 hover:text-white transition-colors bg-black/30 rounded-full"
+                                            onTouchStart={e => e.stopPropagation()}
+                                            onTouchEnd={e => e.stopPropagation()}
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                            </svg>
+                                        </a>
+                                    ) : (
+                                        <div
+                                            aria-label="Full resolution not available"
+                                            title="The uploader has not enabled full-resolution viewing"
+                                            className="p-1.5 text-white/25 bg-black/30 rounded-full cursor-not-allowed"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                            </svg>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Slide wrapper: only the image content translates during swipe */}
@@ -949,6 +1007,29 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                     <button className="absolute left-3 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10 transition-colors" onClick={goPrev} aria-label="Previous photo">‹</button>
                                     <button className="absolute right-3 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/80 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10 transition-colors" onClick={goNext} aria-label="Next photo">›</button>
                                     <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-white/60 text-xs">{lightboxIndex + 1} / {photos.length}</span>
+                                    {photo.allowFullResDownload !== false ? (
+                                        <a
+                                            href={photo.src}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            aria-label="View full resolution"
+                                            className="absolute top-3 right-3 text-white bg-black/50 hover:bg-black/80 rounded-full w-10 h-10 flex items-center justify-center z-10 transition-colors"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                            </svg>
+                                        </a>
+                                    ) : (
+                                        <div
+                                            aria-label="Full resolution not available"
+                                            title="The uploader has not enabled full-resolution viewing"
+                                            className="absolute top-3 right-3 text-white/25 bg-black/20 rounded-full w-10 h-10 flex items-center justify-center z-10 cursor-not-allowed"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                            </svg>
+                                        </div>
+                                    )}
                                 </div>
                                 {/* Right: comment panel */}
                                 <div className="w-80 md:w-96 shrink-0 bg-white flex flex-col overflow-hidden">

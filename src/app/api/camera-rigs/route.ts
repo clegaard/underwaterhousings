@@ -32,27 +32,57 @@ export async function GET(request: NextRequest) {
 
         const [cameras, housings, lenses, ports, portAdapters, extensionRings] = await Promise.all([
             prisma.camera.findMany({
-                include: { brand: true, cameraMount: true },
+                select: {
+                    id: true, name: true, slug: true, productPhotos: true,
+                    manufacturerId: true, interchangeableLens: true,
+                    canBeUsedWithoutAHousing: true, exifId: true,
+                    brand: { select: { id: true, name: true, slug: true } },
+                    cameraMount: { select: { id: true, name: true, slug: true } },
+                },
                 orderBy: { name: 'asc' },
             }),
             prisma.housing.findMany({
-                include: { manufacturer: true, housingMount: true, cameras: { select: { id: true } } },
+                select: {
+                    id: true, name: true, slug: true, productPhotos: true,
+                    interchangeablePort: true,
+                    cameras: { select: { id: true } },
+                    housingMount: { select: { id: true, name: true, slug: true } },
+                    manufacturer: { select: { id: true, name: true, slug: true } },
+                },
                 orderBy: { name: 'asc' },
             }),
             prisma.lens.findMany({
-                include: { ports: true },
+                select: {
+                    id: true, name: true, slug: true, productPhotos: true,
+                    cameraMountId: true, exifId: true,
+                    ports: { select: { id: true } },
+                },
                 orderBy: { name: 'asc' },
             }),
             prisma.port.findMany({
-                include: { lens: true },
+                select: {
+                    id: true, name: true, slug: true, productPhotos: true,
+                    housingMountId: true,
+                    lens: { select: { id: true } },
+                },
                 orderBy: { name: 'asc' },
             }),
             prisma.portAdapter.findMany({
-                include: { manufacturer: true, inputHousingMount: true, outputHousingMount: true },
+                select: {
+                    id: true, name: true, slug: true, productPhotos: true,
+                    inputHousingMountId: true, outputHousingMountId: true,
+                    inputHousingMount: { select: { id: true, name: true, slug: true } },
+                    outputHousingMount: { select: { id: true, name: true, slug: true } },
+                    manufacturer: { select: { id: true, name: true, slug: true } },
+                },
                 orderBy: { name: 'asc' },
             }),
             prisma.extensionRing.findMany({
-                include: { manufacturer: true, housingMount: true },
+                select: {
+                    id: true, name: true, slug: true, productPhotos: true,
+                    housingMountId: true, lengthMm: true,
+                    manufacturer: { select: { id: true, name: true, slug: true } },
+                },
                 orderBy: { name: 'asc' },
             }),
         ])
