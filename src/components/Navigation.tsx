@@ -304,20 +304,15 @@ export default function Navigation() {
                                 )}
                             </div>
                         ) : (
-                            <div className="flex items-center gap-2">
-                                <Link
-                                    href="/auth/login"
-                                    className="text-gray-700 hover:text-blue-900 transition-colors font-medium text-sm"
-                                >
-                                    Log in
-                                </Link>
-                                <Link
-                                    href="/auth/signup"
-                                    className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                                >
-                                    Sign up
-                                </Link>
-                            </div>
+                            <Link
+                                href="/auth/login"
+                                className="flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:text-blue-900 hover:bg-gray-100 transition-colors"
+                                aria-label="Log in"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                                </svg>
+                            </Link>
                         )}
                     </div>
                 </div>
