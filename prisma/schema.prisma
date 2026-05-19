@@ -241,22 +241,30 @@ model Gear {
 }
 
 model User {
-    id              Int              @id @default(autoincrement())
-    email           String           @unique
-    password        String
-    name            String?
-    bio             String?
-    profilePicture  String?
-    isSuperuser     Boolean          @default(false)
-    isUser          Boolean          @default(true)
-    defaultRigId    Int?
-    createdAt       DateTime         @default(now())
-    updatedAt       DateTime         @updatedAt
-    rigReviews      RigReview[]
-    galleryPhotos   GalleryPhoto[]
-    cameraRigs      CameraRig[]
-    galleryComments GalleryComment[]
-    galleryLikes    GalleryLike[]
+    id                   Int              @id @default(autoincrement())
+    email                String           @unique
+    password             String
+    name                 String?
+    bio                  String?
+    profilePicture       String?
+    isSuperuser          Boolean          @default(false)
+    isUser               Boolean          @default(true)
+    defaultRigId         Int?
+    createdAt            DateTime         @default(now())
+    updatedAt            DateTime         @updatedAt
+    // Profile settings
+    publicEmail          String?
+    website              String?
+    twitterHandle        String?
+    instagramHandle      String?
+    linkedinUrl          String?
+    // Gallery settings
+    allowFullResDownload Boolean          @default(true)
+    rigReviews           RigReview[]
+    galleryPhotos        GalleryPhoto[]
+    cameraRigs           CameraRig[]
+    galleryComments      GalleryComment[]
+    galleryLikes         GalleryLike[]
 
     @@map("users")
 }
