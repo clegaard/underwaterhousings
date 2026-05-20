@@ -7,13 +7,7 @@ export default function Home() {
 
             {/* ── Hero ────────────────────────────────────────────────── */}
             <section className="mx-auto max-w-3xl px-4 pt-20 pb-16 text-center">
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-4 py-1.5 text-xs font-medium text-blue-600 shadow-sm">
-                    <span className="relative flex h-2 w-2">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500" />
-                    </span>
-                    Underwater camera rig builder
-                </div>
+
 
                 <h1 className="mb-4 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
                     Find your perfect
@@ -49,7 +43,7 @@ export default function Home() {
             </section>
 
             {/* ── Feature highlights ───────────────────────────────────── */}
-            <section className="mx-auto max-w-4xl px-4 pb-20">
+            <section className="mx-auto max-w-4xl px-4 pb-16">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                         <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-xl">🌊</div>

@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { withBase, getHousingImagePathWithFallback, getCameraImagePathWithFallback, getLensImagePathWithFallback, getPortImagePathWithFallback } from '@/lib/images'
 import HousingBuilder from '@/components/HousingBuilder'
+import PopularRigsSection from '@/components/PopularRigsSection'
 
 async function getBuilderData() {
     try {
@@ -144,12 +145,21 @@ export default async function BuilderPage() {
     }
 
     return (
-        <HousingBuilder
-            initialHousings={housings}
-            cameras={cameras}
-            manufacturers={manufacturers}
-            lenses={lenses}
-            ports={ports}
-        />
+        <>
+            <div className="bg-blue-50">
+                <div className="max-w-5xl mx-auto px-4 pt-8 pb-2">
+                    <PopularRigsSection />
+                </div>
+            </div>
+            <div id="builder">
+                <HousingBuilder
+                    initialHousings={housings}
+                    cameras={cameras}
+                    manufacturers={manufacturers}
+                    lenses={lenses}
+                    ports={ports}
+                />
+            </div>
+        </>
     )
 }

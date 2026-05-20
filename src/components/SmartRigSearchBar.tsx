@@ -38,6 +38,13 @@ const STEP_THEME = {
     port: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-800', dot: 'bg-amber-500' },
 }
 
+const ALL_STEPS: { id: Step; label: string }[] = [
+    { id: 'camera', label: 'Camera' },
+    { id: 'lens', label: 'Lens' },
+    { id: 'housing', label: 'Housing' },
+    { id: 'port', label: 'Port' },
+]
+
 // ─── Step icons ─────────────────────────────────────────────────────────────
 
 function StepIcon({ step, className }: { step: Step; className?: string }) {
@@ -67,6 +74,58 @@ function StepIcon({ step, className }: { step: Step; className?: string }) {
             <circle cx="12" cy="12" r="5" strokeWidth={1.5} />
             <path strokeLinecap="round" strokeWidth={1.5} d="M12 3v2M12 19v2M3 12h2M19 12h2" />
         </svg>
+    )
+}
+
+// ─── Step progress tracker ────────────────────────────────────────────────────
+
+function StepTracker({
+    getStatus,
+    getNote,
+}: {
+    getStatus: (s: Step) => 'complete' | 'active' | 'skipped' | 'pending'
+    getNote?: (s: Step) => string | null
+}) {
+    return (
+        <div className="flex items-start w-full">
+            {ALL_STEPS.map((s, i) => {
+                const status = getStatus(s.id)
+                const isLast = i === ALL_STEPS.length - 1
+                return (
+                    <div key={s.id} className="flex items-start flex-1 min-w-0">
+                        <div className="flex flex-col items-center shrink-0">
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200
+                                ${status === 'complete' ? 'bg-green-500 text-white shadow-sm' : ''}
+                                ${status === 'active' ? 'bg-blue-600 text-white shadow-md ring-4 ring-blue-100' : ''}
+                                ${status === 'pending' ? 'bg-gray-100 text-gray-400 border border-gray-200' : ''}
+                                ${status === 'skipped' ? 'bg-gray-100 text-gray-300 border border-gray-200' : ''}
+                            `}>
+                                {status === 'complete' && (
+                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                )}
+                                {status === 'skipped' && <span>—</span>}
+                                {(status === 'active' || status === 'pending') && <span>{i + 1}</span>}
+                            </div>
+                            <span className={`text-[10px] font-semibold mt-1 tracking-wide transition-colors
+                                ${status === 'active' ? 'text-blue-600' : ''}
+                                ${status === 'complete' ? 'text-green-600' : ''}
+                                ${status === 'pending' || status === 'skipped' ? 'text-gray-400' : ''}
+                            `}>{s.label}</span>
+                            {getNote?.(s.id) && (
+                                <span className="text-[9px] text-gray-300 leading-tight text-center">{getNote!(s.id)}</span>
+                            )}
+                        </div>
+                        {!isLast && (
+                            <div className={`flex-1 h-px mt-3.5 mx-1 transition-colors duration-300
+                                ${status === 'complete' ? 'bg-green-300' : 'bg-gray-200'}
+                            `} />
+                        )}
+                    </div>
+                )
+            })}
+        </div>
     )
 }
 
@@ -246,12 +305,26 @@ export default function SmartRigSearchBar({ cameras, housings }: { cameras: any[
     const naturalStep = useMemo((): Step | null => {
         if (!cameraModel) return 'camera'
         if (!isFixedLens && !lensName) return 'lens'
-        if (!selectedCamera?.canBeUsedWithoutAHousing && !housingName) return 'housing'
-        if (housingName && !isFixedPort && !portName) return 'port'
+        if (!housingName) return 'housing'
+        if (!isFixedPort && !portName) return 'port'
         return null
-    }, [cameraModel, lensName, housingName, portName, isFixedLens, isFixedPort, selectedCamera])
+    }, [cameraModel, lensName, housingName, portName, isFixedLens, isFixedPort])
 
     const activeStep: Step | null = editingStep ?? naturalStep
+
+    function getStepStatus(stepId: Step): 'complete' | 'active' | 'skipped' | 'pending' {
+        if (stepId === 'lens' && isFixedLens) return 'skipped'
+        if (stepId === editingStep) return 'active'
+        const done: Record<Step, boolean> = {
+            camera: !!cameraModel,
+            lens: !!lensName || isFixedLens,
+            housing: !!housingName,
+            port: !!portName || isFixedPort,
+        }
+        if (done[stepId]) return 'complete'
+        if (stepId === naturalStep) return 'active'
+        return 'pending'
+    }
 
     useEffect(() => {
         if (!activeStep) { setSuggestions([]); return }
@@ -378,7 +451,17 @@ export default function SmartRigSearchBar({ cameras, housings }: { cameras: any[
     const isComplete = !activeStep
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-5 w-full">
+
+            {/* ── Step progress tracker ── */}
+            <StepTracker
+                getStatus={getStepStatus}
+                getNote={s => {
+                    if (s === 'lens' && isFixedLens) return 'fixed lens'
+                    if (s === 'port' && isFixedPort) return 'fixed port'
+                    return null
+                }}
+            />
 
             {/* ── Selected item chips ── */}
             {anySelected && (

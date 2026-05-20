@@ -156,7 +156,7 @@ export default function PopularRigsSection() {
         if (rig.housing) params.set('housing', rig.housing.name)
         if (rig.port) params.set('port', rig.port.name)
         router.replace(`/builder?${params.toString()}`, { scroll: false })
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        document.getElementById('builder')?.scrollIntoView({ behavior: 'smooth' })
     }
 
     if (loading) {
@@ -176,11 +176,11 @@ export default function PopularRigsSection() {
     if (rigs.length === 0) return null
 
     return (
-        <div className="mt-8">
+        <div className="mt-0">
             <div className="mb-4">
                 <h2 className="text-base font-semibold text-gray-800">Popular Camera Rigs</h2>
                 <p className="text-xs text-gray-400 mt-0.5">
-                    Setups used most in the wild — click &ldquo;Use setup&rdquo; to load it into the builder and customise from there
+                    Setups used most in the wild — click &ldquo;Use setup&rdquo; to load it into the builder
                 </p>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-x-visible">

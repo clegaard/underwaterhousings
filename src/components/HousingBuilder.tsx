@@ -391,10 +391,7 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
         return sum / relevantReviews.length
     }, [relevantReviews])
 
-    const isRigComplete = !!selectedCamera
-        && (isFixedLens || !!selectedLens)
-        && (selectedCamera.canBeUsedWithoutAHousing || !!selectedHousing)
-        && (!selectedHousing || isFixedPort || !!selectedPort)
+    const isRigComplete = usingWithoutHousing || (!!housingName && (isFixedPort || !!portName))
 
     // Animated depth counter
     const [displayedDepth, setDisplayedDepth] = useState<number | null>(maxDepth)
