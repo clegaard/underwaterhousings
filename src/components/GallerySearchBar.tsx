@@ -24,11 +24,11 @@ export interface SuggestionPool {
 // ─── Metadata per token type ──────────────────────────────────────────────────
 
 const TYPE_META: Record<TokenType, { label: string; chip: string; dot: string }> = {
-    camera:  { label: 'Camera',  chip: 'bg-blue-50 text-blue-700 border-blue-200',    dot: 'bg-blue-500' },
-    lens:    { label: 'Lens',    chip: 'bg-green-50 text-green-700 border-green-200',  dot: 'bg-green-500' },
-    housing: { label: 'Housing', chip: 'bg-amber-50 text-amber-700 border-amber-200',  dot: 'bg-amber-500' },
-    port:    { label: 'Port',    chip: 'bg-teal-50 text-teal-700 border-teal-200',    dot: 'bg-teal-500' },
-    user:    { label: 'User',    chip: 'bg-purple-50 text-purple-700 border-purple-200', dot: 'bg-purple-500' },
+    camera: { label: 'Camera', chip: 'bg-blue-50 text-blue-700 border-blue-200', dot: 'bg-blue-500' },
+    lens: { label: 'Lens', chip: 'bg-green-50 text-green-700 border-green-200', dot: 'bg-green-500' },
+    housing: { label: 'Housing', chip: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500' },
+    port: { label: 'Port', chip: 'bg-teal-50 text-teal-700 border-teal-200', dot: 'bg-teal-500' },
+    user: { label: 'User', chip: 'bg-purple-50 text-purple-700 border-purple-200', dot: 'bg-purple-500' },
 }
 
 const TYPE_ORDER: TokenType[] = ['camera', 'lens', 'housing', 'port', 'user']
@@ -76,7 +76,7 @@ export default function GallerySearchBar({ tokens, pool, onAdd, onRemove, result
             }
         }
         return results.slice(0, 30)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [query, pool, activeTypes])
 
     // Group for rendering with headers
@@ -238,9 +238,8 @@ export default function GallerySearchBar({ tokens, pool, onAdd, onRemove, result
                                     <button
                                         key={`${s.type}:${s.slug}`}
                                         type="button"
-                                        className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-left transition-colors ${
-                                            isActive ? 'bg-blue-50 text-blue-900' : 'text-gray-700 hover:bg-gray-50'
-                                        }`}
+                                        className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-left transition-colors ${isActive ? 'bg-blue-50 text-blue-900' : 'text-gray-700 hover:bg-gray-50'
+                                            }`}
                                         onMouseEnter={() => setActiveIdx(flatIdx)}
                                         onMouseDown={e => { e.preventDefault(); commit(s) }}
                                     >

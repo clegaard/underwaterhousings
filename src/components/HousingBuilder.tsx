@@ -6,6 +6,7 @@ import Link from 'next/link'
 import UserAvatar from '@/components/UserAvatar'
 import { HousingImage } from '@/components/HousingImage'
 import { useCurrency } from '@/components/CurrencyContext'
+import PopularRigsSection from '@/components/PopularRigsSection'
 
 // ─── FOV Fan Chart ────────────────────────────────────────────────────────────
 const FOV_REF_FL = [
@@ -580,8 +581,10 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
             <div className="max-w-5xl mx-auto px-4 py-8">
+                <PopularRigsSection />
+
                 {/* Single unified setup card */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-6">
                     {/* Card header */}
                     <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                         <div>
