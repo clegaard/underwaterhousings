@@ -6,7 +6,7 @@ import Link from 'next/link'
 import UserAvatar from '@/components/UserAvatar'
 import { HousingImage } from '@/components/HousingImage'
 import { useCurrency } from '@/components/CurrencyContext'
-import PopularRigsSection from '@/components/PopularRigsSection'
+import SmartRigSearchBar from '@/components/SmartRigSearchBar'
 
 // ─── FOV Fan Chart ────────────────────────────────────────────────────────────
 const FOV_REF_FL = [
@@ -581,10 +581,8 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
     return (
         <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
             <div className="max-w-5xl mx-auto px-4 py-8">
-                <PopularRigsSection />
-
                 {/* Single unified setup card */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-6">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200">
                     {/* Card header */}
                     <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                         <div>
@@ -599,280 +597,14 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
                     </div>
 
                     {/* Component flow */}
-                    <div className="p-6">
-
-
-
-                        <div className="flex flex-col md:flex-row items-start gap-4">
-
-                            {/* Step 1 — Camera */}
-                            <div className="w-full md:flex-1 flex flex-col items-center">
-                                <div className={`relative w-full h-36 md:h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedCamera
-                                    ? 'border-blue-400 bg-blue-50'
-                                    : 'border-dashed border-gray-300 bg-gray-50'
-                                    }`}>
-                                    {selectedCamera ? (
-                                        <>
-                                            <HousingImage
-                                                src={selectedCamera.imageInfo?.src || '/cameras/fallback.png'}
-                                                fallback={selectedCamera.imageInfo?.fallback || '/cameras/fallback.png'}
-                                                alt={`${selectedCamera.brand.name} ${selectedCamera.name}`}
-                                                className="object-contain w-full h-full p-3"
-                                            />
-                                            <div className="absolute top-2 left-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mb-2">
-                                                <span className="text-gray-500 text-sm font-bold">1</span>
-                                            </div>
-                                            <span className="text-xs text-gray-400 text-center px-2">Choose camera</span>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Camera</div>
-                                {/* Camera manufacturer */}
-                                <select
-                                    value={cameraBrand}
-                                    onChange={(e) => setParams({ cameraBrand: e.target.value })}
-                                    className="w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white mb-2"
-                                >
-                                    <option value="">Brand…</option>
-                                    {uniqueCameraBrands.map(brand => (
-                                        <option key={brand} value={brand}>{brand}</option>
-                                    ))}
-                                </select>
-                                {/* Camera model */}
-                                <select
-                                    value={cameraModel}
-                                    onChange={(e) => setParams({ cameraModel: e.target.value })}
-                                    disabled={!cameraBrand}
-                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!cameraBrand ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900'
-                                        }`}
-                                >
-                                    <option value="">{cameraBrand ? 'Model…' : 'Select brand first'}</option>
-                                    {availableCameraModels.map(camera => (
-                                        <option key={camera.id} value={camera.name}>{camera.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Arrow 1→2 — hidden when fixed-lens */}
-                            <div
-                                className="hidden md:block flex-none overflow-hidden transition-all duration-300 ease-in-out"
-                                style={{ maxWidth: isFixedLens ? 0 : '2rem', opacity: isFixedLens ? 0 : 1 }}
-                            >
-                                <div className="flex items-center" style={{ paddingTop: 'calc(96px - 0.625rem)' }}>
-                                    <svg className={`w-5 h-5 flex-shrink-0 ${selectedCamera ? 'text-blue-400' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </div>
-                            </div>
-
-                            {/* Step 2 — Lens (slides away for fixed-lens cameras) */}
-                            <div
-                                className={`${isFixedLens ? 'hidden md:block' : 'w-full'} md:flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out`}
-                                style={{ maxWidth: isFixedLens ? 0 : '500px', opacity: isFixedLens ? 0 : 1, pointerEvents: isFixedLens ? 'none' : undefined }}
-                            >
-                                <div className="flex flex-col items-center">
-                                    <div className={`relative w-full h-36 md:h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedLens
-                                        ? 'border-blue-400 bg-blue-50'
-                                        : selectedCamera
-                                            ? 'border-dashed border-gray-300 bg-gray-50'
-                                            : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
-                                        }`}>
-                                        {selectedLens ? (
-                                            <>
-                                                <HousingImage
-                                                    src={selectedLens.imageInfo?.src || '/lenses/fallback.png'}
-                                                    fallback={selectedLens.imageInfo?.fallback || '/lenses/fallback.png'}
-                                                    alt={selectedLens.name}
-                                                    className="object-contain w-full h-full p-3"
-                                                />
-                                                <div className="absolute top-2 left-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                                                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${selectedCamera ? 'bg-gray-200' : 'bg-gray-100'}`}>
-                                                    <span className={`text-sm font-bold ${selectedCamera ? 'text-gray-500' : 'text-gray-300'}`}>2</span>
-                                                </div>
-                                                <span className={`text-xs text-center px-2 ${selectedCamera ? 'text-gray-400' : 'text-gray-300'}`}>
-                                                    {selectedCamera ? 'Choose lens' : 'Camera first'}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Lens</div>
-                                    <select
-                                        value={lensName}
-                                        onChange={(e) => setParams({ lens: e.target.value })}
-                                        disabled={!cameraModel || availableLenses.length === 0}
-                                        className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!cameraModel || availableLenses.length === 0
-                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                            : 'bg-white text-gray-900'
-                                            }`}
-                                    >
-                                        <option value="">
-                                            {!cameraModel ? 'Select camera first' : availableLenses.length === 0 ? 'No compatible lenses' : 'Lens…'}
-                                        </option>
-                                        {availableLenses.map(lens => (
-                                            <option key={lens.id} value={lens.name}>{lens.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Arrow 2→3 — hidden when fixed-lens */}
-                            <div
-                                className="hidden md:block flex-none overflow-hidden transition-all duration-300 ease-in-out"
-                                style={{ maxWidth: isFixedLens ? 0 : '2rem', opacity: isFixedLens ? 0 : 1 }}
-                            >
-                                <div className="flex items-center" style={{ paddingTop: 'calc(96px - 0.625rem)' }}>
-                                    <svg className={`w-5 h-5 flex-shrink-0 ${selectedLens ? 'text-blue-400' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </div>
-                            </div>
-
-                            {/* Step 3 — Housing */}
-                            <div
-                                className="w-full md:flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out flex flex-col items-center"
-                            >
-                                <div className={`relative w-full h-36 md:h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedHousing
-                                    ? 'border-blue-400 bg-blue-50'
-                                    : (selectedCamera && (isFixedLens || selectedLens || canUseWithoutHousing))
-                                        ? 'border-dashed border-gray-300 bg-gray-50'
-                                        : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
-                                    }`}>
-                                    {selectedHousing ? (
-                                        <>
-                                            <HousingImage
-                                                src={selectedHousing.imageInfo?.src || '/housings/fallback.png'}
-                                                fallback={selectedHousing.imageInfo?.fallback || '/housings/fallback.png'}
-                                                alt={selectedHousing.name}
-                                                className="object-contain w-full h-full p-3"
-                                            />
-                                            <div className="absolute top-2 left-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${(selectedCamera && (isFixedLens || selectedLens || canUseWithoutHousing)) ? 'bg-gray-200' : 'bg-gray-100'}`}>
-                                                <span className={`text-sm font-bold ${(selectedCamera && (isFixedLens || selectedLens || canUseWithoutHousing)) ? 'text-gray-500' : 'text-gray-300'}`}>{isFixedLens ? 2 : 3}</span>
-                                            </div>
-                                            <span className={`text-xs text-center px-2 ${(selectedCamera && (isFixedLens || selectedLens || canUseWithoutHousing)) ? 'text-gray-400' : 'text-gray-300'}`}>
-                                                {(selectedCamera && (isFixedLens || selectedLens || canUseWithoutHousing)) ? 'Choose housing' : isFixedLens ? 'Camera first' : 'Lens first'}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Housing</div>
-                                <select
-                                    value={housingName}
-                                    onChange={(e) => setParams({ housing: e.target.value })}
-                                    disabled={!cameraModel || (!isFixedLens && !lensName && !canUseWithoutHousing)}
-                                    className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!cameraModel || (!isFixedLens && !lensName && !canUseWithoutHousing)
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-white text-gray-900'
-                                        }`}
-                                >
-                                    <option value="">
-                                        {!cameraModel
-                                            ? 'Select camera first'
-                                            : (!isFixedLens && !lensName && !canUseWithoutHousing)
-                                                ? 'Select lens first'
-                                                : canUseWithoutHousing
-                                                    ? 'Use without housing'
-                                                    : 'Housing…'}
-                                    </option>
-                                    {availableHousings.map(housing => (
-                                        <option key={housing.id} value={housing.name}>{housing.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Arrow 3→4 — hidden when fixed-port or using without housing */}
-                            <div
-                                className="hidden md:block flex-none overflow-hidden transition-all duration-300 ease-in-out"
-                                style={{ maxWidth: (isFixedPort || usingWithoutHousing) ? 0 : '2rem', opacity: (isFixedPort || usingWithoutHousing) ? 0 : 1 }}
-                            >
-                                <div className="flex items-center" style={{ paddingTop: 'calc(96px - 0.625rem)' }}>
-                                    <svg className={`w-5 h-5 flex-shrink-0 ${selectedHousing ? 'text-blue-400' : 'text-gray-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </div>
-                            </div>
-
-                            {/* Step 4 — Port (slides away for fixed-port housings or when using without housing) */}
-                            <div
-                                className={`${(isFixedPort || usingWithoutHousing) ? 'hidden md:block' : 'w-full'} md:flex-1 min-w-0 overflow-hidden transition-all duration-300 ease-in-out`}
-                                style={{ maxWidth: (isFixedPort || usingWithoutHousing) ? 0 : '500px', opacity: (isFixedPort || usingWithoutHousing) ? 0 : 1, pointerEvents: (isFixedPort || usingWithoutHousing) ? 'none' : undefined }}
-                            >
-                                <div className="flex flex-col items-center">
-                                    <div className={`relative w-full h-36 md:h-48 rounded-xl overflow-hidden mb-3 border-2 transition-colors ${selectedPort
-                                        ? 'border-blue-400 bg-blue-50'
-                                        : selectedHousing
-                                            ? 'border-dashed border-gray-300 bg-gray-50'
-                                            : 'border-dashed border-gray-200 bg-gray-50 opacity-40'
-                                        }`}>
-                                        {selectedPort ? (
-                                            <>
-                                                <HousingImage
-                                                    src={selectedPort.imageInfo?.src || '/ports/fallback.png'}
-                                                    fallback={selectedPort.imageInfo?.fallback || '/ports/fallback.png'}
-                                                    alt={selectedPort.name}
-                                                    className="object-contain w-full h-full p-3"
-                                                />
-                                                <div className="absolute top-2 left-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                                                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${selectedHousing ? 'bg-gray-200' : 'bg-gray-100'}`}>
-                                                    <span className={`text-sm font-bold ${selectedHousing ? 'text-gray-500' : 'text-gray-300'}`}>{isFixedLens ? 3 : 4}</span>
-                                                </div>
-                                                <span className={`text-xs text-center px-2 ${selectedHousing ? 'text-gray-400' : 'text-gray-300'}`}>
-                                                    {selectedHousing ? 'Choose port' : 'Housing first'}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Port</div>
-                                    <select
-                                        value={portName}
-                                        onChange={(e) => setParams({ port: e.target.value })}
-                                        disabled={!housingName || availablePorts.length === 0}
-                                        className={`w-full p-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${!housingName || availablePorts.length === 0
-                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                            : 'bg-white text-gray-900'
-                                            }`}
-                                    >
-                                        <option value="">
-                                            {!housingName ? 'Select housing first' : availablePorts.length === 0 ? 'No compatible ports' : 'Port…'}
-                                        </option>
-                                        {availablePorts.map(port => (
-                                            <option key={port.id} value={port.name}>{port.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                        </div>
+                    <div className="px-6 py-4">
+                        <SmartRigSearchBar cameras={cameras} housings={initialHousings} />
                     </div>
 
                     {/* ── Summary section (inside card) ────────────────────── */}
                     {selectedCamera && (
                         <>
                             <div className="border-t border-gray-100">
-                                <div className="px-6 pt-5 pb-1">
-                                    <h3 className="text-sm font-semibold text-gray-700">Summary</h3>
-                                </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
 
                                     {/* Left — Price Breakdown */}
@@ -1086,17 +818,6 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
                                                         <p className="ml-5 text-xs text-gray-300 italic">No sensor dimensions — add them to see FOV</p>
                                                     )}
 
-                                                    {/* ── FOV fan chart ── */}
-                                                    {opticalSummary.fovWideH !== null && (
-                                                        <div className="mt-2 rounded-lg overflow-hidden bg-gray-50">
-                                                            <FovFanChart
-                                                                sensorW={(selectedCamera as any)?.sensorWidth ?? 36}
-                                                                activeFovWideH={opticalSummary.fovWideH}
-                                                                activeFovTeleH={!opticalSummary.isPrime ? (opticalSummary.fovTeleH ?? null) : null}
-                                                                effectiveFovH={opticalSummary.isFlatPort ? (opticalSummary.fovEffWideH ?? null) : null}
-                                                            />
-                                                        </div>
-                                                    )}
                                                 </div>
 
                                                 {/* ── FOV effective through flat port ── */}

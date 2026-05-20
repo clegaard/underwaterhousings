@@ -64,7 +64,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
             const srcRate = fxRates[src] ?? 1
             const targetRate = fxRates[userCurrency] ?? 1
             const converted = (amount / srcRate) * targetRate
-            return new Intl.NumberFormat(undefined, {
+            return new Intl.NumberFormat('en-US', {
                 style: 'currency',
                 currency: userCurrency,
                 minimumFractionDigits: 0,
