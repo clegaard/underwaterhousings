@@ -54,6 +54,7 @@ export async function GET(req: NextRequest) {
                     name: true,
                     focalLengthTele: true,
                     focalLengthWide: true,
+                    productPhotos: true,
                     manufacturer: { select: { name: true } },
                     cameraRigs: {
                         where: cameraId !== null ? { cameraId } : undefined,
@@ -68,7 +69,7 @@ export async function GET(req: NextRequest) {
                     focalLengthTele: l.focalLengthTele,
                     focalLengthWide: l.focalLengthWide,
                     manufacturerName: l.manufacturer?.name ?? null,
-                    productPhoto: null, // lenses rarely have product photos in this dataset
+                    productPhoto: l.productPhotos[0] ? withBase(l.productPhotos[0]) : null,
                     photoCount: sumPhotos(l.cameraRigs),
                 }))
                 .sort((a, b) => b.photoCount - a.photoCount)
