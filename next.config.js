@@ -2,7 +2,7 @@
 const nextConfig = {
     allowedDevOrigins: ['macbook-pro-3.local'],
     images: {
-        formats: ['image/webp'],
+        formats: ['image/avif', 'image/webp'],
         remotePatterns: [
             {
                 // MinIO local dev

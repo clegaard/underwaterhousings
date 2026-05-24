@@ -6,7 +6,7 @@ This is a Next.js 14 catalog application for underwater camera housings from man
 ## Key Architecture Patterns
 
 ### Scraping
-- Scrapers should extract prices in USD per default
+- Scrapers should extract prices in USD by default
 - Data sourced from manufacturer websites such as Nauticam and Sea Frogs
 - Scrapers are in `automations/`
 - Output is structured JSON for easy Prisma seeding
@@ -130,7 +130,7 @@ When working on this codebase, prioritize maintaining the slug-based routing sys
 
 - **Compatibility**: Housings are designed to fit specific camera models, and compatibility is a critical aspect of the product catalog. 
 
-Housings for interchangeable lens cameras often have modular port systems that allow for different lenses to be used with the same housing, with an appopriate choice of ports. Generally speaking, housings for compact cameras have fixed ports that are designed to fit the specific camera model, while housings for interchangeable lens cameras have modular port systems that allow for different lenses to be used with the same housing, with an appopriate choice of ports.
+Housings for interchangeable lens cameras often have modular port systems that allow for different lenses to be used with the same housing, with an appropriate choice of ports. Generally speaking, housings for compact cameras have fixed ports that are designed to fit the specific camera model, while housings for interchangeable lens cameras have modular port systems that allow for different lenses to be used with the same housing, with an appropriate choice of ports.
 
 In a few instances a housing has a fixed port but is compatible with multiple cameras, such as the Nauticam NA-OM-5 II which has a fixed port but is compatible with both the Olympus OM-5 and OM-1 Mark II.
 
@@ -140,24 +140,24 @@ A class of housings for smartphones also exist that are universal and can accomm
 
 ### Ports
 
-A port is a part of a underwater camera rig that houses the camera lens and allows it to be used underwater.
+A port is a part of an underwater camera rig that houses the camera lens and allows it to be used underwater.
 Ports can either be flat or dome-shaped, and they are designed to fit specific camera lenses. The choice of port can affect the image quality and field of view when shooting underwater, so it is an important consideration for photographers when selecting a housing for their camera.
 
 For instance using a flat-port increases the magnification of the lens and reduces the field of view, while a dome port can help to maintain the original field of view of the lens and reduce distortion.
 
-The distortion and increased magnification is less of an issue when shooting with at higher focal lengths like 100mm, but can be a significant issue when shooting wide-angle with a lens like a 16-35mm. For this reason, many photographers prefer to use dome ports for wide-angle shooting and flat ports for macro shooting.
+The distortion and increased magnification is less of an issue when shooting at higher focal lengths like 100mm, but can be a significant issue when shooting wide-angle with a lens like a 16-35mm. For this reason, many photographers prefer to use dome ports for wide-angle shooting and flat ports for macro shooting.
 In fact, the increased magnification and reduced field of view can be desirable for macro shooting, as it allows photographers to get closer to their subjects and capture more detail. For this reason, many photographers prefer to use flat ports for macro shooting.
 
 
 ### Extension rings
 Extension rings are accessories that can be added to underwater camera housings to increase the distance between the camera and the port. This can be useful for a variety of reasons, such as allowing for more space to accommodate larger lenses or providing additional clearance for certain camera models.
 
-For a given combination of camera, housing and lens the manufacturer recommends a specific configuration of extension rings to place the cameras iris at a optimal position within the port to avoid vignetting and reduce distortion.
+For a given combination of camera, housing and lens the manufacturer recommends a specific configuration of extension rings to place the camera's iris at an optimal position within the port to avoid vignetting and reduce distortion.
 
 Extension rings are designed to fit a specific port mount, so they are not universally compatible with all housings and ports. For example, a Nauticam extension ring designed for a specific housing and port combination may not be compatible with a Sea Frogs housing and port combination, even if the camera and lens are the same. It is important for photographers to consult the manufacturer's recommendations for extension ring configurations to ensure optimal image quality and compatibility with their specific camera, housing, and lens setup.
 
 ### Adaptor rings
-The purpose of adaptor rings is to convert between different port mounts, allowing for a greater flexibility of using one port with multiple housings.
-For instance Nauticam provides adapters from N85 to N100 and N85 to N100.
+The purpose of adaptor rings is to convert between different port mounts, allowing for greater flexibility in using one port with multiple housings.
+For instance, Nauticam provides N85 to N100 adapters.
 
-Additionally, some manufacturers like Isotta provides an adapter from their port system to the port system of other manufacturers. For instance Isotta provides an adapter from their B120 port to nauticams N120 port.
+Additionally, some manufacturers like Isotta provide an adapter from their port system to the port system of other manufacturers. For instance, Isotta provides an adapter from their B120 port to Nauticam's N120 port.
