@@ -34,6 +34,7 @@ interface Manufacturer {
     name: string
     slug: string
     logoPath: string | null
+    logoContainsName: boolean
     _count: { lenses: number }
     lenses: Lens[]
 }
@@ -299,20 +300,29 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                     <section key={manufacturer.id}>
                         {/* Manufacturer heading */}
                         <div className="flex items-center gap-3 mb-4 group/mfr">
-                            {manufacturer.logoPath && (
-                                <div className="w-8 h-8 rounded-lg overflow-hidden bg-white border border-gray-200 flex-shrink-0 shadow-sm">
+                            {manufacturer.logoPath && manufacturer.logoContainsName ? (
+                                <Link href={`/lenses/${manufacturer.slug}`} className="shrink-0">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src={withBase(manufacturer.logoPath)} alt="" className="w-full h-full object-contain p-0.5" />
-                                </div>
+                                    <img src={withBase(manufacturer.logoPath)} alt={`${manufacturer.name} logo`} className="h-9 w-auto max-w-40 object-contain" />
+                                </Link>
+                            ) : (
+                                <>
+                                    {manufacturer.logoPath && (
+                                        <div className="w-8 h-8 rounded-lg overflow-hidden bg-white border border-gray-200 shrink-0 shadow-sm">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={withBase(manufacturer.logoPath)} alt="" className="w-full h-full object-contain p-0.5" />
+                                        </div>
+                                    )}
+                                    <Link
+                                        href={`/lenses/${manufacturer.slug}`}
+                                        className="text-lg font-semibold text-gray-900 hover:text-blue-700 transition-colors"
+                                    >
+                                        {manufacturer.name}
+                                    </Link>
+                                </>
                             )}
-                            <Link
-                                href={`/lenses/${manufacturer.slug}`}
-                                className="text-lg font-semibold text-gray-900 hover:text-blue-700 transition-colors"
-                            >
-                                {manufacturer.name}
-                            </Link>
                             <div className="flex-1 h-px bg-gray-200" />
-                            <span className="text-xs text-gray-400 flex-shrink-0">
+                            <span className="text-xs text-gray-400 shrink-0">
                                 {manufacturer._count.lenses} lens{manufacturer._count.lenses !== 1 ? 'es' : ''}
                             </span>
                             {isSuperuser && (
@@ -404,7 +414,7 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                             {isSuperuser && (
                                 <button
                                     onClick={() => openLensAdd(manufacturer)}
-                                    className="min-h-[9rem] flex flex-col items-center justify-center gap-2 bg-white rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all text-gray-400 hover:text-blue-500"
+                                    className="min-h-36 flex flex-col items-center justify-center gap-2 bg-white rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all text-gray-400 hover:text-blue-500"
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

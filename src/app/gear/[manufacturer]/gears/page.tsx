@@ -61,7 +61,7 @@ export default async function GearsListingPage({ params }: Props) {
     }))
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+        <div className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
             <div className="bg-white shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 py-6">
                     <nav className="text-sm text-gray-500 mb-2">

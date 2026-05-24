@@ -332,7 +332,7 @@ export default function RigReviewsSection({
                                                             key={i}
                                                             type="button"
                                                             onClick={() => setLightbox({ photos: r.reviewPhotos, idx: i })}
-                                                            className="relative group/thumb h-28 w-28 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                                            className="relative group/thumb h-28 w-28 rounded-lg overflow-hidden border border-gray-200 shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-400"
                                                         >
                                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                                             <img

@@ -1,7 +1,23 @@
 # Underwater Camera Housings - AI Coding Guide
 
+
 ## Project Overview
-This is a Next.js 14 catalog application for underwater camera housings from manufacturers like Nauticam, Sea Frogs, and DiveVolk. The app uses TypeScript, Tailwind CSS, Prisma ORM with PostgreSQL, and follows a manufacturer → housing → camera compatibility model.
+This is a Next.js 16 application for building, reviewing and uploading photos taken with different underwater camera systems providing a resource for the user to make an decision on which system is best for them by providing concrete examples of the photos taken with each system.
+
+The goal of the system is:
+- To make it easier for photographers to select the right underwater camera system for their needs by providing a comprehensive gallery of user submitted photos taken with different underwater camera systems, along with detailed information about the housings and cameras used to take those photos.
+- To provide a platform for photographers to share their underwater photos and the camera systems they used to take them, fostering a community of underwater photographers and enthusiasts.
+- To create a resource that helps photographers understand the differences between various underwater camera systems and make informed decisions when purchasing equipment for underwater photography.
+
+In the context of this application a underwater camera system refers to any collection of compatible products that allows the user to take the system safely underwater and take pictures.
+
+Examples of such systems are:
+- Waterproof action cameras like the DJI OSMO Action 5 or GoPro Hero 11
+- Waterproof action cameras like the DJI OSMO Action 5 in a waterproof housing
+- Waterproof compact cameras like the Olympus Tough TG-6
+- Waterproof compact cameras like the Olympus Tough TG-6 in a waterproof housing like the Nauticam NA-TG6
+
+The app uses TypeScript, Tailwind CSS, Prisma ORM with PostgreSQL, and follows a manufacturer → housing → camera compatibility model.
 
 ## Key Architecture Patterns
 
@@ -20,7 +36,6 @@ This is a Next.js 14 catalog application for underwater camera housings from man
 - Scrapers are not part of the regular development workflow and are only used when adding new manufacturers or updating existing data
 - Scrapers are documented with comments to explain the logic and assumptions made during data extraction
 - Scrapers are designed to minimize the number of HTTP requests by extracting all necessary data from a single page when possible, rather than following multiple links
-
 
 
 ### Database Schema (Prisma)

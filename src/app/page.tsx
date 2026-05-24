@@ -3,18 +3,18 @@ import SearchBar from '@/components/SearchBar'
 
 export default function Home() {
     return (
-        <main className="min-h-screen bg-gradient-to-b from-blue-50 via-blue-50 to-white">
+        <main className="min-h-screen bg-linear-to-b from-blue-50 via-blue-50 to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-950">
 
             {/* ── Hero ────────────────────────────────────────────────── */}
             <section className="mx-auto max-w-3xl px-4 pt-20 pb-16 text-center">
 
 
-                <h1 className="mb-4 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+                <h1 className="mb-4 text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl lg:text-6xl">
                     Find your perfect
                     <br />
                     <span className="text-blue-600">underwater setup</span>
                 </h1>
-                <p className="mb-10 text-lg text-gray-500">
+                <p className="mb-10 text-lg text-gray-500 dark:text-gray-400">
                     Search cameras, lenses, housings, ports and accessories — then build a compatible rig with optical analysis and depth ratings.
                 </p>
 
@@ -45,20 +45,20 @@ export default function Home() {
             {/* ── Feature highlights ───────────────────────────────────── */}
             <section className="mx-auto max-w-4xl px-4 pb-16">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-                        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-xl">🌊</div>
-                        <h3 className="mb-1 font-semibold text-gray-900">Depth ratings</h3>
-                        <p className="text-sm text-gray-500">See the limiting depth for your housing and port combination at a glance.</p>
+                    <div className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+                        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-900/30 text-xl">🌊</div>
+                        <h3 className="mb-1 font-semibold text-gray-900 dark:text-white">Depth ratings</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">See the limiting depth for your housing and port combination at a glance.</p>
                     </div>
-                    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-                        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-xl">🔭</div>
-                        <h3 className="mb-1 font-semibold text-gray-900">Optical analysis</h3>
-                        <p className="text-sm text-gray-500">Field of view charts, flat-port refraction, dome extension calculations and more.</p>
+                    <div className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+                        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 dark:bg-green-900/30 text-xl">🔭</div>
+                        <h3 className="mb-1 font-semibold text-gray-900 dark:text-white">Optical analysis</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Field of view charts, flat-port refraction, dome extension calculations and more.</p>
                     </div>
-                    <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-                        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 text-xl">✅</div>
-                        <h3 className="mb-1 font-semibold text-gray-900">Compatibility</h3>
-                        <p className="text-sm text-gray-500">Only compatible housings, ports and lenses are shown for your chosen camera.</p>
+                    <div className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+                        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-900/30 text-xl">✅</div>
+                        <h3 className="mb-1 font-semibold text-gray-900 dark:text-white">Compatibility</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Only compatible housings, ports and lenses are shown for your chosen camera.</p>
                     </div>
                 </div>
             </section>

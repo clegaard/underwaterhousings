@@ -190,7 +190,7 @@ export default function SearchBar({ placeholder = 'Search cameras, lenses, housi
                     autoFocus={autoFocus}
                     autoComplete="off"
                     spellCheck={false}
-                    className="w-full rounded-2xl border border-gray-200 bg-white py-4 pl-12 pr-4 text-base text-gray-900 placeholder-gray-400 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
+                    className="w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 py-4 pl-12 pr-4 text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 transition-all"
                 />
                 {query && (
                     <button
@@ -209,7 +209,7 @@ export default function SearchBar({ placeholder = 'Search cameras, lenses, housi
             {open && query.length >= 2 && (
                 <div
                     ref={dropdownRef}
-                    className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[70vh] overflow-y-auto rounded-2xl border border-gray-100 bg-white shadow-xl"
+                    className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[70vh] overflow-y-auto rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl"
                 >
                     {!hasResults && !loading ? (
                         <div className="px-5 py-8 text-center text-sm text-gray-400">
@@ -235,16 +235,16 @@ export default function SearchBar({ placeholder = 'Search cameras, lenses, housi
                                                     key={`${cat}-${item.id}`}
                                                     onMouseDown={e => { e.preventDefault(); navigate(item) }}
                                                     onMouseEnter={() => setActiveIndex(idx)}
-                                                    className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors ${isActive ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                                                    className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors ${isActive ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                                                 >
                                                     <span className="text-lg leading-none" aria-hidden>{TYPE_ICONS[item.type] ?? '•'}</span>
                                                     <div className="min-w-0 flex-1">
-                                                        <div className="truncate text-sm font-medium text-gray-900">{item.name}</div>
+                                                        <div className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{item.name}</div>
                                                         {item.subtitle && (
                                                             <div className="truncate text-xs text-gray-400">{item.subtitle}</div>
                                                         )}
                                                     </div>
-                                                    <svg className="h-3.5 w-3.5 flex-shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <svg className="h-3.5 w-3.5 shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                                     </svg>
                                                 </button>

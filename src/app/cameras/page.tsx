@@ -50,7 +50,7 @@ export default async function CamerasPage() {
     const totalCameras = manufacturers.reduce((s, m) => s + m._count.cameras, 0)
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+        <div className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
             {/* Page Header */}
             <div className="bg-white shadow-sm">
                 <div className="max-w-6xl mx-auto px-4 py-6">

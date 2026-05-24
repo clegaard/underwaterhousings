@@ -12,6 +12,7 @@ interface Manufacturer {
     slug: string
     description: string | null
     logoPath: string | null
+    logoContainsName: boolean
     _count: { cameras: number; housings: number; lenses: number; ports: number }
 }
 
@@ -36,6 +37,7 @@ export default function ManufacturersClient({ manufacturers: initial, isSuperuse
     const [nameInput, setNameInput] = useState('')
     const [descriptionInput, setDescriptionInput] = useState('')
     const [logoSlot, setLogoSlot] = useState<LogoSlot>({ kind: 'none' })
+    const [logoContainsNameInput, setLogoContainsNameInput] = useState(false)
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -45,6 +47,7 @@ export default function ManufacturersClient({ manufacturers: initial, isSuperuse
         setDescriptionInput('')
         if (logoSlot.kind === 'new') URL.revokeObjectURL(logoSlot.previewUrl)
         setLogoSlot({ kind: 'none' })
+        setLogoContainsNameInput(false)
     }
 
     function openAdd() { resetForm(); setError(null); setModal('add') }
@@ -54,6 +57,7 @@ export default function ManufacturersClient({ manufacturers: initial, isSuperuse
         setNameInput(m.name)
         setDescriptionInput(m.description ?? '')
         setLogoSlot(m.logoPath ? { kind: 'existing', path: m.logoPath } : { kind: 'none' })
+        setLogoContainsNameInput(m.logoContainsName)
         setError(null)
         setModal('edit')
     }
@@ -114,7 +118,7 @@ export default function ManufacturersClient({ manufacturers: initial, isSuperuse
             const res = await fetch('/api/admin/manufacturers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: nameInput.trim(), description: descriptionInput.trim() || null, logoPath }),
+                body: JSON.stringify({ name: nameInput.trim(), description: descriptionInput.trim() || null, logoPath, logoContainsName: logoContainsNameInput }),
             })
             const data = await res.json()
             if (!res.ok) { setError(data.error ?? 'Failed to create'); return }
@@ -136,11 +140,11 @@ export default function ManufacturersClient({ manufacturers: initial, isSuperuse
             const res = await fetch(`/api/admin/manufacturers?id=${target.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: nameInput.trim(), description: descriptionInput.trim() || null, logoPath }),
+                body: JSON.stringify({ name: nameInput.trim(), description: descriptionInput.trim() || null, logoPath, logoContainsName: logoContainsNameInput }),
             })
             const data = await res.json()
             if (!res.ok) { setError(data.error ?? 'Failed to update'); return }
-            setManufacturers(prev => prev.map(m => m.id !== target.id ? m : { ...m, name: data.name, slug: data.slug, description: data.description, logoPath: data.logoPath, _count: m._count }))
+            setManufacturers(prev => prev.map(m => m.id !== target.id ? m : { ...m, name: data.name, slug: data.slug, description: data.description, logoPath: data.logoPath, logoContainsName: data.logoContainsName, _count: m._count }))
             router.refresh(); close()
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Network error')
@@ -182,23 +186,34 @@ export default function ManufacturersClient({ manufacturers: initial, isSuperuse
                         {manufacturers.map((m) => (
                             <div key={m.id} className="relative group/card bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200">
                                 <div className="p-6">
-                                    <div className="flex items-center gap-4 mb-4">
-                                        {m.logoPath ? (
-                                            <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0">
-                                                <HousingImage
-                                                    src={withBase(m.logoPath)}
-                                                    fallback="/manufacturers/fallback.png"
-                                                    alt={`${m.name} logo`}
-                                                    className="object-contain p-1"
-                                                />
-                                            </div>
-                                        ) : (
-                                            <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                                <span className="text-xl font-bold text-blue-600">{m.name[0]}</span>
-                                            </div>
-                                        )}
-                                        <h3 className="text-lg font-semibold text-blue-900">{m.name}</h3>
-                                    </div>
+                                    {m.logoPath && m.logoContainsName ? (
+                                        <div className="mb-4">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                src={withBase(m.logoPath)}
+                                                alt={`${m.name} logo`}
+                                                className="h-12 w-auto max-w-full object-contain"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-4 mb-4">
+                                            {m.logoPath ? (
+                                                <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 shrink-0">
+                                                    <HousingImage
+                                                        src={withBase(m.logoPath)}
+                                                        fallback="/manufacturers/fallback.png"
+                                                        alt={`${m.name} logo`}
+                                                        className="object-contain p-1"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+                                                    <span className="text-xl font-bold text-blue-600">{m.name[0]}</span>
+                                                </div>
+                                            )}
+                                            <h3 className="text-lg font-semibold text-blue-900">{m.name}</h3>
+                                        </div>
+                                    )}
                                     {m.description && (
                                         <p className="text-sm text-gray-600 mb-3 line-clamp-2">{m.description}</p>
                                     )}
@@ -289,6 +304,16 @@ export default function ManufacturersClient({ manufacturers: initial, isSuperuse
                             </div>
                         )}
                         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={e => handleLogoFile(e.target.files?.[0] ?? null)} />
+
+                        <label className="flex items-center gap-2 text-sm text-gray-700 mb-4 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={logoContainsNameInput}
+                                onChange={e => setLogoContainsNameInput(e.target.checked)}
+                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            Logo already contains the manufacturer name
+                        </label>
 
                         {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
 

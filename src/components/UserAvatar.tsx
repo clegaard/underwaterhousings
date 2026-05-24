@@ -29,7 +29,7 @@ const SIZE: Record<
 
 export default function UserAvatar({ picture, name, size = 'base', className = '' }: Props) {
     const { box, text } = SIZE[size]
-    const base = `${box} rounded-full flex-shrink-0 ${className}`
+    const base = `${box} rounded-full shrink-0 ${className}`
 
     if (picture) {
         return (

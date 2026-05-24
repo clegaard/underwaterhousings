@@ -115,7 +115,7 @@ export default async function RigBuilderPage({ searchParams }: RigBuilderPagePro
 
         return (
             <>
-                <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+                <div className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
                     <div className="bg-white shadow-sm border-b">
                         <div className="max-w-4xl mx-auto px-4 py-6">
                             <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
@@ -221,7 +221,7 @@ export default async function RigBuilderPage({ searchParams }: RigBuilderPagePro
 
     return (
         <>
-            <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+            <div className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
                 {/* Header */}
                 <div className="bg-white shadow-sm border-b">
                     <div className="max-w-4xl mx-auto px-4 py-6">

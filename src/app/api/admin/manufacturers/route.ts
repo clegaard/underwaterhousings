@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json()
-        const { name, description, logoPath } = body
+        const { name, description, logoPath, logoContainsName } = body
 
         if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
 
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         }
 
         const manufacturer = await prisma.manufacturer.create({
-            data: { name, slug, description: description?.trim() || null, logoPath: logoPath || null },
+            data: { name, slug, description: description?.trim() || null, logoPath: logoPath || null, logoContainsName: logoContainsName ?? false },
             include: { _count: { select: { cameras: true, housings: true, lenses: true, ports: true } } },
         })
 
@@ -73,7 +73,7 @@ export async function PUT(request: NextRequest) {
         if (!id) return NextResponse.json({ error: 'Manufacturer ID is required' }, { status: 400 })
 
         const body = await request.json()
-        const { name, description, logoPath } = body
+        const { name, description, logoPath, logoContainsName } = body
 
         if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
 
@@ -88,7 +88,7 @@ export async function PUT(request: NextRequest) {
 
         const manufacturer = await prisma.manufacturer.update({
             where: { id: parseInt(id) },
-            data: { name, slug, description: description?.trim() || null, logoPath: logoPath ?? undefined },
+            data: { name, slug, description: description?.trim() || null, logoPath: logoPath ?? undefined, logoContainsName: logoContainsName ?? undefined },
             include: { _count: { select: { cameras: true, housings: true, lenses: true, ports: true } } },
         })
 

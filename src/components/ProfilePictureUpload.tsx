@@ -213,7 +213,7 @@ export default function ProfilePictureUpload({
         <>
             {/* ── Avatar badge ──────────────────────────────────────────── */}
             <div
-                className={`relative w-20 h-20 flex-shrink-0${isOwnProfile ? ' group cursor-pointer' : ''}`}
+                className={`relative w-20 h-20 shrink-0${isOwnProfile ? ' group cursor-pointer' : ''}`}
                 onClick={isOwnProfile ? openModal : undefined}
                 title={isOwnProfile ? 'Change profile photo' : undefined}
             >

@@ -143,7 +143,7 @@ export default function HousingMountsClient({ mounts: initial, manufacturer, isS
                     <div key={mount.id} className="group/card relative">
                         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                             {/* Title-as-visual */}
-                            <div className="h-28 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center px-3">
+                            <div className="h-28 bg-linear-to-br from-blue-50 to-blue-100 flex items-center justify-center px-3">
                                 <span className="text-blue-800 font-bold text-center text-sm leading-tight">
                                     {mount.name}
                                 </span>
@@ -187,7 +187,7 @@ export default function HousingMountsClient({ mounts: initial, manufacturer, isS
                 {isSuperuser && (
                     <button
                         onClick={openAdd}
-                        className="min-h-[9rem] flex flex-col items-center justify-center gap-2 bg-white rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all text-gray-400 hover:text-blue-500"
+                        className="min-h-36 flex flex-col items-center justify-center gap-2 bg-white rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all text-gray-400 hover:text-blue-500"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

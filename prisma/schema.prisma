@@ -22,7 +22,8 @@ model Manufacturer {
     portAdapters   PortAdapter[]
     gears          Gear[]
     // portChartEntries PortChartEntry[]
-    logoPath       String?
+    logoPath         String?
+    logoContainsName Boolean @default(false)
 
     @@map("manufacturers")
 }

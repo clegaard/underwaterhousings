@@ -64,7 +64,7 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
     const price = lens.priceAmount ? Number(lens.priceAmount) : null
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+        <div className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
             {/* Header */}
             <div className="bg-white shadow-sm border-b">
                 <div className="max-w-4xl mx-auto px-4 py-6">

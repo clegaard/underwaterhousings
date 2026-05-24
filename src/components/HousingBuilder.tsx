@@ -579,7 +579,7 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
+        <div className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
             <div className="max-w-5xl mx-auto px-4 py-8">
                 {/* Single unified setup card */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -615,7 +615,7 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
                                             {/* Camera */}
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2 min-w-0">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></div>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0"></div>
                                                     <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Camera</span>
                                                     <Link
                                                         href={`/cameras/${selectedCamera.brand.slug}/${selectedCamera.slug}`}
@@ -634,7 +634,7 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
                                             {!isFixedLens && (
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2 min-w-0">
-                                                        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${selectedLens ? 'bg-blue-400' : 'bg-gray-200'}`}></div>
+                                                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${selectedLens ? 'bg-blue-400' : 'bg-gray-200'}`}></div>
                                                         <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Lens</span>
                                                         {selectedLens?.manufacturer?.slug ? (
                                                             <Link
@@ -660,7 +660,7 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
                                             {!usingWithoutHousing && (
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2 min-w-0">
-                                                        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${selectedHousing ? 'bg-blue-400' : 'bg-gray-200'}`}></div>
+                                                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${selectedHousing ? 'bg-blue-400' : 'bg-gray-200'}`}></div>
                                                         <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Housing</span>
                                                         {selectedHousing ? (
                                                             <Link
@@ -684,7 +684,7 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
                                             {!usingWithoutHousing && !isFixedPort && (
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2 min-w-0">
-                                                        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${selectedPort ? 'bg-blue-400' : 'bg-gray-200'}`}></div>
+                                                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${selectedPort ? 'bg-blue-400' : 'bg-gray-200'}`}></div>
                                                         <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Port</span>
                                                         {selectedPort?.manufacturer?.slug ? (
                                                             <Link
