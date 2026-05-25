@@ -40,6 +40,20 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: 'www.seafrogs.com.hk',
             },
+            {
+                // Google OAuth avatars
+                protocol: 'https',
+                hostname: 'lh3.googleusercontent.com',
+            },
+            {
+                // Facebook/Meta OAuth avatars
+                protocol: 'https',
+                hostname: '*.fbcdn.net',
+            },
+            {
+                protocol: 'https',
+                hostname: 'platform-lookaside.fbsbx.com',
+            },
         ],
     },
 }

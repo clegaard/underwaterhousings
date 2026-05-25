@@ -15,14 +15,17 @@ export async function GET() {
 
     const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: { profilePicture: true },
+        select: { profilePicture: true, oauthAvatarUrl: true },
     })
 
     if (!user) {
         return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
-    return NextResponse.json({
-        profilePicture: user.profilePicture ? withBase(user.profilePicture) : null,
-    })
+    // Explicit upload takes priority; fall back to OAuth provider avatar
+    const picture = user.profilePicture
+        ? withBase(user.profilePicture)
+        : (user.oauthAvatarUrl ?? null)
+
+    return NextResponse.json({ profilePicture: picture })
 }
