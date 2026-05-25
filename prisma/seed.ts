@@ -1205,8 +1205,6 @@ async function main() {
                 iso: 400,
             },
             {
-                title: 'Nudibranch on coral',
-                description: 'A colorful nudibranch discovered on a reef dive',
                 imagePath: '/gallery/DSC06378.jpeg',
                 width: 1280,
                 height: 854,
@@ -1219,8 +1217,6 @@ async function main() {
                 iso: 3200,
             },
             {
-                title: 'Wide angle reef scene',
-                description: 'Expansive reef landscape with ambient light',
                 imagePath: '/gallery/DSC07814.jpeg',
                 width: 1280,
                 height: 854,

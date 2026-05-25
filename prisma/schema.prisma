@@ -7,23 +7,23 @@ datasource db {
 }
 
 model Manufacturer {
-    id             Int             @id @default(autoincrement())
-    name           String          @unique
-    slug           String          @unique
-    description    String?
-    createdAt      DateTime        @default(now())
-    updatedAt      DateTime        @updatedAt
-    housingMounts  HousingMount[]
-    cameras        Camera[]
-    housings       Housing[]
-    lenses         Lens[]
-    ports          Port[]
-    extensionRings ExtensionRing[]
-    portAdapters   PortAdapter[]
-    gears          Gear[]
+    id               Int             @id @default(autoincrement())
+    name             String          @unique
+    slug             String          @unique
+    description      String?
+    createdAt        DateTime        @default(now())
+    updatedAt        DateTime        @updatedAt
+    housingMounts    HousingMount[]
+    cameras          Camera[]
+    housings         Housing[]
+    lenses           Lens[]
+    ports            Port[]
+    extensionRings   ExtensionRing[]
+    portAdapters     PortAdapter[]
+    gears            Gear[]
     // portChartEntries PortChartEntry[]
     logoPath         String?
-    logoContainsName Boolean @default(false)
+    logoContainsName Boolean         @default(false)
 
     @@map("manufacturers")
 }
@@ -269,6 +269,31 @@ model User {
     galleryLikes         GalleryLike[]
 
     @@map("users")
+}
+
+model PasswordResetToken {
+    id        Int      @id @default(autoincrement())
+    email        String
+    otp          String?
+    sessionToken String?
+    expiresAt    DateTime
+    createdAt DateTime @default(now())
+
+    @@index([email])
+    @@map("password_reset_tokens")
+}
+
+model PendingVerification {
+    id        Int      @id @default(autoincrement())
+    email     String
+    name      String?
+    password  String
+    otp       String
+    expiresAt DateTime
+    createdAt DateTime @default(now())
+
+    @@index([email])
+    @@map("pending_verifications")
 }
 
 model CameraRig {

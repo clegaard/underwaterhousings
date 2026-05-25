@@ -54,6 +54,11 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: 'platform-lookaside.fbsbx.com',
             },
+            {
+                // Instagram OAuth avatars
+                protocol: 'https',
+                hostname: '*.cdninstagram.com',
+            },
         ],
     },
 }

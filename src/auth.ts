@@ -3,6 +3,7 @@ import Credentials from 'next-auth/providers/credentials'
 import Google from 'next-auth/providers/google'
 import Facebook from 'next-auth/providers/facebook'
 import Apple from 'next-auth/providers/apple'
+import Instagram from 'next-auth/providers/instagram'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 
@@ -19,6 +20,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         Apple({
             clientId: process.env.APPLE_ID!,
             clientSecret: process.env.APPLE_SECRET!,
+        }),
+        Instagram({
+            clientId: process.env.INSTAGRAM_CLIENT_ID!,
+            clientSecret: process.env.INSTAGRAM_CLIENT_SECRET!,
         }),
         Credentials({
             credentials: {
