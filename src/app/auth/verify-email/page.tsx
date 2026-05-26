@@ -82,7 +82,7 @@ export default function VerifyEmailPage() {
         // Show the success state — let the animation play before navigating
         setSuccess(true)
 
-        await new Promise(r => setTimeout(r, 1100))
+        await new Promise(r => setTimeout(r, 2100))
 
         const stored = sessionStorage.getItem('signup_password')
         sessionStorage.removeItem('signup_password')
@@ -193,13 +193,12 @@ export default function VerifyEmailPage() {
                                 }}
                                 autoFocus
                                 disabled={expired || loading}
-                                className={`w-full px-4 py-3 border rounded-lg text-2xl font-mono tracking-[0.5em] text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors duration-200 ${
-                                    loading
+                                className={`w-full px-4 py-3 border rounded-lg text-2xl font-mono tracking-[0.5em] text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors duration-200 ${loading
                                         ? 'border-blue-400 bg-blue-50 text-blue-700'
                                         : expired
                                             ? 'border-red-300 bg-red-50 text-red-400'
                                             : 'border-gray-300'
-                                }`}
+                                    }`}
                                 placeholder="——————"
                             />
                         </div>
@@ -220,8 +219,8 @@ export default function VerifyEmailPage() {
                             {loading ? (
                                 <span className="flex items-center justify-center gap-2">
                                     <svg className="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                                     </svg>
                                     Verifying…
                                 </span>

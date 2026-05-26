@@ -19,6 +19,17 @@ Examples of such systems are:
 
 The app uses TypeScript, Tailwind CSS, Prisma ORM with PostgreSQL, and follows a manufacturer → housing → camera compatibility model.
 
+## Design Principles
+- The website should be designed to work well on desktop as well as mobile devices, with a responsive layout that adapts to different screen sizes and orientations.
+- The website should be designed with a clean and modern aesthetic, using a consistent color scheme and typography that is easy to read and visually appealing.
+- The website should be designed with a focus on usability and user experience, with intuitive navigation and clear calls to action that guide users through the site and encourage them to explore the content and submit their own photos.
+- The website should be designed with accessibility in mind, following best practices for web accessibility to ensure that it can be used by as many people as possible, including those with disabilities.
+- The website should be designed to load quickly and perform well, with optimized images and efficient code that minimizes load times and provides a smooth user experience.
+- The website should be designed to be scalable and maintainable, with a modular architecture and clean code that allows for easy updates and additions as the project grows and evolves over time.
+- The website should be designed to foster a sense of community among underwater photographers, with features that encourage users to share their photos and engage with each other, such as comments, likes, and user profiles.
+- The website should add tooltips to provide additional information about technical terms and concepts related to underwater photography, such as depth rating, port types, and camera compatibility, to help educate users and enhance their understanding of the equipment and techniques used in underwater photography.
+- Tooltips should have a consistent style and be easily accessible, appearing when users hover over or click on relevant terms throughout the site, providing concise and informative explanations to enhance the user experience and promote learning about underwater photography.
+
 ## Key Architecture Patterns
 
 ### Scraping
