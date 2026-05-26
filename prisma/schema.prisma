@@ -267,17 +267,36 @@ model User {
     cameraRigs           CameraRig[]
     galleryComments      GalleryComment[]
     galleryLikes         GalleryLike[]
+    linkedServices       LinkedService[]
 
     @@map("users")
 }
 
+model LinkedService {
+    id              Int       @id @default(autoincrement())
+    userId          Int
+    service         String // "instagram" | "facebook" | "google_photos" | "apple_photos"
+    accessToken     String
+    refreshToken    String?
+    tokenExpiry     DateTime?
+    serviceUserId   String?
+    serviceUsername String?
+    scopes          String?
+    createdAt       DateTime  @default(now())
+    updatedAt       DateTime  @updatedAt
+    user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, service])
+    @@map("linked_services")
+}
+
 model PasswordResetToken {
-    id        Int      @id @default(autoincrement())
+    id           Int      @id @default(autoincrement())
     email        String
     otp          String?
     sessionToken String?
     expiresAt    DateTime
-    createdAt DateTime @default(now())
+    createdAt    DateTime @default(now())
 
     @@index([email])
     @@map("password_reset_tokens")

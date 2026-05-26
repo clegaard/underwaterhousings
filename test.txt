@@ -1,0 +1,7 @@
+
+Since the users profiles may have posts and images that contain non-underwater photography related photos we are opting for an approach that allows the user to manually select which images to import.
+
+Since some of these platforms strip out metadata we need to implement a way that the user can assign this at runtime or to automatically extract this from the caption of the post.
+
+
+https://animate-grueling-onslaught.ngrok-free.dev/api/linked-services/instagram/callback

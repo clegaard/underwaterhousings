@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    allowedDevOrigins: ['macbook-pro-3.local'],
+    allowedDevOrigins: ['macbook-pro-3.local', 'animate-grueling-onslaught.ngrok-free.dev'],
     images: {
+
         formats: ['image/avif', 'image/webp'],
         remotePatterns: [
             {
@@ -64,3 +65,5 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
+
+
