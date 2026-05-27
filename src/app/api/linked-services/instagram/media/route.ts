@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 
@@ -23,9 +23,11 @@ export interface InstagramMediaItem {
     children?: InstagramImage[]
 }
 
-// GET /api/linked-services/instagram/media
+// GET /api/linked-services/instagram/media[?after=<cursor>]
 // Returns the user's Instagram media and a set of already-imported media IDs.
-export async function GET() {
+// Pass ?after= to page through older posts.
+export async function GET(req: NextRequest) {
+    const after = req.nextUrl.searchParams.get('after')
     const session = await auth()
     if (!session?.user?.id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -43,9 +45,13 @@ export async function GET() {
     const token = linked.accessToken
 
     try {
-        const res = await fetch(
-            `${GRAPH}/me/media?fields=id,media_type,media_url,thumbnail_url,caption,timestamp,permalink&access_token=${token}&limit=50`
-        )
+        const mediaUrl = new URL(`${GRAPH}/me/media`)
+        mediaUrl.searchParams.set('fields', 'id,media_type,media_url,thumbnail_url,caption,timestamp,permalink')
+        mediaUrl.searchParams.set('access_token', token)
+        mediaUrl.searchParams.set('limit', '24')
+        if (after) mediaUrl.searchParams.set('after', after)
+
+        const res = await fetch(mediaUrl.toString())
 
         if (!res.ok) {
             const err = await res.json().catch(() => ({}))
@@ -53,6 +59,7 @@ export async function GET() {
         }
 
         const raw = await res.json() as {
+            paging?: { cursors?: { after?: string }; next?: string }
             data: Array<{
                 id: string
                 media_type: string
@@ -87,12 +94,13 @@ export async function GET() {
                 let children: InstagramImage[] = []
                 try {
                     const childRes = await fetch(
-                        `${GRAPH}/${item.id}/children?fields=id,media_url,timestamp&access_token=${token}`
+                        `${GRAPH}/${item.id}/children?fields=id,media_type,media_url,timestamp&access_token=${token}`
                     )
                     if (childRes.ok) {
-                        const childData = await childRes.json() as { data: Array<{ id: string; media_url?: string; timestamp: string }> }
+                        const childData = await childRes.json() as { data: Array<{ id: string; media_type?: string; media_url?: string; timestamp: string }> }
                         children = (childData.data ?? [])
-                            .filter(c => c.media_url)
+                            // exclude videos inside carousels
+                            .filter(c => c.media_url && c.media_type !== 'VIDEO')
                             .map(c => ({ id: c.id, mediaUrl: c.media_url!, timestamp: c.timestamp }))
                     }
                 } catch { /* non-critical */ }
@@ -122,7 +130,10 @@ export async function GET() {
         })
         const importedIds = imported.map(p => p.sourceMediaId).filter(Boolean) as string[]
 
-        return NextResponse.json({ media, importedIds })
+        // Cursor for the next page (null when we've reached the oldest post)
+        const nextCursor = raw.paging?.cursors?.after ?? null
+
+        return NextResponse.json({ media, importedIds, nextCursor })
     } catch (err) {
         console.error('[Instagram media]', err)
         return NextResponse.json({ error: 'Internal error' }, { status: 500 })

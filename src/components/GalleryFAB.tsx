@@ -11,7 +11,7 @@ interface Props {
 
 // Shared pill style for both option buttons
 const PILL =
-    'flex items-center gap-2 pl-3 pr-4 py-2.5 bg-white text-gray-800 rounded-full shadow-lg border border-gray-100 text-sm font-medium whitespace-nowrap select-none'
+    'flex items-center gap-2 pl-3 pr-4 py-2.5 bg-white text-gray-800 rounded-full shadow-lg border border-gray-100 text-sm font-medium whitespace-nowrap select-none transition-all duration-150'
 
 export default function GalleryFAB({ currentUserId }: Props) {
     const { data: session } = useSession()
@@ -59,8 +59,10 @@ export default function GalleryFAB({ currentUserId }: Props) {
     function optionStyle(delayInMs: number, delayOutMs: number): React.CSSProperties {
         return {
             opacity: expanded ? 1 : 0,
-            transform: expanded ? 'translateY(0) scale(1)' : 'translateY(10px) scale(0.94)',
-            // Keep invisible items non-interactive so they don't block clicks
+            // When visible: don't set an inline transform so Tailwind hover/active
+            // classes (hover:-translate-y-0.5 etc.) take effect unobstructed.
+            // When hidden: slide down + shrink for the exit animation.
+            transform: expanded ? undefined : 'translateY(10px) scale(0.94)',
             pointerEvents: expanded ? 'auto' : 'none',
             transition: 'opacity 180ms ease, transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1)',
             transitionDelay: expanded ? `${delayInMs}ms` : `${delayOutMs}ms`,
@@ -96,7 +98,7 @@ export default function GalleryFAB({ currentUserId }: Props) {
                     {/* Instagram — second to appear (stagger 80 ms) */}
                     <button
                         onClick={openInstagram}
-                        className={`${PILL} hover:shadow-xl hover:border-gray-200 active:scale-95`}
+                        className={`${PILL} hover:bg-gray-50 hover:shadow-xl hover:border-gray-200 hover:-translate-y-0.5 active:scale-95 active:translate-y-0`}
                         style={optionStyle(80, 0)}
                         tabIndex={expanded ? 0 : -1}
                         aria-hidden={!expanded}
@@ -119,7 +121,7 @@ export default function GalleryFAB({ currentUserId }: Props) {
                     {/* From Device — first to appear (no delay) */}
                     <button
                         onClick={openDevice}
-                        className={`${PILL} hover:shadow-xl hover:border-gray-200 active:scale-95`}
+                        className={`${PILL} hover:bg-gray-50 hover:shadow-xl hover:border-gray-200 hover:-translate-y-0.5 active:scale-95 active:translate-y-0`}
                         style={optionStyle(0, 60)}
                         tabIndex={expanded ? 0 : -1}
                         aria-hidden={!expanded}

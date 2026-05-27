@@ -40,6 +40,11 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
     const [rigId, setRigId] = useState('')
     const [importResult, setImportResult] = useState<{ imported: number; skipped: number; errors: string[] } | null>(null)
     const [error, setError] = useState<string | null>(null)
+    // Pagination
+    const [cursor, setCursor] = useState<string | null>(null)
+    const [hasMore, setHasMore] = useState(false)
+    const [loadingMore, setLoadingMore] = useState(false)
+    const sentinelRef = useRef<HTMLDivElement>(null)
     // Maps imageId → {width, height} populated as thumbnails load in the browser
     const dimensionsRef = useRef<Map<string, { width: number; height: number }>>(new Map())
 
@@ -52,6 +57,9 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
         setRigId('')
         setImportResult(null)
         setError(null)
+        setCursor(null)
+        setHasMore(false)
+        setLoadingMore(false)
         dimensionsRef.current = new Map()
     }, [])
 
@@ -83,6 +91,8 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
 
                 setMedia(mediaData.media ?? [])
                 setImportedIds(new Set(mediaData.importedIds ?? []))
+                setCursor(mediaData.nextCursor ?? null)
+                setHasMore(!!mediaData.nextCursor)
 
                 if (rigsData?.success && Array.isArray(rigsData.data?.rigs)) {
                     const rigs: UserRig[] = rigsData.data.rigs.filter((r: UserRig) => r.isActive)
@@ -103,7 +113,43 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
         }
 
         load()
-    }, [isOpen, reset])
+    }, [isOpen, reset, currentUserId])
+
+    // Load next page — called by the IntersectionObserver sentinel
+    const loadMore = useCallback(async () => {
+        if (!cursor || loadingMore || !hasMore) return
+        setLoadingMore(true)
+        try {
+            const res = await fetch(`/api/linked-services/instagram/media?after=${encodeURIComponent(cursor)}`)
+            if (!res.ok) return
+            const data = await res.json()
+            setMedia(prev => [...prev, ...(data.media ?? [])])
+            setImportedIds(prev => {
+                const next = new Set(prev)
+                for (const id of (data.importedIds ?? [])) next.add(id as string)
+                return next
+            })
+            setCursor(data.nextCursor ?? null)
+            setHasMore(!!data.nextCursor)
+        } catch {
+            // Non-critical — user can scroll again to retry
+        } finally {
+            setLoadingMore(false)
+        }
+    }, [cursor, loadingMore, hasMore])
+
+    // IntersectionObserver: trigger loadMore when sentinel scrolls into view
+    useEffect(() => {
+        if (view !== 'grid' || expandedCarousel || !hasMore) return
+        const el = sentinelRef.current
+        if (!el) return
+        const obs = new IntersectionObserver(
+            entries => { if (entries[0].isIntersecting) loadMore() },
+            { rootMargin: '150px' }
+        )
+        obs.observe(el)
+        return () => obs.disconnect()
+    }, [view, expandedCarousel, hasMore, loadMore])
 
     // Measure image dimensions when they load; fallback stays 1080×1080
     const onImgLoad = useCallback((id: string, e: React.SyntheticEvent<HTMLImageElement>) => {
@@ -364,6 +410,18 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
                             {media.length === 0 && !expandedCarousel && (
                                 <p className="text-center text-gray-500 text-sm py-8">No photos found on your Instagram account.</p>
                             )}
+
+                            {/* Infinite scroll sentinel — sits below the grid; IntersectionObserver fires loadMore */}
+                            {!expandedCarousel && (
+                                <div ref={sentinelRef} className="flex items-center justify-center h-10 mt-2">
+                                    {loadingMore && (
+                                        <svg className="w-5 h-5 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                        </svg>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -450,7 +508,7 @@ function MediaGrid({ media, selected, importedIds, onToggle, onImgLoad }: MediaG
                             </div>
                         )}
 
-                        {/* Carousel badge + child count */}
+                        {/* Carousel badge — stacked-images icon, same as Instagram */}
                         {isCarousel && (
                             <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
                                 {childrenSelected > 0 && (
@@ -458,11 +516,11 @@ function MediaGrid({ media, selected, importedIds, onToggle, onImgLoad }: MediaG
                                         {childrenSelected}
                                     </span>
                                 )}
-                                <div className="bg-black/50 rounded p-0.5">
-                                    <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M21 17H3a1 1 0 010-2h18a1 1 0 010 2zM21 11H3a1 1 0 010-2h18a1 1 0 010 2z" />
-                                    </svg>
-                                </div>
+                                {/* Two offset overlapping squares — Instagram carousel indicator */}
+                                <svg className="w-4 h-4 drop-shadow" viewBox="0 0 20 20" fill="white">
+                                    <rect x="5" y="0" width="14" height="14" rx="2.5" opacity="0.65" />
+                                    <rect x="0" y="5" width="14" height="14" rx="2.5" />
+                                </svg>
                             </div>
                         )}
 
