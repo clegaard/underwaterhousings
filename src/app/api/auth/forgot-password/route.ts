@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     await prisma.passwordResetToken.deleteMany({ where: { email } })
     await prisma.passwordResetToken.create({ data: { email, otp, expiresAt } })
 
-    const domain = new URL(process.env.NEXTAUTH_URL ?? 'http://localhost:3000').hostname
+    const domain = new URL(process.env.AUTH_URL ?? 'http://localhost:3000').hostname
 
     const { error: sendError } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL!,

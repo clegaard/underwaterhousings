@@ -12,7 +12,7 @@ const SCOPE = 'instagram_business_basic'
 // authorization page. A CSRF state token is stored in an httpOnly cookie.
 export async function GET() {
     const session = await auth()
-    const appBase = (process.env.APP_PUBLIC_URL ?? process.env.NEXTAUTH_URL)!
+    const appBase = process.env.APP_PUBLIC_URL
 
     if (!session?.user?.id) {
         return NextResponse.redirect(new URL('/auth/login', appBase))
@@ -29,7 +29,6 @@ export async function GET() {
     // Generate a random CSRF state token
     const state = randomBytes(32).toString('hex')
 
-    // APP_PUBLIC_URL allows using a public address (e.g. ngrok) while NEXTAUTH_URL stays on localhost
     const redirectUri = `${appBase}/api/linked-services/instagram/callback`
 
     const authUrl = new URL(INSTAGRAM_AUTH_URL)

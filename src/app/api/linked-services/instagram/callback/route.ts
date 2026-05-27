@@ -15,8 +15,7 @@ const SETTINGS_BASE = '/settings/linked-services/instagram'
 // Exchanges the code for a long-lived access token and stores it.
 export async function GET(req: NextRequest) {
     const session = await auth()
-    // APP_PUBLIC_URL allows ngrok/production to work while NEXTAUTH_URL stays on localhost
-    const appBase = (process.env.APP_PUBLIC_URL ?? process.env.NEXTAUTH_URL)!
+    const appBase = process.env.APP_PUBLIC_URL
 
     if (!session?.user?.id) {
         return NextResponse.redirect(new URL('/auth/login', appBase))

@@ -183,6 +183,7 @@ export default function GalleryFAB({ currentUserId }: Props) {
             <InstagramImportModal
                 isOpen={instagramOpen}
                 onClose={() => setInstagramOpen(false)}
+                currentUserId={currentUserId}
             />
         </>
     )

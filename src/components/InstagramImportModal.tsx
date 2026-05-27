@@ -25,9 +25,10 @@ interface Selection {
 interface Props {
     isOpen: boolean
     onClose: () => void
+    currentUserId?: number
 }
 
-export default function InstagramImportModal({ isOpen, onClose }: Props) {
+export default function InstagramImportModal({ isOpen, onClose, currentUserId }: Props) {
     const router = useRouter()
 
     const [view, setView] = useState<'loading' | 'not_connected' | 'grid' | 'carousel' | 'importing' | 'done' | 'error'>('loading')
@@ -59,9 +60,12 @@ export default function InstagramImportModal({ isOpen, onClose }: Props) {
 
         async function load() {
             try {
+                const rigsUrl = currentUserId
+                    ? `/api/camera-rigs?userId=${currentUserId}`
+                    : '/api/camera-rigs'
                 const [mediaRes, rigsRes] = await Promise.all([
                     fetch('/api/linked-services/instagram/media'),
-                    fetch('/api/camera-rigs'),
+                    fetch(rigsUrl),
                 ])
 
                 if (mediaRes.status === 404) { setView('not_connected'); return }
@@ -80,7 +84,7 @@ export default function InstagramImportModal({ isOpen, onClose }: Props) {
                 setMedia(mediaData.media ?? [])
                 setImportedIds(new Set(mediaData.importedIds ?? []))
 
-                if (rigsData?.success) {
+                if (rigsData?.success && Array.isArray(rigsData.data?.rigs)) {
                     const rigs: UserRig[] = rigsData.data.rigs.filter((r: UserRig) => r.isActive)
                     setUserRigs(rigs)
                     // Pre-select default rig if available
@@ -91,8 +95,9 @@ export default function InstagramImportModal({ isOpen, onClose }: Props) {
                 }
 
                 setView('grid')
-            } catch {
-                setError('Could not reach the server. Please try again.')
+            } catch (err) {
+                console.error('[InstagramImportModal] load error:', err)
+                setError(err instanceof Error ? err.message : 'Could not reach the server. Please try again.')
                 setView('error')
             }
         }

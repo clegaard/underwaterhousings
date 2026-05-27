@@ -9,14 +9,14 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 function generateOtp(): string {
-    // Cryptographically random 6-digit code
-    const array = new Uint32Array(1)
-    crypto.getRandomValues(array)
-    return String(100000 + (array[0] % 900000))
+  // Cryptographically random 6-digit code
+  const array = new Uint32Array(1)
+  crypto.getRandomValues(array)
+  return String(100000 + (array[0] % 900000))
 }
 
 function buildEmailHtml(otp: string): string {
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f4f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
@@ -54,9 +54,9 @@ function buildEmailHtml(otp: string): string {
 }
 
 function buildEmailText(otp: string, domain: string): string {
-    // Plain-text version follows the WebOTP format so Android can auto-suggest the code.
-    // iOS Mail and macOS also scan for 4–8 digit codes adjacent to the word "code".
-    return `Your UW Housings verification code is: ${otp}
+  // Plain-text version follows the WebOTP format so Android can auto-suggest the code.
+  // iOS Mail and macOS also scan for 4–8 digit codes adjacent to the word "code".
+  return `Your UW Housings verification code is: ${otp}
 
 This code expires in 10 minutes.
 
@@ -66,54 +66,54 @@ If you didn't create an account, please ignore this email.
 }
 
 export async function POST(req: NextRequest) {
-    try {
-        const { email, password, name } = await req.json()
+  try {
+    const { email, password, name } = await req.json()
 
-        if (!email || !password) {
-            return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
-        }
-
-        if (!EMAIL_RE.test(email)) {
-            return NextResponse.json({ error: 'Please enter a valid email address' }, { status: 400 })
-        }
-
-        if (password.length < 8) {
-            return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
-        }
-
-        const existing = await prisma.user.findUnique({ where: { email } })
-        if (existing) {
-            return NextResponse.json({ error: 'Email already in use' }, { status: 409 })
-        }
-
-        const hashed = await bcrypt.hash(password, 12)
-        const otp = generateOtp()
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
-
-        // Replace any previous pending verification for this email
-        await prisma.pendingVerification.deleteMany({ where: { email } })
-        await prisma.pendingVerification.create({
-            data: { email, name: name || null, password: hashed, otp, expiresAt },
-        })
-
-        const domain = new URL(process.env.NEXTAUTH_URL ?? 'http://localhost:3000').hostname
-
-        const { error } = await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL!,
-            to: email,
-            // Subject starts with the code so iOS Mail / macOS Sequoia can offer AutoFill
-            subject: `${otp} is your UW Housings verification code`,
-            text: buildEmailText(otp, domain),
-            html: buildEmailHtml(otp),
-        })
-
-        if (error) {
-            console.error('Resend error:', error)
-            return NextResponse.json({ error: 'Failed to send verification email' }, { status: 500 })
-        }
-
-        return NextResponse.json({ success: true })
-    } catch {
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    if (!email || !password) {
+      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
     }
+
+    if (!EMAIL_RE.test(email)) {
+      return NextResponse.json({ error: 'Please enter a valid email address' }, { status: 400 })
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
+    }
+
+    const existing = await prisma.user.findUnique({ where: { email } })
+    if (existing) {
+      return NextResponse.json({ error: 'Email already in use' }, { status: 409 })
+    }
+
+    const hashed = await bcrypt.hash(password, 12)
+    const otp = generateOtp()
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+
+    // Replace any previous pending verification for this email
+    await prisma.pendingVerification.deleteMany({ where: { email } })
+    await prisma.pendingVerification.create({
+      data: { email, name: name || null, password: hashed, otp, expiresAt },
+    })
+
+    const domain = new URL(process.env.AUTH_URL ?? 'http://localhost:3000').hostname
+
+    const { error } = await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL!,
+      to: email,
+      // Subject starts with the code so iOS Mail / macOS Sequoia can offer AutoFill
+      subject: `${otp} is your UW Housings verification code`,
+      text: buildEmailText(otp, domain),
+      html: buildEmailHtml(otp),
+    })
+
+    if (error) {
+      console.error('Resend error:', error)
+      return NextResponse.json({ error: 'Failed to send verification email' }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }

@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    allowedDevOrigins: ['macbook-pro-3.local', 'animate-grueling-onslaught.ngrok-free.dev'],
+    allowedDevOrigins: ['macbook-pro-3.local', process.env.APP_PUBLIC_BASE],
     images: {
 
         formats: ['image/avif', 'image/webp'],
