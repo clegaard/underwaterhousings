@@ -21,7 +21,7 @@ export async function GET() {
     const { clientId } = getInstagramLinkedServiceCredentials()
     if (!clientId) {
         return NextResponse.json(
-            { error: 'Instagram integration is not configured. Set INSTAGRAM_PLATFORM_CLIENT_ID/SECRET or reuse INSTAGRAM_CLIENT_ID/SECRET.' },
+            { error: 'Instagram integration is not configured. Set INSTAGRAM_CLIENT_ID and INSTAGRAM_CLIENT_SECRET.' },
             { status: 503 }
         )
     }
