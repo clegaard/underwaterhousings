@@ -4,7 +4,7 @@ import { useMemo, useState, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import GalleryGrid, { GalleryPhotoData } from './GalleryGrid'
-import GalleryUploadButton from './GalleryUploadButton'
+import GalleryFAB from './GalleryFAB'
 import GallerySearchBar, { SearchToken, TokenType, SuggestionPool } from './GallerySearchBar'
 import { InitialFilterOptions } from '@/app/gallery/page'
 
@@ -268,7 +268,9 @@ export default function GalleryPageClient({ photos, initialFilters }: GalleryPag
                             Select
                         </button>
                     )}
-                    {!selectionMode && <GalleryUploadButton />}
+                    {!selectionMode && currentUserId && (
+                        <GalleryFAB currentUserId={currentUserId} />
+                    )}
                 </div>
             </div>
 

@@ -46,12 +46,20 @@ function toDatetimeLocal(date: Date): string {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
-export default function GalleryUploadButton() {
+interface GalleryUploadButtonProps {
+    /** When provided, the component acts as a controlled modal — the trigger button is hidden */
+    controlledOpen?: boolean
+    onControlledClose?: () => void
+}
+
+export default function GalleryUploadButton({ controlledOpen, onControlledClose }: GalleryUploadButtonProps = {}) {
     const { data: session } = useSession()
     const router = useRouter()
     const isLoggedIn = !!session?.user
 
-    const [isOpen, setIsOpen] = useState(false)
+    const [internalOpen, setInternalOpen] = useState(false)
+    const isControlled = controlledOpen !== undefined
+    const isOpen = isControlled ? (controlledOpen ?? false) : internalOpen
     const [isDragging, setIsDragging] = useState(false)
     const [file, setFile] = useState<File | null>(null)
     const [preview, setPreview] = useState<string | null>(null)
@@ -245,7 +253,11 @@ export default function GalleryUploadButton() {
     }
 
     const closeModal = () => {
-        setIsOpen(false)
+        if (isControlled) {
+            onControlledClose?.()
+        } else {
+            setInternalOpen(false)
+        }
         setFile(null)
         setPreview(null)
         setDimensions(null)
@@ -345,28 +357,30 @@ export default function GalleryUploadButton() {
 
     return (
         <>
-            {/* Upload trigger button */}
-            <div className="relative group">
-                <button
-                    onClick={() => isLoggedIn && setIsOpen(true)}
-                    disabled={!isLoggedIn}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors
-                        ${isLoggedIn
-                            ? 'bg-blue-600 text-white hover:bg-blue-700'
-                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                    </svg>
-                    Upload photo
-                </button>
-                {!isLoggedIn && (
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-800 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                        Log in to upload photos
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
-                    </div>
-                )}
-            </div>
+            {/* Trigger button — only rendered in uncontrolled mode */}
+            {!isControlled && (
+                <div className="relative group">
+                    <button
+                        onClick={() => isLoggedIn && setInternalOpen(true)}
+                        disabled={!isLoggedIn}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors
+                            ${isLoggedIn
+                                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        Upload photo
+                    </button>
+                    {!isLoggedIn && (
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-800 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            Log in to upload photos
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Modal */}
             {isOpen && (

@@ -1,0 +1,130 @@
+import { NextResponse } from 'next/server'
+import { auth } from '@/auth'
+import { prisma } from '@/lib/prisma'
+
+const GRAPH = 'https://graph.instagram.com/v22.0'
+
+export interface InstagramImage {
+    /** Instagram media ID (or child ID for carousels) */
+    id: string
+    mediaUrl: string
+    timestamp: string
+}
+
+export interface InstagramMediaItem {
+    id: string
+    mediaType: 'IMAGE' | 'CAROUSEL_ALBUM'
+    /** Cover image URL (also used for single images) */
+    mediaUrl: string
+    caption?: string
+    timestamp: string
+    permalink: string
+    /** Child images for CAROUSEL_ALBUM */
+    children?: InstagramImage[]
+}
+
+// GET /api/linked-services/instagram/media
+// Returns the user's Instagram media and a set of already-imported media IDs.
+export async function GET() {
+    const session = await auth()
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const userId = parseInt(session.user.id, 10)
+
+    const linked = await prisma.linkedService.findUnique({
+        where: { userId_service: { userId, service: 'instagram' } },
+    })
+
+    if (!linked) {
+        return NextResponse.json({ error: 'Instagram not connected' }, { status: 404 })
+    }
+
+    const token = linked.accessToken
+
+    try {
+        const res = await fetch(
+            `${GRAPH}/me/media?fields=id,media_type,media_url,thumbnail_url,caption,timestamp,permalink&access_token=${token}&limit=50`
+        )
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            return NextResponse.json({ error: 'Instagram API error', detail: err }, { status: 502 })
+        }
+
+        const raw = await res.json() as {
+            data: Array<{
+                id: string
+                media_type: string
+                media_url?: string
+                thumbnail_url?: string
+                caption?: string
+                timestamp: string
+                permalink: string
+            }>
+        }
+
+        // Only IMAGE and CAROUSEL_ALBUM — skip standalone videos
+        const filtered = (raw.data ?? []).filter(
+            m => m.media_type === 'IMAGE' || m.media_type === 'CAROUSEL_ALBUM'
+        )
+
+        // Enrich carousel albums with their children
+        const media: InstagramMediaItem[] = await Promise.all(
+            filtered.map(async (item): Promise<InstagramMediaItem> => {
+                if (item.media_type === 'IMAGE') {
+                    return {
+                        id: item.id,
+                        mediaType: 'IMAGE',
+                        mediaUrl: item.media_url ?? '',
+                        caption: item.caption,
+                        timestamp: item.timestamp,
+                        permalink: item.permalink,
+                    }
+                }
+
+                // Fetch carousel children
+                let children: InstagramImage[] = []
+                try {
+                    const childRes = await fetch(
+                        `${GRAPH}/${item.id}/children?fields=id,media_url,timestamp&access_token=${token}`
+                    )
+                    if (childRes.ok) {
+                        const childData = await childRes.json() as { data: Array<{ id: string; media_url?: string; timestamp: string }> }
+                        children = (childData.data ?? [])
+                            .filter(c => c.media_url)
+                            .map(c => ({ id: c.id, mediaUrl: c.media_url!, timestamp: c.timestamp }))
+                    }
+                } catch { /* non-critical */ }
+
+                return {
+                    id: item.id,
+                    mediaType: 'CAROUSEL_ALBUM',
+                    mediaUrl: item.media_url ?? children[0]?.mediaUrl ?? '',
+                    caption: item.caption,
+                    timestamp: item.timestamp,
+                    permalink: item.permalink,
+                    children,
+                }
+            })
+        )
+
+        // Find which individual image IDs are already imported
+        const allImageIds = media.flatMap(m =>
+            m.mediaType === 'CAROUSEL_ALBUM' && m.children?.length
+                ? m.children.map(c => c.id)
+                : [m.id]
+        )
+
+        const imported = await prisma.galleryPhoto.findMany({
+            where: { userId, sourceService: 'instagram', sourceMediaId: { in: allImageIds } },
+            select: { sourceMediaId: true },
+        })
+        const importedIds = imported.map(p => p.sourceMediaId).filter(Boolean) as string[]
+
+        return NextResponse.json({ media, importedIds })
+    } catch (err) {
+        console.error('[Instagram media]', err)
+        return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+    }
+}

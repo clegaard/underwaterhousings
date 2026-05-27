@@ -358,11 +358,15 @@ model GalleryPhoto {
     createdAt      DateTime         @default(now())
     rigId          Int
     userId         Int
+    // Source tracking for imports (e.g. Instagram). Used to prevent duplicate imports.
+    sourceService  String? // "instagram" | null
+    sourceMediaId  String? // platform-specific media ID
     rig            CameraRig        @relation(fields: [rigId], references: [id], onDelete: Restrict)
     user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
     comments       GalleryComment[]
     likes          GalleryLike[]
 
+    @@unique([userId, sourceService, sourceMediaId])
     @@map("gallery_photos")
 }
 
