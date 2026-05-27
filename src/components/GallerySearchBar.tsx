@@ -141,7 +141,7 @@ export default function GallerySearchBar({ tokens, pool, onAdd, onRemove, result
         <div ref={containerRef} className="relative">
             {/* ── Token + input row ── */}
             <div
-                className="flex flex-wrap items-center gap-1.5 min-h-11.5 px-3 py-2 bg-white border border-gray-200 rounded-xl shadow-sm cursor-text focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-shadow"
+                className="flex flex-wrap items-center gap-1.5 min-h-14 px-4 py-2.5 bg-white/95 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-lg cursor-text focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-shadow"
                 onClick={() => inputRef.current?.focus()}
             >
                 {/* Search icon */}
@@ -194,6 +194,15 @@ export default function GallerySearchBar({ tokens, pool, onAdd, onRemove, result
                     spellCheck={false}
                 />
 
+                {/* Inline result count */}
+                {showCount && (
+                    <span className="shrink-0 text-xs text-gray-400 whitespace-nowrap pr-1">
+                        {resultCount === totalCount
+                            ? `${resultCount}`
+                            : `${resultCount}/${totalCount}`}
+                    </span>
+                )}
+
                 {/* Clear all button */}
                 {(tokens.length > 0 || query) && (
                     <button
@@ -214,18 +223,9 @@ export default function GallerySearchBar({ tokens, pool, onAdd, onRemove, result
                 )}
             </div>
 
-            {/* Photo count */}
-            {showCount && (
-                <p className="mt-1.5 text-xs text-gray-500 px-1">
-                    {resultCount === totalCount
-                        ? `${totalCount} photo${totalCount !== 1 ? 's' : ''}`
-                        : `${resultCount} of ${totalCount} photo${totalCount !== 1 ? 's' : ''}`}
-                </p>
-            )}
-
             {/* ── Autocomplete dropdown ── */}
             {isOpen && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
+                <div className="absolute bottom-full left-0 right-0 mb-1.5 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
                     {TYPE_ORDER.filter(type => grouped[type]).map(type => (
                         <div key={type}>
                             <div className="sticky top-0 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 bg-gray-50/90 backdrop-blur-sm border-b border-gray-100">

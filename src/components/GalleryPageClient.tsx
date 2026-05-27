@@ -5,8 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import GalleryGrid, { GalleryPhotoData } from './GalleryGrid'
 import GalleryFAB from './GalleryFAB'
-import GallerySearchBar, { SearchToken, TokenType, SuggestionPool } from './GallerySearchBar'
+import GalleryFilterPanel, { SortOption, FilterState, FilterPool } from './GalleryFilterPanel'
 import { InitialFilterOptions } from '@/app/gallery/page'
+import { UploadQueueProvider } from '@/lib/UploadQueueContext'
+import UploadProgressFAB from './UploadProgressFAB'
 
 interface GalleryPageClientProps {
     photos: GalleryPhotoData[]
@@ -89,14 +91,28 @@ export default function GalleryPageClient({ photos, initialFilters }: GalleryPag
         }
     }
 
-    // ─── Suggestion pool (derived from photos + initialFilters) ──────────────
+    // ─── Filters + sort (from URL params) ────────────────────────────────────
 
-    const pool = useMemo((): SuggestionPool => {
+    const cameraSlug = searchParams.get('camera')
+    const lensSlug = searchParams.get('lens')
+    const housingSlug = searchParams.get('housing')
+    const portSlug = searchParams.get('port')
+    const sortBy = (searchParams.get('sort') ?? 'date') as SortOption
+
+    const filters: FilterState = {
+        camera: cameraSlug,
+        lens: lensSlug,
+        housing: housingSlug,
+        port: portSlug,
+    }
+
+    // ─── Filter pool (dropdown options) ──────────────────────────────────────
+
+    const pool = useMemo((): FilterPool => {
         const cameras = new Map<string, string>()
         const lenses = new Map<string, string>()
         const housings = new Map<string, string>()
         const ports = new Map<string, string>()
-        const users = new Map<string, string>()  // userId string → display name
 
         if (initialFilters?.camera) cameras.set(initialFilters.camera.slug, initialFilters.camera.name)
         if (initialFilters?.lens) lenses.set(initialFilters.lens.slug, initialFilters.lens.name)
@@ -108,7 +124,6 @@ export default function GalleryPageClient({ photos, initialFilters }: GalleryPag
             if (p.lensSlug && p.lensName) lenses.set(p.lensSlug, p.lensName)
             if (p.housingSlug && p.housingName) housings.set(p.housingSlug, p.housingName)
             if (p.portSlug && p.portName) ports.set(p.portSlug, p.portName)
-            if (p.userId != null && p.userName) users.set(String(p.userId), p.userName)
         })
 
         return {
@@ -116,172 +131,142 @@ export default function GalleryPageClient({ photos, initialFilters }: GalleryPag
             lenses: Array.from(lenses.entries()).sort((a, b) => a[1].localeCompare(b[1])),
             housings: Array.from(housings.entries()).sort((a, b) => a[1].localeCompare(b[1])),
             ports: Array.from(ports.entries()).sort((a, b) => a[1].localeCompare(b[1])),
-            users: Array.from(users.entries()).sort((a, b) => a[1].localeCompare(b[1])),
         }
     }, [photos, initialFilters])
 
-    // ─── Active tokens (derived from URL search params) ──────────────────────
+    // ─── Filtered + sorted photos ─────────────────────────────────────────────
 
-    const tokens = useMemo((): SearchToken[] => {
-        const result: SearchToken[] = []
+    const filtered = useMemo(() =>
+        photos.filter(p => {
+            if (cameraSlug && p.cameraSlug !== cameraSlug) return false
+            if (lensSlug && p.lensSlug !== lensSlug) return false
+            if (housingSlug && p.housingSlug !== housingSlug) return false
+            if (portSlug && p.portSlug !== portSlug) return false
+            return true
+        }),
+        [photos, cameraSlug, lensSlug, housingSlug, portSlug]
+    )
 
-        const cameraSlug = searchParams.get('camera')
-        if (cameraSlug) {
-            const label = pool.cameras.find(([s]) => s === cameraSlug)?.[1] ?? initialFilters?.camera?.name
-            if (label) result.push({ type: 'camera', slug: cameraSlug, label })
-        }
+    const sorted = useMemo(() => {
+        if (sortBy === 'rating') return [...filtered].sort((a, b) => (b.likeCount ?? 0) - (a.likeCount ?? 0))
+        return filtered  // server already returns date-sorted
+    }, [filtered, sortBy])
 
-        const lensSlug = searchParams.get('lens')
-        if (lensSlug) {
-            const label = pool.lenses.find(([s]) => s === lensSlug)?.[1] ?? initialFilters?.lens?.name
-            if (label) result.push({ type: 'lens', slug: lensSlug, label })
-        }
-
-        const housingSlug = searchParams.get('housing')
-        if (housingSlug) {
-            const label = pool.housings.find(([s]) => s === housingSlug)?.[1] ?? initialFilters?.housing?.name
-            if (label) result.push({ type: 'housing', slug: housingSlug, label })
-        }
-
-        const portSlug = searchParams.get('port')
-        if (portSlug) {
-            const label = pool.ports.find(([s]) => s === portSlug)?.[1] ?? initialFilters?.port?.name
-            if (label) result.push({ type: 'port', slug: portSlug, label })
-        }
-
-        const userId = searchParams.get('user')
-        if (userId) {
-            const label = pool.users.find(([s]) => s === userId)?.[1]
-            if (label) result.push({ type: 'user', slug: userId, label })
-        }
-
-        return result
-    }, [searchParams, pool, initialFilters])
+    filteredRef.current = sorted
 
     // ─── URL mutation helpers ─────────────────────────────────────────────────
 
-    const PARAM_KEY: Record<TokenType, string> = {
-        camera: 'camera', lens: 'lens', housing: 'housing', port: 'port', user: 'user',
-    }
-
-    function addToken(token: SearchToken) {
+    function updateParam(key: string, value: string | null) {
         const params = new URLSearchParams(searchParams.toString())
-        params.set(PARAM_KEY[token.type], token.slug)
-        router.replace(`/gallery?${params.toString()}`, { scroll: false })
-    }
-
-    function removeToken(type: TokenType) {
-        const params = new URLSearchParams(searchParams.toString())
-        params.delete(PARAM_KEY[type])
+        if (value) params.set(key, value)
+        else params.delete(key)
         const qs = params.toString()
         router.replace(qs ? `/gallery?${qs}` : '/gallery', { scroll: false })
     }
 
-    // ─── Filtered photos ──────────────────────────────────────────────────────
+    function handleSortChange(sort: SortOption) {
+        updateParam('sort', sort === 'date' ? null : sort)
+    }
 
-    const tokenMap = useMemo(() => {
-        const m: Partial<Record<TokenType, string>> = {}
-        for (const t of tokens) m[t.type] = t.slug
-        return m
-    }, [tokens])
+    function handleFilterChange(key: keyof FilterState, value: string | null) {
+        updateParam(key, value)
+    }
 
-    const filtered = useMemo(() =>
-        photos.filter(p => {
-            if (tokenMap.camera && p.cameraSlug !== tokenMap.camera) return false
-            if (tokenMap.lens && p.lensSlug !== tokenMap.lens) return false
-            if (tokenMap.housing && p.housingSlug !== tokenMap.housing) return false
-            if (tokenMap.port && p.portSlug !== tokenMap.port) return false
-            if (tokenMap.user && String(p.userId) !== tokenMap.user) return false
-            return true
-        }),
-        [photos, tokenMap])
-
-    filteredRef.current = filtered
+    function handleReset() {
+        router.replace('/gallery', { scroll: false })
+    }
 
     return (
-        <div className="flex flex-col gap-4">
-            {/* Smart search / filter bar */}
-            <GallerySearchBar
-                tokens={tokens}
-                pool={pool}
-                onAdd={addToken}
-                onRemove={removeToken}
-                resultCount={filtered.length}
-                totalCount={photos.length}
-            />
+        <UploadQueueProvider>
+            <div className="flex flex-col gap-4 pb-24">
 
-            {/* Action bar */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    {selectionMode && (
-                        <>
-                            <button
-                                onClick={exitSelection}
-                                className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <span className="text-sm text-gray-500">
-                                {selectedIds.size} {selectedIds.size === 1 ? 'photo' : 'photos'} selected
-                            </span>
-                        </>
-                    )}
-                </div>
-                <div className="flex items-center gap-3">
-                    {deleteError && (
-                        <span className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5">
-                            <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                            </svg>
-                            {deleteError}
-                            <button onClick={() => setDeleteError(null)} className="text-red-400 hover:text-red-600 transition-colors ml-1">
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                {/* Action bar */}
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        {/* Sort & Filter panel — desktop inline, mobile fixed */}
+                        <GalleryFilterPanel
+                            sortBy={sortBy}
+                            filters={filters}
+                            pool={pool}
+                            resultCount={sorted.length}
+                            totalCount={photos.length}
+                            onSortChange={handleSortChange}
+                            onFilterChange={handleFilterChange}
+                            onReset={handleReset}
+                        />
+                        {selectionMode && (
+                            <>
+                                <button
+                                    onClick={exitSelection}
+                                    className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <span className="text-sm text-gray-500">
+                                    {selectedIds.size} {selectedIds.size === 1 ? 'photo' : 'photos'} selected
+                                </span>
+                            </>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                        {deleteError && (
+                            <span className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5">
+                                <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                                 </svg>
-                            </button>
-                        </span>
-                    )}
-                    {selectionMode && selectedIds.size > 0 && (
-                        <button
-                            onClick={deleteSelected}
-                            disabled={isDeleting}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            {isDeleting ? (
-                                <>
-                                    <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                {deleteError}
+                                <button onClick={() => setDeleteError(null)} className="text-red-400 hover:text-red-600 transition-colors ml-1">
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                     </svg>
-                                    Deleting…
-                                </>
-                            ) : (
-                                <>Delete {selectedIds.size}</>
-                            )}
-                        </button>
-                    )}
-                    {!selectionMode && currentUserId && (
-                        <button
-                            onClick={enterSelection}
-                            className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
-                        >
-                            Select
-                        </button>
-                    )}
-                    {!selectionMode && currentUserId && (
-                        <GalleryFAB currentUserId={currentUserId} />
-                    )}
+                                </button>
+                            </span>
+                        )}
+                        {selectionMode && selectedIds.size > 0 && (
+                            <button
+                                onClick={deleteSelected}
+                                disabled={isDeleting}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                {isDeleting ? (
+                                    <>
+                                        <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                        </svg>
+                                        Deleting…
+                                    </>
+                                ) : (
+                                    <>Delete {selectedIds.size}</>
+                                )}
+                            </button>
+                        )}
+                        {!selectionMode && currentUserId && (
+                            <button
+                                onClick={enterSelection}
+                                className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                            >
+                                Select
+                            </button>
+                        )}
+                        {!selectionMode && currentUserId && (
+                            <GalleryFAB currentUserId={currentUserId} />
+                        )}
+                    </div>
                 </div>
+
+                <GalleryGrid
+                    photos={sorted}
+                    selectionMode={selectionMode}
+                    selectedIds={selectedIds}
+                    currentUserId={currentUserId}
+                    onPhotoClick={handlePhotoClick}
+                    onExitSelection={exitSelection}
+                />
             </div>
 
-            <GalleryGrid
-                photos={filtered}
-                selectionMode={selectionMode}
-                selectedIds={selectedIds}
-                currentUserId={currentUserId}
-                onPhotoClick={handlePhotoClick}
-                onExitSelection={exitSelection}
-            />
-        </div>
+            {/* Upload progress tracker — bottom-left */}
+            <UploadProgressFAB />
+        </UploadQueueProvider>
     )
 }

@@ -5,3 +5,5 @@ Since some of these platforms strip out metadata we need to implement a way that
 
 
 https://animate-grueling-onslaught.ngrok-free.dev/api/linked-services/instagram/callback
+https://www.underwaterhousings.net/api/linked-services/instagram/callback
+https://underwaterhousings.net/api/linked-services/instagram/callback

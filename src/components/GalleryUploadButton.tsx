@@ -2,10 +2,10 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import LocationPicker, { type LocationValue } from './LocationPicker'
 import { isHeicFile, convertHeicToAvif, type ConversionStage } from '@/lib/heicConvert'
 import { HeicProgressBar } from '@/components/HeicProgressBar'
+import { useUploadQueue } from '@/lib/UploadQueueContext'
 
 interface UserRig {
     id: number
@@ -54,8 +54,8 @@ interface GalleryUploadButtonProps {
 
 export default function GalleryUploadButton({ controlledOpen, onControlledClose }: GalleryUploadButtonProps = {}) {
     const { data: session } = useSession()
-    const router = useRouter()
     const isLoggedIn = !!session?.user
+    const { enqueue } = useUploadQueue()
 
     const [internalOpen, setInternalOpen] = useState(false)
     const isControlled = controlledOpen !== undefined
@@ -69,7 +69,6 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
     const [selectedRigId, setSelectedRigId] = useState('')
     const [exifCameraModel, setExifCameraModel] = useState<string | null>(null)
     const [exifLensModel, setExifLensModel] = useState<string | null>(null)
-    const [isUploading, setIsUploading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [heicStage, setHeicStage] = useState<ConversionStage | null>(null)
     const [exifLoading, setExifLoading] = useState(false)
@@ -216,40 +215,30 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
         if (dropped) processFile(dropped)
     }, [processFile])
 
-    const handleSubmit = async () => {
+    const handleSubmit = () => {
         if (!file || !dimensions) return
-        setIsUploading(true)
         setError(null)
-        try {
-            const fd = new FormData()
-            fd.append('file', file)
-            fd.append('width', String(dimensions.width))
-            fd.append('height', String(dimensions.height))
-            if (form.caption) fd.append('caption', form.caption)
-            if (locationValue) {
-                if (locationValue.name) fd.append('location', locationValue.name)
-                fd.append('locationLat', String(locationValue.lat))
-                fd.append('locationLng', String(locationValue.lng))
-                fd.append('locationRadius', String(locationValue.radius))
-            }
-            if (form.takenAt) fd.append('takenAt', form.takenAt)
-            if (form.iso) fd.append('iso', form.iso)
-            if (form.focalLength) fd.append('focalLength', form.focalLength)
-            if (form.aperture) fd.append('aperture', form.aperture)
-            if (form.shutterSpeed) fd.append('shutterSpeed', form.shutterSpeed)
-            if (selectedRigId) fd.append('rigId', selectedRigId)
 
-            const res = await fetch('/api/gallery/upload', { method: 'POST', body: fd })
-            const data = await res.json().catch(() => ({}))
-            if (!res.ok) throw new Error(data.error ?? `Upload failed (${res.status})`)
-
-            closeModal()
-            router.refresh()
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Upload failed')
-        } finally {
-            setIsUploading(false)
+        const fd = new FormData()
+        fd.append('file', file)
+        fd.append('width', String(dimensions.width))
+        fd.append('height', String(dimensions.height))
+        if (form.caption) fd.append('caption', form.caption)
+        if (locationValue) {
+            if (locationValue.name) fd.append('location', locationValue.name)
+            fd.append('locationLat', String(locationValue.lat))
+            fd.append('locationLng', String(locationValue.lng))
+            fd.append('locationRadius', String(locationValue.radius))
         }
+        if (form.takenAt) fd.append('takenAt', form.takenAt)
+        if (form.iso) fd.append('iso', form.iso)
+        if (form.focalLength) fd.append('focalLength', form.focalLength)
+        if (form.aperture) fd.append('aperture', form.aperture)
+        if (form.shutterSpeed) fd.append('shutterSpeed', form.shutterSpeed)
+        if (selectedRigId) fd.append('rigId', selectedRigId)
+
+        enqueue(fd, file.name)
+        closeModal()
     }
 
     const closeModal = () => {
@@ -701,16 +690,10 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
                             </button>
                             <button
                                 onClick={handleSubmit}
-                                disabled={!file || !dimensions || isUploading || !selectedRigId}
-                                className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                                disabled={!file || !dimensions || !selectedRigId}
+                                className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
-                                {isUploading && (
-                                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                                    </svg>
-                                )}
-                                {isUploading ? 'Uploading…' : 'Upload photo'}
+                                Upload photo
                             </button>
                         </div>
                     </div>
