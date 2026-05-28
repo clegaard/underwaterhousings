@@ -23,7 +23,7 @@ export interface SuggestionPool {
 
 // ─── Metadata per token type ──────────────────────────────────────────────────
 
-const TYPE_META: Record<TokenType, { label: string; chip: string; dot: string }> = {
+export const TYPE_META: Record<TokenType, { label: string; chip: string; dot: string }> = {
     camera: { label: 'Camera', chip: 'bg-blue-50 text-blue-700 border-blue-200', dot: 'bg-blue-500' },
     lens: { label: 'Lens', chip: 'bg-green-50 text-green-700 border-green-200', dot: 'bg-green-500' },
     housing: { label: 'Housing', chip: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-500' },
@@ -31,7 +31,7 @@ const TYPE_META: Record<TokenType, { label: string; chip: string; dot: string }>
     user: { label: 'User', chip: 'bg-purple-50 text-purple-700 border-purple-200', dot: 'bg-purple-500' },
 }
 
-const TYPE_ORDER: TokenType[] = ['camera', 'lens', 'housing', 'port', 'user']
+export const TYPE_ORDER: TokenType[] = ['camera', 'lens', 'housing', 'port', 'user']
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -92,7 +92,7 @@ export default function GallerySearchBar({ tokens, pool, onAdd, onRemove, result
     // Reset highlighted item when suggestion list changes
     useEffect(() => { setActiveIdx(-1) }, [suggestions])
 
-    // Close dropdown on outside click/tap
+    // Close dropdown on outside click
     useEffect(() => {
         function handlePointerDown(e: MouseEvent) {
             if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -138,14 +138,14 @@ export default function GallerySearchBar({ tokens, pool, onAdd, onRemove, result
     const showCount = tokens.length > 0 || resultCount !== totalCount
 
     return (
-        <div ref={containerRef} className="relative">
+        <div ref={containerRef} className="pointer-events-auto relative w-full">
             {/* ── Token + input row ── */}
             <div
-                className="flex flex-wrap items-center gap-1.5 min-h-14 px-4 py-2.5 bg-white/95 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-lg cursor-text focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-shadow"
+                className="flex flex-wrap items-center gap-1.5 min-h-14 px-4 py-2.5 bg-white/90 backdrop-blur-md border border-gray-500/80 dark:border-white/10 rounded-2xl shadow-lg cursor-text focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-shadow"
                 onClick={() => inputRef.current?.focus()}
             >
                 {/* Search icon */}
-                <svg className="w-4 h-4 text-gray-400 shrink-0 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0Z" />
                 </svg>
 
@@ -155,10 +155,9 @@ export default function GallerySearchBar({ tokens, pool, onAdd, onRemove, result
                     return (
                         <span
                             key={token.type}
-                            className={`inline-flex items-center gap-1 pl-1.5 pr-0.5 py-0.5 rounded-full border text-sm font-medium whitespace-nowrap ${meta.chip}`}
+                            className={`inline-flex items-center gap-1 pl-2 pr-0.5 py-0.5 rounded-full border text-sm font-medium whitespace-nowrap ${meta.chip}`}
                         >
                             <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${meta.dot}`} />
-                            <span className="text-[10px] font-semibold uppercase tracking-wide opacity-60 ml-0.5">{meta.label}</span>
                             <span className="mx-0.5">{token.label}</span>
                             <button
                                 type="button"
@@ -185,18 +184,19 @@ export default function GallerySearchBar({ tokens, pool, onAdd, onRemove, result
                     }}
                     onFocus={() => { if (query) setIsOpen(true) }}
                     onKeyDown={handleKeyDown}
-                    placeholder={tokens.length === 0 ? 'Filter by camera, lens, housing, port or user…' : 'Add another filter…'}
+                    placeholder=""
                     className="flex-1 min-w-40 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400"
                     style={{ fontSize: '16px' }}
                     autoComplete="off"
                     autoCorrect="off"
                     autoCapitalize="none"
                     spellCheck={false}
+                    suppressHydrationWarning
                 />
 
                 {/* Inline result count */}
                 {showCount && (
-                    <span className="shrink-0 text-xs text-gray-400 whitespace-nowrap pr-1">
+                    <span className="shrink-0 text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap pr-1">
                         {resultCount === totalCount
                             ? `${resultCount}`
                             : `${resultCount}/${totalCount}`}
@@ -213,7 +213,7 @@ export default function GallerySearchBar({ tokens, pool, onAdd, onRemove, result
                             setIsOpen(false)
                             inputRef.current?.focus()
                         }}
-                        className="shrink-0 p-1 text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-gray-100"
+                        className="shrink-0 p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-white/10"
                         aria-label="Clear all filters"
                     >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -225,10 +225,10 @@ export default function GallerySearchBar({ tokens, pool, onAdd, onRemove, result
 
             {/* ── Autocomplete dropdown ── */}
             {isOpen && suggestions.length > 0 && (
-                <div className="absolute bottom-full left-0 right-0 mb-1.5 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-xl z-50 overflow-hidden max-h-72 overflow-y-auto">
                     {TYPE_ORDER.filter(type => grouped[type]).map(type => (
                         <div key={type}>
-                            <div className="sticky top-0 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 bg-gray-50/90 backdrop-blur-sm border-b border-gray-100">
+                            <div className="sticky top-0 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 bg-gray-50/90 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-100 dark:border-white/10">
                                 {TYPE_META[type].label}
                             </div>
                             {grouped[type]!.map(s => {
@@ -238,7 +238,7 @@ export default function GallerySearchBar({ tokens, pool, onAdd, onRemove, result
                                     <button
                                         key={`${s.type}:${s.slug}`}
                                         type="button"
-                                        className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-left transition-colors ${isActive ? 'bg-blue-50 text-blue-900' : 'text-gray-700 hover:bg-gray-50'
+                                        className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-left transition-colors ${isActive ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-900 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
                                             }`}
                                         onMouseEnter={() => setActiveIdx(flatIdx)}
                                         onMouseDown={e => { e.preventDefault(); commit(s) }}

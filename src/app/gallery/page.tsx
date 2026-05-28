@@ -10,13 +10,6 @@ export const metadata = {
     description: 'Photos taken with various underwater camera housing configurations',
 }
 
-export interface InitialFilterOptions {
-    camera?: { slug: string; name: string }
-    housing?: { slug: string; name: string }
-    lens?: { slug: string; name: string }
-    port?: { slug: string; name: string }
-}
-
 async function getGalleryPhotos(currentUserId?: number): Promise<GalleryPhotoData[]> {
     try {
         const photos = await prisma.galleryPhoto.findMany({
@@ -90,54 +83,18 @@ async function getGalleryPhotos(currentUserId?: number): Promise<GalleryPhotoDat
     }
 }
 
-export default async function GalleryPage({
-    searchParams,
-}: {
-    searchParams?: Promise<{ camera?: string; housing?: string; lens?: string; port?: string }>
-}) {
+export default async function GalleryPage() {
     const session = await auth()
     const currentUserId = session?.user?.id ? parseInt(session.user.id) : undefined
 
-    const resolvedSearchParams = await searchParams
-
-    const [photos, initialFilters] = await Promise.all([
-        getGalleryPhotos(currentUserId),
-        (async (): Promise<InitialFilterOptions> => {
-            const { camera: cameraSlug, housing: housingSlug, lens: lensSlug, port: portSlug } = resolvedSearchParams ?? {}
-            const [camera, housing, lens, port] = await Promise.all([
-                cameraSlug
-                    ? prisma.camera.findUnique({ where: { slug: cameraSlug }, include: { brand: true } })
-                    : null,
-                housingSlug
-                    ? prisma.housing.findUnique({ where: { slug: housingSlug }, include: { manufacturer: true } })
-                    : null,
-                lensSlug
-                    ? prisma.lens.findUnique({ where: { slug: lensSlug } })
-                    : null,
-                portSlug
-                    ? prisma.port.findUnique({ where: { slug: portSlug } })
-                    : null,
-            ])
-            return {
-                camera: camera ? { slug: camera.slug, name: `${camera.brand.name} ${camera.name}` } : undefined,
-                housing: housing ? { slug: housing.slug, name: `${housing.manufacturer.name} ${housing.name}` } : undefined,
-                lens: lens ? { slug: lens.slug, name: lens.name } : undefined,
-                port: port ? { slug: port.slug, name: port.name } : undefined,
-            }
-        })(),
-    ])
+    const photos = await getGalleryPhotos(currentUserId)
 
     return (
         <main className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
             <div className="max-w-7xl mx-auto px-4 py-6">
-                <div className="mb-6">
-                    <h1 className="text-3xl font-bold text-blue-900 mb-1">Gallery</h1>
-                    <p className="text-gray-600 text-sm">
-                        Photos taken with different combinations of camera bodies, lenses, housings, and ports.
-                    </p>
-                </div>
+
                 <Suspense>
-                    <GalleryPageClient photos={photos} initialFilters={initialFilters} />
+                    <GalleryPageClient photos={photos} />
                 </Suspense>
             </div>
         </main>
