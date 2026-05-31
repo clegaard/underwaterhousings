@@ -171,6 +171,9 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
         const heicFiles = validFiles.filter(isHeicFile)
         let heicIdx = 0
         const newPhotos: PendingPhoto[] = []
+        // Keep the original files separately so EXIF is read from the
+        // source HEIC rather than the converted AVIF (canvas strips metadata).
+        const exifFiles: File[] = []
 
         for (const f of validFiles) {
             let processedFile = f
@@ -206,14 +209,15 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
                 selectedRigId: '',
                 exifCheckResult: null,
             })
+            exifFiles.push(f)
         }
         setBatchProgress(null)
 
         if (newPhotos.length === 0) return
         setPhotos(prev => [...prev, ...newPhotos])
 
-        for (const p of newPhotos) {
-            extractExif(p.id, p.file!)
+        for (let i = 0; i < newPhotos.length; i++) {
+            extractExif(newPhotos[i].id, exifFiles[i])
         }
     }, [extractExif])
 
@@ -320,7 +324,7 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
                     onClick={e => { if (e.target === e.currentTarget) closeModal() }}
                 >
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-x-hidden">
 
                         {/* Header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">

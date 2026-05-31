@@ -163,8 +163,11 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
 
     function handleReview() {
         if (selected.size === 0) return
+        // Pre-compute meta for each selection so we can geocode after state updates
+        const metaMap = new Map<string, ReturnType<typeof extractMetaFromCaption>>()
         const photos: PendingPhoto[] = Array.from(selected.values()).map(s => {
             const meta = s.caption ? extractMetaFromCaption(s.caption) : {}
+            metaMap.set(s.imageId, meta)
             const dims = dimensionsRef.current.get(s.imageId) ?? { width: s.width, height: s.height }
             return {
                 id: s.imageId,
@@ -200,6 +203,27 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
         })
         setReviewPhotos(photos)
         setView('review')
+
+            // Async: forward-geocode caption locations (Rule G4 — caption as fallback when no geotag)
+            ; (async () => {
+                for (const [photoId, meta] of metaMap) {
+                    if (!meta.location) continue
+                    try {
+                        const res = await fetch(
+                            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(meta.location)}&format=json&limit=1`,
+                            { headers: { 'Accept-Language': 'en', 'User-Agent': 'UnderwaterHousings/1.0' } }
+                        )
+                        const data = res.ok ? await res.json() : null
+                        const hit = Array.isArray(data) ? data[0] : null
+                        if (!hit) continue
+                        setReviewPhotos(prev => prev.map(p =>
+                            p.id === photoId && !p.locationValue
+                                ? { ...p, locationValue: { lat: parseFloat(hit.lat), lng: parseFloat(hit.lon), radius: 5000, name: meta.location! } }
+                                : p
+                        ))
+                    } catch { /* ignore geocoding failures */ }
+                }
+            })()
     }
 
     async function handleImport(photos: PendingPhoto[]) {

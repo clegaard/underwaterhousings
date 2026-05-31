@@ -238,6 +238,8 @@ export default function PhotoMetadataEditor({
     emptySlot,
 }: PhotoMetadataEditorProps) {
     const [activePhotoId, setActivePhotoId] = useState<string | null>(null)
+    // Tracks which form fields the user has manually typed into (keyed by photo id)
+    const [manualFieldsMap, setManualFieldsMap] = useState<Record<string, (keyof UploadForm)[]>>({})
     const tabStripRef = useRef<HTMLDivElement>(null)
 
     // ── Ensure activePhotoId stays valid after photo removal ─────────────────
@@ -356,9 +358,10 @@ export default function PhotoMetadataEditor({
     // ── Field helpers ─────────────────────────────────────────────────────────
 
     /** Returns the data source for a form field (Rule G3) */
-    const fieldSource = (key: keyof UploadForm): 'exif' | 'caption' | null => {
+    const fieldSource = (key: keyof UploadForm): 'exif' | 'caption' | 'manual' | null => {
         if (activePhoto?.exifFields?.includes(key)) return 'exif'
         if (activePhoto?.captionFields?.includes(key)) return 'caption'
+        if (activePhoto?.id && manualFieldsMap[activePhoto.id]?.includes(key)) return 'manual'
         return null
     }
 
@@ -376,12 +379,15 @@ export default function PhotoMetadataEditor({
         const value = activePhoto?.form[key] ?? ''
         return (
             <div>
-                <div className="flex items-center gap-1.5 mb-1">
+                <div className="flex items-center justify-between gap-1.5 mb-1">
                     <label className="text-xs font-medium text-gray-700">
                         {label}
                         {opts?.optional && <span className="text-gray-400 font-normal ml-1">(optional)</span>}
                     </label>
-                    <SourceBadge source={src ?? 'manual'} />
+                    {/* EXIF badge always shown; caption/manual badges only when field has a value */}
+                    {src === 'exif'
+                        ? <SourceBadge source="exif" />
+                        : (src && value) ? <SourceBadge source={src} /> : null}
                 </div>
                 {src === 'exif' ? (
                     <div className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-400 bg-gray-100 min-h-[34px] flex items-center cursor-not-allowed select-none">
@@ -391,10 +397,17 @@ export default function PhotoMetadataEditor({
                     <input
                         type={opts?.type ?? 'text'}
                         value={value}
-                        onChange={e =>
-                            activePhoto &&
+                        onChange={e => {
+                            if (!activePhoto) return
                             onUpdatePhoto(activePhoto.id, { form: { ...activePhoto.form, [key]: e.target.value } })
-                        }
+                            // Mark field as manually edited so the Manual badge appears (Rule G3)
+                            // (This onChange is only reachable when src !== 'exif', per the ternary above)
+                            setManualFieldsMap(prev => {
+                                const existing = prev[activePhoto.id] ?? []
+                                if (existing.includes(key)) return prev
+                                return { ...prev, [activePhoto.id]: [...existing, key] }
+                            })
+                        }}
                         placeholder={opts?.placeholder}
                         className={`w-full px-3 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900
                             ${src === 'caption' ? 'border-violet-200 bg-violet-50/40' : 'border-gray-300'}`}
@@ -428,7 +441,7 @@ export default function PhotoMetadataEditor({
                             <div
                                 key={photo.id}
                                 data-photo-id={photo.id}
-                                className={`group/thumb relative shrink-0 w-14 h-14 rounded-xl overflow-hidden border-2 cursor-pointer transition-all duration-200 animate-upload-thumb-in
+                                className={`group/thumb relative shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 cursor-pointer transition-all duration-200 animate-upload-thumb-in
                                     ${isActive
                                         ? 'border-blue-500 ring-2 ring-blue-200 scale-105'
                                         : 'border-gray-200 hover:border-gray-400'}`}
@@ -462,7 +475,7 @@ export default function PhotoMetadataEditor({
                         <button
                             type="button"
                             onClick={onAddFiles}
-                            className="shrink-0 w-14 h-14 rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 gap-0.5"
+                            className="shrink-0 w-20 h-20 rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-colors flex flex-col items-center justify-center text-gray-400 hover:text-blue-500 gap-0.5"
                             aria-label="Add more photos"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -484,13 +497,9 @@ export default function PhotoMetadataEditor({
                 {activePhoto && (
                     <div key={activePhoto.id} className="animate-upload-tab-in space-y-5">
 
-                        {/* Preview + info */}
-                        <div className="flex gap-4 items-start">
-                            <div className="relative shrink-0 w-28 h-28 rounded-xl overflow-hidden bg-gray-100">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={activePhoto.preview} alt="Preview" className="w-full h-full object-cover" />
-                            </div>
-                            <div className="flex-1 min-w-0 pt-1">
+                        {/* File info header */}
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
                                 <p className="text-sm font-medium text-gray-900 truncate">
                                     {activePhoto.file?.name ?? (activePhoto.instagram ? 'Instagram photo' : 'Photo')}
                                 </p>
@@ -499,31 +508,19 @@ export default function PhotoMetadataEditor({
                                         ? `${activePhoto.dimensions.width} × ${activePhoto.dimensions.height}px`
                                         : ''}
                                     {activePhoto.file
-                                        ? ` · ${(activePhoto.file.size / 1024 / 1024).toFixed(1)} MB`
+                                        ? `${activePhoto.dimensions ? ' · ' : ''}${(activePhoto.file.size / 1024 / 1024).toFixed(1)} MB`
                                         : ''}
                                 </p>
-                                {activePhoto.exifLoading && (
-                                    <p className="text-xs text-blue-500 mt-1 flex items-center gap-1">
-                                        <svg className="w-3 h-3 animate-spin shrink-0" viewBox="0 0 24 24" fill="none">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                                        </svg>
-                                        Reading EXIF data…
-                                    </p>
-                                )}
-                                {photos.length > 1 && (
-                                    <p className="text-xs text-gray-400 mt-1">
-                                        Photo {photos.findIndex(p => p.id === activePhoto.id) + 1} of {photos.length}
-                                    </p>
-                                )}
-                                <button
-                                    type="button"
-                                    onClick={() => onRemovePhoto(activePhoto.id)}
-                                    className="mt-2 text-xs text-red-500 hover:text-red-700 transition-colors"
-                                >
-                                    Remove
-                                </button>
                             </div>
+                            {activePhoto.exifLoading && (
+                                <p className="text-xs text-blue-500 flex items-center gap-1 shrink-0">
+                                    <svg className="w-3 h-3 animate-spin shrink-0" viewBox="0 0 24 24" fill="none">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                    </svg>
+                                    Reading EXIF…
+                                </p>
+                            )}
                         </div>
 
                         {/* Caption — optional */}
@@ -539,7 +536,6 @@ export default function PhotoMetadataEditor({
                                         form: { ...activePhoto.form, caption: e.target.value },
                                     })
                                 }
-                                placeholder="e.g. Nudibranch on coral"
                                 rows={2}
                                 className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 resize-none"
                             />

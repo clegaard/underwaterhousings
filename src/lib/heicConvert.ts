@@ -66,8 +66,10 @@ export async function convertHeicToAvif(
 
     onProgress?.({ label: 'Done', progress: 1 })
 
+    // Use the correct extension for whichever format was actually encoded
+    const ext = outBlob.type === 'image/webp' ? 'webp' : 'avif'
     const baseName = file.name.replace(/\.(heic|heif)$/i, '')
-    return new File([outBlob], `${baseName}.avif`, {
+    return new File([outBlob], `${baseName}.${ext}`, {
         type: outBlob.type,
         lastModified: file.lastModified,
     })
@@ -82,7 +84,10 @@ async function encodeCanvas(canvas: HTMLCanvasElement): Promise<Blob> {
         const blob = await new Promise<Blob | null>(resolve =>
             canvas.toBlob(resolve, type, quality),
         )
-        if (blob) return blob
+        // Some browsers (e.g. Safari) silently fall back to PNG when the
+        // requested format is unsupported — verify the actual MIME type
+        // before accepting the blob.
+        if (blob && blob.type === type) return blob
     }
     throw new Error('No supported image encoding format (AVIF or WebP) available in this browser')
 }

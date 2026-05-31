@@ -236,3 +236,15 @@ Similarly the date can either be extracted from the upload date or preferably fr
 *Rule G5* : When uploading from instagram, use any date specified in the caption as the first priority, and only use the upload date as a second priority if no date is specified in the caption.
 
 *Rule G6* : Information extracted by geo location, caption or upload data should be editable by the user.
+
+
+### Image formats
+We strive to support a wide range of image formats to accommodate the various ways users may have stored their photos.
+
+Some formats like HEIC are not universally supported or may have restrivtive licenses so we opt to convert these to a more widely supported format.
+
+To avoid burdening the server we prefer client side conversion when possible using the 
+The file format priorities are:
+1. AVIF
+2. WebP
+

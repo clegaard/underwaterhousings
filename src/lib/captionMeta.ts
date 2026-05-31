@@ -3,6 +3,8 @@ export interface ExtractedMeta {
     aperture?: number
     iso?: number
     shutterSpeed?: string
+    /** Location name parsed from a 📍 tag in the caption */
+    location?: string
 }
 
 /**
@@ -28,6 +30,15 @@ export function extractMetaFromCaption(caption: string): ExtractedMeta {
     // Focal length: 15mm, 100 mm, 14mm (take first match)
     const focalMatch = caption.match(/\b(\d{1,4}(?:\.\d+)?)\s*mm\b/i)
     if (focalMatch) result.focalLength = parseFloat(focalMatch[1])
+
+    // Location: 📍 Location Name, Country [optional flag emoji]
+    const locationMatch = caption.match(/📍\s*([^\n]+)/)
+    if (locationMatch) {
+        result.location = locationMatch[1]
+            .replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '') // strip regional indicator chars (flag emoji)
+            .replace(/\s+/g, ' ')
+            .trim()
+    }
 
     return result
 }
