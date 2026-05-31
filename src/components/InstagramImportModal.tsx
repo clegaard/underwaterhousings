@@ -1,16 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import type { InstagramMediaItem, InstagramImage } from '@/app/api/linked-services/instagram/media/route'
 import { extractMetaFromCaption } from '@/lib/captionMeta'
-
-interface UserRig {
-    id: number
-    name: string
-    isActive: boolean
-    camera: { name: string; brand: { name: string } }
-}
+import PhotoMetadataEditor, { type PendingPhoto, type UserRig, toDatetimeLocal, EMPTY_FORM } from './PhotoMetadataEditor'
+import { useUploadQueue } from '@/lib/UploadQueueContext'
 
 interface Selection {
     /** Individual image ID (child ID for carousels) */
@@ -29,16 +23,15 @@ interface Props {
 }
 
 export default function InstagramImportModal({ isOpen, onClose, currentUserId }: Props) {
-    const router = useRouter()
+    const { enqueueImport } = useUploadQueue()
 
-    const [view, setView] = useState<'loading' | 'not_connected' | 'grid' | 'carousel' | 'importing' | 'done' | 'error'>('loading')
+    const [view, setView] = useState<'loading' | 'not_connected' | 'grid' | 'review' | 'error'>('loading')
     const [media, setMedia] = useState<InstagramMediaItem[]>([])
     const [importedIds, setImportedIds] = useState<Set<string>>(new Set())
     const [selected, setSelected] = useState<Map<string, Selection>>(new Map())
     const [expandedCarousel, setExpandedCarousel] = useState<InstagramMediaItem | null>(null)
     const [userRigs, setUserRigs] = useState<UserRig[]>([])
-    const [rigId, setRigId] = useState('')
-    const [importResult, setImportResult] = useState<{ imported: number; skipped: number; errors: string[] } | null>(null)
+    const [reviewPhotos, setReviewPhotos] = useState<PendingPhoto[]>([])
     const [error, setError] = useState<string | null>(null)
     // Pagination
     const [cursor, setCursor] = useState<string | null>(null)
@@ -54,8 +47,7 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
         setImportedIds(new Set())
         setSelected(new Map())
         setExpandedCarousel(null)
-        setRigId('')
-        setImportResult(null)
+        setReviewPhotos([])
         setError(null)
         setCursor(null)
         setHasMore(false)
@@ -97,11 +89,6 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
                 if (rigsData?.success && Array.isArray(rigsData.data?.rigs)) {
                     const rigs: UserRig[] = rigsData.data.rigs.filter((r: UserRig) => r.isActive)
                     setUserRigs(rigs)
-                    // Pre-select default rig if available
-                    if (rigsData.data.defaultRigId) {
-                        const def = rigs.find((r: UserRig) => r.id === rigsData.data.defaultRigId)
-                        if (def) setRigId(String(def.id))
-                    }
                 }
 
                 setView('grid')
@@ -174,43 +161,75 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
         toggleImage(img.id, img.mediaUrl, parentItem.caption, img.timestamp)
     }
 
-    async function handleImport() {
-        if (selected.size === 0 || !rigId) return
-        setView('importing')
-
-        const selections = Array.from(selected.values()).map(s => {
+    function handleReview() {
+        if (selected.size === 0) return
+        const photos: PendingPhoto[] = Array.from(selected.values()).map(s => {
             const meta = s.caption ? extractMetaFromCaption(s.caption) : {}
+            const dims = dimensionsRef.current.get(s.imageId) ?? { width: s.width, height: s.height }
             return {
-                mediaId: s.imageId,
-                mediaUrl: s.mediaUrl,
-                caption: s.caption,
-                timestamp: s.timestamp,
-                rigId: parseInt(rigId),
-                width: s.width,
-                height: s.height,
-                ...meta,
+                id: s.imageId,
+                preview: s.mediaUrl,
+                dimensions: dims,
+                form: {
+                    ...EMPTY_FORM,
+                    caption: s.caption ?? '',
+                    takenAt: s.timestamp ? toDatetimeLocal(new Date(s.timestamp)) : '',
+                    iso: meta.iso != null ? String(meta.iso) : '',
+                    focalLength: meta.focalLength != null ? String(meta.focalLength) : '',
+                    aperture: meta.aperture != null ? String(meta.aperture) : '',
+                    shutterSpeed: meta.shutterSpeed ?? '',
+                },
+                locationValue: null,
+                exifCameraModel: null,
+                exifLensModel: null,
+                exifLoading: false,
+                selectedRigId: '',
+                rigTab: 'manual' as const,
+                exifCheckResult: null,
+                instagram: {
+                    mediaId: s.imageId,
+                    mediaUrl: s.mediaUrl,
+                    timestamp: s.timestamp,
+                },
             }
         })
+        setReviewPhotos(photos)
+        setView('review')
+    }
 
-        try {
+    async function handleImport(photos: PendingPhoto[]) {
+        if (photos.length === 0) return
+
+        const labels = photos.map((_, i) => `Instagram photo ${i + 1}`)
+        const selections = photos
+            .filter(p => p.instagram)
+            .map(p => ({
+                mediaId: p.instagram!.mediaId,
+                mediaUrl: p.instagram!.mediaUrl,
+                caption: p.form.caption || undefined,
+                timestamp: p.instagram!.timestamp,
+                rigId: p.selectedRigId ? parseInt(p.selectedRigId) : 0,
+                width: p.dimensions?.width ?? 1080,
+                height: p.dimensions?.height ?? 1080,
+                focalLength: p.form.focalLength ? parseFloat(p.form.focalLength) : undefined,
+                aperture: p.form.aperture ? parseFloat(p.form.aperture) : undefined,
+                iso: p.form.iso ? parseInt(p.form.iso) : undefined,
+                shutterSpeed: p.form.shutterSpeed || undefined,
+                location: p.locationValue?.name || undefined,
+            }))
+
+        enqueueImport(labels, async () => {
             const res = await fetch('/api/linked-services/instagram/import', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ selections }),
             })
+            if (res.ok) return { ok: true }
             const data = await res.json().catch(() => ({}))
-            if (!res.ok) {
-                setError(data.error ?? `Import failed (${res.status})`)
-                setView('error')
-                return
-            }
-            setImportResult(data)
-            setView('done')
-            router.refresh()
-        } catch {
-            setError('Could not reach the server. Please try again.')
-            setView('error')
-        }
+            return { ok: false, errorMessage: data.error ?? `Import failed (${res.status})` }
+        })
+
+        onClose()
     }
 
     if (!isOpen) return null
@@ -224,9 +243,9 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
                     <div className="flex items-center gap-2">
-                        {expandedCarousel && view === 'grid' && (
+                        {((expandedCarousel && view === 'grid') || view === 'review') && (
                             <button
-                                onClick={() => setExpandedCarousel(null)}
+                                onClick={() => view === 'review' ? setView('grid') : setExpandedCarousel(null)}
                                 className="mr-1 text-gray-400 hover:text-gray-600 transition-colors"
                                 aria-label="Back"
                             >
@@ -251,7 +270,7 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
                             <circle cx="17.5" cy="6.5" r="1" fill="white" />
                         </svg>
                         <h2 className="text-lg font-semibold text-gray-900">
-                            {expandedCarousel ? 'Album — select photos' : 'Import from Instagram'}
+                            {view === 'review' ? 'Review photos' : expandedCarousel ? 'Album — select photos' : 'Import from Instagram'}
                         </h2>
                     </div>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -309,77 +328,28 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
                         </div>
                     )}
 
-                    {/* Importing */}
-                    {view === 'importing' && (
-                        <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-500">
-                            <svg className="w-8 h-8 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                            </svg>
-                            Importing {selected.size} {selected.size === 1 ? 'photo' : 'photos'}…
-                        </div>
-                    )}
-
-                    {/* Done */}
-                    {view === 'done' && importResult && (
-                        <div className="flex flex-col items-center justify-center py-16 px-8 text-center gap-4">
-                            <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
-                                <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p className="font-semibold text-gray-800 mb-1">
-                                    {importResult.imported} {importResult.imported === 1 ? 'photo' : 'photos'} imported
-                                </p>
-                                {importResult.skipped > 0 && (
-                                    <p className="text-sm text-gray-500">{importResult.skipped} already in gallery — skipped</p>
-                                )}
-                                {importResult.errors.length > 0 && (
-                                    <p className="text-sm text-amber-600 mt-1">{importResult.errors.length} failed</p>
-                                )}
-                            </div>
-                            <button
-                                onClick={onClose}
-                                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                                View gallery
-                            </button>
-                        </div>
+                    {/* Review — per-photo metadata editing before import */}
+                    {view === 'review' && (
+                        <PhotoMetadataEditor
+                            photos={reviewPhotos}
+                            onUpdatePhoto={(id, patch) => setReviewPhotos(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p))}
+                            onRemovePhoto={id => setReviewPhotos(prev => prev.filter(p => p.id !== id))}
+                            userRigs={userRigs}
+                            rigsLoaded={true}
+                            userId={currentUserId}
+                            onSubmit={() => handleImport(reviewPhotos)}
+                            onCancel={() => setView('grid')}
+                            submitLabel={`Import ${reviewPhotos.length} ${reviewPhotos.length === 1 ? 'photo' : 'photos'}`}
+                            isSubmittable={reviewPhotos.length > 0 && reviewPhotos.every(p => !!p.selectedRigId)}
+                        />
                     )}
 
                     {/* Grid / Carousel expand */}
                     {view === 'grid' && (
                         <div className="p-4">
-                            {/* Rig selector */}
-                            <div className="mb-4">
-                                <label className="block text-xs font-medium text-gray-700 mb-1">
-                                    Camera rig <span className="text-red-500">*</span>
-                                </label>
-                                {userRigs.length === 0 ? (
-                                    <p className="text-sm text-amber-600">
-                                        No active rigs found.{' '}
-                                        <a href="/gear" className="underline hover:text-amber-800">Set up a rig</a> first.
-                                    </p>
-                                ) : (
-                                    <select
-                                        value={rigId}
-                                        onChange={e => setRigId(e.target.value)}
-                                        className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
-                                    >
-                                        <option value="">— select a rig —</option>
-                                        {userRigs.map(r => (
-                                            <option key={r.id} value={r.id}>
-                                                {r.name} ({r.camera.brand.name} {r.camera.name})
-                                            </option>
-                                        ))}
-                                    </select>
-                                )}
-                            </div>
-
-                            {/* Metadata extraction notice */}
+                            {/* Selection hint */}
                             <p className="text-xs text-gray-500 mb-3">
-                                Camera settings (f/, ISO, shutter, mm) will be auto-extracted from captions. You can edit each photo after import.
+                                Select photos to import. Camera settings will be auto-extracted from captions.
                             </p>
 
                             {/* Media grid or carousel child grid */}
@@ -442,11 +412,11 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
                                 Cancel
                             </button>
                             <button
-                                onClick={handleImport}
-                                disabled={selected.size === 0 || !rigId}
+                                onClick={handleReview}
+                                disabled={selected.size === 0}
                                 className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             >
-                                Import {selected.size > 0 ? selected.size : ''} {selected.size === 1 ? 'photo' : 'photos'}
+                                Review {selected.size > 0 ? selected.size : ''} {selected.size === 1 ? 'photo' : 'photos'} →
                             </button>
                         </div>
                     </div>

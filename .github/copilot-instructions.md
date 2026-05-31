@@ -187,3 +187,36 @@ The purpose of adaptor rings is to convert between different port mounts, allowi
 For instance, Nauticam provides N85 to N100 adapters.
 
 Additionally, some manufacturers like Isotta provide an adapter from their port system to the port system of other manufacturers. For instance, Isotta provides an adapter from their B120 port to Nauticam's N120 port.
+
+
+## Gallery and User Submissions
+
+
+### Rig assignment
+When a user uploads a photo, they can specify the camera and housing used to take the photo. This information is important for categorizing the photo and providing context for other users who may be interested in the equipment used to capture the image.
+
+A rig is characterized by it's components, primarily the camera, lens, housing and port.
+When uploading a photo from the the users device the exif data is a valuable source of information 
+
+
+
+
+### Instagram Uploads
+
+Instagram strips the metadata when uploading to their server, so it is not possible to populate this by means of reading the exif data.
+
+A common practice is to add information of the camera, lens, housing, ports and acessories as part of the caption.
+We would like to automatically extract this information such that as much of this information is pre-populated in the form as possible.
+
+See the `captions-examples.md` directory for examples of how users typically specify this information in the caption.
+
+Some fields like the location can be extracted either form the geotag if specified or from the caption itself.
+Similarly the date can either be extracted from the upload date or preferably from the caption itself.
+
+## Locations
+First priority should be using the geotag from the instagram post.
+Second priority should be from the caption if specified.
+
+## Date
+First priority should be a data extracted from the caption, second priority should be the upload date.
+

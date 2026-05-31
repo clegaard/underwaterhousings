@@ -2,38 +2,20 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import LocationPicker, { type LocationValue } from './LocationPicker'
-import { isHeicFile, convertHeicToAvif, type ConversionStage } from '@/lib/heicConvert'
-import { HeicProgressBar } from '@/components/HeicProgressBar'
+import { isHeicFile, convertHeicToAvif, type MultiFileProgress } from '@/lib/heicConvert'
 import { useUploadQueue } from '@/lib/UploadQueueContext'
+import PhotoMetadataEditor, {
+    type PendingPhoto,
+    type UserRig,
+    type UploadForm,
+    EMPTY_FORM,
+    computeAutoMatches,
+} from './PhotoMetadataEditor'
 
-interface UserRig {
-    id: number
-    name: string
-    isActive: boolean
-    camera: { id: number; name: string; brand: { name: string }; exifId: string | null; interchangeableLens: boolean }
-    lens: { id: number; name: string; exifId: string | null } | null
-    housing: { id: number; name: string; manufacturer: { name: string } } | null
-    port: { id: number; name: string } | null
-}
+// Re-export PendingPhoto so callers that import from this module still work
+export type { PendingPhoto, UserRig, UploadForm }
 
-interface UploadForm {
-    caption: string
-    takenAt: string
-    iso: string
-    focalLength: string
-    aperture: string
-    shutterSpeed: string
-}
-
-const EMPTY_FORM: UploadForm = {
-    caption: '',
-    takenAt: '',
-    iso: '',
-    focalLength: '',
-    aperture: '',
-    shutterSpeed: '',
-}
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatShutterSpeed(exposureTime: number): string {
     if (exposureTime >= 1) return String(Math.round(exposureTime))
@@ -45,6 +27,8 @@ function toDatetimeLocal(date: Date): string {
     const pad = (n: number) => String(n).padStart(2, '0')
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 interface GalleryUploadButtonProps {
     /** When provided, the component acts as a controlled modal — the trigger button is hidden */
@@ -60,25 +44,22 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
     const [internalOpen, setInternalOpen] = useState(false)
     const isControlled = controlledOpen !== undefined
     const isOpen = isControlled ? (controlledOpen ?? false) : internalOpen
-    const [isDragging, setIsDragging] = useState(false)
-    const [file, setFile] = useState<File | null>(null)
-    const [preview, setPreview] = useState<string | null>(null)
-    const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null)
-    const [form, setForm] = useState<UploadForm>(EMPTY_FORM)
-    const [userRigs, setUserRigs] = useState<UserRig[]>([])
-    const [selectedRigId, setSelectedRigId] = useState('')
-    const [exifCameraModel, setExifCameraModel] = useState<string | null>(null)
-    const [exifLensModel, setExifLensModel] = useState<string | null>(null)
-    const [error, setError] = useState<string | null>(null)
-    const [heicStage, setHeicStage] = useState<ConversionStage | null>(null)
-    const [exifLoading, setExifLoading] = useState(false)
-    const [rigTab, setRigTab] = useState<'auto' | 'manual'>('auto')
-    const [rigsLoaded, setRigsLoaded] = useState(false)
-    const [locationValue, setLocationValue] = useState<LocationValue | null>(null)
-    const [exifCheckResult, setExifCheckResult] = useState<{ cameraExists: boolean | null; lensExists: boolean | null } | null>(null)
-    const fileInputRef = useRef<HTMLInputElement>(null)
-    const previewUrlRef = useRef<string | null>(null)
 
+    const [isDragging, setIsDragging] = useState(false)
+    const [photos, setPhotos] = useState<PendingPhoto[]>([])
+    const [userRigs, setUserRigs] = useState<UserRig[]>([])
+    const [rigsLoaded, setRigsLoaded] = useState(false)
+    const [globalError, setGlobalError] = useState<string | null>(null)
+    const [batchProgress, setBatchProgress] = useState<MultiFileProgress | null>(null)
+
+    const fileInputRef = useRef<HTMLInputElement>(null)
+    const addMoreInputRef = useRef<HTMLInputElement>(null)
+    const previewUrlsRef = useRef<Map<string, string>>(new Map())
+    // Stable ref so async callbacks always see the latest rigs
+    const userRigsRef = useRef<UserRig[]>([])
+    userRigsRef.current = userRigs
+
+    // ── Load rigs when modal opens ──────────────────────────────────────────
     useEffect(() => {
         if (!isOpen) return
         const userId = session?.user?.id
@@ -87,49 +68,46 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
         fetch(`/api/camera-rigs?userId=${userId}`)
             .then(r => r.json())
             .then(rigsJson => {
-                if (rigsJson?.success) {
-                    const { rigs, defaultRigId } = rigsJson.data
-                    setUserRigs(rigs)
-                    if (defaultRigId) {
-                        const def = rigs.find((r: UserRig) => r.id === defaultRigId)
-                        if (def) setSelectedRigId(String(def.id))
+                if (!rigsJson?.success) return
+                const { rigs, defaultRigId } = rigsJson.data
+                setUserRigs(rigs)
+                setPhotos(prev => prev.map(p => {
+                    if (p.selectedRigId) return p
+                    if (p.exifCameraModel) {
+                        const matches = computeAutoMatches(p, (rigs as UserRig[]).filter(r => r.isActive))
+                        if (matches.length === 1) return { ...p, selectedRigId: String(matches[0].id) }
                     }
-                }
+                    if (!p.exifCameraModel && defaultRigId) {
+                        const def = (rigs as UserRig[]).find((r: UserRig) => r.id === defaultRigId)
+                        if (def) return { ...p, selectedRigId: String(def.id) }
+                    }
+                    return p
+                }))
             })
             .catch(() => { })
             .finally(() => setRigsLoaded(true))
     }, [isOpen, session])
 
-    // Cleanup preview URL on unmount
+    // ── Cleanup all preview URLs on unmount ─────────────────────────────────
     useEffect(() => {
-        return () => {
-            if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
-        }
+        const urls = previewUrlsRef.current
+        return () => { urls.forEach(url => URL.revokeObjectURL(url)) }
     }, [])
 
-    // Auto-select only among active rigs with an exact camera+lens match.
-    // Lens filter only applies when: rig has a lens configured AND camera is interchangeable AND EXIF has lens data.
-    // If there are multiple matches the user must disambiguate, so selectedRigId stays empty.
-    useEffect(() => {
-        if (!exifCameraModel || userRigs.length === 0) return
-        const activeRigs = userRigs.filter(r => r.isActive)
-        // Heuristic: if the EXIF lens model starts with the camera model name, the lens is built-in
-        // (e.g. "iPhone 14 Pro back triple camera 6.86mm f/1.78" starts with "iPhone 14 Pro")
-        const builtInLens = !!(exifLensModel && exifLensModel.startsWith(exifCameraModel))
-        const matches = activeRigs.filter(r => {
-            if (r.camera.exifId !== exifCameraModel) return false
-            // Fixed-lens cameras (by database flag or EXIF heuristic): match on camera body only
-            if (!r.camera.interchangeableLens || builtInLens) return true
-            if (exifLensModel && r.lens !== null) {
-                return r.lens.exifId === exifLensModel
-            }
-            return true
-        })
-        setSelectedRigId(matches.length === 1 ? String(matches[0].id) : '')
-    }, [exifCameraModel, exifLensModel, userRigs])
+    // ── Core state helpers ───────────────────────────────────────────────────
+    const updatePhoto = useCallback((id: string, patch: Partial<PendingPhoto>) => {
+        setPhotos(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p))
+    }, [])
 
-    const extractExif = useCallback(async (f: File) => {
-        setExifLoading(true)
+    const removePhoto = useCallback((id: string) => {
+        const url = previewUrlsRef.current.get(id)
+        if (url) { URL.revokeObjectURL(url); previewUrlsRef.current.delete(id) }
+        setPhotos(prev => prev.filter(p => p.id !== id))
+    }, [])
+
+    // ── EXIF extraction ──────────────────────────────────────────────────────
+    const extractExif = useCallback(async (photoId: string, f: File) => {
+        setPhotos(prev => prev.map(p => p.id === photoId ? { ...p, exifLoading: true } : p))
         try {
             const exifr = (await import('exifr')).default
             const [exif, gps] = await Promise.all([
@@ -138,18 +116,18 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
                 }),
                 exifr.gps(f).catch(() => null),
             ])
+            const patch: Partial<PendingPhoto> = { exifLoading: false }
             if (exif) {
-                const updates: Partial<UploadForm> = {}
-                if (exif.ISO != null) updates.iso = String(exif.ISO)
-                if (exif.FocalLength != null) updates.focalLength = String(Math.round(exif.FocalLength))
-                if (exif.FNumber != null) updates.aperture = String(exif.FNumber)
-                if (exif.ExposureTime != null) updates.shutterSpeed = formatShutterSpeed(exif.ExposureTime)
-                if (exif.DateTimeOriginal) updates.takenAt = toDatetimeLocal(new Date(exif.DateTimeOriginal))
-                if (exif.Model) setExifCameraModel(String(exif.Model).trim())
-                if (exif.LensModel) setExifLensModel(String(exif.LensModel).trim())
-                setForm(prev => ({ ...prev, ...updates }))
+                const formUpdates: Partial<UploadForm> = {}
+                if (exif.ISO != null) formUpdates.iso = String(exif.ISO)
+                if (exif.FocalLength != null) formUpdates.focalLength = String(Math.round(exif.FocalLength))
+                if (exif.FNumber != null) formUpdates.aperture = String(exif.FNumber)
+                if (exif.ExposureTime != null) formUpdates.shutterSpeed = formatShutterSpeed(exif.ExposureTime)
+                if (exif.DateTimeOriginal) formUpdates.takenAt = toDatetimeLocal(new Date(exif.DateTimeOriginal))
+                if (exif.Model) patch.exifCameraModel = String(exif.Model).trim()
+                if (exif.LensModel) patch.exifLensModel = String(exif.LensModel).trim()
+                patch.form = { ...EMPTY_FORM, ...formUpdates }
             }
-            // Pre-populate location from GPS EXIF when available (e.g. smartphone photos)
             if (gps?.latitude != null && gps?.longitude != null) {
                 try {
                     const res = await fetch(
@@ -160,190 +138,154 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
                     const rawName: string = data?.display_name ?? ''
                     const parts = rawName.split(',').map((s: string) => s.trim())
                     const name = parts.length > 3 ? parts.slice(-3).join(', ') : rawName
-                    setLocationValue({ lat: gps.latitude, lng: gps.longitude, radius: 1000, name })
+                    patch.locationValue = { lat: gps.latitude, lng: gps.longitude, radius: 1000, name }
                 } catch {
-                    setLocationValue({ lat: gps.latitude, lng: gps.longitude, radius: 1000, name: '' })
+                    patch.locationValue = { lat: gps.latitude, lng: gps.longitude, radius: 1000, name: '' }
                 }
             }
+            const cameraModel = (patch.exifCameraModel as string | undefined) ?? null
+            const lensModel = (patch.exifLensModel as string | undefined) ?? null
+            if (cameraModel) {
+                const tempSlot = { exifCameraModel: cameraModel, exifLensModel: lensModel }
+                const matches = computeAutoMatches(tempSlot, userRigsRef.current.filter(r => r.isActive))
+                if (matches.length === 1) patch.selectedRigId = String(matches[0].id)
+            }
+            setPhotos(prev => prev.map(p => p.id === photoId ? { ...p, ...patch } : p))
         } catch {
-            // EXIF extraction is non-critical
-        } finally {
-            setExifLoading(false)
+            setPhotos(prev => prev.map(p => p.id === photoId ? { ...p, exifLoading: false } : p))
         }
     }, [])
 
-    const processFile = useCallback(async (f: File) => {
-        const isHeic = isHeicFile(f)
-        if (!f.type.startsWith('image/') && !isHeic) {
-            setError('Please select an image file.')
-            return
-        }
-        if (f.size > 20 * 1024 * 1024) {
-            setError('File must be under 20MB.')
-            return
-        }
-        setError(null)
-        extractExif(f) // run on original file — exifr supports HEIC
-        let processedFile = f
-        if (isHeic) {
-            try {
-                setHeicStage({ label: 'Starting…', progress: 0 })
-                processedFile = await convertHeicToAvif(f, stage => setHeicStage(stage))
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'HEIC conversion failed')
-                setHeicStage(null)
-                return
+    // ── File processing (HEIC conversion + dimension detection) ─────────────
+    const processFiles = useCallback(async (rawFiles: FileList | File[]) => {
+        const allFiles = Array.from(rawFiles).filter(f => f.type.startsWith('image/') || isHeicFile(f))
+        if (allFiles.length === 0) return
+
+        const oversized = allFiles.filter(f => f.size > 20 * 1024 * 1024)
+        if (oversized.length > 0) setGlobalError(`${oversized.length} file(s) exceed 20 MB and were skipped.`)
+        const validFiles = allFiles.filter(f => f.size <= 20 * 1024 * 1024)
+        if (validFiles.length === 0) return
+
+        const heicFiles = validFiles.filter(isHeicFile)
+        let heicIdx = 0
+        const newPhotos: PendingPhoto[] = []
+
+        for (const f of validFiles) {
+            let processedFile = f
+            if (isHeicFile(f)) {
+                try {
+                    processedFile = await convertHeicToAvif(f, stage =>
+                        setBatchProgress({ current: heicIdx, total: heicFiles.length, stage })
+                    )
+                    heicIdx++
+                } catch {
+                    continue
+                }
             }
-            setHeicStage(null)
+            const id = Math.random().toString(36).slice(2)
+            const preview = URL.createObjectURL(processedFile)
+            previewUrlsRef.current.set(id, preview)
+            const dims = await new Promise<{ width: number; height: number } | null>(resolve => {
+                const img = new Image()
+                img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight })
+                img.onerror = () => resolve(null)
+                img.src = preview
+            })
+            newPhotos.push({
+                id,
+                file: processedFile,
+                preview,
+                dimensions: dims,
+                form: { ...EMPTY_FORM },
+                locationValue: null,
+                exifCameraModel: null,
+                exifLensModel: null,
+                exifLoading: false,
+                selectedRigId: '',
+                rigTab: 'auto',
+                exifCheckResult: null,
+            })
         }
-        setFile(processedFile)
+        setBatchProgress(null)
 
-        if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
-        const url = URL.createObjectURL(processedFile)
-        previewUrlRef.current = url
-        setPreview(url)
+        if (newPhotos.length === 0) return
+        setPhotos(prev => [...prev, ...newPhotos])
 
-        const img = new Image()
-        img.onload = () => setDimensions({ width: img.naturalWidth, height: img.naturalHeight })
-        img.src = url
+        for (const p of newPhotos) {
+            extractExif(p.id, p.file!)
+        }
     }, [extractExif])
 
-    const onDrop = useCallback((e: React.DragEvent) => {
-        e.preventDefault()
-        setIsDragging(false)
-        const dropped = e.dataTransfer.files[0]
-        if (dropped) processFile(dropped)
-    }, [processFile])
-
-    const handleSubmit = () => {
-        if (!file || !dimensions) return
-        setError(null)
-
-        const fd = new FormData()
-        fd.append('file', file)
-        fd.append('width', String(dimensions.width))
-        fd.append('height', String(dimensions.height))
-        if (form.caption) fd.append('caption', form.caption)
-        if (locationValue) {
-            if (locationValue.name) fd.append('location', locationValue.name)
-            fd.append('locationLat', String(locationValue.lat))
-            fd.append('locationLng', String(locationValue.lng))
-            fd.append('locationRadius', String(locationValue.radius))
-        }
-        if (form.takenAt) fd.append('takenAt', form.takenAt)
-        if (form.iso) fd.append('iso', form.iso)
-        if (form.focalLength) fd.append('focalLength', form.focalLength)
-        if (form.aperture) fd.append('aperture', form.aperture)
-        if (form.shutterSpeed) fd.append('shutterSpeed', form.shutterSpeed)
-        if (selectedRigId) fd.append('rigId', selectedRigId)
-
-        enqueue(fd, file.name)
-        closeModal()
-    }
-
-    const closeModal = () => {
-        if (isControlled) {
-            onControlledClose?.()
-        } else {
-            setInternalOpen(false)
-        }
-        setFile(null)
-        setPreview(null)
-        setDimensions(null)
-        setForm(EMPTY_FORM)
-        setError(null)
-        setExifCameraModel(null)
-        setExifLensModel(null)
+    const closeModal = useCallback(() => {
+        if (isControlled) onControlledClose?.()
+        else setInternalOpen(false)
+        previewUrlsRef.current.forEach(url => URL.revokeObjectURL(url))
+        previewUrlsRef.current.clear()
+        setPhotos([])
         setUserRigs([])
         setRigsLoaded(false)
-        setSelectedRigId('')
-        setRigTab('auto')
-        setLocationValue(null)
+        setGlobalError(null)
+        setBatchProgress(null)
+    }, [isControlled, onControlledClose])
 
-        if (previewUrlRef.current) {
-            URL.revokeObjectURL(previewUrlRef.current)
-            previewUrlRef.current = null
+    const handleSubmit = useCallback(() => {
+        const readyPhotos = photos.filter(p => p.dimensions)
+        if (readyPhotos.length === 0) return
+        setGlobalError(null)
+        for (const photo of readyPhotos) {
+            const fd = new FormData()
+            fd.append('file', photo.file!)
+            fd.append('width', String(photo.dimensions!.width))
+            fd.append('height', String(photo.dimensions!.height))
+            if (photo.form.caption) fd.append('caption', photo.form.caption)
+            if (photo.locationValue) {
+                if (photo.locationValue.name) fd.append('location', photo.locationValue.name)
+                fd.append('locationLat', String(photo.locationValue.lat))
+                fd.append('locationLng', String(photo.locationValue.lng))
+                fd.append('locationRadius', String(photo.locationValue.radius))
+            }
+            if (photo.form.takenAt) fd.append('takenAt', photo.form.takenAt)
+            if (photo.form.iso) fd.append('iso', photo.form.iso)
+            if (photo.form.focalLength) fd.append('focalLength', photo.form.focalLength)
+            if (photo.form.aperture) fd.append('aperture', photo.form.aperture)
+            if (photo.form.shutterSpeed) fd.append('shutterSpeed', photo.form.shutterSpeed)
+            if (photo.selectedRigId) fd.append('rigId', photo.selectedRigId)
+            enqueue(fd, photo.file!.name)
         }
-    }
+        closeModal()
+    }, [photos, enqueue, closeModal])
 
-    const readonlyField = (label: string, value: string) => (
-        <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
-            <div className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700 bg-gray-50 min-h-8">
-                {value || <span className="text-gray-400 italic">—</span>}
-            </div>
-        </div>
-    )
+    const isSubmittable = photos.length > 0 && photos.every(p => p.dimensions !== null)
 
-    const editableField = (key: keyof UploadForm, label: string, placeholder?: string, type = 'text') => (
-        <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
+    // ── Drop zone component ──────────────────────────────────────────────────
+    const dropZone = (
+        <div
+            onDragEnter={() => setIsDragging(true)}
+            onDragOver={e => e.preventDefault()}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={e => { e.preventDefault(); setIsDragging(false); processFiles(e.dataTransfer.files) }}
+            onClick={() => fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-xl py-16 px-8 text-center cursor-pointer transition-colors
+                ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-white hover:border-blue-400 hover:bg-gray-50'}`}
+        >
+            <svg className="w-10 h-10 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p className="text-gray-700 font-medium mb-1">Drag & drop photos here</p>
+            <p className="text-gray-400 text-sm">or tap to browse — select multiple at once</p>
+            <p className="text-gray-400 text-xs mt-2">JPG, PNG, WebP, HEIC · max 20 MB each</p>
             <input
-                type={type}
-                value={form[key]}
-                onChange={e => setForm(prev => ({ ...prev, [key]: e.target.value }))}
-                placeholder={placeholder}
-                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,.heic,.heif"
+                multiple
+                className="hidden"
+                onChange={e => { processFiles(e.target.files ?? []); e.target.value = '' }}
             />
         </div>
     )
 
-    const exifDone = !exifLoading && file !== null
-    // Only active rigs are candidates for auto-matching
-    const activeRigs = userRigs.filter(r => r.isActive)
-    // Detect if the EXIF camera is a fixed-lens camera (exifId: string | null is on the camera property of the first rig that matches)
-    const exifCameraRig = exifCameraModel ? activeRigs.find(r => r.camera.exifId === exifCameraModel) : undefined
-    const isFixedLensCamera = exifCameraRig ? !exifCameraRig.camera.interchangeableLens : false
-    // Heuristic: lens model starts with camera model → built-in/non-interchangeable lens (e.g. iPhone)
-    const isBuiltInLensFromExif = !!(exifCameraModel && exifLensModel && exifLensModel.startsWith(exifCameraModel))
-    const lensIsFixed = isFixedLensCamera || isBuiltInLensFromExif
-    // All active rigs that match EXIF: lens filter only when rig has a lens AND camera is interchangeable AND EXIF has lens data
-    const autoMatches = exifCameraModel
-        ? activeRigs.filter(r => {
-            if (r.camera.exifId !== exifCameraModel) return false
-            // Fixed-lens cameras (by database flag or EXIF heuristic): match on camera body only
-            if (!r.camera.interchangeableLens || isBuiltInLensFromExif) return true
-            if (exifLensModel && r.lens !== null) {
-                return r.lens.exifId === exifLensModel
-            }
-            return true
-        })
-        : []
-    // The rig the user has confirmed (either auto-selected when unique, or manually picked)
-    const autoMatchedRig = selectedRigId
-        ? autoMatches.find(r => String(r.id) === selectedRigId) ?? null
-        : null
-    const showDisambiguation = exifDone && rigsLoaded && autoMatches.length > 1 && !autoMatchedRig
-    const showNoMatch = exifDone && rigsLoaded && exifCameraModel !== null && activeRigs.length > 0 && autoMatches.length === 0
-    const showNoRigs = exifDone && rigsLoaded && activeRigs.length === 0
-
-    // When no rig matched, query the database to check whether the EXIF camera / lens
-    // even exist — so we can show a more specific message to the user.
-    useEffect(() => {
-        if (!showNoMatch || !exifCameraModel) {
-            setExifCheckResult(null)
-            return
-        }
-        const params = new URLSearchParams()
-        params.set('camera', exifCameraModel)
-        // Skip the lens check for built-in lenses (phones etc.) — they are identified by camera only
-        const isBuiltIn = !!(exifLensModel && exifLensModel.startsWith(exifCameraModel))
-        if (exifLensModel && !isBuiltIn) params.set('lens', exifLensModel)
-        fetch(`/api/exif-check?${params}`)
-            .then(r => r.json())
-            .then(data => setExifCheckResult(data))
-            .catch(() => setExifCheckResult(null))
-    }, [showNoMatch, exifCameraModel, exifLensModel])
-
-    const createRigUrl = (() => {
-        const uid = session?.user?.id
-        if (!uid) return '#'
-        const params = new URLSearchParams()
-        if (exifCameraModel) params.set('prefillCamera', exifCameraModel)
-        if (exifLensModel) params.set('prefillLens', exifLensModel)
-        return `/users/${uid}?${params.toString()}`
-    })()
-
+    // ── Render ───────────────────────────────────────────────────────────────
     return (
         <>
             {/* Trigger button — only rendered in uncontrolled mode */}
@@ -375,12 +317,15 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
             {isOpen && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-                    onClick={(e) => { if (e.target === e.currentTarget) closeModal() }}
+                    onClick={e => { if (e.target === e.currentTarget) closeModal() }}
                 >
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+
                         {/* Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b">
-                            <h2 className="text-lg font-semibold text-gray-900">Upload photo</h2>
+                        <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
+                            <h2 className="text-lg font-semibold text-gray-900">
+                                {photos.length > 1 ? `Upload ${photos.length} photos` : 'Upload photo'}
+                            </h2>
                             <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 transition-colors">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -388,314 +333,33 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
                             </button>
                         </div>
 
-                        <div className="px-6 py-4 space-y-5">
-                            {/* Drop zone */}
-                            {!file ? (
-                                <div
-                                    onDragEnter={() => setIsDragging(true)}
-                                    onDragOver={(e) => e.preventDefault()}
-                                    onDragLeave={() => setIsDragging(false)}
-                                    onDrop={onDrop}
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className={`border-2 border-dashed rounded-xl py-16 px-8 text-center cursor-pointer transition-colors
-                                        ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'}`}
-                                >
-                                    <svg className="w-10 h-10 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    <p className="text-gray-700 font-medium mb-1">Drag & drop your photo here</p>
-                                    <p className="text-gray-400 text-sm">or tap to browse your gallery</p>
-                                    <p className="text-gray-400 text-xs mt-2">JPG, PNG, WebP, HEIC · max 20MB</p>
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept="image/*,.heic,.heif"
-                                        className="hidden"
-                                        onChange={e => { const f = e.target.files?.[0]; if (f) processFile(f) }}
-                                    />
-                                </div>
-                            ) : (
-                                <div className="flex gap-4 items-start">
-                                    {/* Preview */}
-                                    <div className="relative shrink-0 w-32 h-32 rounded-lg overflow-hidden bg-gray-100">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={preview!} alt="Preview" className="w-full h-full object-cover" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
-                                        <p className="text-xs text-gray-500 mt-0.5">
-                                            {dimensions ? `${dimensions.width} × ${dimensions.height}px · ` : ''}
-                                            {(file.size / 1024 / 1024).toFixed(1)} MB
-                                        </p>
-                                        {exifLoading && (
-                                            <p className="text-xs text-blue-500 mt-1">Reading EXIF data…</p>
-                                        )}
-                                        <button
-                                            onClick={() => { setFile(null); setPreview(null); setDimensions(null) }}
-                                            className="mt-2 text-xs text-red-500 hover:text-red-700 transition-colors"
-                                        >
-                                            Remove
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
+                        {/* Editor */}
+                        <PhotoMetadataEditor
+                            photos={photos}
+                            onUpdatePhoto={updatePhoto}
+                            onRemovePhoto={removePhoto}
+                            userRigs={userRigs}
+                            rigsLoaded={rigsLoaded}
+                            userId={session?.user?.id}
+                            onAddFiles={() => addMoreInputRef.current?.click()}
+                            batchProgress={batchProgress}
+                            onSubmit={handleSubmit}
+                            onCancel={closeModal}
+                            isSubmittable={isSubmittable}
+                            globalError={globalError}
+                            onClearGlobalError={() => setGlobalError(null)}
+                            emptySlot={dropZone}
+                        />
 
-                            <HeicProgressBar stage={heicStage} />
-
-                            {file && (
-                                <>
-                                    {/* Caption / location — always editable */}
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">Caption</label>
-                                            <textarea
-                                                value={form.caption}
-                                                onChange={e => setForm(prev => ({ ...prev, caption: e.target.value }))}
-                                                placeholder="e.g. Nudibranch on coral"
-                                                rows={2}
-                                                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 resize-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">Location</label>
-                                            <LocationPicker value={locationValue} onChange={setLocationValue} />
-                                        </div>
-                                    </div>
-
-                                    {/* Automatic / Manual tabbed box */}
-                                    <div className="border border-gray-200 rounded-xl overflow-hidden">
-                                        {/* Tab bar */}
-                                        <div className="flex border-b border-gray-200 bg-gray-50">
-                                            {(['auto', 'manual'] as const).map(tab => (
-                                                <button
-                                                    key={tab}
-                                                    type="button"
-                                                    onClick={() => setRigTab(tab)}
-                                                    className={`flex-1 py-2.5 text-xs font-semibold tracking-wide uppercase transition-colors ${rigTab === tab
-                                                        ? 'bg-white text-blue-600 border-b-2 border-blue-500 -mb-px'
-                                                        : 'text-gray-500 hover:text-gray-700'
-                                                        }`}
-                                                >
-                                                    {tab === 'auto' ? 'Automatic' : 'Manual'}
-                                                </button>
-                                            ))}
-                                        </div>
-
-                                        <div className="p-4 space-y-4">
-                                            {rigTab === 'auto' ? (
-                                                <>
-                                                    {/* Read-only EXIF grid */}
-                                                    <div>
-                                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                                                            Extracted from photo
-                                                            {exifLoading && <span className="font-normal normal-case text-blue-500 ml-1">(reading…)</span>}
-                                                        </p>
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            {readonlyField('Camera', exifCameraModel ?? '')}
-                                                            {!isFixedLensCamera && readonlyField('Lens', exifLensModel ?? '')}
-                                                            {readonlyField('Date taken', form.takenAt.replace('T', ' '))}
-                                                            {readonlyField('ISO Speed Rating', form.iso)}
-                                                            {readonlyField('Focal length (mm)', form.focalLength)}
-                                                            {readonlyField('Aperture (f/)', form.aperture)}
-                                                            {readonlyField('Shutter speed', form.shutterSpeed)}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Rig match status */}
-                                                    <div>
-                                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Camera rig</p>
-
-                                                        {(exifLoading || !rigsLoaded) && (
-                                                            <p className="text-xs text-gray-400 italic">Matching rig…</p>
-                                                        )}
-
-                                                        {/* Multiple matches — user must pick one */}
-                                                        {showDisambiguation && (
-                                                            <div className="space-y-2">
-                                                                <p className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                                                                    Multiple rigs match this camera and lens. Please select one:
-                                                                </p>
-                                                                {autoMatches.map(r => (
-                                                                    <button
-                                                                        key={r.id}
-                                                                        type="button"
-                                                                        onClick={() => setSelectedRigId(String(r.id))}
-                                                                        className="w-full flex items-center gap-3 px-3 py-2.5 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors text-left"
-                                                                    >
-                                                                        <div className="min-w-0">
-                                                                            <p className="text-xs font-medium text-gray-800 truncate">{r.name}</p>
-                                                                            <p className="text-[10px] text-gray-500 truncate">
-                                                                                {r.camera.brand.name} {r.camera.name}
-                                                                                {r.lens ? ` · ${r.lens.name}` : ''}
-                                                                                {r.housing ? ` · ${r.housing.manufacturer.name} ${r.housing.name}` : ''}
-                                                                            </p>
-                                                                        </div>
-                                                                    </button>
-                                                                ))}
-                                                            </div>
-                                                        )}
-
-                                                        {exifDone && rigsLoaded && autoMatchedRig && (
-                                                            <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-                                                                <svg className="w-4 h-4 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                <div className="min-w-0 flex-1">
-                                                                    <p className="text-xs font-medium text-green-800 truncate">{autoMatchedRig.name}</p>
-                                                                    <p className="text-[10px] text-green-600 truncate">
-                                                                        {autoMatchedRig.camera.brand.name} {autoMatchedRig.camera.name}
-                                                                        {autoMatchedRig.lens ? ` · ${autoMatchedRig.lens.name}` : ''}
-                                                                    </p>
-                                                                </div>
-                                                                {autoMatches.length > 1 && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => setSelectedRigId('')}
-                                                                        className="text-[10px] text-blue-600 hover:underline shrink-0"
-                                                                    >
-                                                                        Change
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        )}
-
-                                                        {showNoMatch && (
-                                                            <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-3 space-y-1.5">
-                                                                <div className="flex items-start gap-2">
-                                                                    <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                                                                    </svg>
-                                                                    <p className="text-xs text-amber-800">
-                                                                        {exifCheckResult?.cameraExists === false
-                                                                            ? <>Camera &quot;{exifCameraModel}&quot; is not yet in the database — it needs to be added with its EXIF name set before rigs can be matched.</>
-                                                                            : exifCheckResult?.lensExists === false
-                                                                                ? <>Lens &quot;{exifLensModel}&quot; is not yet in the database — it needs to be added with its EXIF name set before rigs can be matched.</>
-                                                                                : <>No saved rig matched{exifCameraModel ? ` camera "${exifCameraModel}"` : ''}{exifLensModel && !lensIsFixed ? ` with lens "${exifLensModel}"` : ''}.</>
-                                                                        }
-                                                                    </p>
-                                                                </div>
-                                                                {exifCheckResult?.cameraExists !== false && (
-                                                                    <a
-                                                                        href={createRigUrl}
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                        className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium hover:underline"
-                                                                    >
-                                                                        Create a rig for this camera
-                                                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                                        </svg>
-                                                                    </a>
-                                                                )}
-                                                            </div>
-                                                        )}
-
-                                                        {showNoRigs && (
-                                                            <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-3 space-y-1.5">
-                                                                <div className="flex items-start gap-2">
-                                                                    <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                                                                    </svg>
-                                                                    <p className="text-xs text-amber-800">You have no camera rigs set up yet.</p>
-                                                                </div>
-                                                                <a
-                                                                    href={createRigUrl}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium hover:underline"
-                                                                >
-                                                                    Create a rig on your profile
-                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                                    </svg>
-                                                                </a>
-                                                            </div>
-                                                        )}
-
-                                                        {exifDone && rigsLoaded && !autoMatchedRig && !showNoMatch && !showNoRigs && !showDisambiguation && (
-                                                            <p className="text-xs text-gray-400 italic">No camera data in EXIF. Switch to Manual to pick a rig.</p>
-                                                        )}
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    {/* Manual: editable shot details + rig picker */}
-                                                    <div>
-                                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Shot details</p>
-                                                        <div className="grid grid-cols-2 gap-3">
-                                                            {editableField('takenAt', 'Date taken', '', 'datetime-local')}
-                                                            {editableField('iso', 'ISO Speed Rating', 'e.g. 400', 'number')}
-                                                            {editableField('focalLength', 'Focal length (mm)', 'e.g. 24', 'number')}
-                                                            {editableField('aperture', 'Aperture (f/)', 'e.g. 8', 'number')}
-                                                            {editableField('shutterSpeed', 'Shutter speed', 'e.g. 1/200')}
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Camera rig (optional)</p>
-                                                        {userRigs.length === 0 ? (
-                                                            <p className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-                                                                No rigs set up yet.{' '}
-                                                                <a
-                                                                    href={`/users/${session?.user?.id}`}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="text-blue-600 hover:underline"
-                                                                >
-                                                                    Create one on your profile
-                                                                </a>{' '}
-                                                                to tag photos with your equipment.
-                                                            </p>
-                                                        ) : (
-                                                            <select
-                                                                value={selectedRigId}
-                                                                onChange={e => setSelectedRigId(e.target.value)}
-                                                                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                                                            >
-                                                                <option value="">None</option>
-                                                                {userRigs.map(r => (
-                                                                    <option key={r.id} value={String(r.id)}>{r.name}</option>
-                                                                ))}
-                                                            </select>
-                                                        )}
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-
-                            {error && (
-                                <div className="flex items-start gap-2.5 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
-                                    <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                                    </svg>
-                                    <span className="flex-1">{error}</span>
-                                    <button onClick={() => setError(null)} className="shrink-0 text-red-400 hover:text-red-600 transition-colors">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Footer */}
-                        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-xl">
-                            <button
-                                onClick={closeModal}
-                                className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSubmit}
-                                disabled={!file || !dimensions || !selectedRigId}
-                                className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                                Upload photo
-                            </button>
-                        </div>
+                        {/* Hidden "add more" input — triggered by the editor's Add button */}
+                        <input
+                            ref={addMoreInputRef}
+                            type="file"
+                            accept="image/*,.heic,.heif"
+                            multiple
+                            className="hidden"
+                            onChange={e => { processFiles(e.target.files ?? []); e.target.value = '' }}
+                        />
                     </div>
                 </div>
             )}

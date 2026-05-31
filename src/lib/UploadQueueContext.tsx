@@ -16,6 +16,7 @@ export interface UploadJob {
 interface UploadQueueCtx {
     jobs: UploadJob[]
     enqueue: (formData: FormData, filename: string) => void
+    enqueueImport: (labels: string[], doImport: () => Promise<{ ok: boolean; errorMessage?: string }>) => void
     dismiss: (id: string) => void
     dismissCompleted: () => void
 }
@@ -76,8 +77,43 @@ export function UploadQueueProvider({ children }: { children: ReactNode }) {
         setJobs(prev => prev.filter(j => j.status === 'uploading'))
     }, [])
 
+    const enqueueImport = useCallback(
+        (labels: string[], doImport: () => Promise<{ ok: boolean; errorMessage?: string }>) => {
+            const ids = labels.map((_, i) => `import-${++counter.current}-${i}`)
+            const newJobs: UploadJob[] = labels.map((label, i) => ({
+                id: ids[i],
+                filename: label,
+                progress: 0,
+                status: 'uploading',
+            }))
+            setJobs(prev => [...prev, ...newJobs])
+
+            doImport().then(result => {
+                if (result.ok) {
+                    setJobs(prev => prev.map(j =>
+                        ids.includes(j.id) ? { ...j, progress: 100, status: 'done' } : j
+                    ))
+                    router.refresh()
+                } else {
+                    setJobs(prev => prev.map(j =>
+                        ids.includes(j.id)
+                            ? { ...j, status: 'error', errorMessage: result.errorMessage ?? 'Import failed' }
+                            : j
+                    ))
+                }
+            }).catch(() => {
+                setJobs(prev => prev.map(j =>
+                    ids.includes(j.id)
+                        ? { ...j, status: 'error', errorMessage: 'Network error' }
+                        : j
+                ))
+            })
+        },
+        [router]
+    )
+
     return (
-        <Ctx.Provider value={{ jobs, enqueue, dismiss, dismissCompleted }}>
+        <Ctx.Provider value={{ jobs, enqueue, enqueueImport, dismiss, dismissCompleted }}>
             {children}
         </Ctx.Provider>
     )
