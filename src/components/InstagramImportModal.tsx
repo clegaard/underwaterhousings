@@ -184,7 +184,12 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
                 exifLensModel: null,
                 exifLoading: false,
                 selectedRigId: '',
-                rigTab: 'manual' as const,
+                captionFields: [
+                    ...(meta.iso != null ? ['iso' as const] : []),
+                    ...(meta.focalLength != null ? ['focalLength' as const] : []),
+                    ...(meta.aperture != null ? ['aperture' as const] : []),
+                    ...(meta.shutterSpeed ? ['shutterSpeed' as const] : []),
+                ],
                 exifCheckResult: null,
                 instagram: {
                     mediaId: s.imageId,

@@ -127,6 +127,8 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
                 if (exif.Model) patch.exifCameraModel = String(exif.Model).trim()
                 if (exif.LensModel) patch.exifLensModel = String(exif.LensModel).trim()
                 patch.form = { ...EMPTY_FORM, ...formUpdates }
+                // Track which fields came from EXIF so they are locked read-only (Rule G1)
+                patch.exifFields = Object.keys(formUpdates) as (keyof UploadForm)[]
             }
             if (gps?.latitude != null && gps?.longitude != null) {
                 try {
@@ -202,7 +204,6 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
                 exifLensModel: null,
                 exifLoading: false,
                 selectedRigId: '',
-                rigTab: 'auto',
                 exifCheckResult: null,
             })
         }
@@ -255,7 +256,7 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
         closeModal()
     }, [photos, enqueue, closeModal])
 
-    const isSubmittable = photos.length > 0 && photos.every(p => p.dimensions !== null)
+    const isSubmittable = photos.length > 0 && photos.every(p => p.dimensions !== null && !!p.selectedRigId)
 
     // ── Drop zone component ──────────────────────────────────────────────────
     const dropZone = (
@@ -273,11 +274,11 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
             </svg>
             <p className="text-gray-700 font-medium mb-1">Drag & drop photos here</p>
             <p className="text-gray-400 text-sm">or tap to browse — select multiple at once</p>
-            <p className="text-gray-400 text-xs mt-2">JPG, PNG, WebP, HEIC · max 20 MB each</p>
+            <p className="text-gray-400 text-xs mt-2">JPG, PNG, WebP, HEIC, AVIF · max 20 MB each</p>
             <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*,.heic,.heif"
+                accept="image/*,.heic,.heif,.avif"
                 multiple
                 className="hidden"
                 onChange={e => { processFiles(e.target.files ?? []); e.target.value = '' }}
@@ -355,7 +356,7 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
                         <input
                             ref={addMoreInputRef}
                             type="file"
-                            accept="image/*,.heic,.heif"
+                            accept="image/*,.heic,.heif,.avif"
                             multiple
                             className="hidden"
                             onChange={e => { processFiles(e.target.files ?? []); e.target.value = '' }}

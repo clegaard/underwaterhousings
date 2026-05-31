@@ -189,20 +189,38 @@ For instance, Nauticam provides N85 to N100 adapters.
 Additionally, some manufacturers like Isotta provide an adapter from their port system to the port system of other manufacturers. For instance, Isotta provides an adapter from their B120 port to Nauticam's N120 port.
 
 
+## Optional fields
+Whenever a field is optional mark it with a (optional) label in the.
+Avoid using the asterisk to mark required fields, instead only mark the optional ones.
+
+## Tooltips
+
+
+
 ## Gallery and User Submissions
 
 
-### Rig assignment
+### Rig assignment and exif data
 When a user uploads a photo, they can specify the camera and housing used to take the photo. This information is important for categorizing the photo and providing context for other users who may be interested in the equipment used to capture the image.
-
 A rig is characterized by it's components, primarily the camera, lens, housing and port.
-When uploading a photo from the the users device the exif data is a valuable source of information 
+
+When uploading a photo from the the users device the exif data is a valuable source of information since manipulating these requires a certain level of technical knowledge and is not something that the average user would typically do.
+The exif data only proivides information of the electronic components of the rig like the camera, lens and in some cases teleconverters.
+However, exif data does not provide information about the housing, port, wet optics, extension rings, since these are purely mechanical components.
+Further, exif data does not usually provide infomation about the flash trigger or strobes, although in the case of the flash trigger it would be technically feasible to add this information to the exif data since it is connected to the hotshoe.
+
+*Rule G1* : If present accept EXIF data as ground truth for camera, lens, shutter speed, aperture, ISO and focal length, do not allow the user to edit these fields.
+
+We allow the user to select a user defined rig to add this supplementary information.
+For instance the user may have defined a rig with a specific housing, port and extension ring combination that they typically use with their camera, and they can select this rig when uploading a photo to provide more complete information about the equipment used to take the photo.
+
+*Rule G2* : Only allow the user to select a rig that does not conflict with the exif data. For instance, the user should not be able to select a rig that specifies a different camera or lens than the one specified in the exif data.
+
+To aid in the users understanding of how the metadata is derived as well as the trustworthiness of the metadata, we will display the source of the metadata information. For instance, if the camera and lens information is derived from the exif data, we will display an exif icon next to this information. If the housing and port information is derived from a user defined rig, we will display a rig icon next to this information.
+*Rule G3* : When uploading images, record the sources of this information, for instance, exif, geotag, caption or user specified.
 
 
-
-
-### Instagram Uploads
-
+#### Instagram Uploads and Caption Parsing
 Instagram strips the metadata when uploading to their server, so it is not possible to populate this by means of reading the exif data.
 
 A common practice is to add information of the camera, lens, housing, ports and acessories as part of the caption.
@@ -213,10 +231,8 @@ See the `captions-examples.md` directory for examples of how users typically spe
 Some fields like the location can be extracted either form the geotag if specified or from the caption itself.
 Similarly the date can either be extracted from the upload date or preferably from the caption itself.
 
-## Locations
-First priority should be using the geotag from the instagram post.
-Second priority should be from the caption if specified.
+*Rule G4* : When uploading from instagram, use the geotag as the first priority for the location, and only use the caption as a second priority if the geotag is not specified.
 
-## Date
-First priority should be a data extracted from the caption, second priority should be the upload date.
+*Rule G5* : When uploading from instagram, use any date specified in the caption as the first priority, and only use the upload date as a second priority if no date is specified in the caption.
 
+*Rule G6* : Information extracted by geo location, caption or upload data should be editable by the user.

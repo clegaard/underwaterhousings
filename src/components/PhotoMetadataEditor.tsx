@@ -54,7 +54,10 @@ export interface PendingPhoto {
     exifLensModel: string | null
     exifLoading: boolean
     selectedRigId: string
-    rigTab: 'auto' | 'manual'
+    /** Form fields populated from the photo's embedded EXIF metadata — locked read-only (Rule G1) */
+    exifFields?: ReadonlyArray<keyof UploadForm>
+    /** Form fields pre-filled from Instagram caption parsing — editable but badged */
+    captionFields?: ReadonlyArray<keyof UploadForm>
     exifCheckResult: { cameraExists: boolean | null; lensExists: boolean | null } | null
     /** Only present for Instagram imports */
     instagram?: { mediaId: string; mediaUrl: string; timestamp: string }
@@ -117,6 +120,76 @@ function TabStatusBadge({ status }: { status: TabStatus }) {
         <span className={`absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center shadow-sm text-white font-bold leading-none
             ${status === 'ambiguous' ? 'bg-blue-500 text-[8px]' : 'bg-amber-500 text-[9px]'}`}>
             {status === 'ambiguous' ? '?' : '!'}
+        </span>
+    )
+}
+
+/**
+ * Small inline chip with tooltip explaining the data source.
+ * Rule G3: display the source of each metadata field.
+ */
+function SourceBadge({ source }: { source: 'exif' | 'caption' | 'rig' | 'manual' }) {
+    if (source === 'rig') {
+        return (
+            <span className="relative group/src inline-flex items-center">
+                <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded cursor-help select-none bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Rig
+                </span>
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-gray-900 text-white text-[10px] rounded-lg px-2.5 py-2 leading-relaxed text-center
+                    opacity-0 group-hover/src:opacity-100 transition-opacity pointer-events-none z-20 shadow-lg">
+                    Populated from the selected camera rig.
+                    <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+                </span>
+            </span>
+        )
+    }
+    if (source === 'manual') {
+        return (
+            <span className="relative group/src inline-flex items-center">
+                <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded cursor-help select-none bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300">
+                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    Manual
+                </span>
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-gray-900 text-white text-[10px] rounded-lg px-2.5 py-2 leading-relaxed text-center
+                    opacity-0 group-hover/src:opacity-100 transition-opacity pointer-events-none z-20 shadow-lg">
+                    Entered manually. You can edit this field.
+                    <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+                </span>
+            </span>
+        )
+    }
+    const isExif = source === 'exif'
+    const tooltip = isExif
+        ? 'Read from the photo\'s embedded EXIF metadata. Accepted as ground truth and cannot be edited.'
+        : 'Extracted from the Instagram caption text. You can edit this if needed.'
+    return (
+        <span className="relative group/src inline-flex items-center">
+            <span className={`inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded cursor-help select-none
+                ${isExif ? 'bg-blue-100 text-blue-600' : 'bg-violet-100 text-violet-600'}`}>
+                {isExif ? (
+                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                ) : (
+                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h8m-8 6h16" />
+                    </svg>
+                )}
+                {isExif ? 'EXIF' : 'Caption'}
+            </span>
+            {/* Tooltip */}
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-gray-900 text-white text-[10px] rounded-lg px-2.5 py-2 leading-relaxed text-center
+                opacity-0 group-hover/src:opacity-100 transition-opacity pointer-events-none z-20 shadow-lg">
+                {tooltip}
+                <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+            </span>
         </span>
     )
 }
@@ -238,7 +311,6 @@ export default function PhotoMetadataEditor({
     const autoMatchedRig = activePhoto?.selectedRigId
         ? autoMatches.find(r => String(r.id) === activePhoto.selectedRigId) ?? null
         : null
-    const showDisambiguation = exifDone && rigsLoaded && autoMatches.length > 1 && !autoMatchedRig
     const showNoMatch =
         exifDone &&
         rigsLoaded &&
@@ -246,6 +318,27 @@ export default function PhotoMetadataEditor({
         activeRigsForPhoto.length > 0 &&
         autoMatches.length === 0
     const showNoRigs = exifDone && rigsLoaded && activeRigsForPhoto.length === 0
+
+    // Rule G2: when EXIF camera is known, only show rigs that match it.
+    // When no EXIF camera, show all active rigs.
+    const rigsToShow = activePhoto?.exifCameraModel ? autoMatches : activeRigsForPhoto
+
+    // Rig selected by the user — used to populate camera/lens display when no EXIF data is present
+    const selectedRig = activePhoto?.selectedRigId
+        ? activeRigsForPhoto.find(r => String(r.id) === activePhoto.selectedRigId) ?? null
+        : null
+
+    // Camera & Lens display values (Rule G3) — always shown in Shot Details
+    const cameraSource: 'exif' | 'rig' | null =
+        activePhoto?.exifCameraModel ? 'exif' : (selectedRig ? 'rig' : null)
+    const cameraValue = activePhoto?.exifCameraModel
+        ?? (selectedRig ? `${selectedRig.camera.brand.name} ${selectedRig.camera.name}` : '')
+    const showExifLens = !isFixedLensCamera && !isBuiltInLensFromExif && !!activePhoto?.exifLensModel
+    const showRigLens = !activePhoto?.exifCameraModel && !!selectedRig?.lens
+    const lensSource: 'exif' | 'rig' | null = showExifLens ? 'exif' : (showRigLens ? 'rig' : null)
+    const lensValue = showExifLens
+        ? (activePhoto?.exifLensModel ?? '')
+        : (showRigLens ? selectedRig!.lens!.name : '')
 
     const createRigUrl = (() => {
         if (!userId) return '#'
@@ -260,31 +353,56 @@ export default function PhotoMetadataEditor({
         submitLabel ??
         (photos.length > 1 ? `Upload ${photos.length} photos` : 'Upload photo')
 
-    // ── Field renderers ──────────────────────────────────────────────────────
-    const readonlyField = (label: string, value: string) => (
-        <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
-            <div className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-700 bg-gray-50 min-h-8">
-                {value || <span className="text-gray-400 italic">—</span>}
-            </div>
-        </div>
-    )
+    // ── Field helpers ─────────────────────────────────────────────────────────
 
-    const editableField = (key: keyof UploadForm, label: string, placeholder?: string, type = 'text') => (
-        <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
-            <input
-                type={type}
-                value={activePhoto?.form[key] ?? ''}
-                onChange={e =>
-                    activePhoto &&
-                    onUpdatePhoto(activePhoto.id, { form: { ...activePhoto.form, [key]: e.target.value } })
-                }
-                placeholder={placeholder}
-                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
-            />
-        </div>
-    )
+    /** Returns the data source for a form field (Rule G3) */
+    const fieldSource = (key: keyof UploadForm): 'exif' | 'caption' | null => {
+        if (activePhoto?.exifFields?.includes(key)) return 'exif'
+        if (activePhoto?.captionFields?.includes(key)) return 'caption'
+        return null
+    }
+
+    /**
+     * Renders a single shot-detail field.
+     * EXIF fields are locked read-only (Rule G1). Caption-extracted fields are
+     * editable but badged. Unknown-source fields are plain editable inputs.
+     */
+    const shotField = (
+        key: keyof UploadForm,
+        label: string,
+        opts?: { type?: string; placeholder?: string; optional?: boolean }
+    ) => {
+        const src = fieldSource(key)
+        const value = activePhoto?.form[key] ?? ''
+        return (
+            <div>
+                <div className="flex items-center gap-1.5 mb-1">
+                    <label className="text-xs font-medium text-gray-700">
+                        {label}
+                        {opts?.optional && <span className="text-gray-400 font-normal ml-1">(optional)</span>}
+                    </label>
+                    <SourceBadge source={src ?? 'manual'} />
+                </div>
+                {src === 'exif' ? (
+                    <div className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-400 bg-gray-100 min-h-[34px] flex items-center cursor-not-allowed select-none">
+                        {value || <span className="italic">—</span>}
+                    </div>
+                ) : (
+                    <input
+                        type={opts?.type ?? 'text'}
+                        value={value}
+                        onChange={e =>
+                            activePhoto &&
+                            onUpdatePhoto(activePhoto.id, { form: { ...activePhoto.form, [key]: e.target.value } })
+                        }
+                        placeholder={opts?.placeholder}
+                        className={`w-full px-3 py-1.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900
+                            ${src === 'caption' ? 'border-violet-200 bg-violet-50/40' : 'border-gray-300'}`}
+                    />
+                )}
+            </div>
+        )
+    }
 
     // ── Render ───────────────────────────────────────────────────────────────
     return (
@@ -408,338 +526,193 @@ export default function PhotoMetadataEditor({
                             </div>
                         </div>
 
-                        {/* Caption + location */}
-                        <div className="space-y-3">
-                            <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">Caption</label>
-                                <textarea
-                                    value={activePhoto.form.caption}
-                                    onChange={e =>
-                                        onUpdatePhoto(activePhoto.id, {
-                                            form: { ...activePhoto.form, caption: e.target.value },
-                                        })
-                                    }
-                                    placeholder="e.g. Nudibranch on coral"
-                                    rows={2}
-                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 resize-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">Location</label>
-                                <LocationPicker
-                                    value={activePhoto.locationValue}
-                                    onChange={val => onUpdatePhoto(activePhoto.id, { locationValue: val })}
-                                />
-                            </div>
+                        {/* Caption — optional */}
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                Caption
+                                <span className="text-gray-400 font-normal ml-1">(optional)</span>
+                            </label>
+                            <textarea
+                                value={activePhoto.form.caption}
+                                onChange={e =>
+                                    onUpdatePhoto(activePhoto.id, {
+                                        form: { ...activePhoto.form, caption: e.target.value },
+                                    })
+                                }
+                                placeholder="e.g. Nudibranch on coral"
+                                rows={2}
+                                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 resize-none"
+                            />
                         </div>
 
-                        {/* Automatic / Manual rig box */}
-                        <div className="border border-gray-200 rounded-xl overflow-hidden">
-                            <div className="flex border-b border-gray-200 bg-gray-50">
-                                {(['auto', 'manual'] as const).map(tab => (
-                                    <button
-                                        key={tab}
-                                        type="button"
-                                        onClick={() => onUpdatePhoto(activePhoto.id, { rigTab: tab })}
-                                        className={`flex-1 py-2.5 text-xs font-semibold tracking-wide uppercase transition-colors ${activePhoto.rigTab === tab
-                                                ? 'bg-white text-blue-600 border-b-2 border-blue-500 -mb-px'
-                                                : 'text-gray-500 hover:text-gray-700'
-                                            }`}
-                                    >
-                                        {tab === 'auto' ? 'Automatic' : 'Manual'}
-                                    </button>
-                                ))}
-                            </div>
+                        {/* Location — optional */}
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                Location
+                                <span className="text-gray-400 font-normal ml-1">(optional)</span>
+                            </label>
+                            <LocationPicker
+                                value={activePhoto.locationValue}
+                                onChange={val => onUpdatePhoto(activePhoto.id, { locationValue: val })}
+                            />
+                        </div>
 
-                            <div className="p-4 space-y-4">
-                                {activePhoto.rigTab === 'auto' ? (
+                        {/* Camera Rig — required */}
+                        <div className="space-y-3">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Camera Rig</p>
+                            <div className="space-y-3">
+
+                                {/* Loading / matching state */}
+                                {(activePhoto.exifLoading || !rigsLoaded) && (
+                                    <p className="text-xs text-gray-400 italic">Looking for matching rig…</p>
+                                )}
+
+                                {/* No rigs warning */}
+                                {showNoRigs && (
+                                    <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-3 space-y-1.5">
+                                        <div className="flex items-start gap-2">
+                                            <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                                            </svg>
+                                            <p className="text-xs text-amber-800">You have no camera rigs set up yet.</p>
+                                        </div>
+                                        <a href={createRigUrl} target="_blank" rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium hover:underline">
+                                            Create a rig on your profile
+                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                            </svg>
+                                        </a>
+                                    </div>
+                                )}
+
+                                {/* No matching rig warning (Rule G2: only matching rigs can be selected) */}
+                                {showNoMatch && (
+                                    <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-3 space-y-1.5">
+                                        <div className="flex items-start gap-2">
+                                            <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                                            </svg>
+                                            <p className="text-xs text-amber-800">
+                                                {activePhoto.exifCheckResult?.cameraExists === false ? (
+                                                    <>Camera &quot;{activePhoto.exifCameraModel}&quot; is not yet in the database — it needs to be added with its EXIF name set before rigs can be matched.</>
+                                                ) : activePhoto.exifCheckResult?.lensExists === false ? (
+                                                    <>Lens &quot;{activePhoto.exifLensModel}&quot; is not yet in the database — it needs to be added with its EXIF name set before rigs can be matched.</>
+                                                ) : (
+                                                    <>
+                                                        No saved rig matched
+                                                        {activePhoto.exifCameraModel ? ` camera "${activePhoto.exifCameraModel}"` : ''}
+                                                        {activePhoto.exifLensModel && !lensIsFixed ? ` with lens "${activePhoto.exifLensModel}"` : ''}.
+                                                    </>
+                                                )}
+                                            </p>
+                                        </div>
+                                        {activePhoto.exifCheckResult?.cameraExists !== false && (
+                                            <a href={createRigUrl} target="_blank" rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium hover:underline">
+                                                Create a rig for this camera
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                </svg>
+                                            </a>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Single auto-matched rig — confirmed green box */}
+                                {exifDone && rigsLoaded && autoMatchedRig && autoMatches.length === 1 && (
+                                    <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                                        <svg className="w-4 h-4 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-xs font-medium text-green-800 truncate">{autoMatchedRig.name}</p>
+                                            <p className="text-[10px] text-green-600 truncate">
+                                                {autoMatchedRig.camera.brand.name} {autoMatchedRig.camera.name}
+                                                {autoMatchedRig.lens ? ` · ${autoMatchedRig.lens.name}` : ''}
+                                                {autoMatchedRig.housing ? ` · ${autoMatchedRig.housing.manufacturer.name} ${autoMatchedRig.housing.name}` : ''}
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => onUpdatePhoto(activePhoto.id, { selectedRigId: '' })}
+                                            className="text-[10px] text-blue-600 hover:underline shrink-0"
+                                        >
+                                            Change
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Rig dropdown — shown when there are eligible rigs and no single confirmed auto-match */}
+                                {exifDone && rigsLoaded && rigsToShow.length > 0 && !(autoMatches.length === 1 && autoMatchedRig) && (
                                     <>
-                                        <div>
-                                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                                                Extracted from photo
-                                                {activePhoto.exifLoading && (
-                                                    <span className="font-normal normal-case text-blue-500 ml-1">
-                                                        (reading…)
-                                                    </span>
-                                                )}
+                                        {autoMatches.length > 1 && !activePhoto.selectedRigId && (
+                                            <p className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+                                                Multiple rigs match this camera and lens. Please select one:
                                             </p>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                {readonlyField('Camera', activePhoto.exifCameraModel ?? '')}
-                                                {!isFixedLensCamera &&
-                                                    readonlyField('Lens', activePhoto.exifLensModel ?? '')}
-                                                {readonlyField(
-                                                    'Date taken',
-                                                    activePhoto.form.takenAt.replace('T', ' ')
-                                                )}
-                                                {readonlyField('ISO', activePhoto.form.iso)}
-                                                {readonlyField('Focal length (mm)', activePhoto.form.focalLength)}
-                                                {readonlyField('Aperture (f/)', activePhoto.form.aperture)}
-                                                {readonlyField('Shutter speed', activePhoto.form.shutterSpeed)}
-                                            </div>
-                                        </div>
-
+                                        )}
                                         <div>
-                                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                                                Camera rig
-                                            </p>
-
-                                            {(activePhoto.exifLoading || !rigsLoaded) && (
-                                                <p className="text-xs text-gray-400 italic">Matching rig…</p>
-                                            )}
-
-                                            {showDisambiguation && (
-                                                <div className="space-y-2">
-                                                    <p className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                                                        Multiple rigs match this camera and lens. Please select one:
-                                                    </p>
-                                                    {autoMatches.map(r => (
-                                                        <button
-                                                            key={r.id}
-                                                            type="button"
-                                                            onClick={() =>
-                                                                onUpdatePhoto(activePhoto.id, {
-                                                                    selectedRigId: String(r.id),
-                                                                })
-                                                            }
-                                                            className="w-full flex items-center gap-3 px-3 py-2.5 border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors text-left"
-                                                        >
-                                                            <div className="min-w-0">
-                                                                <p className="text-xs font-medium text-gray-800 truncate">
-                                                                    {r.name}
-                                                                </p>
-                                                                <p className="text-[10px] text-gray-500 truncate">
-                                                                    {r.camera.brand.name} {r.camera.name}
-                                                                    {r.lens ? ` · ${r.lens.name}` : ''}
-                                                                    {r.housing
-                                                                        ? ` · ${r.housing.manufacturer.name} ${r.housing.name}`
-                                                                        : ''}
-                                                                </p>
-                                                            </div>
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            {exifDone && rigsLoaded && autoMatchedRig && (
-                                                <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-                                                    <svg
-                                                        className="w-4 h-4 text-green-500 shrink-0"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M5 13l4 4L19 7"
-                                                        />
-                                                    </svg>
-                                                    <div className="min-w-0 flex-1">
-                                                        <p className="text-xs font-medium text-green-800 truncate">
-                                                            {autoMatchedRig.name}
-                                                        </p>
-                                                        <p className="text-[10px] text-green-600 truncate">
-                                                            {autoMatchedRig.camera.brand.name}{' '}
-                                                            {autoMatchedRig.camera.name}
-                                                            {autoMatchedRig.lens
-                                                                ? ` · ${autoMatchedRig.lens.name}`
-                                                                : ''}
-                                                        </p>
-                                                    </div>
-                                                    {autoMatches.length > 1 && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                onUpdatePhoto(activePhoto.id, { selectedRigId: '' })
-                                                            }
-                                                            className="text-[10px] text-blue-600 hover:underline shrink-0"
-                                                        >
-                                                            Change
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            )}
-
-                                            {showNoMatch && (
-                                                <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-3 space-y-1.5">
-                                                    <div className="flex items-start gap-2">
-                                                        <svg
-                                                            className="w-4 h-4 text-amber-500 shrink-0 mt-0.5"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
-                                                            />
-                                                        </svg>
-                                                        <p className="text-xs text-amber-800">
-                                                            {activePhoto.exifCheckResult?.cameraExists === false ? (
-                                                                <>
-                                                                    Camera &quot;{activePhoto.exifCameraModel}&quot; is
-                                                                    not yet in the database — it needs to be added with
-                                                                    its EXIF name set before rigs can be matched.
-                                                                </>
-                                                            ) : activePhoto.exifCheckResult?.lensExists === false ? (
-                                                                <>
-                                                                    Lens &quot;{activePhoto.exifLensModel}&quot; is not
-                                                                    yet in the database — it needs to be added with its
-                                                                    EXIF name set before rigs can be matched.
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    No saved rig matched
-                                                                    {activePhoto.exifCameraModel
-                                                                        ? ` camera "${activePhoto.exifCameraModel}"`
-                                                                        : ''}
-                                                                    {activePhoto.exifLensModel && !lensIsFixed
-                                                                        ? ` with lens "${activePhoto.exifLensModel}"`
-                                                                        : ''}
-                                                                    .
-                                                                </>
-                                                            )}
-                                                        </p>
-                                                    </div>
-                                                    {activePhoto.exifCheckResult?.cameraExists !== false && (
-                                                        <a
-                                                            href={createRigUrl}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium hover:underline"
-                                                        >
-                                                            Create a rig for this camera
-                                                            <svg
-                                                                className="w-3 h-3"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth={2}
-                                                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                                                />
-                                                            </svg>
-                                                        </a>
-                                                    )}
-                                                </div>
-                                            )}
-
-                                            {showNoRigs && (
-                                                <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-3 space-y-1.5">
-                                                    <div className="flex items-start gap-2">
-                                                        <svg
-                                                            className="w-4 h-4 text-amber-500 shrink-0 mt-0.5"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
-                                                            />
-                                                        </svg>
-                                                        <p className="text-xs text-amber-800">
-                                                            You have no camera rigs set up yet.
-                                                        </p>
-                                                    </div>
-                                                    <a
-                                                        href={createRigUrl}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium hover:underline"
-                                                    >
-                                                        Create a rig on your profile
-                                                        <svg
-                                                            className="w-3 h-3"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth={2}
-                                                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                                            />
-                                                        </svg>
-                                                    </a>
-                                                </div>
-                                            )}
-
-                                            {exifDone &&
-                                                rigsLoaded &&
-                                                !autoMatchedRig &&
-                                                !showNoMatch &&
-                                                !showNoRigs &&
-                                                !showDisambiguation && (
-                                                    <p className="text-xs text-gray-400 italic">
-                                                        {activePhoto.instagram
-                                                            ? 'No EXIF data for Instagram photos — switch to Manual to pick a rig.'
-                                                            : 'No camera data in EXIF — switch to Manual to pick a rig.'}
-                                                    </p>
-                                                )}
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div>
-                                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                                                Shot details
-                                            </p>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                {editableField('takenAt', 'Date taken', '', 'datetime-local')}
-                                                {editableField('iso', 'ISO', 'e.g. 400', 'number')}
-                                                {editableField('focalLength', 'Focal length (mm)', 'e.g. 24', 'number')}
-                                                {editableField('aperture', 'Aperture (f/)', 'e.g. 8', 'number')}
-                                                {editableField('shutterSpeed', 'Shutter speed', 'e.g. 1/200')}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                                                Camera rig (optional)
-                                            </p>
-                                            {userRigs.length === 0 ? (
-                                                <p className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-                                                    No rigs set up yet.{' '}
-                                                    <a
-                                                        href={`/users/${userId}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-blue-600 hover:underline"
-                                                    >
-                                                        Create one on your profile
-                                                    </a>{' '}
-                                                    to tag photos with your equipment.
-                                                </p>
-                                            ) : (
-                                                <select
-                                                    value={activePhoto.selectedRigId}
-                                                    onChange={e =>
-                                                        onUpdatePhoto(activePhoto.id, {
-                                                            selectedRigId: e.target.value,
-                                                        })
-                                                    }
-                                                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
-                                                >
-                                                    <option value="">None</option>
-                                                    {userRigs.map(r => (
-                                                        <option key={r.id} value={String(r.id)}>
-                                                            {r.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            )}
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">Camera rig</label>
+                                            <select
+                                                value={activePhoto.selectedRigId}
+                                                onChange={e => onUpdatePhoto(activePhoto.id, { selectedRigId: e.target.value })}
+                                                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                                            >
+                                                <option value="">
+                                                    {activePhoto.exifCameraModel ? '— select a matching rig —' : '— none —'}
+                                                </option>
+                                                {rigsToShow.map(r => (
+                                                    <option key={r.id} value={String(r.id)}>
+                                                        {r.name}{r.camera ? ` (${r.camera.brand.name} ${r.camera.name}${r.lens ? ` · ${r.lens.name}` : ''})` : ''}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </div>
                                     </>
                                 )}
+
+                                {/* No camera data fallback hint */}
+                                {exifDone && rigsLoaded && !activePhoto.exifCameraModel && rigsToShow.length === 0 && !showNoRigs && (
+                                    <p className="text-xs text-gray-400 italic">
+                                        {activePhoto.instagram
+                                            ? 'No EXIF data available for Instagram photos.'
+                                            : 'No camera data found in EXIF.'}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Shot details — Camera/Lens always shown; EXIF fields locked (Rule G1) */}
+                        <div className="space-y-3">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Shot details</p>
+                            <div className="grid grid-cols-2 gap-3">
+                                {/* Camera — always shown, source-badged when known */}
+                                <div>
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <label className="text-xs font-medium text-gray-700">Camera</label>
+                                        {cameraSource && <SourceBadge source={cameraSource} />}
+                                    </div>
+                                    <div className={`px-3 py-1.5 border rounded-lg text-sm min-h-[34px] flex items-center
+                                        ${cameraSource ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed select-none' : 'border-gray-200 bg-gray-50 text-gray-400'}`}>
+                                        {cameraValue || <span className="italic">—</span>}
+                                    </div>
+                                </div>
+                                {/* Lens — always shown, source-badged when known */}
+                                <div>
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <label className="text-xs font-medium text-gray-700">Lens</label>
+                                        {lensSource && <SourceBadge source={lensSource} />}
+                                    </div>
+                                    <div className={`px-3 py-1.5 border rounded-lg text-sm min-h-[34px] flex items-center
+                                        ${lensSource ? 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed select-none' : 'border-gray-200 bg-gray-50 text-gray-400'}`}>
+                                        {lensValue || <span className="italic">—</span>}
+                                    </div>
+                                </div>
+                                {shotField('takenAt', 'Date taken', { type: 'datetime-local', optional: true })}
+                                {shotField('iso', 'ISO', { type: 'number', optional: true })}
+                                {shotField('focalLength', 'Focal length (mm)', { type: 'number', optional: true })}
+                                {shotField('aperture', 'Aperture (f/)', { type: 'number', optional: true })}
+                                {shotField('shutterSpeed', 'Shutter speed', { optional: true })}
                             </div>
                         </div>
                     </div>
