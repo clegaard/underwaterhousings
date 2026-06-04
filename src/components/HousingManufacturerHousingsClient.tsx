@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { HousingImage } from '@/components/HousingImage'
 import { getHousingImagePathWithFallback } from '@/lib/images'
 import { useCurrency } from '@/components/CurrencyContext'
-import PhotoUploadField from '@/components/PhotoUploadField'
+import ProductPhotoUpload from '@/components/ProductPhotoUpload'
 import { uploadPhotoSlots, type PhotoSlot } from '@/lib/photoUpload'
 
 interface Housing {
@@ -288,11 +288,6 @@ export default function HousingManufacturerHousingsClient({
                                     alt={housing.name}
                                     className="object-contain p-3 w-full h-full"
                                 />
-                                {housing.depthRating != null && (
-                                    <span className="absolute top-1.5 right-1.5 text-[10px] bg-blue-100 text-blue-700 font-medium px-1.5 py-0.5 rounded-full">
-                                        {housing.depthRating}m
-                                    </span>
-                                )}
                             </div>
                             <div className="px-2.5 py-2">
                                 <p className="text-xs font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-snug line-clamp-2">
@@ -302,6 +297,9 @@ export default function HousingManufacturerHousingsClient({
                                     <p className="text-[10px] text-gray-400 mt-0.5 truncate">
                                         {housing.cameras.map(c => `${c.brand.name} ${c.name}`).join(', ')}
                                     </p>
+                                )}
+                                {housing.depthRating != null && (
+                                    <p className="text-[10px] text-blue-600 mt-0.5">Rated to {housing.depthRating}m</p>
                                 )}
                                 {housing.priceAmount != null && (
                                     <p className="text-xs font-medium text-green-600 mt-1">
@@ -531,7 +529,7 @@ export default function HousingManufacturerHousingsClient({
 
 
                         {/* Product photos */}
-                        <PhotoUploadField variant="rich" showCoverLabel value={photos} onChange={setPhotos} pasteListenerActive={!!modal} />
+                        <ProductPhotoUpload value={photos} onChange={setPhotos} pasteListenerActive={!!modal} />
 
                         {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
                         <div className="flex justify-end gap-3">

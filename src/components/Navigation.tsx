@@ -169,10 +169,6 @@ export default function Navigation() {
                             Products
                         </Link>
 
-                        <Link href="/manufacturers" className="text-gray-700 dark:text-gray-300 hover:text-blue-900 dark:hover:text-blue-400 transition-colors font-medium">
-                            Manufacturers
-                        </Link>
-
                         <Link href="/gallery" className="text-gray-700 dark:text-gray-300 hover:text-blue-900 dark:hover:text-blue-400 transition-colors font-medium">
                             Gallery
                         </Link>
@@ -321,7 +317,6 @@ export default function Navigation() {
                             <div className="py-2 space-y-1">
                                 <Link href="/builder" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900 dark:text-gray-100">Builder</Link>
                                 <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900 dark:text-gray-100">Products</Link>
-                                <Link href="/manufacturers" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900 dark:text-gray-100">Manufacturers</Link>
                                 <Link href="/gallery" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900 dark:text-gray-100">Gallery</Link>
                                 <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900 dark:text-gray-100">About</Link>
                             </div>

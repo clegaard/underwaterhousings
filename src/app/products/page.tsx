@@ -2,8 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { Metadata } from 'next'
 import { auth } from '@/auth'
 import Link from 'next/link'
-import Image from 'next/image'
-import { withBase } from '@/lib/images'
+import ManufacturersClient from '@/components/ManufacturersClient'
 
 export const metadata: Metadata = {
     title: 'Products - UW Housings',
@@ -14,17 +13,7 @@ export default async function ProductsPage() {
     const [manufacturers, session] = await Promise.all([
         prisma.manufacturer.findMany({
             include: {
-                _count: {
-                    select: {
-                        cameras: true,
-                        lenses: true,
-                        housings: true,
-                        ports: true,
-                        extensionRings: true,
-                        portAdapters: true,
-                        gears: true,
-                    },
-                },
+                _count: { select: { cameras: true, housings: true, lenses: true, ports: true } },
             },
             orderBy: { name: 'asc' },
         }),
@@ -33,122 +22,30 @@ export default async function ProductsPage() {
 
     const isSuperuser = !!(session?.user as { isSuperuser?: boolean } | undefined)?.isSuperuser
 
-    const hasProducts = (m: (typeof manufacturers)[number]) =>
-        m._count.cameras > 0 ||
-        m._count.lenses > 0 ||
-        m._count.housings > 0 ||
-        m._count.ports > 0 ||
-        m._count.extensionRings > 0 ||
-        m._count.portAdapters > 0 ||
-        m._count.gears > 0
-
-    const withProducts = manufacturers.filter(hasProducts)
-    const withoutProducts = isSuperuser ? manufacturers.filter(m => !hasProducts(m)) : []
-
-    function ManufacturerCard({ m }: { m: (typeof manufacturers)[number] }) {
-        return (
-            <Link
-                href={`/products/${m.slug}`}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all p-6 flex flex-col gap-3"
-            >
-                <div className="h-16 flex items-center justify-start">
-                    {m.logoPath ? (
-                        <div className="relative w-full h-full">
-                            <Image
-                                src={withBase(m.logoPath)}
-                                alt={`${m.name} logo`}
-                                fill
-                                className="object-contain object-left"
-                            />
-                        </div>
-                    ) : (
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-lg">
-                            {m.name.charAt(0)}
-                        </div>
-                    )}
-                </div>
-                <h2 className="text-xl font-bold text-blue-900">{m.name}</h2>
-                {m.description && (
-                    <p className="text-sm text-gray-600 line-clamp-2">{m.description}</p>
-                )}
-                <div className="flex flex-wrap gap-2 mt-auto pt-2">
-                    {m._count.cameras > 0 && (
-                        <span className="bg-sky-100 text-sky-800 text-xs px-2 py-0.5 rounded-full">
-                            {m._count.cameras} camera{m._count.cameras !== 1 ? 's' : ''}
-                        </span>
-                    )}
-                    {m._count.lenses > 0 && (
-                        <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full">
-                            {m._count.lenses} lens{m._count.lenses !== 1 ? 'es' : ''}
-                        </span>
-                    )}
-                    {m._count.housings > 0 && (
-                        <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
-                            {m._count.housings} housing{m._count.housings !== 1 ? 's' : ''}
-                        </span>
-                    )}
-                    {m._count.ports > 0 && (
-                        <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded-full">
-                            {m._count.ports} port{m._count.ports !== 1 ? 's' : ''}
-                        </span>
-                    )}
-                    {m._count.extensionRings > 0 && (
-                        <span className="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded-full">
-                            {m._count.extensionRings} ring{m._count.extensionRings !== 1 ? 's' : ''}
-                        </span>
-                    )}
-                    {m._count.portAdapters > 0 && (
-                        <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full">
-                            {m._count.portAdapters} adapter{m._count.portAdapters !== 1 ? 's' : ''}
-                        </span>
-                    )}
-                    {m._count.gears > 0 && (
-                        <span className="bg-teal-100 text-teal-800 text-xs px-2 py-0.5 rounded-full">
-                            {m._count.gears} gear{m._count.gears !== 1 ? 's' : ''}
-                        </span>
-                    )}
-                </div>
-            </Link>
-        )
-    }
-
     return (
         <div className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
             <div className="bg-white shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 py-6">
-                    <nav className="text-sm text-gray-500 mb-2">
-                        <Link href="/" className="hover:text-blue-600">Home</Link>
-                        {' / '}
-                        <span className="text-gray-700">Products</span>
-                    </nav>
-                    <h1 className="text-3xl font-bold text-blue-900">Products</h1>
-                    <p className="text-gray-600 mt-1">Browse cameras, lenses, and underwater equipment by manufacturer</p>
+                <div className="max-w-6xl mx-auto px-4 py-6">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <nav className="text-sm text-gray-500 mb-2">
+                                <Link href="/" className="hover:text-blue-600">Home</Link>
+                                {' / '}
+                                <span className="text-gray-700">Products</span>
+                            </nav>
+                            <h1 className="text-4xl font-bold text-blue-900 mb-2">Products</h1>
+                            <p className="text-xl text-gray-700">Browse cameras, lenses, and underwater equipment by manufacturer</p>
+                        </div>
+                        <div className="text-right">
+                            <div className="text-3xl font-bold text-blue-600">{manufacturers.length}</div>
+                            <div className="text-sm text-gray-600">Manufacturer{manufacturers.length !== 1 ? 's' : ''}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
-                {withProducts.length > 0 && (
-                    <section>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {withProducts.map(m => <ManufacturerCard key={m.id} m={m} />)}
-                        </div>
-                    </section>
-                )}
-
-                {withoutProducts.length > 0 && (
-                    <section>
-                        <h2 className="text-lg font-semibold text-gray-500 mb-4">No products assigned yet</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 opacity-60">
-                            {withoutProducts.map(m => <ManufacturerCard key={m.id} m={m} />)}
-                        </div>
-                    </section>
-                )}
-
-                {withProducts.length === 0 && withoutProducts.length === 0 && (
-                    <div className="text-center py-16 text-gray-500">
-                        No product data available yet.
-                    </div>
-                )}
+            <div className="max-w-6xl mx-auto px-4 py-8">
+                <ManufacturersClient manufacturers={manufacturers} isSuperuser={isSuperuser} />
             </div>
         </div>
     )

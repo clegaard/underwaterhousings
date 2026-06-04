@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { HousingImage } from '@/components/HousingImage'
 import { getLensImagePathWithFallback } from '@/lib/images'
-import PhotoUploadField from '@/components/PhotoUploadField'
+import ProductPhotoUpload from '@/components/ProductPhotoUpload'
 import { uploadPhotoSlots, type PhotoSlot } from '@/lib/photoUpload'
 
 interface Lens {
@@ -281,18 +281,6 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
 
     return (
         <>
-            <div className="mb-6 flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900">
-                    {manufacturer.name} Lenses
-                </h2>
-                <Link
-                    href="/products"
-                    className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                >
-                    ← Back to Products
-                </Link>
-            </div>
-
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                 {lenses.map((lens) => (
                     <div key={lens.id} className="group/card relative">
@@ -307,11 +295,6 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                                     alt={lens.name}
                                     className="object-contain p-3 w-full h-full"
                                 />
-                                {lens.cameraMount && (
-                                    <span className="absolute top-1.5 right-1.5 text-[10px] bg-gray-100 text-gray-600 font-medium px-1.5 py-0.5 rounded-full">
-                                        {lens.cameraMount.slug.toUpperCase()}
-                                    </span>
-                                )}
                             </div>
                             <div className="px-2.5 py-2">
                                 <p className="text-xs font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-snug line-clamp-2">
@@ -646,7 +629,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                             )}
                         </div>
 
-                        <PhotoUploadField value={photos} onChange={setPhotos} pasteListenerActive={!!modal} />
+                        <ProductPhotoUpload value={photos} onChange={setPhotos} pasteListenerActive={!!modal} />
 
                         {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
 

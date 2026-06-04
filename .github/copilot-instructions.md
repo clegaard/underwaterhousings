@@ -30,6 +30,14 @@ The app uses TypeScript, Tailwind CSS, Prisma ORM with PostgreSQL, and follows a
 - The website should add tooltips to provide additional information about technical terms and concepts related to underwater photography, such as depth rating, port types, and camera compatibility, to help educate users and enhance their understanding of the equipment and techniques used in underwater photography.
 - Tooltips should have a consistent style and be easily accessible, appearing when users hover over or click on relevant terms throughout the site, providing concise and informative explanations to enhance the user experience and promote learning about underwater photography.
 
+### Optional fields
+Whenever a field is optional mark it with a (optional) label in the.
+Avoid using the asterisk to mark required fields, instead only mark the optional ones.
+
+### Tooltips
+Place tooltips next to technical terms and concepts related to underwater photography, such as depth rating, port types, and camera compatibility, to help educate users and enhance their understanding of the equipment and techniques used in underwater photography.
+On dekstop the tooltips should appear when users hover over the relevant terms, while on mobile devices they should appear when users tap on the relevant terms. The tooltips should have a consistent style and be easily accessible, providing concise and informative explanations to enhance the user experience and promote learning about underwater photography.
+
 ## Key Architecture Patterns
 
 ### Scraping
@@ -256,13 +264,3 @@ The file format priorities are:
 1. AVIF
 2. WebP
 
-
-# Accessibility Guidelines
-
-## Optional fields
-Whenever a field is optional mark it with a (optional) label in the.
-Avoid using the asterisk to mark required fields, instead only mark the optional ones.
-
-## Tooltips
-Place tooltips next to technical terms and concepts related to underwater photography, such as depth rating, port types, and camera compatibility, to help educate users and enhance their understanding of the equipment and techniques used in underwater photography.
-On dekstop the tooltips should appear when users hover over the relevant terms, while on mobile devices they should appear when users tap on the relevant terms. The tooltips should have a consistent style and be easily accessible, providing concise and informative explanations to enhance the user experience and promote learning about underwater photography.

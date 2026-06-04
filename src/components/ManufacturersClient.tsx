@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { HousingImage } from '@/components/HousingImage'
 import { withBase } from '@/lib/images'
@@ -168,90 +167,94 @@ export default function ManufacturersClient({ manufacturers: initial, isSuperuse
 
     return (
         <>
-            <div className="mb-6 flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900">All Manufacturers</h2>
-                {isSuperuser && (
-                    <button onClick={openAdd} className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add manufacturer
-                    </button>
-                )}
-            </div>
-
-            {manufacturers.length > 0 ? (
-                <div className="flex justify-center">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl w-full">
-                        {manufacturers.map((m) => (
-                            <div key={m.id} className="relative group/card bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200">
-                                <div className="p-6">
-                                    {m.logoPath && m.logoContainsName ? (
-                                        <div className="mb-4">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={withBase(m.logoPath)}
-                                                alt={`${m.name} logo`}
-                                                className="h-12 w-auto max-w-full object-contain"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center gap-4 mb-4">
-                                            {m.logoPath ? (
-                                                <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 shrink-0">
-                                                    <HousingImage
-                                                        src={withBase(m.logoPath)}
-                                                        fallback="/manufacturers/fallback.png"
-                                                        alt={`${m.name} logo`}
-                                                        className="object-contain p-1"
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
-                                                    <span className="text-xl font-bold text-blue-600">{m.name[0]}</span>
-                                                </div>
-                                            )}
-                                            <h3 className="text-lg font-semibold text-blue-900">{m.name}</h3>
-                                        </div>
-                                    )}
-                                    {m.description && (
-                                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{m.description}</p>
-                                    )}
-                                    <div className="grid grid-cols-2 gap-1 text-xs text-gray-500">
-                                        <span>{m._count.cameras} cameras</span>
-                                        <span>{m._count.housings} housings</span>
-                                        <span>{m._count.lenses} lenses</span>
-                                        <span>{m._count.ports} ports</span>
+            <div className="flex justify-center">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl w-full">
+                    {manufacturers.map((m) => (
+                        <div
+                            key={m.id}
+                            className="relative group/card bg-white rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 border border-gray-200 cursor-pointer"
+                            onClick={() => router.push(`/products/${m.slug}`)}
+                        >
+                            <div className="p-6">
+                                {m.logoPath && m.logoContainsName ? (
+                                    <div className="mb-4">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={withBase(m.logoPath)}
+                                            alt={`${m.name} logo`}
+                                            className="h-12 w-auto max-w-full object-contain"
+                                        />
                                     </div>
-                                    <div className="mt-3 pt-3 border-t border-gray-100 flex gap-2 flex-wrap text-xs">
-                                        {(m._count.cameras > 0 || m._count.housings > 0 || m._count.lenses > 0 || m._count.ports > 0) && <Link href={`/products/${m.slug}`} className="text-blue-600 hover:text-blue-800">Products →</Link>}
-                                    </div>
-                                </div>
-
-                                {isSuperuser && (
-                                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
-                                        <button onClick={() => openEdit(m)} title="Edit" className="w-7 h-7 bg-white border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-blue-600 hover:border-blue-300 shadow-sm transition-colors">
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
-                                            </svg>
-                                        </button>
-                                        <button onClick={() => openDelete(m)} title="Delete" className="w-7 h-7 bg-white border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-red-600 hover:border-red-300 shadow-sm transition-colors">
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a1 1 0 00-1-1H8a1 1 0 00-1 1h10z" />
-                                            </svg>
-                                        </button>
+                                ) : (
+                                    <div className="flex items-center gap-4 mb-4">
+                                        {m.logoPath ? (
+                                            <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 shrink-0">
+                                                <HousingImage
+                                                    src={withBase(m.logoPath)}
+                                                    fallback="/manufacturers/fallback.png"
+                                                    alt={`${m.name} logo`}
+                                                    className="object-contain p-1"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+                                                <span className="text-xl font-bold text-blue-600">{m.name[0]}</span>
+                                            </div>
+                                        )}
+                                        <h3 className="text-lg font-semibold text-blue-900">{m.name}</h3>
                                     </div>
                                 )}
+                                {m.description && (
+                                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{m.description}</p>
+                                )}
+                                <div className="grid grid-cols-2 gap-1 text-xs text-gray-500">
+                                    <span>{m._count.cameras} cameras</span>
+                                    <span>{m._count.housings} housings</span>
+                                    <span>{m._count.lenses} lenses</span>
+                                    <span>{m._count.ports} ports</span>
+                                </div>
                             </div>
-                        ))}
-                    </div>
+
+                            {isSuperuser && (
+                                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); openEdit(m) }}
+                                        title="Edit"
+                                        className="w-7 h-7 bg-white border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-blue-600 hover:border-blue-300 shadow-sm transition-colors"
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 16H9v-3z" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); openDelete(m) }}
+                                        title="Delete"
+                                        className="w-7 h-7 bg-white border border-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-red-600 hover:border-red-300 shadow-sm transition-colors"
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a1 1 0 00-1-1H8a1 1 0 00-1 1h10z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+
+                    {isSuperuser && (
+                        <button
+                            onClick={openAdd}
+                            className="group/card bg-white rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 flex flex-col items-center justify-center gap-3 p-6 min-h-35 cursor-pointer"
+                        >
+                            <div className="w-12 h-12 rounded-lg bg-gray-100 group-hover/card:bg-blue-100 flex items-center justify-center transition-colors">
+                                <svg className="w-6 h-6 text-gray-400 group-hover/card:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
+                            </div>
+                            <span className="text-sm font-medium text-gray-500 group-hover/card:text-blue-700 transition-colors">Add manufacturer</span>
+                        </button>
+                    )}
                 </div>
-            ) : (
-                <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                    <div className="text-6xl mb-4">🏭</div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No manufacturers found</h3>
-                </div>
-            )}
+            </div>
 
             {/* Add / Edit modal */}
             {(modal === 'add' || modal === 'edit') && (

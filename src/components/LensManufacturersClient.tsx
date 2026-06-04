@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { withBase, getLensImagePathWithFallback } from '@/lib/images'
 import { useCurrency } from '@/components/CurrencyContext'
 import { HousingImage } from '@/components/HousingImage'
-import PhotoUploadField from '@/components/PhotoUploadField'
+import ProductPhotoUpload from '@/components/ProductPhotoUpload'
 import { uploadPhotoSlots, type PhotoSlot } from '@/lib/photoUpload'
 
 interface Lens {
@@ -703,7 +703,7 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                             )}
                         </div>
 
-                        <PhotoUploadField variant="rich" showCoverLabel value={photos} onChange={setPhotos} pasteListenerActive={!!lensModal} />
+                        <ProductPhotoUpload value={photos} onChange={setPhotos} pasteListenerActive={!!lensModal} />
 
                         {lensError && <p className="text-sm text-red-600 mb-3">{lensError}</p>}
                         <div className="flex justify-end gap-3">

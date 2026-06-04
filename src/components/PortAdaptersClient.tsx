@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import PhotoUploadField from '@/components/PhotoUploadField'
+import ProductPhotoUpload from '@/components/ProductPhotoUpload'
 import { uploadPhotoSlots, type PhotoSlot } from '@/lib/photoUpload'
 import { HousingImage } from '@/components/HousingImage'
 import { getPortImagePathWithFallback } from '@/lib/images'
@@ -339,7 +339,7 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
                                 </select>
                             </div>
                         </div>\n\n
-                        <PhotoUploadField value={photos} onChange={setPhotos} pasteListenerActive={!!modal} />
+                        <ProductPhotoUpload value={photos} onChange={setPhotos} pasteListenerActive={!!modal} />
 
                         {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
 
