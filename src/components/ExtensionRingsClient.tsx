@@ -273,7 +273,7 @@ export default function ExtensionRingsClient({ rings: initial, manufacturer, hou
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID (optional)</label>
                         <input
                             type="text"
                             value={productIdInput}
@@ -282,7 +282,7 @@ export default function ExtensionRingsClient({ rings: initial, manufacturer, hou
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL (optional)</label>
                         <input
                             type="url"
                             value={productUrlInput}
@@ -291,7 +291,7 @@ export default function ExtensionRingsClient({ rings: initial, manufacturer, hou
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Housing mount</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Housing mount (optional)</label>
                         <select
                             value={mountId}
                             onChange={e => setMountId(e.target.value ? parseInt(e.target.value) : '')}
@@ -301,7 +301,7 @@ export default function ExtensionRingsClient({ rings: initial, manufacturer, hou
                             {housingMounts.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                         </select>
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Length (mm)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Length (mm) (optional)</label>
                         <input
                             type="number"
                             value={lengthMm}
@@ -312,7 +312,7 @@ export default function ExtensionRingsClient({ rings: initial, manufacturer, hou
 
                         <div className="flex gap-3 mb-4">
                             <div className="flex-1">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Price (optional)</label>
                                 <input
                                     type="number"
                                     step="0.01"
@@ -323,7 +323,7 @@ export default function ExtensionRingsClient({ rings: initial, manufacturer, hou
                                 />
                             </div>
                             <div className="w-24">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Currency (optional)</label>
                                 <select
                                     value={priceCurrency}
                                     onChange={e => setPriceCurrency(e.target.value)}

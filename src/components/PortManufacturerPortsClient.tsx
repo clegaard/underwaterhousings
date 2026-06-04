@@ -233,7 +233,7 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
                         />
 
                         {/* Product ID */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID (optional)</label>
                         <input
                             type="text"
                             value={productIdInput}
@@ -243,7 +243,7 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
                         />
 
                         {/* Product URL */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL (optional)</label>
                         <input
                             type="url"
                             value={productUrlInput}
@@ -252,7 +252,7 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Housing mount</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Housing mount (optional)</label>
                         <select
                             value={mountId}
                             onChange={e => setMountId(e.target.value ? parseInt(e.target.value) : '')}
@@ -262,7 +262,7 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
                             {housingMounts.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                         </select>
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Max depth rating (m)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Max depth rating (m) (optional)</label>
                         <input
                             type="number"
                             min="0"
@@ -277,7 +277,7 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
                             <p className="text-sm font-medium text-gray-700 mb-2">Optics</p>
 
                             {/* Port Radius */}
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Port radius (mm)</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Port radius (mm) (optional)</label>
                             <input
                                 type="number"
                                 min="0"
@@ -291,7 +291,7 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
 
                             {/* Port Depth */}
                             <div className="flex items-center gap-1 mb-1">
-                                <label className="block text-sm font-medium text-gray-700">Port depth (mm)</label>
+                                <label className="block text-sm font-medium text-gray-700">Port depth (mm) (optional)</label>
                                 <div className="relative group/tt inline-block">
                                     <svg className="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -343,7 +343,7 @@ export default function PortManufacturerPortsClient({ ports: initial, manufactur
                                 return (
                                     <div>
                                         <div className="flex items-center gap-1 mb-1">
-                                            <label className="block text-sm font-medium text-gray-700">Radius of curvature (mm)</label>
+                                            <label className="block text-sm font-medium text-gray-700">Radius of curvature (mm) (optional)</label>
                                             <div className="relative group/tt inline-block">
                                                 <svg className="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

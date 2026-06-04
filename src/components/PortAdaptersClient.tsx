@@ -276,7 +276,7 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID (optional)</label>
                         <input
                             type="text"
                             value={productIdInput}
@@ -285,7 +285,7 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL (optional)</label>
                         <input
                             type="url"
                             value={productUrlInput}
@@ -294,7 +294,7 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Input mount (housing side)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Input mount (housing side) (optional)</label>
                         <select
                             value={inputMountId}
                             onChange={e => setInputMountId(e.target.value ? parseInt(e.target.value) : '')}
@@ -304,7 +304,7 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
                             {housingMounts.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                         </select>
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Output mount (port side)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Output mount (port side) (optional)</label>
                         <select
                             value={outputMountId}
                             onChange={e => setOutputMountId(e.target.value ? parseInt(e.target.value) : '')}
@@ -316,7 +316,7 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
 
                         <div className="flex gap-3 mb-4">
                             <div className="flex-1">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Price (optional)</label>
                                 <input
                                     type="number"
                                     step="0.01"
@@ -327,7 +327,7 @@ export default function PortAdaptersClient({ adapters: initial, manufacturer, ho
                                 />
                             </div>
                             <div className="w-24">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Currency (optional)</label>
                                 <select
                                     value={priceCurrency}
                                     onChange={e => setPriceCurrency(e.target.value)}

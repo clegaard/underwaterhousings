@@ -29,7 +29,8 @@ export default function ProductPhotoUpload({ value, onChange, pasteListenerActiv
     const [editingIdx, setEditingIdx] = useState<number | null>(null)
     const [cropBox, setCropBox] = useState<CropBox>({ left: 0, top: 0, width: 100, height: 100 })
     const [rotation, setRotation] = useState(0)
-    const [bgRemovalState, setBgRemovalState] = useState<{ status: 'idle' | 'loading' | 'done' | 'error'; progress?: { current: number; total: number }; error?: string }>({ status: 'idle' })
+    const [bgRemovalState, setBgRemovalState] = useState<{ status: 'idle' | 'loading-model' | 'processing' | 'done' | 'error'; progress?: { current: number; total: number }; error?: string }>({ status: 'idle' })
+    const [modelReady, setModelReady] = useState(false)
     const [bgRemovedBlobUrl, setBgRemovedBlobUrl] = useState<string | null>(null)
     const [showBgRemoved, setShowBgRemoved] = useState(false)
     const [imageNaturalSize, setImageNaturalSize] = useState<{ width: number; height: number } | null>(null)
@@ -51,10 +52,35 @@ export default function ProductPhotoUpload({ value, onChange, pasteListenerActiv
     const valueRef = useRef(value)
     valueRef.current = value
 
+    // Preload background removal model with progress tracking
     useEffect(() => {
         let cancelled = false
-        async function init() { try { await preload({ model: 'isnet_quint8' }) } catch { /* ok */ } }
-        if (!cancelled) init()
+        let lastProgress = 0
+        async function init() {
+            try {
+                setBgRemovalState({ status: 'loading-model', progress: { current: 0, total: 100 } })
+                await preload({
+                    model: 'medium' as any,
+                    progress: (_key: string, current: number, total: number) => {
+                        if (cancelled) return
+                        // Clamp progress to avoid spurious values
+                        const pct = total > 0 ? Math.min(99, Math.round((current / total) * 100)) : lastProgress
+                        if (pct > lastProgress) lastProgress = pct
+                        setBgRemovalState({ status: 'loading-model', progress: { current: pct, total: 100 } })
+                    },
+                })
+                if (!cancelled) {
+                    setModelReady(true)
+                    setBgRemovalState({ status: 'idle' })
+                }
+            } catch {
+                if (!cancelled) {
+                    setModelReady(true) // Try on-demand load as fallback
+                    setBgRemovalState({ status: 'idle' })
+                }
+            }
+        }
+        init()
         return () => { cancelled = true }
     }, [])
 
@@ -189,12 +215,15 @@ export default function ProductPhotoUpload({ value, onChange, pasteListenerActiv
 
     async function handleCropApply() {
         if (editingIdx === null || !imageNaturalSize) return
-        const src = showBgRemoved && bgRemovedBlobUrl ? bgRemovedBlobUrl : getSlotPreviewUrl(value[editingIdx])
-        const croppedBlob = await cropImageToBox(src, cropBox, rotation, imageNaturalSize)
+        const slot = value[editingIdx]
+        const src = showBgRemoved && bgRemovedBlobUrl ? bgRemovedBlobUrl : getSlotPreviewUrl(slot)
+        const originalMime = slot.kind === 'new' ? slot.file.type : ''
+        // Map to canvas-supported output: PNG→PNG, JPEG→JPEG, WebP→WebP, others→WebP
+        const { mime, ext } = canvasFormat(originalMime)
+        const croppedBlob = await cropImageToBox(src, cropBox, rotation, imageNaturalSize, mime)
         if (!croppedBlob) return
-        const oldSlot = value[editingIdx]
-        if (oldSlot.kind === 'new') URL.revokeObjectURL(oldSlot.previewUrl)
-        const newFile = new File([croppedBlob], 'cropped-' + Date.now() + '.png', { type: 'image/png' })
+        if (slot.kind === 'new') URL.revokeObjectURL(slot.previewUrl)
+        const newFile = new File([croppedBlob], 'cropped-' + Date.now() + '.' + ext, { type: mime })
         const newSlot: PhotoSlot = { kind: 'new', id: Math.random().toString(36).slice(2), file: newFile, previewUrl: URL.createObjectURL(newFile) }
         const updated = [...value]; updated[editingIdx] = newSlot; onChange(updated); setEditingIdx(null)
     }
@@ -202,10 +231,36 @@ export default function ProductPhotoUpload({ value, onChange, pasteListenerActiv
     async function handleRemoveBackground() {
         if (editingIdx === null) return
         const imageUrl = showBgRemoved && bgRemovedBlobUrl ? bgRemovedBlobUrl : getSlotPreviewUrl(value[editingIdx])
-        setBgRemovalState({ status: 'loading' })
+        setBgRemovalState({ status: 'processing' })
         try {
-            const response = await fetch(imageUrl); const imageBlob = await response.blob()
-            const resultBlob = await removeBackground(imageBlob, { model: 'isnet_quint8', output: { format: 'image/png' }, progress: (_key: string, current: number, total: number) => { setBgRemovalState({ status: 'loading', progress: { current, total } }) } })
+            const response = await fetch(imageUrl)
+            let imageBlob = await response.blob()
+
+            // Convert unsupported formats (AVIF, HEIC, HEIF) to WebP before processing
+            const mime = imageBlob.type.toLowerCase()
+            const unsupported = ['image/avif', 'image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence']
+            if (unsupported.includes(mime) || mime === '') {
+                imageBlob = await convertBlobToWebP(imageBlob)
+            }
+
+            // Use WebP output for non-PNG originals (better compression, supports transparency)
+            const outputFormat = mime === 'image/png' ? 'image/png' as const : 'image/webp' as const
+
+            let inferenceComplete = false
+            const resultBlob = await removeBackground(imageBlob, {
+                model: 'medium' as any,
+                output: { format: outputFormat },
+                progress: (_key: string, current: number, total: number) => {
+                    if (inferenceComplete) return
+                    const pct = total > 0 ? Math.min(99, Math.round((current / total) * 100)) : 0
+                    if (current >= total && total > 0) {
+                        inferenceComplete = true
+                        setBgRemovalState({ status: 'processing', progress: { current: 99, total: 100 } })
+                    } else {
+                        setBgRemovalState({ status: 'processing', progress: { current: pct, total: 100 } })
+                    }
+                },
+            })
             if (bgRemovedBlobUrl) URL.revokeObjectURL(bgRemovedBlobUrl)
             const url = URL.createObjectURL(resultBlob); setBgRemovedBlobUrl(url); setShowBgRemoved(true); setBgRemovalState({ status: 'done' })
         } catch (err) { setBgRemovalState({ status: 'error', error: err instanceof Error ? err.message : 'Failed to remove background' }) }
@@ -215,7 +270,8 @@ export default function ProductPhotoUpload({ value, onChange, pasteListenerActiv
         if (editingIdx === null || !bgRemovedBlobUrl) return
         const response = await fetch(bgRemovedBlobUrl); const blob = await response.blob()
         const oldSlot = value[editingIdx]; if (oldSlot.kind === 'new') URL.revokeObjectURL(oldSlot.previewUrl)
-        const newFile = new File([blob], 'nobg-' + Date.now() + '.png', { type: 'image/png' })
+        const ext = blob.type === 'image/png' ? 'png' : 'webp'
+        const newFile = new File([blob], 'nobg-' + Date.now() + '.' + ext, { type: blob.type || 'image/webp' })
         const newSlot: PhotoSlot = { kind: 'new', id: Math.random().toString(36).slice(2), file: newFile, previewUrl: URL.createObjectURL(newFile) }
         const updated = [...value]; updated[editingIdx] = newSlot; onChange(updated); closeEditor()
     }
@@ -336,12 +392,12 @@ export default function ProductPhotoUpload({ value, onChange, pasteListenerActiv
                             <div className="px-6 py-4 border-t border-gray-100 space-y-3">
                                 <div className="flex gap-2 flex-wrap">
                                     <button onClick={handleCropApply} className="flex-1 min-w-25 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">Apply crop</button>
-                                    <button onClick={handleRemoveBackground} disabled={bgRemovalState.status === 'loading'} className="flex-1 min-w-25 px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-wait">{bgRemovalState.status === 'loading' ? 'Removing\u2026' : 'Remove background'}</button>
+                                    <button onClick={handleRemoveBackground} disabled={bgRemovalState.status === 'processing' || bgRemovalState.status === 'loading-model'} className="flex-1 min-w-25 px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors disabled:opacity-50 disabled:cursor-wait">{bgRemovalState.status === 'processing' ? 'Removing\u2026' : bgRemovalState.status === 'loading-model' ? 'Loading model\u2026' : 'Remove background'}</button>
                                     {bgRemovalState.status === 'done' && bgRemovedBlobUrl && <button onClick={handleApplyBgRemoved} className="flex-1 min-w-25 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors">Save bg-removed</button>}
                                     <button onClick={resetCrop} className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Reset all</button>
                                 </div>
-                                {bgRemovalState.status === 'loading' && bgRemovalState.progress && (<div className="space-y-1.5"><div className="flex justify-between text-xs text-gray-500"><span>Removing background&hellip;</span><span>{Math.round((bgRemovalState.progress.current / bgRemovalState.progress.total) * 100)}%</span></div><div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden"><div className="h-full bg-violet-500 rounded-full transition-all duration-300" style={{ width: (bgRemovalState.progress.current / bgRemovalState.progress.total) * 100 + '%' }} /></div></div>)}
-                                {bgRemovalState.status === 'loading' && !bgRemovalState.progress && <p className="text-xs text-violet-600 animate-pulse">Processing&hellip; this may take a moment</p>}
+                                {(bgRemovalState.status === 'loading-model' || bgRemovalState.status === 'processing') && bgRemovalState.progress && (<div className="space-y-1.5"><div className="flex justify-between text-xs text-gray-500"><span>{bgRemovalState.status === 'loading-model' ? 'Loading AI model…' : bgRemovalState.progress.current >= 99 ? 'Finalizing…' : 'Removing background…'}</span><span>{bgRemovalState.progress.current}%</span></div><div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden"><div className="h-full bg-violet-500 rounded-full transition-all duration-300" style={{ width: bgRemovalState.progress.current + '%' }} /></div></div>)}
+                                {(bgRemovalState.status === 'loading-model' || bgRemovalState.status === 'processing') && !bgRemovalState.progress && <p className="text-xs text-violet-600 animate-pulse">Processing&hellip; this may take a moment</p>}
                                 {bgRemovalState.status === 'error' && <p className="text-xs text-red-600">{bgRemovalState.error}</p>}
                                 {bgRemovalState.status === 'done' && bgRemovedBlobUrl && <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer"><input type="checkbox" checked={showBgRemoved} onChange={e => setShowBgRemoved(e.target.checked)} className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />Preview background-removed version</label>}
                             </div>
@@ -355,16 +411,17 @@ export default function ProductPhotoUpload({ value, onChange, pasteListenerActiv
 
 function clamp(v: number, min: number, max: number): number { return Math.max(min, Math.min(max, v)) }
 
-async function cropImageToBox(src: string, box: CropBox, rotationDeg: number, naturalSize: { width: number; height: number }): Promise<Blob | null> {
+async function cropImageToBox(src: string, box: CropBox, rotationDeg: number, naturalSize: { width: number; height: number }, format: string): Promise<Blob | null> {
     const image = await createImage(src)
     const iw = naturalSize.width; const ih = naturalSize.height
     const cx = Math.round(box.left / 100 * iw); const cy = Math.round(box.top / 100 * ih)
     const cw = Math.round(box.width / 100 * iw); const ch = Math.round(box.height / 100 * ih)
     if (cw <= 0 || ch <= 0) return null
+    const quality = format === 'image/png' ? undefined : 0.92
     if (rotationDeg % 360 === 0) {
         const canvas = document.createElement('canvas'); canvas.width = cw; canvas.height = ch
         const ctx = canvas.getContext('2d')!; ctx.drawImage(image, cx, cy, cw, ch, 0, 0, cw, ch)
-        return new Promise(r => canvas.toBlob(r, 'image/png'))
+        return new Promise(r => canvas.toBlob(r, format, quality))
     }
     const rad = (rotationDeg * Math.PI) / 180; const cos = Math.cos(rad); const sin = Math.sin(rad)
     const absCos = Math.abs(cos); const absSin = Math.abs(sin)
@@ -377,7 +434,28 @@ async function cropImageToBox(src: string, box: CropBox, rotationDeg: number, na
     const outW = maxX - minX; const outH = maxY - minY
     const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH
     const ctx = canvas.getContext('2d')!; ctx.translate(-minX, -minY); ctx.translate(ox + cix, oy + ciy); ctx.rotate(rad); ctx.drawImage(image, -cix, -ciy)
-    return new Promise(r => canvas.toBlob(r, 'image/png'))
+    return new Promise(r => canvas.toBlob(r, format, quality))
 }
 
 function createImage(src: string): Promise<HTMLImageElement> { return new Promise((resolve, reject) => { const img = new Image(); img.crossOrigin = 'anonymous'; img.onload = () => resolve(img); img.onerror = reject; img.src = src }) }
+
+/** Convert an unsupported image blob (AVIF, HEIC, etc.) to WebP via canvas */
+async function convertBlobToWebP(blob: Blob): Promise<Blob> {
+    const image = await createImage(URL.createObjectURL(blob))
+    const canvas = document.createElement('canvas')
+    canvas.width = image.naturalWidth
+    canvas.height = image.naturalHeight
+    const ctx = canvas.getContext('2d')!
+    ctx.drawImage(image, 0, 0)
+    URL.revokeObjectURL(image.src)
+    return new Promise(resolve => canvas.toBlob(b => resolve(b!), 'image/webp', 0.9))
+}
+
+/** Map an original MIME type to a canvas-supported output format */
+function canvasFormat(originalMime: string): { mime: string; ext: string } {
+    const m = originalMime.toLowerCase()
+    if (m === 'image/png') return { mime: 'image/png', ext: 'png' }
+    if (m === 'image/jpeg' || m === 'image/jpg') return { mime: 'image/jpeg', ext: 'jpg' }
+    if (m === 'image/webp') return { mime: 'image/webp', ext: 'webp' }
+    return { mime: 'image/webp', ext: 'webp' }
+}

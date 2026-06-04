@@ -21,7 +21,6 @@ model Manufacturer {
     extensionRings   ExtensionRing[]
     portAdapters     PortAdapter[]
     gears            Gear[]
-    // portChartEntries PortChartEntry[]
     logoPath         String?
     logoContainsName Boolean         @default(false)
 
@@ -97,24 +96,28 @@ model Camera {
 }
 
 model Housing {
-    id                   Int           @id @default(autoincrement())
-    name                 String
-    slug                 String        @unique
-    description          String?
-    priceAmount          Decimal?      @db.Decimal(10, 2)
-    priceCurrency        String?       @default("USD")
-    depthRating          Int
-    material             String?
-    manufacturerId       Int
-    housingMountId       Int?
-    productPhotos        String[]
-    interchangeablePort  Boolean       @default(true)
-    productId            String? // Manufacturer product ID / SKU (unique within manufacturer)
-    productUrl           String? // Link to the product page on the manufacturer's website
+    id          Int     @id @default(autoincrement())
+    name        String
+    slug        String  @unique
+    productId   String? // Manufacturer product ID / SKU (unique within manufacturer)
+    productUrl  String? // Link to the product page on the manufacturer's website
+    description String?
+
+    priceAmount   Decimal? @db.Decimal(10, 2)
+    priceCurrency String?  @default("USD")
+
+    depthRating Int
+    material    String?
+
+    productPhotos       String[]
+    interchangeablePort Boolean  @default(true)
+
     cameraMountRecession Float? // Distance from the camera body mount to the housing port flange along the optical axis, in mm
     rigReviews           RigReview[]
     cameraRigs           CameraRig[]
     cameras              Camera[]
+    manufacturerId       Int
+    housingMountId       Int?
     housingMount         HousingMount? @relation(fields: [housingMountId], references: [id])
     manufacturer         Manufacturer  @relation(fields: [manufacturerId], references: [id])
 
@@ -210,7 +213,7 @@ model Lens {
     cameraId                  Int?
     productPhotos             String[]
     manufacturerId            Int
-    exifId                    String?       @unique
+    exifId                    String?       @unique // Optional EXIF identifier for matching photos taken with this lens
     productId                 String? // Manufacturer product ID / SKU (unique within manufacturer)
     productUrl                String? // Link to the product page on the manufacturer's website
     rigReviews                RigReview[]

@@ -472,7 +472,7 @@ export default function HousingManufacturersClient({ manufacturers: initial, cam
                         />
 
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Compatible camera bodies <span className="text-red-500">*</span>
+                            Compatible camera bodies
                         </label>
                         {/* Selected cameras tags */}
                         {selectedCameraIds.length > 0 && (
@@ -510,7 +510,7 @@ export default function HousingManufacturersClient({ manufacturers: initial, cam
                             <span className="text-sm font-medium text-gray-700">Interchangeable port</span>
                         </label>
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Port system</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Port system (optional)</label>
                         <select value={mountId} onChange={e => setMountId(e.target.value ? parseInt(e.target.value) : '')}
                             disabled={!interchangeablePort}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed">
@@ -525,7 +525,7 @@ export default function HousingManufacturersClient({ manufacturers: initial, cam
                             placeholder="e.g. 100"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4" />
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Price (optional)</label>
                         <div className="flex gap-2 mb-4">
                             <input type="number" min="0" step="0.01" value={priceAmount} onChange={e => setPriceAmount(e.target.value)}
                                 placeholder="e.g. 3595"

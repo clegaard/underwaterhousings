@@ -378,7 +378,7 @@ export default function HousingManufacturerHousingsClient({
                         />
 
                         {/* Product ID */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID (optional)</label>
                         <input
                             type="text"
                             value={productIdInput}
@@ -388,7 +388,7 @@ export default function HousingManufacturerHousingsClient({
                         />
 
                         {/* Product URL */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL (optional)</label>
                         <input
                             type="url"
                             value={productUrlInput}
@@ -399,7 +399,7 @@ export default function HousingManufacturerHousingsClient({
 
                         {/* Compatible camera body */}
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Compatible camera bodies <span className="text-red-500">*</span>
+                            Compatible camera bodies
                         </label>
                         {/* Selected cameras tags */}
                         {selectedCameraIds.length > 0 && (
@@ -455,7 +455,7 @@ export default function HousingManufacturerHousingsClient({
                         </label>
 
                         {/* Port system (housing mount) */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Port system</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Port system (optional)</label>
                         <select
                             value={mountId}
                             onChange={e => setMountId(e.target.value ? parseInt(e.target.value) : '')}
@@ -469,7 +469,7 @@ export default function HousingManufacturerHousingsClient({
                         </select>
 
                         {/* Depth rating */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Max depth rating (m)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Max depth rating (m) (optional)</label>
                         <input
                             type="number"
                             min="0"
@@ -481,7 +481,7 @@ export default function HousingManufacturerHousingsClient({
 
                         {/* Camera mount recession */}
                         <div className="flex items-center gap-1 mb-1">
-                            <label className="block text-sm font-medium text-gray-700">Camera mount recession (mm)</label>
+                            <label className="block text-sm font-medium text-gray-700">Camera mount recession (mm) (optional)</label>
                             <div className="relative group/tt inline-block">
                                 <svg className="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -503,7 +503,7 @@ export default function HousingManufacturerHousingsClient({
                         />
 
                         {/* Price */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Price (optional)</label>
                         <div className="flex gap-2 mb-4">
                             <input
                                 type="number"

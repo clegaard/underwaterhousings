@@ -498,7 +498,7 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                         />
 
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Camera mount <span className="text-red-500">*</span>
+                            Camera mount
                         </label>
                         <select value={mountId} onChange={e => setMountId(e.target.value ? parseInt(e.target.value) : '')}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4">
@@ -506,7 +506,7 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                             {cameraMounts.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                         </select>
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">EXIF lens ID</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">EXIF lens ID (optional)</label>
                         <input type="text" value={exifIdInput} onChange={e => setExifIdInput(e.target.value)}
                             placeholder="e.g. FE 24-70mm F2.8 GM"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4" />

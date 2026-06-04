@@ -262,7 +262,7 @@ export default function ManufacturersClient({ manufacturers: initial, isSuperuse
                     <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">{modal === 'edit' ? 'Edit manufacturer' : 'Add manufacturer'}</h3>
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Name <span className="text-red-500">*</span></label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                         <input
                             autoFocus
                             type="text"
@@ -273,7 +273,7 @@ export default function ManufacturersClient({ manufacturers: initial, isSuperuse
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
                         <textarea
                             value={descriptionInput}
                             onChange={e => setDescriptionInput(e.target.value)}
@@ -282,7 +282,7 @@ export default function ManufacturersClient({ manufacturers: initial, isSuperuse
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4 resize-none"
                         />
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Logo</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Logo (optional)</label>
                         {logoPreview ? (
                             <div className="flex items-center gap-3 mb-3">
                                 <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
@@ -313,7 +313,7 @@ export default function ManufacturersClient({ manufacturers: initial, isSuperuse
                                 onChange={e => setLogoContainsNameInput(e.target.checked)}
                                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             />
-                            Logo already contains the manufacturer name
+                            Logo already contains the manufacturer name (optional)
                         </label>
 
                         {error && <p className="text-red-600 text-sm mb-3">{error}</p>}

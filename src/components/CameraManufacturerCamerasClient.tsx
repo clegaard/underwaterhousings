@@ -443,7 +443,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                         />
 
                         {/* Product ID */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID (optional)</label>
                         <input
                             type="text"
                             value={productIdInput}
@@ -453,7 +453,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                         />
 
                         {/* Product URL */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL (optional)</label>
                         <input
                             type="url"
                             value={productUrlInput}
@@ -495,7 +495,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                             </div>
                             {interchangeableLens ? (
                                 <div className="mt-3">
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Camera mount</label>
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Camera mount (optional)</label>
                                     <select
                                         value={mountId}
                                         onChange={e => setMountId(e.target.value ? parseInt(e.target.value) : '')}
@@ -533,7 +533,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                                     {isZoomLens ? (
                                         <div className="grid grid-cols-2 gap-3 mb-3">
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-700 mb-1">Focal length — wide (mm)</label>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1">Focal length — wide (mm) (optional)</label>
                                                 <input
                                                     type="number"
                                                     min={0}
@@ -545,7 +545,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-700 mb-1">Focal length — tele (mm)</label>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1">Focal length — tele (mm) (optional)</label>
                                                 <input
                                                     type="number"
                                                     min={0}
@@ -559,7 +559,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                                         </div>
                                     ) : (
                                         <div className="mb-3">
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">Focal length (mm)</label>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">Focal length (mm) (optional)</label>
                                             <input
                                                 type="number"
                                                 min={0}
@@ -576,7 +576,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                                     {isZoomLens ? (
                                         <div className="grid grid-cols-2 gap-3 mb-3">
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-700 mb-1">Min. focus — wide (m)</label>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1">Min. focus — wide (m) (optional)</label>
                                                 <input
                                                     type="number"
                                                     min={0}
@@ -588,7 +588,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-700 mb-1">Min. focus — tele (m)</label>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1">Min. focus — tele (m) (optional)</label>
                                                 <input
                                                     type="number"
                                                     min={0}
@@ -602,7 +602,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                                         </div>
                                     ) : (
                                         <div className="mb-3">
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">Min. focus distance (m)</label>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">Min. focus distance (m) (optional)</label>
                                             <input
                                                 type="number"
                                                 min={0}
@@ -615,7 +615,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                                         </div>
                                     )}
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-700 mb-1">Max magnification (e.g. 4.0 for 4×)</label>
+                                        <label className="block text-xs font-medium text-gray-700 mb-1">Max magnification (e.g. 4.0 for 4×) (optional)</label>
                                         <input
                                             type="number"
                                             min={0}
@@ -643,7 +643,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                             </label>
                             {canBeUsedWithoutAHousing && (
                                 <div className="mt-3">
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Depth rating (m)</label>
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Depth rating (m) (optional)</label>
                                     <input
                                         type="number"
                                         min={0}
@@ -662,7 +662,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Sensor</p>
                             <div className="grid grid-cols-2 gap-3 mb-3">
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Sensor width (mm)</label>
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Sensor width (mm) (optional)</label>
                                     <input
                                         type="number"
                                         min={0}
@@ -674,7 +674,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Sensor height (mm)</label>
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Sensor height (mm) (optional)</label>
                                     <input
                                         type="number"
                                         min={0}
@@ -687,7 +687,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">Megapixels</label>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Megapixels (optional)</label>
                                 <input
                                     type="number"
                                     min={0}
@@ -705,7 +705,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Pricing</p>
                             <div className="grid grid-cols-3 gap-3">
                                 <div className="col-span-2">
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Price</label>
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Price (optional)</label>
                                     <input
                                         type="number"
                                         min={0}
@@ -717,7 +717,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Currency</label>
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Currency (optional)</label>
                                     <input
                                         type="text"
                                         maxLength={3}
@@ -731,7 +731,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                         </div>
 
                         {/* EXIF ID */}
-                        <label className="block text-sm font-medium text-gray-700 mb-1">EXIF camera ID</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">EXIF camera ID (optional)</label>
                         <input
                             type="text"
                             value={exifIdInput}

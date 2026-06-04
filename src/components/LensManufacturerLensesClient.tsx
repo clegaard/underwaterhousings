@@ -376,7 +376,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product ID (optional)</label>
                         <input
                             type="text"
                             value={productIdInput}
@@ -385,7 +385,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Product URL (optional)</label>
                         <input
                             type="url"
                             value={productUrlInput}
@@ -394,7 +394,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-4"
                         />
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Camera mount <span className="text-red-500">*</span></label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Camera mount</label>
                         <select
                             value={mountId}
                             onChange={e => setMountId(e.target.value ? parseInt(e.target.value) : '')}
@@ -406,7 +406,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                             ))}
                         </select>
 
-                        <label className="block text-sm font-medium text-gray-700 mb-1">EXIF lens ID</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">EXIF lens ID (optional)</label>
                         <input
                             type="text"
                             value={exifIdInput}
@@ -439,7 +439,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
 
                             {lensType === 'prime' ? (
                                 <>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Focal length (mm)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Focal length (mm) (optional)</label>
                                     <input
                                         type="number"
                                         min="1"
@@ -449,7 +449,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                                         placeholder="e.g. 50"
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-3"
                                     />
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Minimum focus distance (m)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Minimum focus distance (m) (optional)</label>
                                     <input
                                         type="number"
                                         min="0"
@@ -459,7 +459,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                                         placeholder="e.g. 0.28"
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 mb-3"
                                     />
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Maximum magnification (×)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Maximum magnification (×) (optional)</label>
                                     <input
                                         type="number"
                                         min="0"
@@ -472,7 +472,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                                     <p className="text-xs text-gray-400 mb-2">Reproduction ratio at closest focus, e.g. 0.30 for 0.30× (1:3.3).</p>
                                     {/* Entrance pupil distance */}
                                     <div className="flex items-center gap-1 mb-1">
-                                        <label className="block text-sm font-medium text-gray-700">Entrance pupil distance (mm)</label>
+                                        <label className="block text-sm font-medium text-gray-700">Entrance pupil distance (mm) (optional)</label>
                                         <div className="relative group/tt inline-block">
                                             <svg className="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -499,7 +499,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                                     {/* Focal lengths */}
                                     <div className="flex gap-3 mb-1">
                                         <div className="flex-1">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Wide end (mm)</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Wide end (mm) (optional)</label>
                                             <input
                                                 type="number"
                                                 min="1"
@@ -511,7 +511,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                                             />
                                         </div>
                                         <div className="flex-1">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Tele end (mm)</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Tele end (mm) (optional)</label>
                                             <input
                                                 type="number"
                                                 min="1"
@@ -531,7 +531,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                                     {/* Minimum focus distance */}
                                     <div className="flex gap-3 mb-3">
                                         <div className="flex-1">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Min. focus dist. wide (m)</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Min. focus dist. wide (m) (optional)</label>
                                             <input
                                                 type="number"
                                                 min="0"
@@ -543,7 +543,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                                             />
                                         </div>
                                         <div className="flex-1">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Min. focus dist. tele (m)</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Min. focus dist. tele (m) (optional)</label>
                                             <input
                                                 type="number"
                                                 min="0"
@@ -559,7 +559,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                                     {/* Maximum magnification */}
                                     <div className="flex gap-3 mb-1">
                                         <div className="flex-1">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Max. magnification wide (×)</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Max. magnification wide (×) (optional)</label>
                                             <input
                                                 type="number"
                                                 min="0"
@@ -571,7 +571,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                                             />
                                         </div>
                                         <div className="flex-1">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Max. magnification tele (×)</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Max. magnification tele (×) (optional)</label>
                                             <input
                                                 type="number"
                                                 min="0"
@@ -587,7 +587,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
 
                                     {/* Entrance pupil distance */}
                                     <div className="flex items-center gap-1 mb-1">
-                                        <label className="block text-sm font-medium text-gray-700">Entrance pupil distance (mm)</label>
+                                        <label className="block text-sm font-medium text-gray-700">Entrance pupil distance (mm) (optional)</label>
                                         <div className="relative group/tt inline-block">
                                             <svg className="w-3.5 h-3.5 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -601,7 +601,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                                     </div>
                                     <div className="flex gap-3 mb-2">
                                         <div className="flex-1">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Entrance pupil wide (mm)</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Entrance pupil wide (mm) (optional)</label>
                                             <input
                                                 type="number"
                                                 min="0"
@@ -613,7 +613,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                                             />
                                         </div>
                                         <div className="flex-1">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Entrance pupil tele (mm)</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Entrance pupil tele (mm) (optional)</label>
                                             <input
                                                 type="number"
                                                 min="0"
