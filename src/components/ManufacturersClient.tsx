@@ -224,9 +224,7 @@ export default function ManufacturersClient({ manufacturers: initial, isSuperuse
                                         <span>{m._count.ports} ports</span>
                                     </div>
                                     <div className="mt-3 pt-3 border-t border-gray-100 flex gap-2 flex-wrap text-xs">
-                                        {m._count.cameras > 0 && <Link href={`/cameras/${m.slug}`} className="text-blue-600 hover:text-blue-800">Cameras →</Link>}
-                                        {(m._count.housings > 0 || m._count.ports > 0) && <Link href={`/gear/${m.slug}`} className="text-blue-600 hover:text-blue-800">Gear →</Link>}
-                                        {m._count.lenses > 0 && <Link href={`/lenses/${m.slug}`} className="text-blue-600 hover:text-blue-800">Lenses →</Link>}
+                                        {(m._count.cameras > 0 || m._count.housings > 0 || m._count.lenses > 0 || m._count.ports > 0) && <Link href={`/products/${m.slug}`} className="text-blue-600 hover:text-blue-800">Products →</Link>}
                                     </div>
                                 </div>
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import type { InstagramMediaItem, InstagramImage } from '@/app/api/linked-services/instagram/media/route'
+import type { InstagramMediaItem, InstagramImage, InstagramLocation } from '@/app/api/linked-services/instagram/media/route'
 import { extractMetaFromCaption } from '@/lib/captionMeta'
 import PhotoMetadataEditor, { type PendingPhoto, type UserRig, toDatetimeLocal, EMPTY_FORM } from './PhotoMetadataEditor'
 import { useUploadQueue } from '@/lib/UploadQueueContext'
@@ -14,6 +14,8 @@ interface Selection {
     timestamp: string
     width: number
     height: number
+    /** Geotag from Instagram, if present */
+    location?: InstagramLocation
 }
 
 interface Props {
@@ -144,30 +146,32 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
         dimensionsRef.current.set(id, { width: img.naturalWidth || 1080, height: img.naturalHeight || 1080 })
     }, [])
 
-    function toggleImage(imageId: string, mediaUrl: string, caption: string | undefined, timestamp: string) {
+    function toggleImage(imageId: string, mediaUrl: string, caption: string | undefined, timestamp: string, location?: InstagramLocation) {
         setSelected(prev => {
             const next = new Map(prev)
             if (next.has(imageId)) {
                 next.delete(imageId)
             } else {
                 const dims = dimensionsRef.current.get(imageId) ?? { width: 1080, height: 1080 }
-                next.set(imageId, { imageId, mediaUrl, caption, timestamp, ...dims })
+                next.set(imageId, { imageId, mediaUrl, caption, timestamp, location, ...dims })
             }
             return next
         })
     }
 
     function toggleCarouselImage(img: InstagramImage, parentItem: InstagramMediaItem) {
-        toggleImage(img.id, img.mediaUrl, parentItem.caption, img.timestamp)
+        toggleImage(img.id, img.mediaUrl, parentItem.caption, img.timestamp, parentItem.location)
     }
 
     function handleReview() {
         if (selected.size === 0) return
-        // Pre-compute meta for each selection so we can geocode after state updates
+        // Pre-compute meta and geotags for each selection so we can geocode after state updates
         const metaMap = new Map<string, ReturnType<typeof extractMetaFromCaption>>()
+        const geotagMap = new Map<string, InstagramLocation>()
         const photos: PendingPhoto[] = Array.from(selected.values()).map(s => {
             const meta = s.caption ? extractMetaFromCaption(s.caption) : {}
             metaMap.set(s.imageId, meta)
+            if (s.location) geotagMap.set(s.imageId, s.location)
             const dims = dimensionsRef.current.get(s.imageId) ?? { width: s.width, height: s.height }
             return {
                 id: s.imageId,
@@ -204,24 +208,61 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
         setReviewPhotos(photos)
         setView('review')
 
-            // Async: forward-geocode caption locations (Rule G4 — caption as fallback when no geotag)
+            // Async geocoding — Rule G4: geotag is priority 1, caption location is priority 2
             ; (async () => {
-                for (const [photoId, meta] of metaMap) {
-                    if (!meta.location) continue
-                    try {
-                        const res = await fetch(
-                            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(meta.location)}&format=json&limit=1`,
-                            { headers: { 'Accept-Language': 'en', 'User-Agent': 'UnderwaterHousings/1.0' } }
-                        )
-                        const data = res.ok ? await res.json() : null
-                        const hit = Array.isArray(data) ? data[0] : null
-                        if (!hit) continue
-                        setReviewPhotos(prev => prev.map(p =>
-                            p.id === photoId && !p.locationValue
-                                ? { ...p, locationValue: { lat: parseFloat(hit.lat), lng: parseFloat(hit.lon), radius: 5000, name: meta.location! } }
-                                : p
-                        ))
-                    } catch { /* ignore geocoding failures */ }
+                const allIds = Array.from(new Set([...geotagMap.keys(), ...metaMap.keys()]))
+                for (const photoId of allIds) {
+                    const geotag = geotagMap.get(photoId)
+                    const meta = metaMap.get(photoId)
+                    if (geotag) {
+                        // Priority 1: Instagram geotag — search Nominatim by name, fall back to raw coordinates
+                        try {
+                            const res = await fetch(
+                                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geotag.name)}&format=json&limit=1`,
+                                { headers: { 'Accept-Language': 'en', 'User-Agent': 'UnderwaterHousings/1.0' } }
+                            )
+                            const data = res.ok ? await res.json() : null
+                            const hit = Array.isArray(data) ? data[0] : null
+                            if (hit) {
+                                const locationValue = { lat: parseFloat(hit.lat), lng: parseFloat(hit.lon), radius: 5000, name: geotag.name }
+                                setReviewPhotos(prev => prev.map(p =>
+                                    p.id === photoId && !p.locationValue ? { ...p, locationValue } : p
+                                ))
+                            } else if (geotag.lat != null && geotag.lng != null) {
+                                // Nominatim returned no result but we have raw coordinates
+                                const locationValue = { lat: geotag.lat, lng: geotag.lng, radius: 5000, name: geotag.name }
+                                setReviewPhotos(prev => prev.map(p =>
+                                    p.id === photoId && !p.locationValue ? { ...p, locationValue } : p
+                                ))
+                            }
+                            // else: name-only geotag with no Nominatim hit — skip
+                        } catch {
+                            // Nominatim unreachable — use raw geotag coordinates if available
+                            if (geotag.lat != null && geotag.lng != null) {
+                                setReviewPhotos(prev => prev.map(p =>
+                                    p.id === photoId && !p.locationValue
+                                        ? { ...p, locationValue: { lat: geotag.lat!, lng: geotag.lng!, radius: 5000, name: geotag.name } }
+                                        : p
+                                ))
+                            }
+                        }
+                    } else if (meta?.location) {
+                        // Priority 2: caption location
+                        try {
+                            const res = await fetch(
+                                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(meta.location)}&format=json&limit=1`,
+                                { headers: { 'Accept-Language': 'en', 'User-Agent': 'UnderwaterHousings/1.0' } }
+                            )
+                            const data = res.ok ? await res.json() : null
+                            const hit = Array.isArray(data) ? data[0] : null
+                            if (!hit) continue
+                            setReviewPhotos(prev => prev.map(p =>
+                                p.id === photoId && !p.locationValue
+                                    ? { ...p, locationValue: { lat: parseFloat(hit.lat), lng: parseFloat(hit.lon), radius: 5000, name: meta.location! } }
+                                    : p
+                            ))
+                        } catch { /* ignore geocoding failures */ }
+                    }
                 }
             })()
     }
@@ -381,6 +422,65 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
                                 Select photos to import. Camera settings will be auto-extracted from captions.
                             </p>
 
+                            {/* Carousel post info bar */}
+                            {expandedCarousel && (
+                                <div className="mb-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 flex flex-col gap-2">
+                                    {/* Row 1: post link + geotag link */}
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                                        {/* Instagram post link — uses universal link so the app opens on mobile */}
+                                        <a
+                                            href={expandedCarousel.permalink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1.5 text-xs font-medium text-pink-600 hover:text-pink-700 transition-colors"
+                                        >
+                                            <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none">
+                                                <defs>
+                                                    <linearGradient id="ig-bar-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+                                                        <stop offset="0%" stopColor="#f09433" />
+                                                        <stop offset="50%" stopColor="#dc2743" />
+                                                        <stop offset="100%" stopColor="#bc1888" />
+                                                    </linearGradient>
+                                                </defs>
+                                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="url(#ig-bar-grad)" />
+                                                <circle cx="12" cy="12" r="5" stroke="white" strokeWidth="1.5" fill="none" />
+                                                <circle cx="17.5" cy="6.5" r="1" fill="white" />
+                                            </svg>
+                                            View post
+                                        </a>
+
+                                        {/* Geotag link */}
+                                        {expandedCarousel.location && (
+                                            <a
+                                                href={
+                                                    expandedCarousel.location.id
+                                                        ? `https://www.instagram.com/explore/locations/${expandedCarousel.location.id}/`
+                                                        : expandedCarousel.location.lat != null && expandedCarousel.location.lng != null
+                                                            ? `https://maps.google.com/maps?q=${expandedCarousel.location.lat},${expandedCarousel.location.lng}`
+                                                            : `https://maps.google.com/maps?q=${encodeURIComponent(expandedCarousel.location.name)}`
+                                                }
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 transition-colors min-w-0"
+                                            >
+                                                <svg className="w-3.5 h-3.5 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                <span className="truncate">{expandedCarousel.location.name}</span>
+                                            </a>
+                                        )}
+                                    </div>
+
+                                    {/* Row 2: caption preview */}
+                                    {expandedCarousel.caption && (
+                                        <p className="text-xs text-gray-600 leading-relaxed line-clamp-3 whitespace-pre-line">
+                                            {expandedCarousel.caption}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Media grid or carousel child grid */}
                             {expandedCarousel ? (
                                 <CarouselGrid
@@ -399,7 +499,7 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
                                         if (item.mediaType === 'CAROUSEL_ALBUM') {
                                             setExpandedCarousel(item)
                                         } else {
-                                            toggleImage(item.id, item.mediaUrl, item.caption, item.timestamp)
+                                            toggleImage(item.id, item.mediaUrl, item.caption, item.timestamp, item.location)
                                         }
                                     }}
                                     onImgLoad={onImgLoad}

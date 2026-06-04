@@ -11,6 +11,15 @@ export interface InstagramImage {
     timestamp: string
 }
 
+export interface InstagramLocation {
+    /** Facebook Place ID — used to build the Instagram location page URL */
+    id?: string
+    name: string
+    /** May be absent when the Graph API returns only a named place without coordinates */
+    lat?: number
+    lng?: number
+}
+
 export interface InstagramMediaItem {
     id: string
     mediaType: 'IMAGE' | 'CAROUSEL_ALBUM'
@@ -19,6 +28,8 @@ export interface InstagramMediaItem {
     caption?: string
     timestamp: string
     permalink: string
+    /** Geotag attached to the post, if any */
+    location?: InstagramLocation
     /** Child images for CAROUSEL_ALBUM */
     children?: InstagramImage[]
 }
@@ -46,7 +57,7 @@ export async function GET(req: NextRequest) {
 
     try {
         const mediaUrl = new URL(`${GRAPH}/me/media`)
-        mediaUrl.searchParams.set('fields', 'id,media_type,media_url,thumbnail_url,caption,timestamp,permalink')
+        mediaUrl.searchParams.set('fields', 'id,media_type,media_url,thumbnail_url,caption,timestamp,permalink,location')
         mediaUrl.searchParams.set('access_token', token)
         mediaUrl.searchParams.set('limit', '24')
         if (after) mediaUrl.searchParams.set('after', after)
@@ -68,6 +79,7 @@ export async function GET(req: NextRequest) {
                 caption?: string
                 timestamp: string
                 permalink: string
+                location?: { id?: string; name?: string; latitude?: number; longitude?: number }
             }>
         }
 
@@ -79,6 +91,16 @@ export async function GET(req: NextRequest) {
         // Enrich carousel albums with their children
         const media: InstagramMediaItem[] = await Promise.all(
             filtered.map(async (item): Promise<InstagramMediaItem> => {
+                const location: InstagramLocation | undefined =
+                    item.location?.name
+                        ? {
+                            id: item.location.id,
+                            name: item.location.name,
+                            lat: item.location.latitude,
+                            lng: item.location.longitude,
+                        }
+                        : undefined
+
                 if (item.media_type === 'IMAGE') {
                     return {
                         id: item.id,
@@ -87,6 +109,7 @@ export async function GET(req: NextRequest) {
                         caption: item.caption,
                         timestamp: item.timestamp,
                         permalink: item.permalink,
+                        location,
                     }
                 }
 
@@ -112,6 +135,7 @@ export async function GET(req: NextRequest) {
                     caption: item.caption,
                     timestamp: item.timestamp,
                     permalink: item.permalink,
+                    location,
                     children,
                 }
             })

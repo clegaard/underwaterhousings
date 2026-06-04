@@ -247,7 +247,7 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
                         {/* Manufacturer heading */}
                         <div className="flex items-center gap-3 mb-4 group/mfr">
                             {manufacturer.logoPath && manufacturer.logoContainsName ? (
-                                <Link href={`/gear/${manufacturer.slug}`} className="shrink-0">
+                                <Link href={`/products/${manufacturer.slug}`} className="shrink-0">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img src={withBase(manufacturer.logoPath)} alt={`${manufacturer.name} logo`} className="h-9 w-auto max-w-40 object-contain" />
                                 </Link>
@@ -260,7 +260,7 @@ export default function PortManufacturersClient({ manufacturers: initial, housin
                                         </div>
                                     )}
                                     <Link
-                                        href={`/gear/${manufacturer.slug}`}
+                                        href={`/products/${manufacturer.slug}`}
                                         className="text-lg font-semibold text-gray-900 hover:text-blue-700 transition-colors"
                                     >
                                         {manufacturer.name}

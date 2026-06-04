@@ -78,12 +78,12 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
             <div className="bg-white shadow-sm border-b">
                 <div className="max-w-5xl mx-auto px-4 py-6">
                     <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-                        <Link href="/cameras" className="hover:text-blue-600 transition-colors">
-                            Cameras
+                        <Link href="/products" className="hover:text-blue-600 transition-colors">
+                            Products
                         </Link>
                         <span>→</span>
                         <Link
-                            href={`/cameras/${manufacturerSlug}`}
+                            href={`/products/${manufacturerSlug}`}
                             className="hover:text-blue-600 transition-colors"
                         >
                             {camera.brand.name}
@@ -273,7 +273,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
 
                         <div className="mt-auto pt-4 border-t border-gray-100 space-y-2">
                             <Link
-                                href={`/cameras/${manufacturerSlug}`}
+                                href={`/products/${manufacturerSlug}`}
                                 className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors"
                             >
                                 All {camera.brand.name} cameras
@@ -310,7 +310,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
                             {camera.housings.map((housing) => (
                                 <Link
                                     key={housing.id}
-                                    href={`/gear/${housing.manufacturer.slug}/housings/${housing.slug}`}
+                                    href={`/products/${housing.manufacturer.slug}/housings/${housing.slug}`}
                                     className="flex items-center justify-between p-4 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors group"
                                 >
                                     <div>
@@ -339,7 +339,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {camera.lens.map((lens) => {
                                 const lensHref = lens.manufacturer
-                                    ? `/lenses/${lens.manufacturer.slug}/${lens.slug}`
+                                    ? `/products/${lens.manufacturer.slug}/lenses/${lens.slug}`
                                     : null
                                 const inner = (
                                     <div className="flex items-center justify-between p-4 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors group w-full">

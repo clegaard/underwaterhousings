@@ -278,7 +278,7 @@ export default function HousingManufacturerHousingsClient({
                 {housings.map((housing) => (
                     <div key={housing.id} className="group/card relative">
                         <Link
-                            href={`/gear/${manufacturer.slug}/housings/${housing.slug}`}
+                            href={`/products/${manufacturer.slug}/housings/${housing.slug}`}
                             className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all overflow-hidden block"
                         >
                             <div className="relative h-28 bg-gray-50">
@@ -353,7 +353,7 @@ export default function HousingManufacturerHousingsClient({
                     <p className="text-gray-600 mb-4">
                         No housings are currently available from {manufacturer.name}.
                     </p>
-                    <Link href="/gear" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    <Link href="/products" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                         Browse all manufacturers
                     </Link>
                 </div>

@@ -145,12 +145,28 @@ function createSlug(text: string): string {
 
 When working on this codebase, prioritize maintaining the slug-based routing system, consistent image handling patterns, and the manufacturer-centric data organization.
 
+## Products
 
-## Underwater camera rigs
+The product page shows various components of a underwater camera system, such as:
+* Camera bodies
+* Lenses
+* Camera housing
+* Ports
+* Extension rings
+* Adaptor rings
+* Wet optics
+* Flash triggers
+* Strobes
+* External monitor housings
 
+We categorize these components by their manufacturer.
+In most cases a manufacturer produces falls into one of two categories:
+- Camera manufacturers: These are companies that produce cameras and lenses, such as Sony, Olympus and Canon.
+- Housing manufacturers: These are companies that produce underwater housings and accessories, such as Nauticam and Sea Frogs.
 
+However there are also companies such as SeaLife that produce both cameras and housings.
 
-### Underwater Housings
+### Camera Housings
 - **Definition**: Protective enclosures that allow photographers to use their cameras underwater while keeping them dry and functional.
 - **Key characteristics**: Manufacturer, depth rating, material, price, weight, port system
 
@@ -187,13 +203,6 @@ The purpose of adaptor rings is to convert between different port mounts, allowi
 For instance, Nauticam provides N85 to N100 adapters.
 
 Additionally, some manufacturers like Isotta provide an adapter from their port system to the port system of other manufacturers. For instance, Isotta provides an adapter from their B120 port to Nauticam's N120 port.
-
-
-## Optional fields
-Whenever a field is optional mark it with a (optional) label in the.
-Avoid using the asterisk to mark required fields, instead only mark the optional ones.
-
-## Tooltips
 
 
 
@@ -237,7 +246,6 @@ Similarly the date can either be extracted from the upload date or preferably fr
 
 *Rule G6* : Information extracted by geo location, caption or upload data should be editable by the user.
 
-
 ### Image formats
 We strive to support a wide range of image formats to accommodate the various ways users may have stored their photos.
 
@@ -248,3 +256,13 @@ The file format priorities are:
 1. AVIF
 2. WebP
 
+
+# Accessibility Guidelines
+
+## Optional fields
+Whenever a field is optional mark it with a (optional) label in the.
+Avoid using the asterisk to mark required fields, instead only mark the optional ones.
+
+## Tooltips
+Place tooltips next to technical terms and concepts related to underwater photography, such as depth rating, port types, and camera compatibility, to help educate users and enhance their understanding of the equipment and techniques used in underwater photography.
+On dekstop the tooltips should appear when users hover over the relevant terms, while on mobile devices they should appear when users tap on the relevant terms. The tooltips should have a consistent style and be easily accessible, providing concise and informative explanations to enhance the user experience and promote learning about underwater photography.

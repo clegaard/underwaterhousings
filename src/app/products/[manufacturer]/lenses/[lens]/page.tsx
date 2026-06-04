@@ -71,9 +71,9 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                     <nav className="flex items-center gap-2 text-sm text-gray-600 mb-4 flex-wrap">
                         <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
                         <span>→</span>
-                        <Link href="/lenses" className="hover:text-blue-600 transition-colors">Lenses</Link>
+                        <Link href="/products" className="hover:text-blue-600 transition-colors">Products</Link>
                         <span>→</span>
-                        <Link href={`/lenses/${manufacturerSlug}`} className="hover:text-blue-600 transition-colors">
+                        <Link href={`/products/${manufacturerSlug}`} className="hover:text-blue-600 transition-colors">
                             {lens.manufacturer?.name}
                         </Link>
                         <span>→</span>
@@ -225,7 +225,7 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                                 </svg>
                             </Link>
                             <Link
-                                href={`/lenses/${manufacturerSlug}`}
+                                href={`/products/${manufacturerSlug}`}
                                 className="flex items-center justify-center w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
                             >
                                 All {lens.manufacturer?.name} lenses
@@ -269,12 +269,14 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                                                 {port.depthRating} m
                                             </span>
                                         )}
-                                        <Link
-                                            href={`/gear/${port.manufacturer?.slug ?? ''}`}
-                                            className="text-xs text-blue-500 hover:text-blue-700 transition-colors"
-                                        >
-                                            View →
-                                        </Link>
+                                        {port.manufacturer?.slug && (
+                                            <Link
+                                                href={`/products/${port.manufacturer.slug}`}
+                                                className="text-xs text-blue-500 hover:text-blue-700 transition-colors"
+                                            >
+                                                View →
+                                            </Link>
+                                        )}
                                     </div>
                                 </div>
                             ))}

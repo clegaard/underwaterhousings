@@ -208,3 +208,8 @@ The schema is designed to be:
 ## 📝 License
 
 This project is open source and available under the MIT License.
+
+
+## links
+
+https://leaflet-extras.github.io/leaflet-providers/preview/

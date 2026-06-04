@@ -193,7 +193,7 @@ export default function GearsClient({ gears: initial, manufacturer, allLenses, i
                 {gears.map((gear) => (
                     <div key={gear.id} className="group/card relative">
                         <Link
-                            href={`/gear/${manufacturer.slug}/gears/${gear.slug}`}
+                            href={`/products/${manufacturer.slug}/gears/${gear.slug}`}
                             className="group bg-white rounded-xl border border-gray-200 hover:border-teal-300 hover:shadow-md transition-all overflow-hidden block"
                         >
                             <div className="relative h-28 bg-gray-50">

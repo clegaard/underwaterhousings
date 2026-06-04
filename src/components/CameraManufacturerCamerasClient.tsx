@@ -340,10 +340,10 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                     All {manufacturer.name} Camera Models
                 </h2>
                 <Link
-                    href="/cameras"
+                    href="/products"
                     className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                 >
-                    ← Back to Cameras
+                    ← Back to Products
                 </Link>
             </div>
 
@@ -352,7 +352,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                     {cameras.map((camera) => (
                         <div key={camera.id} className="group/card relative">
                             <Link
-                                href={`/cameras/${manufacturer.slug}/${camera.slug}`}
+                                href={`/products/${manufacturer.slug}/cameras/${camera.slug}`}
                                 className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all overflow-hidden block"
                             >
                                 <div className="relative h-28 bg-gray-50">
@@ -427,7 +427,7 @@ export default function CameraManufacturerCamerasClient({ cameras: initial, manu
                     <p className="text-gray-600 mb-4">
                         No camera models are currently available for {manufacturer.name}.
                     </p>
-                    <Link href="/cameras" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    <Link href="/products" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                         Browse all manufacturers
                     </Link>
                 </div>

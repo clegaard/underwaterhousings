@@ -618,7 +618,7 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
                                                     <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0"></div>
                                                     <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Camera</span>
                                                     <Link
-                                                        href={`/cameras/${selectedCamera.brand.slug}/${selectedCamera.slug}`}
+                                                        href={`/products/${selectedCamera.brand.slug}/cameras/${selectedCamera.slug}`}
                                                         className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 truncate transition-colors"
                                                     >
                                                         {selectedCamera.name}
@@ -638,7 +638,7 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
                                                         <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Lens</span>
                                                         {selectedLens?.manufacturer?.slug ? (
                                                             <Link
-                                                                href={`/lenses/${selectedLens.manufacturer.slug}/${selectedLens.slug}`}
+                                                                href={`/products/${selectedLens.manufacturer.slug}/lenses/${selectedLens.slug}`}
                                                                 className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 truncate transition-colors"
                                                             >
                                                                 {selectedLens.name}
@@ -664,7 +664,7 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
                                                         <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Housing</span>
                                                         {selectedHousing ? (
                                                             <Link
-                                                                href={`/gear/${selectedHousing.manufacturer.slug}/housings/${selectedHousing.slug}`}
+                                                                href={`/products/${selectedHousing.manufacturer.slug}/housings/${selectedHousing.slug}`}
                                                                 className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 truncate transition-colors"
                                                             >
                                                                 {selectedHousing.name}
@@ -688,7 +688,7 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
                                                         <span className="text-xs font-medium text-gray-400 uppercase tracking-wide w-14 shrink-0">Port</span>
                                                         {selectedPort?.manufacturer?.slug ? (
                                                             <Link
-                                                                href={`/gear/${selectedPort.manufacturer.slug}/ports/${selectedPort.slug}`}
+                                                                href={`/products/${selectedPort.manufacturer.slug}/ports/${selectedPort.slug}`}
                                                                 className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline underline-offset-2 truncate transition-colors"
                                                             >
                                                                 {selectedPort.name}

@@ -286,10 +286,10 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                     {manufacturer.name} Lenses
                 </h2>
                 <Link
-                    href="/lenses"
+                    href="/products"
                     className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                 >
-                    ← Back to Lenses
+                    ← Back to Products
                 </Link>
             </div>
 
@@ -297,7 +297,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                 {lenses.map((lens) => (
                     <div key={lens.id} className="group/card relative">
                         <Link
-                            href={`/lenses/${manufacturer.slug}/${lens.slug}`}
+                            href={`/products/${manufacturer.slug}/lenses/${lens.slug}`}
                             className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all overflow-hidden block"
                         >
                             <div className="relative h-28 bg-gray-50">
@@ -365,7 +365,7 @@ export default function LensManufacturerLensesClient({ lenses: initial, manufact
                     <p className="text-gray-600 mb-4">
                         No lens models are currently available for {manufacturer.name}.
                     </p>
-                    <Link href="/lenses" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    <Link href="/products" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                         Browse all manufacturers
                     </Link>
                 </div>

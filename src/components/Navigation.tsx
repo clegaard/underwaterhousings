@@ -165,16 +165,8 @@ export default function Navigation() {
                             Builder
                         </Link>
 
-                        <Link href="/cameras" className="text-gray-700 dark:text-gray-300 hover:text-blue-900 dark:hover:text-blue-400 transition-colors font-medium">
-                            Cameras
-                        </Link>
-
-                        <Link href="/lenses" className="text-gray-700 dark:text-gray-300 hover:text-blue-900 dark:hover:text-blue-400 transition-colors font-medium">
-                            Lenses
-                        </Link>
-
-                        <Link href="/gear" className="text-gray-700 dark:text-gray-300 hover:text-blue-900 dark:hover:text-blue-400 transition-colors font-medium">
-                            Underwater Products
+                        <Link href="/products" className="text-gray-700 dark:text-gray-300 hover:text-blue-900 dark:hover:text-blue-400 transition-colors font-medium">
+                            Products
                         </Link>
 
                         <Link href="/manufacturers" className="text-gray-700 dark:text-gray-300 hover:text-blue-900 dark:hover:text-blue-400 transition-colors font-medium">
@@ -328,9 +320,7 @@ export default function Navigation() {
                             {/* Flat nav links */}
                             <div className="py-2 space-y-1">
                                 <Link href="/builder" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900 dark:text-gray-100">Builder</Link>
-                                <Link href="/cameras" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900 dark:text-gray-100">Cameras</Link>
-                                <Link href="/lenses" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900 dark:text-gray-100">Lenses</Link>
-                                <Link href="/gear" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900 dark:text-gray-100">Underwater Products</Link>
+                                <Link href="/products" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900 dark:text-gray-100">Products</Link>
                                 <Link href="/manufacturers" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900 dark:text-gray-100">Manufacturers</Link>
                                 <Link href="/gallery" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900 dark:text-gray-100">Gallery</Link>
                                 <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-base font-medium text-gray-900 dark:text-gray-100">About</Link>

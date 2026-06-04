@@ -301,7 +301,7 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                         {/* Manufacturer heading */}
                         <div className="flex items-center gap-3 mb-4 group/mfr">
                             {manufacturer.logoPath && manufacturer.logoContainsName ? (
-                                <Link href={`/lenses/${manufacturer.slug}`} className="shrink-0">
+                                <Link href={`/products/${manufacturer.slug}`} className="shrink-0">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img src={withBase(manufacturer.logoPath)} alt={`${manufacturer.name} logo`} className="h-9 w-auto max-w-40 object-contain" />
                                 </Link>
@@ -314,7 +314,7 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                                         </div>
                                     )}
                                     <Link
-                                        href={`/lenses/${manufacturer.slug}`}
+                                        href={`/products/${manufacturer.slug}`}
                                         className="text-lg font-semibold text-gray-900 hover:text-blue-700 transition-colors"
                                     >
                                         {manufacturer.name}
@@ -354,7 +354,7 @@ export default function LensManufacturersClient({ manufacturers: initial, camera
                                 return (
                                     <div key={lens.id} className="group/card relative">
                                         <Link
-                                            href={`/lenses/${manufacturer.slug}/${lens.slug}`}
+                                            href={`/products/${manufacturer.slug}/lenses/${lens.slug}`}
                                             className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all overflow-hidden block"
                                         >
                                             <div className="relative h-28 bg-gray-50">

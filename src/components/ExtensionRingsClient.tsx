@@ -201,7 +201,7 @@ export default function ExtensionRingsClient({ rings: initial, manufacturer, hou
                 {rings.map((ring) => (
                     <div key={ring.id} className="group/card relative">
                         <Link
-                            href={`/gear/${manufacturer.slug}/extension-rings/${ring.slug}`}
+                            href={`/products/${manufacturer.slug}/extension-rings/${ring.slug}`}
                             className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all overflow-hidden block"
                         >
                             <div className="relative h-28 bg-gray-50">
