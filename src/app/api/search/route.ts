@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { withBase } from '@/lib/images'
 
 /** Parse focal length hints from a free-text query.
  *  Examples:
@@ -76,13 +77,19 @@ export async function GET(request: NextRequest) {
                 { name: { contains: token, mode: 'insensitive' } },
                 { brand: { name: { contains: token, mode: 'insensitive' } } },
             ]),
-            include: { brand: { select: { name: true, slug: true } } },
+            select: {
+                id: true, name: true, slug: true, productPhotos: true,
+                brand: { select: { name: true, slug: true } },
+            },
             take: 5,
             orderBy: { name: 'asc' },
         }),
         prisma.lens.findMany({
             where: lensWhere,
-            include: { manufacturer: { select: { name: true, slug: true } } },
+            select: {
+                id: true, name: true, slug: true, productPhotos: true,
+                manufacturer: { select: { name: true, slug: true } },
+            },
             take: 5,
             orderBy: { name: 'asc' },
         }),
@@ -91,14 +98,18 @@ export async function GET(request: NextRequest) {
                 { name: { contains: token, mode: 'insensitive' } },
                 { manufacturer: { name: { contains: token, mode: 'insensitive' } } },
             ]),
-            include: { manufacturer: { select: { name: true, slug: true } } },
+            select: {
+                id: true, name: true, slug: true, productPhotos: true,
+                manufacturer: { select: { name: true, slug: true } },
+            },
             take: 5,
             orderBy: { name: 'asc' },
         }),
         prisma.manufacturer.findMany({
             where: { name: { contains: q, mode: 'insensitive' } },
-            include: {
-                _count: { select: { housings: true, cameras: true } }
+            select: {
+                id: true, name: true, slug: true, logoPath: true,
+                _count: { select: { housings: true, cameras: true } },
             },
             take: 4,
             orderBy: { name: 'asc' },
@@ -108,7 +119,10 @@ export async function GET(request: NextRequest) {
                 { name: { contains: token, mode: 'insensitive' } },
                 { manufacturer: { name: { contains: token, mode: 'insensitive' } } },
             ]),
-            include: { manufacturer: { select: { name: true, slug: true } } },
+            select: {
+                id: true, name: true, slug: true, productPhotos: true,
+                manufacturer: { select: { name: true, slug: true } },
+            },
             take: 4,
             orderBy: { name: 'asc' },
         }),
@@ -117,7 +131,10 @@ export async function GET(request: NextRequest) {
                 { name: { contains: token, mode: 'insensitive' } },
                 { manufacturer: { name: { contains: token, mode: 'insensitive' } } },
             ]),
-            include: { manufacturer: { select: { name: true } } },
+            select: {
+                id: true, name: true, slug: true, productPhotos: true,
+                manufacturer: { select: { name: true, slug: true } },
+            },
             take: 4,
             orderBy: { name: 'asc' },
         }),
@@ -126,7 +143,10 @@ export async function GET(request: NextRequest) {
                 { name: { contains: token, mode: 'insensitive' } },
                 { manufacturer: { name: { contains: token, mode: 'insensitive' } } },
             ]),
-            include: { manufacturer: { select: { name: true } } },
+            select: {
+                id: true, name: true, slug: true, productPhotos: true,
+                manufacturer: { select: { name: true, slug: true } },
+            },
             take: 4,
             orderBy: { name: 'asc' },
         }),
@@ -139,7 +159,8 @@ export async function GET(request: NextRequest) {
             slug: c.slug,
             type: 'camera',
             subtitle: c.brand.name,
-            href: `/cameras/${c.brand.slug}/${c.slug}`,
+            imageUrl: c.productPhotos[0] ? withBase(c.productPhotos[0]) : null,
+            href: `/products/${c.brand.slug}/cameras/${c.slug}`,
         })),
         lenses: lenses.map(l => ({
             id: l.id,
@@ -147,7 +168,8 @@ export async function GET(request: NextRequest) {
             slug: l.slug,
             type: 'lens',
             subtitle: l.manufacturer?.name ?? '',
-            href: l.manufacturer?.slug ? `/lenses/${l.manufacturer.slug}/${l.slug}` : `/lenses`,
+            imageUrl: l.productPhotos[0] ? withBase(l.productPhotos[0]) : null,
+            href: l.manufacturer?.slug ? `/products/${l.manufacturer.slug}/lenses/${l.slug}` : `/products`,
         })),
         housings: housings.map(h => ({
             id: h.id,
@@ -155,7 +177,8 @@ export async function GET(request: NextRequest) {
             slug: h.slug,
             type: 'housing',
             subtitle: h.manufacturer.name,
-            href: `/housings/${h.manufacturer.slug}/${h.slug}`,
+            imageUrl: h.productPhotos[0] ? withBase(h.productPhotos[0]) : null,
+            href: `/products/${h.manufacturer.slug}/housings/${h.slug}`,
         })),
         manufacturers: manufacturers.map(m => ({
             id: m.id,
@@ -166,8 +189,8 @@ export async function GET(request: NextRequest) {
                 m._count.housings > 0 ? `${m._count.housings} housing${m._count.housings !== 1 ? 's' : ''}` : null,
                 m._count.cameras > 0 ? `${m._count.cameras} camera${m._count.cameras !== 1 ? 's' : ''}` : null,
             ].filter(Boolean).join(' · '),
-            // Prefer housing catalog if manufacturer makes housings, otherwise camera catalog
-            href: m._count.housings > 0 ? `/housings/${m.slug}` : `/cameras/${m.slug}`,
+            imageUrl: m.logoPath ? withBase(m.logoPath) : null,
+            href: `/products/${m.slug}`,
         })),
         ports: ports.map(p => ({
             id: p.id,
@@ -175,7 +198,8 @@ export async function GET(request: NextRequest) {
             slug: p.slug,
             type: 'port',
             subtitle: p.manufacturer.name,
-            href: `/ports/${p.manufacturer.slug}/${p.slug}`,
+            imageUrl: p.productPhotos[0] ? withBase(p.productPhotos[0]) : null,
+            href: `/products/${p.manufacturer.slug}/ports/${p.slug}`,
         })),
         portAdapters: portAdapters.map(a => ({
             id: a.id,
@@ -183,7 +207,8 @@ export async function GET(request: NextRequest) {
             slug: a.slug,
             type: 'portAdapter',
             subtitle: a.manufacturer.name,
-            href: `/gear`,
+            imageUrl: a.productPhotos[0] ? withBase(a.productPhotos[0]) : null,
+            href: a.manufacturer ? `/products/${a.manufacturer.slug}/port-adapters/${a.slug}` : `/products`,
         })),
         gears: gears.map(g => ({
             id: g.id,
@@ -191,7 +216,8 @@ export async function GET(request: NextRequest) {
             slug: g.slug,
             type: 'gear',
             subtitle: g.manufacturer?.name ?? '',
-            href: `/gear`,
+            imageUrl: g.productPhotos[0] ? withBase(g.productPhotos[0]) : null,
+            href: g.manufacturer ? `/products/${g.manufacturer.slug}/gears/${g.slug}` : `/products`,
         })),
     })
 }

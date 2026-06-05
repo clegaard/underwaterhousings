@@ -212,7 +212,9 @@ For instance, Nauticam provides N85 to N100 adapters.
 
 Additionally, some manufacturers like Isotta provide an adapter from their port system to the port system of other manufacturers. For instance, Isotta provides an adapter from their B120 port to Nauticam's N120 port.
 
-
+### Product Photos
+Product photos should use a 1:1 aspect ratio to maintain consistency across various parts of the site like the product pages and search bar thumbnails.
+Images should have transparant backgrounds to allow for a consistent look across the site and to avoid issues with dark mode.
 
 ## Gallery and User Submissions
 

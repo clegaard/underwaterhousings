@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 type SearchResultItem = {
     id: number
@@ -10,6 +11,7 @@ type SearchResultItem = {
     type: string
     subtitle: string
     href: string
+    imageUrl: string | null
 }
 
 type SearchResults = {
@@ -55,9 +57,12 @@ function flattenResults(results: SearchResults): SearchResultItem[] {
     return CATEGORY_ORDER.flatMap(cat => results[cat])
 }
 
-export default function SearchBar({ placeholder = 'Search cameras, lenses, housings, manufacturers…', autoFocus = false }: {
+export default function SearchBar({ placeholder = 'Search cameras, lenses, housings, manufacturers…', autoFocus = false, onNavigate, className, triggerFocus }: {
     placeholder?: string
     autoFocus?: boolean
+    onNavigate?: () => void
+    className?: string
+    triggerFocus?: number
 }) {
     const router = useRouter()
     const [query, setQuery] = useState('')
@@ -70,6 +75,16 @@ export default function SearchBar({ placeholder = 'Search cameras, lenses, housi
     const dropdownRef = useRef<HTMLDivElement>(null)
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const abortRef = useRef<AbortController | null>(null)
+
+    // Track which images have failed to load so we can show emoji fallback
+    const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set())
+
+    // Focus input when triggerFocus changes (used by Cmd+K shortcut)
+    useEffect(() => {
+        if (triggerFocus !== undefined && triggerFocus > 0) {
+            inputRef.current?.focus()
+        }
+    }, [triggerFocus])
 
     const flatItems = flattenResults(results)
     const hasResults = flatItems.length > 0
@@ -131,6 +146,7 @@ export default function SearchBar({ placeholder = 'Search cameras, lenses, housi
     function navigate(item: SearchResultItem) {
         setOpen(false)
         setQuery('')
+        onNavigate?.()
         router.push(item.href)
     }
 
@@ -164,7 +180,7 @@ export default function SearchBar({ placeholder = 'Search cameras, lenses, housi
     }
 
     return (
-        <div className="relative w-full">
+        <div className={`relative w-full${className ? ` ${className}` : ''}`}>
             {/* Search input */}
             <div className="relative">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
@@ -237,7 +253,23 @@ export default function SearchBar({ placeholder = 'Search cameras, lenses, housi
                                                     onMouseEnter={() => setActiveIndex(idx)}
                                                     className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors ${isActive ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                                                 >
-                                                    <span className="text-lg leading-none" aria-hidden>{TYPE_ICONS[item.type] ?? '•'}</span>
+                                                    {/* Thumbnail or emoji icon */}
+                                                    {item.imageUrl && !brokenImages.has(`${cat}-${item.id}`) ? (
+                                                        <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
+                                                            <Image
+                                                                src={item.imageUrl}
+                                                                alt={item.name}
+                                                                fill
+                                                                sizes="32px"
+                                                                className="object-cover"
+                                                                onError={() => setBrokenImages(prev => new Set(prev).add(`${cat}-${item.id}`))}
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-50 dark:bg-gray-700/50 text-base leading-none" aria-hidden>
+                                                            {TYPE_ICONS[item.type] ?? '•'}
+                                                        </span>
+                                                    )}
                                                     <div className="min-w-0 flex-1">
                                                         <div className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{item.name}</div>
                                                         {item.subtitle && (

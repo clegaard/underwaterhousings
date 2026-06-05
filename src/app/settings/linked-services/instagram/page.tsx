@@ -75,11 +75,10 @@ export default function InstagramLinkedServicePage() {
 
             {banner && (
                 <div
-                    className={`rounded-lg px-4 py-3 text-sm font-medium ${
-                        banner.type === 'success'
+                    className={`rounded-lg px-4 py-3 text-sm font-medium ${banner.type === 'success'
                             ? 'bg-green-50 text-green-800 border border-green-200'
                             : 'bg-red-50 text-red-800 border border-red-200'
-                    }`}
+                        }`}
                 >
                     {banner.message}
                 </div>

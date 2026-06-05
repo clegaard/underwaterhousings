@@ -60,7 +60,7 @@ export default function ProductPhotoUpload({ value, onChange, pasteListenerActiv
             try {
                 setBgRemovalState({ status: 'loading-model', progress: { current: 0, total: 100 } })
                 await preload({
-                    model: 'medium' as any,
+                    model: 'large' as any,
                     progress: (_key: string, current: number, total: number) => {
                         if (cancelled) return
                         // Clamp progress to avoid spurious values
@@ -248,7 +248,7 @@ export default function ProductPhotoUpload({ value, onChange, pasteListenerActiv
 
             let inferenceComplete = false
             const resultBlob = await removeBackground(imageBlob, {
-                model: 'medium' as any,
+                model: 'large' as any,
                 output: { format: outputFormat },
                 progress: (_key: string, current: number, total: number) => {
                     if (inferenceComplete) return
