@@ -44,7 +44,9 @@ interface Props {
     totalCount: number
 }
 
-export default function GallerySearchBar({ tokens, pool, onAdd, onRemove, resultCount, totalCount }: Props) {
+const EMPTY_POOL: SuggestionPool = { cameras: [], lenses: [], housings: [], ports: [], users: [] }
+
+export default function GallerySearchBar({ tokens, pool = EMPTY_POOL, onAdd, onRemove, resultCount, totalCount }: Props) {
     const [query, setQuery] = useState('')
     const [isOpen, setIsOpen] = useState(false)
     const [activeIdx, setActiveIdx] = useState(-1)

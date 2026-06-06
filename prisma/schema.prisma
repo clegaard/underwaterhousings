@@ -106,20 +106,24 @@ model Housing {
     priceAmount   Decimal? @db.Decimal(10, 2)
     priceCurrency String?  @default("USD")
 
+    // Physical
     depthRating Int
     material    String?
 
-    productPhotos       String[]
-    interchangeablePort Boolean  @default(true)
+    // Photos
+    productPhotos String[]
 
     cameraMountRecession Float? // Distance from the camera body mount to the housing port flange along the optical axis, in mm
     rigReviews           RigReview[]
     cameraRigs           CameraRig[]
-    cameras              Camera[]
-    manufacturerId       Int
-    housingMountId       Int?
-    housingMount         HousingMount? @relation(fields: [housingMountId], references: [id])
-    manufacturer         Manufacturer  @relation(fields: [manufacturerId], references: [id])
+
+    // Compatability
+    cameras             Camera[] // list of compatible cameras, for most housings this will be a single camera, but some housings are compatible with multiple cameras
+    manufacturerId      Int
+    housingMountId      Int?
+    housingMount        HousingMount? @relation(fields: [housingMountId], references: [id])
+    manufacturer        Manufacturer  @relation(fields: [manufacturerId], references: [id])
+    interchangeablePort Boolean       @default(true) // whether or not the housing can accept different ports or it comes with a built-in fixed port
 
     @@map("housings")
 }
@@ -194,69 +198,81 @@ model PortAdapter {
 }
 
 model Lens {
-    id                        Int           @id @default(autoincrement())
-    name                      String
-    slug                      String        @unique
-    description               String?
+    id Int @id @default(autoincrement())
+
+    // product
+    name          String
+    slug          String   @unique
+    description   String?
+    productId     String? // Manufacturer product ID / SKU (unique within manufacturer)
+    productUrl    String? // Link to the product page on the manufacturer's website
+    productPhotos String[]
+    priceAmount   Decimal? @db.Decimal(10, 2)
+    priceCurrency String?  @default("USD")
+
+    // optical specifications
     minimumFocusDistanceTele  Float? // Minimum focus distance at the tele end in metres
     minimumFocusDistanceWide  Float? // Minimum focus distance at the wide end in metres
-    isZoomLens                Boolean       @default(false) // True if it's a zoom lens, false if it's a prime lens
+    isZoomLens                Boolean @default(false) // True if it's a zoom lens, false if it's a prime lens
     focalLengthTele           Int // Focal length at the tele end in mm (prime lenses: sole focal length)
     focalLengthWide           Int? // Focal length at the wide end in mm; null means prime lens
     maximumMagnificationTele  Float? // Maximum reproduction ratio at tele end (or sole value for prime), e.g. 0.30 for 0.30×
     maximumMagnificationWide  Float? // Maximum reproduction ratio at wide end; null for prime lenses
     entrancePupilDistanceTele Float? // Distance from lens flange to entrance pupil at tele end (or sole value for prime) in mm
     entrancePupilDistanceWide Float? // Distance from lens flange to entrance pupil at wide end in mm; null for prime lenses
-    priceAmount               Decimal?      @db.Decimal(10, 2)
-    priceCurrency             String?       @default("USD")
-    cameraMountId             Int
-    cameraId                  Int?
-    productPhotos             String[]
-    manufacturerId            Int
-    exifId                    String?       @unique // Optional EXIF identifier for matching photos taken with this lens
-    productId                 String? // Manufacturer product ID / SKU (unique within manufacturer)
-    productUrl                String? // Link to the product page on the manufacturer's website
-    rigReviews                RigReview[]
-    cameraRigs                CameraRig[]
-    camera                    Camera?       @relation(fields: [cameraId], references: [id])
-    cameraMount               CameraMount   @relation(fields: [cameraMountId], references: [id])
-    manufacturer              Manufacturer? @relation(fields: [manufacturerId], references: [id])
-    ports                     Port[]        @relation("LensToPort")
-    gears                     Gear[]        @relation("GearToLens")
+
+    // exif
+    exifId String? @unique // Optional EXIF identifier for matching photos taken with this lens
+
+    // relations
+    cameraMountId  Int
+    manufacturerId Int
+    cameraId       Int?
+    rigReviews     RigReview[]
+    cameraRigs     CameraRig[]
+    camera         Camera?       @relation(fields: [cameraId], references: [id])
+    cameraMount    CameraMount   @relation(fields: [cameraMountId], references: [id])
+    manufacturer   Manufacturer? @relation(fields: [manufacturerId], references: [id])
+    ports          Port[]        @relation("LensToPort")
+    gears          Gear[]        @relation("GearToLens")
 
     @@map("lenses")
 }
 
 model Gear {
-    id             Int           @id @default(autoincrement())
-    name           String
-    slug           String        @unique
-    productId      String? // Manufacturer product ID / SKU (unique within manufacturer)
-    productUrl     String? // Link to the product page on the manufacturer's website
-    description    String?
-    priceAmount    Decimal?      @db.Decimal(10, 2)
-    priceCurrency  String?       @default("USD")
-    productPhotos  String[]
+    id Int @id @default(autoincrement())
+
+    // product
+    name          String
+    slug          String   @unique
+    productId     String? // Manufacturer product ID / SKU (unique within manufacturer)
+    productUrl    String? // Link to the product page on the manufacturer's website
+    description   String?
+    priceAmount   Decimal? @db.Decimal(10, 2)
+    priceCurrency String?  @default("USD")
+    productPhotos String[]
+
+    // relations
     manufacturerId Int?
     manufacturer   Manufacturer? @relation(fields: [manufacturerId], references: [id])
-    lenses         Lens[]        @relation("GearToLens")
+    lenses         Lens[]        @relation("GearToLens") // lenses which the gear fit onto
 
     @@map("gears")
 }
 
 model User {
-    id                   Int              @id @default(autoincrement())
-    email                String           @unique
+    id                   Int      @id @default(autoincrement())
+    email                String   @unique
     password             String?
     name                 String?
     oauthAvatarUrl       String?
     bio                  String?
     profilePicture       String?
-    isSuperuser          Boolean          @default(false)
-    isUser               Boolean          @default(true)
+    isSuperuser          Boolean  @default(false)
+    isUser               Boolean  @default(true)
     defaultRigId         Int?
-    createdAt            DateTime         @default(now())
-    updatedAt            DateTime         @updatedAt
+    createdAt            DateTime @default(now())
+    updatedAt            DateTime @updatedAt
     // Profile settings
     publicEmail          String?
     website              String?
@@ -264,13 +280,15 @@ model User {
     instagramHandle      String?
     linkedinUrl          String?
     // Gallery settings
-    allowFullResDownload Boolean          @default(true)
-    rigReviews           RigReview[]
-    galleryPhotos        GalleryPhoto[]
-    cameraRigs           CameraRig[]
-    galleryComments      GalleryComment[]
-    galleryLikes         GalleryLike[]
-    linkedServices       LinkedService[]
+    allowFullResDownload Boolean  @default(true)
+
+    // Relations
+    rigReviews      RigReview[]
+    galleryPhotos   GalleryPhoto[]
+    cameraRigs      CameraRig[]
+    galleryComments GalleryComment[]
+    galleryLikes    GalleryLike[]
+    linkedServices  LinkedService[]
 
     @@map("users")
 }
@@ -319,18 +337,21 @@ model PendingVerification {
 }
 
 model CameraRig {
-    id             Int             @id @default(autoincrement())
-    name           String
-    imagePath      String?
-    isActive       Boolean         @default(true)
-    userId         Int
-    cameraId       Int
-    lensId         Int?
-    housingId      Int?
-    portAdapterId  Int?
-    portId         Int?
-    createdAt      DateTime        @default(now())
-    updatedAt      DateTime        @updatedAt
+    id        Int     @id @default(autoincrement())
+    name      String
+    imagePath String?
+    isActive  Boolean @default(true)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // relations
+    userId         Int // owner of the camera rig
+    cameraId       Int // required, any system must have a camera
+    lensId         Int? // optional, since some cameras have a built-in fixed lens
+    housingId      Int? // optional, since some cameras can be used underwater without a housing
+    portAdapterId  Int? // optional, since not all rigs require a port adapter
+    portId         Int? // optional, since some housings have a built-in fixed port or if the system is used without a housing
     user           User            @relation(fields: [userId], references: [id])
     camera         Camera          @relation(fields: [cameraId], references: [id])
     lens           Lens?           @relation(fields: [lensId], references: [id])
@@ -344,30 +365,38 @@ model CameraRig {
 }
 
 model GalleryPhoto {
-    id             Int              @id @default(autoincrement())
-    caption        String?
-    imagePath      String
-    width          Int
-    height         Int
-    takenAt        DateTime?
+    id        Int       @id @default(autoincrement())
+    caption   String?
+    imagePath String
+    width     Int
+    height    Int
+    takenAt   DateTime?
+
+    // location fields
     location       String? // Human-readable location name
     locationLat    Float? // Decimal latitude of the photo location
     locationLng    Float? // Decimal longitude of the photo location
     locationRadius Int? // Accuracy radius in metres (like iNaturalist observations)
-    focalLength    Float?
-    shutterSpeed   Decimal?         @db.Decimal(10, 7)
-    aperture       Float?
-    iso            Int?
-    createdAt      DateTime         @default(now())
-    rigId          Int
-    userId         Int
+
+    // EXIF fields
+    focalLength  Float?
+    shutterSpeed Decimal? @db.Decimal(10, 7)
+    aperture     Float?
+    iso          Int?
+
+    createdAt DateTime @default(now())
+
     // Source tracking for imports (e.g. Instagram). Used to prevent duplicate imports.
-    sourceService  String? // "instagram" | null
-    sourceMediaId  String? // platform-specific media ID
-    rig            CameraRig        @relation(fields: [rigId], references: [id], onDelete: Restrict)
-    user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-    comments       GalleryComment[]
-    likes          GalleryLike[]
+    sourceService String? // "instagram" | null
+    sourceMediaId String? // platform-specific media ID
+
+    // relations
+    rigId    Int
+    userId   Int
+    rig      CameraRig        @relation(fields: [rigId], references: [id], onDelete: Restrict)
+    user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+    comments GalleryComment[]
+    likes    GalleryLike[]
 
     @@unique([userId, sourceService, sourceMediaId])
     @@map("gallery_photos")

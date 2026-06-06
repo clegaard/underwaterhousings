@@ -684,7 +684,7 @@ export default function PhotoMetadataEditor({
                             <div className="grid grid-cols-2 gap-3">
                                 {/* Camera — always shown, source-badged when known */}
                                 <div>
-                                    <div className="flex items-center gap-1.5 mb-1">
+                                    <div className="flex items-center justify-between gap-1.5 mb-1">
                                         <label className="text-xs font-medium text-gray-700">Camera</label>
                                         {cameraSource && <SourceBadge source={cameraSource} />}
                                     </div>
@@ -695,7 +695,7 @@ export default function PhotoMetadataEditor({
                                 </div>
                                 {/* Lens — always shown, source-badged when known */}
                                 <div>
-                                    <div className="flex items-center gap-1.5 mb-1">
+                                    <div className="flex items-center justify-between gap-1.5 mb-1">
                                         <label className="text-xs font-medium text-gray-700">Lens</label>
                                         {lensSource && <SourceBadge source={lensSource} />}
                                     </div>

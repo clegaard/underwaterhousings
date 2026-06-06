@@ -1,7 +1,7 @@
 'use client'
 
-import { useMemo, useState, useRef, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import GalleryGrid, { GalleryPhotoData } from './GalleryGrid'
 import GalleryFAB from './GalleryFAB'
@@ -10,12 +10,42 @@ import GallerySearchBottomSheet from './GallerySearchBottomSheet'
 import { UploadQueueProvider } from '@/lib/UploadQueueContext'
 import UploadProgressFAB from './UploadProgressFAB'
 
+const EMPTY_POOL: SuggestionPool = { cameras: [], lenses: [], housings: [], ports: [], users: [] }
+
 interface GalleryPageClientProps {
     photos: GalleryPhotoData[]
+    pool?: SuggestionPool
 }
 
-export default function GalleryPageClient({ photos }: GalleryPageClientProps) {
+// ─── URL param ↔ token type mappings ────────────────────────────────────────
+
+const PARAM_TO_TYPE: Record<string, TokenType> = {
+    camera: 'camera',
+    lens: 'lens',
+    housing: 'housing',
+    port: 'port',
+    user: 'user',
+}
+
+const TYPE_TO_POOL_KEY: Record<TokenType, keyof SuggestionPool> = {
+    camera: 'cameras',
+    lens: 'lenses',
+    housing: 'housings',
+    port: 'ports',
+    user: 'users',
+}
+
+const TYPE_TO_PARAM: Record<TokenType, string> = {
+    camera: 'camera',
+    lens: 'lens',
+    housing: 'housing',
+    port: 'port',
+    user: 'user',
+}
+
+export default function GalleryPageClient({ photos, pool = EMPTY_POOL }: GalleryPageClientProps) {
     const router = useRouter()
+    const searchParams = useSearchParams()
 
     const { data: session } = useSession()
     const currentUserId = session?.user?.id ? parseInt(session.user.id) : undefined
@@ -28,6 +58,7 @@ export default function GalleryPageClient({ photos }: GalleryPageClientProps) {
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
     const lastSelectedIndex = useRef<number | null>(null)
     const filteredRef = useRef<GalleryPhotoData[]>([])
+    const urlInitializedRef = useRef(false)
 
     const handlePhotoClick = useCallback((photoId: number, index: number, shiftKey: boolean) => {
         if (shiftKey && lastSelectedIndex.current !== null) {
@@ -91,31 +122,45 @@ export default function GalleryPageClient({ photos }: GalleryPageClientProps) {
         }
     }
 
-    // ─── Search token pool (built from loaded photos) ────────────────────────
+    // ─── URL ↔ tokens sync ────────────────────────────────────────────────────
 
-    const pool = useMemo((): SuggestionPool => {
-        const cameras = new Map<string, string>()
-        const lenses = new Map<string, string>()
-        const housings = new Map<string, string>()
-        const ports = new Map<string, string>()
-        const users = new Map<string, string>()
+    // Initialise tokens from URL query params on first render
+    useEffect(() => {
+        if (urlInitializedRef.current) return
+        urlInitializedRef.current = true
 
-        photos.forEach(p => {
-            if (p.cameraSlug && p.cameraName) cameras.set(p.cameraSlug, p.cameraName)
-            if (p.lensSlug && p.lensName) lenses.set(p.lensSlug, p.lensName)
-            if (p.housingSlug && p.housingName) housings.set(p.housingSlug, p.housingName)
-            if (p.portSlug && p.portName) ports.set(p.portSlug, p.portName)
-            if (p.userId != null && p.userName) users.set(String(p.userId), p.userName)
-        })
-
-        return {
-            cameras: Array.from(cameras.entries()).sort((a, b) => a[1].localeCompare(b[1])),
-            lenses: Array.from(lenses.entries()).sort((a, b) => a[1].localeCompare(b[1])),
-            housings: Array.from(housings.entries()).sort((a, b) => a[1].localeCompare(b[1])),
-            ports: Array.from(ports.entries()).sort((a, b) => a[1].localeCompare(b[1])),
-            users: Array.from(users.entries()).sort((a, b) => a[1].localeCompare(b[1])),
+        const initialTokens: SearchToken[] = []
+        for (const [param, type] of Object.entries(PARAM_TO_TYPE)) {
+            const slug = searchParams.get(param)
+            if (!slug) continue
+            const poolKey = TYPE_TO_POOL_KEY[type]
+            const entry = pool[poolKey]?.find(([s]) => s === slug)
+            if (entry) {
+                initialTokens.push({ type, slug, label: entry[1] })
+            }
         }
-    }, [photos])
+        if (initialTokens.length > 0) {
+            setTokens(initialTokens)
+        }
+    }, [pool, searchParams])
+
+    // Sync token changes back to the URL (skip the initialisation render)
+    useEffect(() => {
+        if (!urlInitializedRef.current) return
+
+        const params = new URLSearchParams()
+        for (const token of tokens) {
+            const param = TYPE_TO_PARAM[token.type]
+            if (param) params.set(param, token.slug)
+        }
+
+        const newQuery = params.toString()
+        const currentQuery = searchParams.toString()
+
+        if (newQuery !== currentQuery) {
+            router.replace(`/gallery${newQuery ? `?${newQuery}` : ''}`, { scroll: false })
+        }
+    }, [tokens, router, searchParams])
 
     // ─── Token-based filtering ────────────────────────────────────────────────
 
