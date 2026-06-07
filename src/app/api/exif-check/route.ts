@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
  *
  * Lightweight check to see whether a camera and/or lens with the given
  * EXIF identifier exists in the database.  Used by the gallery upload
- * form to give the user a more helpful "no rig matched" message.
+ * form to give the user a more helpful "no camera system matched" message.
  *
  * Response: { cameraExists: boolean | null, lensExists: boolean | null }
  *   - null means the parameter was not provided (not checked)

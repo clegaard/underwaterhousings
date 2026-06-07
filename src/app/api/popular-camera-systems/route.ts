@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
     try {
-        const rigs = await prisma.cameraRig.findMany({
+        const cameraSystems = await prisma.cameraSystem.findMany({
             select: {
                 id: true,
                 cameraId: true,
@@ -61,30 +61,30 @@ export async function GET() {
         })
 
         type ConfigEntry = {
-            rigIds: number[]
-            camera: (typeof rigs)[0]['camera']
-            lens: (typeof rigs)[0]['lens']
-            housing: (typeof rigs)[0]['housing']
-            port: (typeof rigs)[0]['port']
+            cameraSystemIds: number[]
+            camera: (typeof cameraSystems)[0]['camera']
+            lens: (typeof cameraSystems)[0]['lens']
+            housing: (typeof cameraSystems)[0]['housing']
+            port: (typeof cameraSystems)[0]['port']
             photoCount: number
         }
 
-        // Aggregate rigs by their component combination
+        // Aggregate camera systems by their component combination
         const configMap = new Map<string, ConfigEntry>()
-        for (const rig of rigs) {
-            const key = `${rig.cameraId}|${rig.lensId ?? ''}|${rig.housingId ?? ''}|${rig.portId ?? ''}`
+        for (const cameraSystem of cameraSystems) {
+            const key = `${cameraSystem.cameraId}|${cameraSystem.lensId ?? ''}|${cameraSystem.housingId ?? ''}|${cameraSystem.portId ?? ''}`
             const existing = configMap.get(key)
             if (existing) {
-                existing.photoCount += rig._count.galleryPhotos
-                existing.rigIds.push(rig.id)
+                existing.photoCount += cameraSystem._count.galleryPhotos
+                existing.cameraSystemIds.push(cameraSystem.id)
             } else {
                 configMap.set(key, {
-                    rigIds: [rig.id],
-                    camera: rig.camera,
-                    lens: rig.lens,
-                    housing: rig.housing,
-                    port: rig.port,
-                    photoCount: rig._count.galleryPhotos,
+                    cameraSystemIds: [cameraSystem.id],
+                    camera: cameraSystem.camera,
+                    lens: cameraSystem.lens,
+                    housing: cameraSystem.housing,
+                    port: cameraSystem.port,
+                    photoCount: cameraSystem._count.galleryPhotos,
                 })
             }
         }

@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { withBase, getHousingImagePathWithFallback, getCameraImagePathWithFallback, getLensImagePathWithFallback, getPortImagePathWithFallback } from '@/lib/images'
 import HousingBuilder from '@/components/HousingBuilder'
-import PopularRigsSection from '@/components/PopularRigsSection'
+import PopularCameraSystemsSection from '@/components/PopularCameraSystemsSection'
 
 async function getBuilderData() {
     try {
@@ -22,7 +22,7 @@ async function getBuilderData() {
                         }
                     },
                     housingMount: true,
-                    rigReviews: {
+                    cameraSystemReviews: {
                         select: {
                             id: true,
                             ratingOpticalQuality: true,
@@ -41,7 +41,7 @@ async function getBuilderData() {
                 include: {
                     brand: true,
                     cameraMount: true,
-                    rigReviews: {
+                    cameraSystemReviews: {
                         select: {
                             id: true,
                             ratingOpticalQuality: true,
@@ -95,7 +95,7 @@ async function getBuilderData() {
                 ...housing,
                 priceAmount: housing.priceAmount ? Number(housing.priceAmount) : null,
                 imageInfo: getHousingImagePathWithFallback(housing.productPhotos),
-                rigReviews: housing.rigReviews.map((r: any) => ({
+                cameraSystemReviews: housing.cameraSystemReviews.map((r: any) => ({
                     ...r,
                     createdAt: r.createdAt.toISOString(),
                     reviewPhotos: r.reviewPhotos.map((p: string) => withBase(p)),
@@ -105,7 +105,7 @@ async function getBuilderData() {
             cameras: cameras.map(camera => ({
                 ...camera,
                 imageInfo: getCameraImagePathWithFallback(camera.productPhotos),
-                rigReviews: camera.rigReviews.map((r: any) => ({
+                cameraSystemReviews: camera.cameraSystemReviews.map((r: any) => ({
                     ...r,
                     createdAt: r.createdAt.toISOString(),
                     reviewPhotos: r.reviewPhotos.map((p: string) => withBase(p)),
@@ -148,7 +148,7 @@ export default async function BuilderPage() {
         <>
             <div className="bg-blue-50">
                 <div className="max-w-5xl mx-auto px-4 pt-8 pb-2">
-                    <PopularRigsSection />
+                    <PopularCameraSystemsSection />
                 </div>
             </div>
             <div id="builder">

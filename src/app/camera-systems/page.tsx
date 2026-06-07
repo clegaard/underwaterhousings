@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import { HousingImage } from '@/components/HousingImage'
-import RigReviewsSection, { type RigReviewData } from '@/components/RigReviewsSection'
+import CameraSystemReviewsSection, { type CameraSystemReviewData } from '@/components/CameraSystemReviewsSection'
 import PriceTag from '@/components/PriceTag'
 import {
     getHousingImagePathWithFallback,
@@ -13,7 +13,7 @@ import {
     getPortImagePathWithFallback,
 } from '@/lib/images'
 
-interface RigBuilderPageProps {
+interface CameraSystemBuilderPageProps {
     searchParams: {
         camera?: string
         housing?: string
@@ -22,7 +22,7 @@ interface RigBuilderPageProps {
     }
 }
 
-async function getRigComponents(cameraSlug: string, housingSlug: string, lensSlug?: string, portSlug?: string) {
+async function getCameraSystemComponents(cameraSlug: string, housingSlug: string, lensSlug?: string, portSlug?: string) {
     const [camera, housing] = await Promise.all([
         prisma.camera.findUnique({
             where: { slug: cameraSlug },
@@ -51,7 +51,7 @@ async function getRigComponents(cameraSlug: string, housingSlug: string, lensSlu
     // Fetch gallery photos that belong to these components
     const galleryPhotos = await prisma.galleryPhoto.findMany({
         where: {
-            rig: {
+            cameraSystem: {
                 cameraId: camera.id,
                 housingId: housing.id,
                 lensId: lens?.id ?? null,
@@ -64,13 +64,13 @@ async function getRigComponents(cameraSlug: string, housingSlug: string, lensSlu
     return { camera, housing, lens, port, galleryPhotos }
 }
 
-async function getRigReviews(
+async function getCameraSystemReviews(
     cameraId: number,
     housingId: number,
     lensId: number | null,
     portId: number | null,
-): Promise<RigReviewData[]> {
-    const reviews = await prisma.rigReview.findMany({
+): Promise<CameraSystemReviewData[]> {
+    const reviews = await prisma.cameraSystemReview.findMany({
         where: { cameraId, housingId, lensId, portId },
         include: { user: { select: { id: true, name: true, profilePicture: true } } },
         orderBy: { createdAt: 'desc' },
@@ -89,8 +89,8 @@ async function getCameraOnly(cameraSlug: string) {
     return camera ?? null
 }
 
-async function getCameraOnlyReviews(cameraId: number): Promise<RigReviewData[]> {
-    const reviews = await prisma.rigReview.findMany({
+async function getCameraOnlyReviews(cameraId: number): Promise<CameraSystemReviewData[]> {
+    const reviews = await prisma.cameraSystemReview.findMany({
         where: { cameraId, housingId: null, lensId: null, portId: null },
         include: { user: { select: { id: true, name: true, profilePicture: true } } },
         orderBy: { createdAt: 'desc' },
@@ -98,7 +98,7 @@ async function getCameraOnlyReviews(cameraId: number): Promise<RigReviewData[]> 
     return reviews.map(r => ({ ...r, createdAt: r.createdAt.toISOString() }))
 }
 
-export default async function RigBuilderPage({ searchParams }: RigBuilderPageProps) {
+export default async function CameraSystemBuilderPage({ searchParams }: CameraSystemBuilderPageProps) {
     const { camera: cameraSlug, housing: housingSlug, lens: lensSlug, port: portSlug } = searchParams
 
     if (!cameraSlug) notFound()
@@ -170,7 +170,7 @@ export default async function RigBuilderPage({ searchParams }: RigBuilderPagePro
                 </div>
 
                 <div className="max-w-4xl mx-auto px-4 pb-8">
-                    <RigReviewsSection
+                    <CameraSystemReviewsSection
                         reviews={reviews}
                         cameraId={camera.id}
                         housingId={0}
@@ -184,14 +184,14 @@ export default async function RigBuilderPage({ searchParams }: RigBuilderPagePro
     }
 
     const [components, session] = await Promise.all([
-        getRigComponents(cameraSlug, housingSlug, lensSlug, portSlug),
+        getCameraSystemComponents(cameraSlug, housingSlug, lensSlug, portSlug),
         auth(),
     ])
     if (!components) notFound()
 
     const { camera, housing, lens, port, galleryPhotos } = components
 
-    const reviews = await getRigReviews(
+    const reviews = await getCameraSystemReviews(
         camera.id, housing.id, lens?.id ?? null, port?.id ?? null
     )
 
@@ -321,7 +321,7 @@ export default async function RigBuilderPage({ searchParams }: RigBuilderPagePro
 
             {/* Reviews */}
             <div className="max-w-4xl mx-auto px-4 pb-8">
-                <RigReviewsSection
+                <CameraSystemReviewsSection
                     reviews={reviews}
                     cameraId={camera.id}
                     housingId={housing.id}

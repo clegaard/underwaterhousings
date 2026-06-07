@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import { NextRequest, NextResponse } from 'next/server'
 
-// GET /api/rig-reviews?cameraId=x&housingId=x&lensId=x&portId=x
+// GET /api/camera-system-reviews?cameraId=x&housingId=x&lensId=x&portId=x
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const cameraId = searchParams.get('cameraId')
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const reviews = await prisma.rigReview.findMany({
+        const reviews = await prisma.cameraSystemReview.findMany({
             where: {
                 cameraId: parseInt(cameraId),
                 housingId: parseInt(housingId),
@@ -29,12 +29,12 @@ export async function GET(request: NextRequest) {
         })
         return NextResponse.json(reviews)
     } catch (error) {
-        console.error('Error fetching rig reviews:', error)
+        console.error('Error fetching camera system reviews:', error)
         return NextResponse.json({ error: 'Failed to fetch reviews' }, { status: 500 })
     }
 }
 
-// POST /api/rig-reviews
+// POST /api/camera-system-reviews
 export async function POST(request: NextRequest) {
     const session = await auth()
     const userId = (session?.user as { id?: string } | undefined)?.id
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        const review = await prisma.rigReview.create({
+        const review = await prisma.cameraSystemReview.create({
             data: {
                 cameraId: parseInt(cameraId),
                 housingId: parseInt(housingId),
@@ -99,12 +99,12 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(review, { status: 201 })
     } catch (error) {
-        console.error('Error creating rig review:', error)
+        console.error('Error creating camera system review:', error)
         return NextResponse.json({ error: 'Failed to create review' }, { status: 500 })
     }
 }
 
-// PUT /api/rig-reviews?id=x
+// PUT /api/camera-system-reviews?id=x
 export async function PUT(request: NextRequest) {
     const session = await auth()
     const userId = (session?.user as { id?: string } | undefined)?.id
@@ -119,7 +119,7 @@ export async function PUT(request: NextRequest) {
     }
 
     try {
-        const existing = await prisma.rigReview.findUnique({ where: { id: parseInt(id) } })
+        const existing = await prisma.cameraSystemReview.findUnique({ where: { id: parseInt(id) } })
         if (!existing) {
             return NextResponse.json({ error: 'Review not found' }, { status: 404 })
         }
@@ -143,7 +143,7 @@ export async function PUT(request: NextRequest) {
             }
         }
 
-        const review = await prisma.rigReview.update({
+        const review = await prisma.cameraSystemReview.update({
             where: { id: parseInt(id) },
             data: {
                 ratingOpticalQuality,
@@ -159,12 +159,12 @@ export async function PUT(request: NextRequest) {
 
         return NextResponse.json(review)
     } catch (error) {
-        console.error('Error updating rig review:', error)
+        console.error('Error updating camera system review:', error)
         return NextResponse.json({ error: 'Failed to update review' }, { status: 500 })
     }
 }
 
-// DELETE /api/rig-reviews?id=x
+// DELETE /api/camera-system-reviews?id=x
 export async function DELETE(request: NextRequest) {
     const session = await auth()
     const userId = (session?.user as { id?: string } | undefined)?.id
@@ -179,7 +179,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     try {
-        const existing = await prisma.rigReview.findUnique({ where: { id: parseInt(id) } })
+        const existing = await prisma.cameraSystemReview.findUnique({ where: { id: parseInt(id) } })
         if (!existing) {
             return NextResponse.json({ error: 'Review not found' }, { status: 404 })
         }
@@ -187,10 +187,10 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
         }
 
-        await prisma.rigReview.delete({ where: { id: parseInt(id) } })
+        await prisma.cameraSystemReview.delete({ where: { id: parseInt(id) } })
         return NextResponse.json({ success: true })
     } catch (error) {
-        console.error('Error deleting rig review:', error)
+        console.error('Error deleting camera system review:', error)
         return NextResponse.json({ error: 'Failed to delete review' }, { status: 500 })
     }
 }

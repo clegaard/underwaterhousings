@@ -44,7 +44,7 @@ export default async function HousingDetailPage({ params }: Props) {
     const priceAmount = housing.priceAmount ? Number(housing.priceAmount) : null
 
     const galleryPhotos = await prisma.galleryPhoto.findMany({
-        where: { rig: { housingId: housing.id } },
+        where: { cameraSystem: { housingId: housing.id } },
         orderBy: { takenAt: 'desc' },
         take: 12,
     })

@@ -13,7 +13,7 @@ export interface GalleryPhotoData extends Photo {
     caption?: string
     location?: string
     takenAt?: string
-    rigLabel?: string
+    cameraSystemLabel?: string
     cameraName?: string
     cameraSlug?: string
     lensName?: string
@@ -33,7 +33,7 @@ export interface GalleryPhotoData extends Photo {
     likeCount?: number
     commentCount?: number
     likedByMe?: boolean
-    rigId?: number
+    cameraSystemId?: number
     allowFullResDownload?: boolean
 }
 
@@ -175,13 +175,13 @@ function CommentPanel({
                         </Link>
                         {photo.caption && <p className="text-xs text-gray-500 leading-snug line-clamp-3 mt-0.5">{photo.caption}</p>}
                         {photo.location && <p className="text-xs text-gray-500 truncate mt-0.5">📍 {photo.location}</p>}
-                        {photo.rigLabel && (
+                        {photo.cameraSystemLabel && (
                             <p className="text-xs text-gray-400 mt-0.5">
-                                {photo.userId && photo.rigId ? (
-                                    <Link href={`/users/${photo.userId}/camera-rigs/${photo.rigId}`} onClick={e => e.stopPropagation()} className="hover:text-blue-600 transition-colors">
-                                        📷 {photo.rigLabel}
+                                {photo.userId && photo.cameraSystemId ? (
+                                    <Link href={`/users/${photo.userId}/camera-systems/${photo.cameraSystemId}`} onClick={e => e.stopPropagation()} className="hover:text-blue-600 transition-colors">
+                                        📷 {photo.cameraSystemLabel}
                                     </Link>
-                                ) : `📷 ${photo.rigLabel}`}
+                                ) : `📷 ${photo.cameraSystemLabel}`}
                             </p>
                         )}
                         {(photo.iso || photo.focalLength || photo.aperture || photo.shutterSpeed) && (
@@ -968,13 +968,13 @@ export default function GalleryGrid({ photos, selectionMode = false, selectedIds
                                                 </Link>
                                                 {photo.caption && <p className="text-xs text-gray-500 leading-snug line-clamp-3 mt-0.5">{photo.caption}</p>}
                                                 {photo.location && <p className="text-xs text-gray-500 truncate mt-0.5">📍 {photo.location}</p>}
-                                                {photo.rigLabel && (
+                                                {photo.cameraSystemLabel && (
                                                     <p className="text-xs text-gray-400 mt-0.5">
-                                                        {photo.userId && photo.rigId ? (
-                                                            <Link href={`/users/${photo.userId}/camera-rigs/${photo.rigId}`} onClick={closeLightbox} className="hover:text-blue-600 transition-colors">
-                                                                📷 {photo.rigLabel}
+                                                        {photo.userId && photo.cameraSystemId ? (
+                                                            <Link href={`/users/${photo.userId}/camera-systems/${photo.cameraSystemId}`} onClick={closeLightbox} className="hover:text-blue-600 transition-colors">
+                                                                📷 {photo.cameraSystemLabel}
                                                             </Link>
-                                                        ) : `📷 ${photo.rigLabel}`}
+                                                        ) : `📷 ${photo.cameraSystemLabel}`}
                                                     </p>
                                                 )}
                                                 {(photo.iso || photo.focalLength || photo.aperture || photo.shutterSpeed) && (

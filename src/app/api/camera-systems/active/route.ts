@@ -13,18 +13,18 @@ export async function PATCH(request: NextRequest) {
         if (!id) {
             return NextResponse.json({ success: false, error: 'id is required' }, { status: 400 })
         }
-        const rigId = parseInt(id)
-        const rig = await prisma.cameraRig.findUnique({ where: { id: rigId } })
-        if (!rig || rig.userId !== userId) {
+        const cameraSystemId = parseInt(id)
+        const cameraSystem = await prisma.cameraSystem.findUnique({ where: { id: cameraSystemId } })
+        if (!cameraSystem || cameraSystem.userId !== userId) {
             return NextResponse.json({ success: false, error: 'Not found or forbidden' }, { status: 403 })
         }
-        const updated = await prisma.cameraRig.update({
-            where: { id: rigId },
-            data: { isActive: !rig.isActive },
+        const updated = await prisma.cameraSystem.update({
+            where: { id: cameraSystemId },
+            data: { isActive: !cameraSystem.isActive },
         })
         return NextResponse.json({ success: true, isActive: updated.isActive })
     } catch (error) {
-        console.error('Error toggling rig active state:', error)
-        return NextResponse.json({ success: false, error: 'Failed to update rig' }, { status: 500 })
+        console.error('Error toggling camera system active state:', error)
+        return NextResponse.json({ success: false, error: 'Failed to update camera system' }, { status: 500 })
     }
 }

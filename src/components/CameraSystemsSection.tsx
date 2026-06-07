@@ -2,16 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
-import CameraRigPicker, {
+import CameraSystemPicker, {
     type PickerCamera,
     type PickerLens,
     type PickerHousing,
     type PickerPortAdapter,
     type PickerExtensionRing,
     type PickerPort,
-    type RigSavePayload,
-    type RigInitialValues,
-} from './CameraRigPicker'
+    type CameraSystemSavePayload,
+    type CameraSystemInitialValues,
+} from './CameraSystemPicker'
 import {
     getCameraImagePathWithFallback,
     getLensImagePathWithFallback,
@@ -21,7 +21,7 @@ import {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface SavedRig {
+interface SavedCameraSystem {
     id: number
     name: string
     imagePath: string | null
@@ -80,8 +80,8 @@ interface Props {
 
 // ─── Rig Card ─────────────────────────────────────────────────────────────────
 
-function RigCard({
-    rig,
+function CameraSystemCard({
+    cameraSystem,
     userId,
     isOwnProfile,
     isFavorite,
@@ -90,7 +90,7 @@ function RigCard({
     onEdit,
     onDelete,
 }: {
-    rig: SavedRig
+    cameraSystem: SavedCameraSystem
     userId: number
     isOwnProfile: boolean
     isFavorite: boolean
@@ -99,26 +99,26 @@ function RigCard({
     onEdit: () => void
     onDelete: () => void
 }) {
-    const cameraImg = getCameraImagePathWithFallback(rig.camera.productPhotos)
-    const lensImg = rig.lens ? getLensImagePathWithFallback(rig.lens.productPhotos) : null
-    const housingImg = rig.housing ? getHousingImagePathWithFallback(rig.housing.productPhotos) : null
-    const portImg = rig.port ? getPortImagePathWithFallback(rig.port.productPhotos) : null
+    const cameraImg = getCameraImagePathWithFallback(cameraSystem.camera.productPhotos)
+    const lensImg = cameraSystem.lens ? getLensImagePathWithFallback(cameraSystem.lens.productPhotos) : null
+    const housingImg = cameraSystem.housing ? getHousingImagePathWithFallback(cameraSystem.housing.productPhotos) : null
+    const portImg = cameraSystem.port ? getPortImagePathWithFallback(cameraSystem.port.productPhotos) : null
 
     const items = [
-        { label: 'Camera', name: rig.camera.name, subtitle: rig.camera.brand.name, img: cameraImg },
-        ...(rig.lens ? [{ label: 'Lens', name: rig.lens.name, subtitle: '', img: lensImg! }] : []),
-        ...(rig.housing
-            ? [{ label: 'Housing', name: rig.housing.name, subtitle: rig.housing.manufacturer.name, img: housingImg! }]
+        { label: 'Camera', name: cameraSystem.camera.name, subtitle: cameraSystem.camera.brand.name, img: cameraImg },
+        ...(cameraSystem.lens ? [{ label: 'Lens', name: cameraSystem.lens.name, subtitle: '', img: lensImg! }] : []),
+        ...(cameraSystem.housing
+            ? [{ label: 'Housing', name: cameraSystem.housing.name, subtitle: cameraSystem.housing.manufacturer.name, img: housingImg! }]
             : []),
-        ...(rig.portAdapter
-            ? [{ label: 'Adapter', name: rig.portAdapter.name, subtitle: rig.portAdapter.manufacturer.name, img: getPortImagePathWithFallback(rig.portAdapter.productPhotos) }]
+        ...(cameraSystem.portAdapter
+            ? [{ label: 'Adapter', name: cameraSystem.portAdapter.name, subtitle: cameraSystem.portAdapter.manufacturer.name, img: getPortImagePathWithFallback(cameraSystem.portAdapter.productPhotos) }]
             : []),
-        ...rig.extensionRings.map(r => ({ label: 'Ring', name: r.name, subtitle: '', img: getPortImagePathWithFallback(r.productPhotos) })),
-        ...(rig.port ? [{ label: 'Port', name: rig.port.name, subtitle: '', img: portImg! }] : []),
+        ...cameraSystem.extensionRings.map(r => ({ label: 'Ring', name: r.name, subtitle: '', img: getPortImagePathWithFallback(r.productPhotos) })),
+        ...(cameraSystem.port ? [{ label: 'Port', name: cameraSystem.port.name, subtitle: '', img: portImg! }] : []),
     ]
 
     return (
-        <div className={`relative border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm transition-opacity ${rig.isActive ? '' : 'opacity-60'}`}>
+        <div className={`relative border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm transition-opacity ${cameraSystem.isActive ? '' : 'opacity-60'}`}>
             {/* Active toggle + favorite buttons */}
             {isOwnProfile && (
                 <div className="absolute top-2 right-2 z-10 flex gap-1">
@@ -127,26 +127,26 @@ function RigCard({
                         <button
                             type="button"
                             role="switch"
-                            aria-checked={rig.isActive}
+                            aria-checked={cameraSystem.isActive}
                             onClick={onToggleActive}
-                            aria-label={rig.isActive ? 'Deactivate rig' : 'Activate rig'}
-                            className={`relative inline-flex h-6 w-20 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-1 ${rig.isActive ? 'bg-green-500' : 'bg-gray-400'}`}
+                            aria-label={cameraSystem.isActive ? 'Deactivate camera system' : 'Activate camera system'}
+                            className={`relative inline-flex h-6 w-20 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-1 ${cameraSystem.isActive ? 'bg-green-500' : 'bg-gray-400'}`}
                         >
                             {/* Sliding thumb */}
                             <span
-                                className={`pointer-events-none absolute top-0 h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${rig.isActive ? 'translate-x-14' : 'translate-x-0'}`}
+                                className={`pointer-events-none absolute top-0 h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${cameraSystem.isActive ? 'translate-x-14' : 'translate-x-0'}`}
                             />
                             {/* Label */}
                             <span
-                                className={`pointer-events-none absolute inset-0 flex items-center text-[8px] font-semibold uppercase tracking-wide text-white transition-all duration-200 ${rig.isActive ? 'justify-start pl-2' : 'justify-end pr-2'}`}
+                                className={`pointer-events-none absolute inset-0 flex items-center text-[8px] font-semibold uppercase tracking-wide text-white transition-all duration-200 ${cameraSystem.isActive ? 'justify-start pl-2' : 'justify-end pr-2'}`}
                             >
-                                {rig.isActive ? 'active' : 'inactive'}
+                                {cameraSystem.isActive ? 'active' : 'inactive'}
                             </span>
                         </button>
                         <div className="pointer-events-none absolute right-0 top-full mt-1.5 w-52 rounded-lg bg-gray-800 px-3 py-2 text-xs text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                            {rig.isActive
-                                ? 'Rig is active. It will be matched automatically when uploading photos. Click to deactivate.'
-                                : 'Rig is inactive and will not be matched when uploading photos. Click to activate.'}
+                            {cameraSystem.isActive
+                                ? 'Camera system is active. It will be matched automatically when uploading photos. Click to deactivate.'
+                                : 'Camera system is inactive and will not be matched when uploading photos. Click to activate.'}
                             <div className="absolute right-2 -top-1.5 border-4 border-transparent border-b-gray-800" />
                         </div>
                     </div>
@@ -156,7 +156,7 @@ function RigCard({
                         <button
                             type="button"
                             onClick={onSetFavorite}
-                            aria-label={isFavorite ? 'Default rig' : 'Set as default rig'}
+                            aria-label={isFavorite ? 'Default camera system' : 'Set as default camera system'}
                             className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${isFavorite
                                 ? 'bg-amber-100 text-amber-500 hover:bg-amber-200'
                                 : 'bg-white/80 text-gray-300 hover:text-amber-400 hover:bg-white shadow-sm'
@@ -174,8 +174,8 @@ function RigCard({
                         </button>
                         <div className="pointer-events-none absolute right-0 top-full mt-1.5 w-56 rounded-lg bg-gray-800 px-3 py-2 text-xs text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
                             {isFavorite
-                                ? 'This is your default rig. It is pre-selected when uploading photos to the gallery.'
-                                : 'Set as default rig. Your default rig is pre-selected when uploading photos to the gallery.'}
+                                ? 'This is your default camera system. It is pre-selected when uploading photos to the gallery.'
+                                : 'Set as default camera system. Your default camera system is pre-selected when uploading photos to the gallery.'}
                             <div className="absolute right-2 -top-1.5 border-4 border-transparent border-b-gray-800" />
                         </div>
                     </div>
@@ -184,14 +184,14 @@ function RigCard({
             <div className="relative w-full h-40 bg-blue-50">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                    src={rig.imagePath ? `/api/media${rig.imagePath}` : '/housings/rig-placeholder.png'}
-                    alt={`${rig.name} assembled`}
-                    className={`w-full h-full ${rig.imagePath ? 'object-cover' : 'object-contain p-2'}`}
+                    src={cameraSystem.imagePath ? `/api/media${cameraSystem.imagePath}` : '/housings/camera-system-placeholder.png'}
+                    alt={`${cameraSystem.name} assembled`}
+                    className={`w-full h-full ${cameraSystem.imagePath ? 'object-cover' : 'object-contain p-2'}`}
                 />
             </div>
             <div className="p-4">
                 <div className="flex items-start justify-between gap-2 mb-3">
-                    <h4 className="font-semibold text-gray-800 text-sm">{rig.name}</h4>
+                    <h4 className="font-semibold text-gray-800 text-sm">{cameraSystem.name}</h4>
                     {isOwnProfile && (
                         <div className="flex gap-1 shrink-0">
                             <button
@@ -211,15 +211,15 @@ function RigCard({
                         </div>
                     )}
                 </div>
-                {rig._count.galleryPhotos > 0 && (
+                {cameraSystem._count.galleryPhotos > 0 && (
                     <a
-                        href={`/users/${userId}/camera-rigs/${rig.id}`}
+                        href={`/users/${userId}/camera-systems/${cameraSystem.id}`}
                         className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mb-3"
                     >
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        {rig._count.galleryPhotos} {rig._count.galleryPhotos === 1 ? 'photo' : 'photos'}
+                        {cameraSystem._count.galleryPhotos} {cameraSystem._count.galleryPhotos === 1 ? 'photo' : 'photos'}
                     </a>
                 )}
                 <div className="flex gap-3 flex-wrap">
@@ -273,50 +273,50 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera, prefillLens }: Props) {
-    const [rigs, setRigs] = useState<SavedRig[]>([])
+export default function CameraSystemsSection({ userId, isOwnProfile, prefillCamera, prefillLens }: Props) {
+    const [cameraSystems, setCameraSystems] = useState<SavedCameraSystem[]>([])
     const [equipment, setEquipment] = useState<EquipmentData | null>(null)
-    const [defaultRigId, setDefaultRigId] = useState<number | null>(null)
+    const [defaultCameraSystemId, setDefaultCameraSystemId] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const [editingRig, setEditingRig] = useState<SavedRig | null>(null)
+    const [editingCameraSystem, setEditingCameraSystem] = useState<SavedCameraSystem | null>(null)
     const [isSaving, setIsSaving] = useState(false)
-    // Banner shown when prefill params are present and no rig matched
+    // Banner shown when prefill params are present and no camera system matched
     const [showPrefillBanner, setShowPrefillBanner] = useState(!!(prefillCamera || prefillLens))
 
-    const fetchRigs = useCallback(async () => {
+    const fetchCameraSystems = useCallback(async () => {
         try {
-            const res = await fetch(`/api/camera-rigs?userId=${userId}`)
+            const res = await fetch(`/api/camera-systems?userId=${userId}`)
             const json = await res.json()
             if (json.success) {
-                setRigs(json.data.rigs)
-                setDefaultRigId(json.data.defaultRigId)
+                setCameraSystems(json.data.cameraSystems)
+                setDefaultCameraSystemId(json.data.defaultCameraSystemId)
             }
         } catch {
-            setError('Failed to load rigs')
+            setError('Failed to load camera systems')
         }
     }, [userId])
 
     useEffect(() => {
         async function load() {
             try {
-                const [equipRes, rigsRes] = await Promise.all([
-                    fetch('/api/camera-rigs'),
-                    fetch(`/api/camera-rigs?userId=${userId}`),
+                const [equipRes, cameraSystemsRes] = await Promise.all([
+                    fetch('/api/camera-systems'),
+                    fetch(`/api/camera-systems?userId=${userId}`),
                 ])
-                const [equipJson, rigsJson] = await Promise.all([equipRes.json(), rigsRes.json()])
+                const [equipJson, cameraSystemsJson] = await Promise.all([equipRes.json(), cameraSystemsRes.json()])
                 if (equipJson.success) setEquipment(equipJson.data)
-                if (rigsJson.success) {
-                    setRigs(rigsJson.data.rigs)
-                    setDefaultRigId(rigsJson.data.defaultRigId)
+                if (cameraSystemsJson.success) {
+                    setCameraSystems(cameraSystemsJson.data.cameraSystems)
+                    setDefaultCameraSystemId(cameraSystemsJson.data.defaultCameraSystemId)
                 }
                 // Auto-open the add-rig modal when arriving from the gallery upload "create rig" link
                 if (isOwnProfile && (prefillCamera || prefillLens)) {
                     setIsModalOpen(true)
                 }
             } catch {
-                setError('Failed to load camera rigs')
+                setError('Failed to load camera systems')
             } finally {
                 setLoading(false)
             }
@@ -325,29 +325,29 @@ export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera,
     }, [userId])
 
     function openAdd() {
-        setEditingRig(null)
+        setEditingCameraSystem(null)
         setIsModalOpen(true)
     }
 
-    function openEdit(rig: SavedRig) {
-        setEditingRig(rig)
+    function openEdit(rig: SavedCameraSystem) {
+        setEditingCameraSystem(rig)
         setIsModalOpen(true)
     }
 
     function closeModal() {
         setIsModalOpen(false)
-        setEditingRig(null)
+        setEditingCameraSystem(null)
     }
 
-    async function handleSave(payload: RigSavePayload) {
+    async function handleSave(payload: CameraSystemSavePayload) {
         setIsSaving(true)
         try {
             // Upload new photo if one was selected
             let imagePath = payload.imagePath
-            if (payload.rigPhoto) {
+            if (payload.cameraSystemPhoto) {
                 const fd = new FormData()
-                fd.append('file', payload.rigPhoto)
-                const uploadRes = await fetch('/api/camera-rigs/photos', { method: 'POST', body: fd })
+                fd.append('file', payload.cameraSystemPhoto)
+                const uploadRes = await fetch('/api/camera-systems/photos', { method: 'POST', body: fd })
                 if (uploadRes.ok) {
                     const uploadJson = await uploadRes.json()
                     imagePath = uploadJson.path
@@ -359,8 +359,8 @@ export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera,
                 }
             }
             let res: Response
-            if (editingRig) {
-                res = await fetch(`/api/camera-rigs?id=${editingRig.id}`, {
+            if (editingCameraSystem) {
+                res = await fetch(`/api/camera-systems?id=${editingCameraSystem.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -375,7 +375,7 @@ export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera,
                     }),
                 })
             } else {
-                res = await fetch('/api/camera-rigs', {
+                res = await fetch('/api/camera-systems', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -391,7 +391,7 @@ export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera,
                 })
             }
             if (res.ok) {
-                await fetchRigs()
+                await fetchCameraSystems()
                 closeModal()
             } else {
                 const json = await res.json()
@@ -404,26 +404,26 @@ export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera,
         }
     }
 
-    async function handleSetFavorite(rigId: number) {
+    async function handleSetFavorite(cameraSystemId: number) {
         try {
-            const res = await fetch(`/api/camera-rigs/favorite?id=${rigId}`, { method: 'PATCH' })
+            const res = await fetch(`/api/camera-systems/favorite?id=${cameraSystemId}`, { method: 'PATCH' })
             if (res.ok) {
                 const json = await res.json()
-                setDefaultRigId(json.defaultRigId)
+                setDefaultCameraSystemId(json.defaultCameraSystemId)
             } else {
-                setError('Failed to set default rig')
+                setError('Failed to set default camera system')
             }
         } catch {
-            setError('Failed to set default rig')
+            setError('Failed to set default camera system')
         }
     }
 
-    async function handleToggleActive(rigId: number) {
+    async function handleToggleActive(cameraSystemId: number) {
         try {
-            const res = await fetch(`/api/camera-rigs/active?id=${rigId}`, { method: 'PATCH' })
+            const res = await fetch(`/api/camera-systems/active?id=${cameraSystemId}`, { method: 'PATCH' })
             if (res.ok) {
                 const json = await res.json()
-                setRigs(prev => prev.map(r => r.id === rigId ? { ...r, isActive: json.isActive } : r))
+                setCameraSystems(prev => prev.map(r => r.id === cameraSystemId ? { ...r, isActive: json.isActive } : r))
             } else {
                 setError('Failed to update rig')
             }
@@ -432,13 +432,13 @@ export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera,
         }
     }
 
-    async function handleDelete(rigId: number) {
+    async function handleDelete(cameraSystemId: number) {
         if (!confirm('Delete this rig?')) return
         try {
-            const res = await fetch(`/api/camera-rigs?id=${rigId}`, { method: 'DELETE' })
+            const res = await fetch(`/api/camera-systems?id=${cameraSystemId}`, { method: 'DELETE' })
             if (res.ok) {
-                setRigs(prev => prev.filter(r => r.id !== rigId))
-                if (defaultRigId === rigId) setDefaultRigId(null)
+                setCameraSystems(prev => prev.filter(r => r.id !== cameraSystemId))
+                if (defaultCameraSystemId === cameraSystemId) setDefaultCameraSystemId(null)
             } else {
                 const json = await res.json().catch(() => ({}))
                 setError((json as { error?: string }).error ?? 'Failed to delete rig')
@@ -448,17 +448,17 @@ export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera,
         }
     }
 
-    const editingInitialValues: RigInitialValues | undefined = editingRig
+    const editingInitialValues: CameraSystemInitialValues | undefined = editingCameraSystem
         ? {
-            id: editingRig.id,
-            name: editingRig.name,
-            imagePath: editingRig.imagePath,
-            cameraId: editingRig.camera.id,
-            lensId: editingRig.lens?.id ?? null,
-            housingId: editingRig.housing?.id ?? null,
-            portAdapterId: editingRig.portAdapter?.id ?? null,
-            extensionRingIds: editingRig.extensionRings.map(r => r.id),
-            portId: editingRig.port?.id ?? null,
+            id: editingCameraSystem.id,
+            name: editingCameraSystem.name,
+            imagePath: editingCameraSystem.imagePath,
+            cameraId: editingCameraSystem.camera.id,
+            lensId: editingCameraSystem.lens?.id ?? null,
+            housingId: editingCameraSystem.housing?.id ?? null,
+            portAdapterId: editingCameraSystem.portAdapter?.id ?? null,
+            extensionRingIds: editingCameraSystem.extensionRings.map(r => r.id),
+            portId: editingCameraSystem.port?.id ?? null,
         }
         : (() => {
             // When adding a new rig, pre-select camera/lens by EXIF id if prefill params are present
@@ -478,12 +478,12 @@ export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera,
                 portAdapterId: null,
                 extensionRingIds: [],
                 portId: null,
-            } satisfies RigInitialValues
+            } satisfies CameraSystemInitialValues
         })()
 
     return (
         <section className="mt-8">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Camera Rigs</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Camera Systems</h2>
 
             {/* Prefill banner — shown when arriving from gallery upload "create rig" link */}
             {showPrefillBanner && isOwnProfile && (
@@ -492,7 +492,7 @@ export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera,
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20A10 10 0 0112 2z" />
                     </svg>
                     <div className="flex-1 text-sm text-blue-800">
-                        <p className="font-medium">Create a rig for your camera</p>
+                        <p className="font-medium">Create a camera system for your camera</p>
                         <p className="text-xs text-blue-600 mt-0.5">
                             {[prefillCamera, prefillLens].filter(Boolean).join(' · ')}
                         </p>
@@ -510,26 +510,26 @@ export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera,
                 </div>
             )}
 
-            {loading && <p className="text-sm text-gray-400">Loading rigs…</p>}
+            {loading && <p className="text-sm text-gray-400">Loading camera systems…</p>}
             {error && <p className="text-sm text-red-500">{error}</p>}
 
-            {!loading && !isOwnProfile && rigs.length === 0 && (
-                <p className="text-sm text-gray-400">No camera rigs shared yet.</p>
+            {!loading && !isOwnProfile && cameraSystems.length === 0 && (
+                <p className="text-sm text-gray-400">No camera systems shared yet.</p>
             )}
 
-            {!loading && (rigs.length > 0 || isOwnProfile) && (
+            {!loading && (cameraSystems.length > 0 || isOwnProfile) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {rigs.map(rig => (
-                        <RigCard
-                            key={rig.id}
-                            rig={rig}
+                    {cameraSystems.map((cameraSystem, i) => (
+                        <CameraSystemCard
+                            key={cameraSystem.id}
+                            cameraSystem={cameraSystem}
                             userId={userId}
                             isOwnProfile={isOwnProfile}
-                            isFavorite={rig.id === defaultRigId}
-                            onSetFavorite={() => handleSetFavorite(rig.id)}
-                            onToggleActive={() => handleToggleActive(rig.id)}
-                            onEdit={() => openEdit(rig)}
-                            onDelete={() => handleDelete(rig.id)}
+                            isFavorite={cameraSystem.id === defaultCameraSystemId}
+                            onSetFavorite={() => handleSetFavorite(cameraSystem.id)}
+                            onToggleActive={() => handleToggleActive(cameraSystem.id)}
+                            onEdit={() => openEdit(cameraSystem)}
+                            onDelete={() => handleDelete(cameraSystem.id)}
                         />
                     ))}
                     {isOwnProfile && (
@@ -549,10 +549,10 @@ export default function CameraRigsSection({ userId, isOwnProfile, prefillCamera,
 
             {isModalOpen && equipment && (
                 <Modal
-                    title={editingRig ? 'Edit camera rig' : 'Add camera rig'}
+                    title={editingCameraSystem ? 'Edit camera system' : 'Add camera system'}
                     onClose={closeModal}
                 >
-                    <CameraRigPicker
+                    <CameraSystemPicker
                         cameras={equipment.cameras}
                         lenses={equipment.lenses}
                         housings={equipment.housings}

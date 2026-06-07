@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 
-const rigInclude = {
+const cameraSystemInclude = {
     camera: { include: { brand: true } },
     lens: true,
     housing: { include: { manufacturer: true } },
@@ -16,18 +16,18 @@ export async function GET(request: NextRequest) {
     try {
         const userId = request.nextUrl.searchParams.get('userId')
         if (userId) {
-            const [rigs, user] = await Promise.all([
-                prisma.cameraRig.findMany({
+            const [cameraSystems, user] = await Promise.all([
+                prisma.cameraSystem.findMany({
                     where: { userId: parseInt(userId) },
-                    include: rigInclude,
+                    include: cameraSystemInclude,
                     orderBy: { createdAt: 'asc' },
                 }),
                 prisma.user.findUnique({
                     where: { id: parseInt(userId) },
-                    select: { defaultRigId: true },
+                    select: { defaultCameraSystemId: true },
                 }),
             ])
-            return NextResponse.json({ success: true, data: { rigs, defaultRigId: user?.defaultRigId ?? null } })
+            return NextResponse.json({ success: true, data: { cameraSystems, defaultCameraSystemId: user?.defaultCameraSystemId ?? null } })
         }
 
         const [cameras, housings, lenses, ports, portAdapters, extensionRings] = await Promise.all([
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
         if (!name || !cameraId) {
             return NextResponse.json({ success: false, error: 'name and cameraId are required' }, { status: 400 })
         }
-        const rig = await prisma.cameraRig.create({
+        const cameraSystem = await prisma.cameraSystem.create({
             data: {
                 name,
                 userId,
@@ -119,17 +119,17 @@ export async function POST(request: NextRequest) {
                 portId: portId ? parseInt(portId) : null,
                 imagePath: imagePath ?? null,
             },
-            include: rigInclude,
+            include: cameraSystemInclude,
         })
-        // Auto-set as default if this is the user's first rig
-        const rigCount = await prisma.cameraRig.count({ where: { userId } })
-        if (rigCount === 1) {
-            await prisma.user.update({ where: { id: userId }, data: { defaultRigId: rig.id } })
+        // Auto-set as default if this is the user's first camera system
+        const cameraSystemCount = await prisma.cameraSystem.count({ where: { userId } })
+        if (cameraSystemCount === 1) {
+            await prisma.user.update({ where: { id: userId }, data: { defaultCameraSystemId: cameraSystem.id } })
         }
-        return NextResponse.json({ success: true, data: rig }, { status: 201 })
+        return NextResponse.json({ success: true, data: cameraSystem }, { status: 201 })
     } catch (error) {
-        console.error('Error creating rig:', error)
-        return NextResponse.json({ success: false, error: 'Failed to create rig' }, { status: 500 })
+        console.error('Error creating camera system:', error)
+        return NextResponse.json({ success: false, error: 'Failed to create camera system' }, { status: 500 })
     }
 }
 
@@ -144,13 +144,13 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ success: false, error: 'id is required' }, { status: 400 })
         }
         const userId = parseInt(session.user.id)
-        const existing = await prisma.cameraRig.findUnique({ where: { id: parseInt(id) } })
+        const existing = await prisma.cameraSystem.findUnique({ where: { id: parseInt(id) } })
         if (!existing || existing.userId !== userId) {
             return NextResponse.json({ success: false, error: 'Not found or forbidden' }, { status: 403 })
         }
         const body = await request.json()
         const { name, cameraId, lensId, housingId, portAdapterId, extensionRingIds, portId, imagePath } = body
-        const rig = await prisma.cameraRig.update({
+        const cameraSystem = await prisma.cameraSystem.update({
             where: { id: parseInt(id) },
             data: {
                 name,
@@ -164,12 +164,12 @@ export async function PUT(request: NextRequest) {
                 portId: portId ? parseInt(portId) : null,
                 imagePath: imagePath !== undefined ? imagePath : undefined,
             },
-            include: rigInclude,
+            include: cameraSystemInclude,
         })
-        return NextResponse.json({ success: true, data: rig })
+        return NextResponse.json({ success: true, data: cameraSystem })
     } catch (error) {
-        console.error('Error updating rig:', error)
-        return NextResponse.json({ success: false, error: 'Failed to update rig' }, { status: 500 })
+        console.error('Error updating camera system:', error)
+        return NextResponse.json({ success: false, error: 'Failed to update camera system' }, { status: 500 })
     }
 }
 
@@ -184,26 +184,26 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ success: false, error: 'id is required' }, { status: 400 })
         }
         const userId = parseInt(session.user.id)
-        const existing = await prisma.cameraRig.findUnique({ where: { id: parseInt(id) } })
+        const existing = await prisma.cameraSystem.findUnique({ where: { id: parseInt(id) } })
         if (!existing || existing.userId !== userId) {
             return NextResponse.json({ success: false, error: 'Not found or forbidden' }, { status: 403 })
         }
-        const photoCount = await prisma.galleryPhoto.count({ where: { rigId: parseInt(id) } })
+        const photoCount = await prisma.galleryPhoto.count({ where: { cameraSystemId: parseInt(id) } })
         if (photoCount > 0) {
             return NextResponse.json(
-                { success: false, error: `This rig has ${photoCount} gallery photo${photoCount === 1 ? '' : 's'} and cannot be deleted.` },
+                { success: false, error: `This camera system has ${photoCount} gallery photo${photoCount === 1 ? '' : 's'} and cannot be deleted.` },
                 { status: 409 }
             )
         }
-        await prisma.cameraRig.delete({ where: { id: parseInt(id) } })
-        // Clear defaultRigId on the user if it pointed to this rig
+        await prisma.cameraSystem.delete({ where: { id: parseInt(id) } })
+        // Clear defaultCameraSystemId on the user if it pointed to this camera system
         await prisma.user.updateMany({
-            where: { id: userId, defaultRigId: parseInt(id) },
-            data: { defaultRigId: null },
+            where: { id: userId, defaultCameraSystemId: parseInt(id) },
+            data: { defaultCameraSystemId: null },
         })
         return NextResponse.json({ success: true })
     } catch (error) {
-        console.error('Error deleting rig:', error)
-        return NextResponse.json({ success: false, error: 'Failed to delete rig' }, { status: 500 })
+        console.error('Error deleting camera system:', error)
+        return NextResponse.json({ success: false, error: 'Failed to delete camera system' }, { status: 500 })
     }
 }

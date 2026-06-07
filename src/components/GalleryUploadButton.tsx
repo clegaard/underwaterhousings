@@ -6,14 +6,14 @@ import { isHeicFile, convertHeicToAvif, type MultiFileProgress } from '@/lib/hei
 import { useUploadQueue } from '@/lib/UploadQueueContext'
 import PhotoMetadataEditor, {
     type PendingPhoto,
-    type UserRig,
+    type UserCameraSystem,
     type UploadForm,
     EMPTY_FORM,
     computeAutoMatches,
 } from './PhotoMetadataEditor'
 
 // Re-export PendingPhoto so callers that import from this module still work
-export type { PendingPhoto, UserRig, UploadForm }
+export type { PendingPhoto, UserCameraSystem, UploadForm }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -47,45 +47,45 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
 
     const [isDragging, setIsDragging] = useState(false)
     const [photos, setPhotos] = useState<PendingPhoto[]>([])
-    const [userRigs, setUserRigs] = useState<UserRig[]>([])
-    const [rigsLoaded, setRigsLoaded] = useState(false)
+    const [userCameraSystems, setUserCameraSystems] = useState<UserCameraSystem[]>([])
+    const [cameraSystemsLoaded, setCameraSystemsLoaded] = useState(false)
     const [globalError, setGlobalError] = useState<string | null>(null)
     const [batchProgress, setBatchProgress] = useState<MultiFileProgress | null>(null)
 
     const fileInputRef = useRef<HTMLInputElement>(null)
     const addMoreInputRef = useRef<HTMLInputElement>(null)
     const previewUrlsRef = useRef<Map<string, string>>(new Map())
-    // Stable ref so async callbacks always see the latest rigs
-    const userRigsRef = useRef<UserRig[]>([])
-    userRigsRef.current = userRigs
+    // Stable ref so async callbacks always see the latest camera systems
+    const userCameraSystemsRef = useRef<UserCameraSystem[]>([])
+    userCameraSystemsRef.current = userCameraSystems
 
-    // ── Load rigs when modal opens ──────────────────────────────────────────
+    // ── Load camera systems when modal opens ──────────────────────────────────────────
     useEffect(() => {
         if (!isOpen) return
         const userId = session?.user?.id
         if (!userId) return
-        setRigsLoaded(false)
-        fetch(`/api/camera-rigs?userId=${userId}`)
+        setCameraSystemsLoaded(false)
+        fetch(`/api/camera-systems?userId=${userId}`)
             .then(r => r.json())
-            .then(rigsJson => {
-                if (!rigsJson?.success) return
-                const { rigs, defaultRigId } = rigsJson.data
-                setUserRigs(rigs)
+            .then(cameraSystemsJson => {
+                if (!cameraSystemsJson?.success) return
+                const { rigs, defaultCameraSystemId } = cameraSystemsJson.data
+                setUserCameraSystems(rigs)
                 setPhotos(prev => prev.map(p => {
-                    if (p.selectedRigId) return p
+                    if (p.selectedCameraSystemId) return p
                     if (p.exifCameraModel) {
-                        const matches = computeAutoMatches(p, (rigs as UserRig[]).filter(r => r.isActive))
-                        if (matches.length === 1) return { ...p, selectedRigId: String(matches[0].id) }
+                        const matches = computeAutoMatches(p, (rigs as UserCameraSystem[]).filter(r => r.isActive))
+                        if (matches.length === 1) return { ...p, selectedCameraSystemId: String(matches[0].id) }
                     }
-                    if (!p.exifCameraModel && defaultRigId) {
-                        const def = (rigs as UserRig[]).find((r: UserRig) => r.id === defaultRigId)
-                        if (def) return { ...p, selectedRigId: String(def.id) }
+                    if (!p.exifCameraModel && defaultCameraSystemId) {
+                        const def = (rigs as UserCameraSystem[]).find((r: UserCameraSystem) => r.id === defaultCameraSystemId)
+                        if (def) return { ...p, selectedCameraSystemId: String(def.id) }
                     }
                     return p
                 }))
             })
             .catch(() => { })
-            .finally(() => setRigsLoaded(true))
+            .finally(() => setCameraSystemsLoaded(true))
     }, [isOpen, session])
 
     // ── Cleanup all preview URLs on unmount ─────────────────────────────────
@@ -149,8 +149,8 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
             const lensModel = (patch.exifLensModel as string | undefined) ?? null
             if (cameraModel) {
                 const tempSlot = { exifCameraModel: cameraModel, exifLensModel: lensModel }
-                const matches = computeAutoMatches(tempSlot, userRigsRef.current.filter(r => r.isActive))
-                if (matches.length === 1) patch.selectedRigId = String(matches[0].id)
+                const matches = computeAutoMatches(tempSlot, userCameraSystemsRef.current.filter(r => r.isActive))
+                if (matches.length === 1) patch.selectedCameraSystemId = String(matches[0].id)
             }
             setPhotos(prev => prev.map(p => p.id === photoId ? { ...p, ...patch } : p))
         } catch {
@@ -206,7 +206,7 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
                 exifCameraModel: null,
                 exifLensModel: null,
                 exifLoading: false,
-                selectedRigId: '',
+                selectedCameraSystemId: '',
                 exifCheckResult: null,
             })
             exifFiles.push(f)
@@ -227,8 +227,8 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
         previewUrlsRef.current.forEach(url => URL.revokeObjectURL(url))
         previewUrlsRef.current.clear()
         setPhotos([])
-        setUserRigs([])
-        setRigsLoaded(false)
+        setUserCameraSystems([])
+        setCameraSystemsLoaded(false)
         setGlobalError(null)
         setBatchProgress(null)
     }, [isControlled, onControlledClose])
@@ -254,13 +254,13 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
             if (photo.form.focalLength) fd.append('focalLength', photo.form.focalLength)
             if (photo.form.aperture) fd.append('aperture', photo.form.aperture)
             if (photo.form.shutterSpeed) fd.append('shutterSpeed', photo.form.shutterSpeed)
-            if (photo.selectedRigId) fd.append('rigId', photo.selectedRigId)
+            if (photo.selectedCameraSystemId) fd.append('cameraSystemId', photo.selectedCameraSystemId)
             enqueue(fd, photo.file!.name)
         }
         closeModal()
     }, [photos, enqueue, closeModal])
 
-    const isSubmittable = photos.length > 0 && photos.every(p => p.dimensions !== null && !!p.selectedRigId)
+    const isSubmittable = photos.length > 0 && photos.every(p => p.dimensions !== null && !!p.selectedCameraSystemId)
 
     // ── Drop zone component ──────────────────────────────────────────────────
     const dropZone = (
@@ -343,8 +343,8 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
                             photos={photos}
                             onUpdatePhoto={updatePhoto}
                             onRemovePhoto={removePhoto}
-                            userRigs={userRigs}
-                            rigsLoaded={rigsLoaded}
+                            userCameraSystems={userCameraSystems}
+                            cameraSystemsLoaded={cameraSystemsLoaded}
                             userId={session?.user?.id}
                             onAddFiles={() => addMoreInputRef.current?.click()}
                             batchProgress={batchProgress}

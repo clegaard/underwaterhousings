@@ -33,7 +33,7 @@ async function getFilterPool(): Promise<SuggestionPool> {
         select: {
             userId: true,
             user: { select: { name: true } },
-            rig: {
+            cameraSystem: {
                 select: {
                     camera: { select: { slug: true, name: true, brand: { select: { name: true } } } },
                     lens: { select: { slug: true, name: true } },
@@ -51,11 +51,11 @@ async function getFilterPool(): Promise<SuggestionPool> {
     const users = new Map<string, string>()
 
     for (const row of rows) {
-        const rig = row.rig
-        if (rig?.camera) cameras.set(rig.camera.slug, `${rig.camera.brand.name} ${rig.camera.name}`)
-        if (rig?.lens) lenses.set(rig.lens.slug, rig.lens.name)
-        if (rig?.housing) housings.set(rig.housing.slug, `${rig.housing.manufacturer.name} ${rig.housing.name}`)
-        if (rig?.port) ports.set(rig.port.slug, rig.port.name)
+        const cameraSystem = row.cameraSystem
+        if (cameraSystem?.camera) cameras.set(cameraSystem.camera.slug, `${cameraSystem.camera.brand.name} ${cameraSystem.camera.name}`)
+        if (cameraSystem?.lens) lenses.set(cameraSystem.lens.slug, cameraSystem.lens.name)
+        if (cameraSystem?.housing) housings.set(cameraSystem.housing.slug, `${cameraSystem.housing.manufacturer.name} ${cameraSystem.housing.name}`)
+        if (cameraSystem?.port) ports.set(cameraSystem.port.slug, cameraSystem.port.name)
         if (row.userId != null && row.user?.name) users.set(String(row.userId), row.user.name)
     }
 
@@ -91,7 +91,7 @@ async function getGalleryPhotos(currentUserId: number | undefined, filterIds: Fi
             orderBy: { takenAt: 'desc' },
             where: {
                 userId: filterIds.userId,
-                rig: {
+                cameraSystem: {
                     cameraId: filterIds.cameraId,
                     lensId: filterIds.lensId,
                     housingId: filterIds.housingId,
@@ -99,7 +99,7 @@ async function getGalleryPhotos(currentUserId: number | undefined, filterIds: Fi
                 },
             },
             include: {
-                rig: {
+                cameraSystem: {
                     include: {
                         camera: { include: { brand: true } },
                         lens: true,
@@ -116,12 +116,12 @@ async function getGalleryPhotos(currentUserId: number | undefined, filterIds: Fi
         })
 
         return photos.map((photo) => {
-            const rig = photo.rig
+            const cameraSystem = photo.cameraSystem
             const parts = [
-                rig?.camera ? `${rig.camera.brand.name} ${rig.camera.name}` : null,
-                rig?.lens?.name ?? null,
-                rig?.housing ? `${rig.housing.manufacturer.name} ${rig.housing.name}` : null,
-                rig?.port?.name ?? null,
+                cameraSystem?.camera ? `${cameraSystem.camera.brand.name} ${cameraSystem.camera.name}` : null,
+                cameraSystem?.lens?.name ?? null,
+                cameraSystem?.housing ? `${cameraSystem.housing.manufacturer.name} ${cameraSystem.housing.name}` : null,
+                cameraSystem?.port?.name ?? null,
             ].filter(Boolean)
 
             return {
@@ -131,19 +131,19 @@ async function getGalleryPhotos(currentUserId: number | undefined, filterIds: Fi
                 caption: photo.caption ?? undefined,
                 location: photo.location ?? undefined,
                 takenAt: photo.takenAt?.toISOString() ?? undefined,
-                rigLabel: parts.length > 0 ? parts.join(' · ') : undefined,
-                cameraName: rig?.camera
-                    ? `${rig.camera.brand.name} ${rig.camera.name}`
+                cameraSystemLabel: parts.length > 0 ? parts.join(' · ') : undefined,
+                cameraName: cameraSystem?.camera
+                    ? `${cameraSystem.camera.brand.name} ${cameraSystem.camera.name}`
                     : undefined,
-                cameraSlug: rig?.camera?.slug ?? undefined,
-                lensName: rig?.lens?.name ?? undefined,
-                lensSlug: rig?.lens?.slug ?? undefined,
-                housingName: rig?.housing
-                    ? `${rig.housing.manufacturer.name} ${rig.housing.name}`
+                cameraSlug: cameraSystem?.camera?.slug ?? undefined,
+                lensName: cameraSystem?.lens?.name ?? undefined,
+                lensSlug: cameraSystem?.lens?.slug ?? undefined,
+                housingName: cameraSystem?.housing
+                    ? `${cameraSystem.housing.manufacturer.name} ${cameraSystem.housing.name}`
                     : undefined,
-                housingSlug: rig?.housing?.slug ?? undefined,
-                portName: rig?.port?.name ?? undefined,
-                portSlug: rig?.port?.slug ?? undefined,
+                housingSlug: cameraSystem?.housing?.slug ?? undefined,
+                portName: cameraSystem?.port?.name ?? undefined,
+                portSlug: cameraSystem?.port?.slug ?? undefined,
                 focalLength: photo.focalLength ?? undefined,
                 shutterSpeed: photo.shutterSpeed ? Number(photo.shutterSpeed) : undefined,
                 aperture: photo.aperture ?? undefined,
@@ -157,7 +157,7 @@ async function getGalleryPhotos(currentUserId: number | undefined, filterIds: Fi
                 likedByMe: currentUserId
                     ? (photo as { likes?: { userId: number }[] }).likes?.some(l => l.userId === currentUserId) ?? false
                     : false,
-                rigId: rig?.id ?? undefined,
+                cameraSystemId: cameraSystem?.id ?? undefined,
                 allowFullResDownload: photo.user?.allowFullResDownload ?? true,
             }
         })

@@ -51,7 +51,7 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
         getLensDetail(manufacturerSlug, lensSlug),
         prisma.galleryPhoto.findMany({
             where: {
-                rig: { lens: { slug: lensSlug } },
+                cameraSystem: { lens: { slug: lensSlug } },
             },
             orderBy: { takenAt: 'desc' },
             take: 12,
@@ -219,7 +219,7 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                                 href={`/?lens=${encodeURIComponent(lens.name)}`}
                                 className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors"
                             >
-                                Build a rig with this lens
+                                Build a camera system with this lens
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>

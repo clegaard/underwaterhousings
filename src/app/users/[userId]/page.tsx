@@ -6,7 +6,7 @@ import { withBase } from '@/lib/images'
 import { Suspense } from 'react'
 import { auth } from '@/auth'
 import ProfilePictureUpload from '@/components/ProfilePictureUpload'
-import CameraRigsSection from '@/components/CameraRigsSection'
+import CameraSystemsSection from '@/components/CameraSystemsSection'
 
 interface UserProfilePageProps {
     params: Promise<{ userId: string }>
@@ -20,7 +20,7 @@ async function getUserWithPhotos(userId: number) {
             galleryPhotos: {
                 orderBy: { takenAt: 'desc' },
                 include: {
-                    rig: {
+                    cameraSystem: {
                         include: {
                             camera: { include: { brand: true } },
                             lens: true,
@@ -59,12 +59,12 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
     const isOwnProfile = session?.user?.id === String(id)
 
     const photos: GalleryPhotoData[] = user.galleryPhotos.map((photo) => {
-        const rig = photo.rig
+        const cameraSystem = photo.cameraSystem
         const parts = [
-            rig?.camera ? `${rig.camera.brand.name} ${rig.camera.name}` : null,
-            rig?.lens?.name ?? null,
-            rig?.housing ? `${rig.housing.manufacturer.name} ${rig.housing.name}` : null,
-            rig?.port?.name ?? null,
+            cameraSystem?.camera ? `${cameraSystem.camera.brand.name} ${cameraSystem.camera.name}` : null,
+            cameraSystem?.lens?.name ?? null,
+            cameraSystem?.housing ? `${cameraSystem.housing.manufacturer.name} ${cameraSystem.housing.name}` : null,
+            cameraSystem?.port?.name ?? null,
         ].filter(Boolean)
 
         return {
@@ -74,24 +74,24 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
             caption: photo.caption ?? undefined,
             location: photo.location ?? undefined,
             takenAt: photo.takenAt?.toISOString() ?? undefined,
-            rigLabel: parts.length > 0 ? parts.join(' · ') : undefined,
-            cameraName: rig?.camera ? `${rig.camera.brand.name} ${rig.camera.name}` : undefined,
-            cameraSlug: rig?.camera?.slug ?? undefined,
-            lensName: rig?.lens?.name ?? undefined,
-            lensSlug: rig?.lens?.slug ?? undefined,
-            housingName: rig?.housing
-                ? `${rig.housing.manufacturer.name} ${rig.housing.name}`
+            cameraSystemLabel: parts.length > 0 ? parts.join(' · ') : undefined,
+            cameraName: cameraSystem?.camera ? `${cameraSystem.camera.brand.name} ${cameraSystem.camera.name}` : undefined,
+            cameraSlug: cameraSystem?.camera?.slug ?? undefined,
+            lensName: cameraSystem?.lens?.name ?? undefined,
+            lensSlug: cameraSystem?.lens?.slug ?? undefined,
+            housingName: cameraSystem?.housing
+                ? `${cameraSystem.housing.manufacturer.name} ${cameraSystem.housing.name}`
                 : undefined,
-            housingSlug: rig?.housing?.slug ?? undefined,
-            portName: rig?.port?.name ?? undefined,
-            portSlug: rig?.port?.slug ?? undefined,
+            housingSlug: cameraSystem?.housing?.slug ?? undefined,
+            portName: cameraSystem?.port?.name ?? undefined,
+            portSlug: cameraSystem?.port?.slug ?? undefined,
             focalLength: photo.focalLength ?? undefined,
             shutterSpeed: photo.shutterSpeed ? Number(photo.shutterSpeed) : undefined,
             aperture: photo.aperture ?? undefined,
             userName: user.name ?? undefined,
             userId: user.id,
             userProfilePicture: user.profilePicture ? withBase(user.profilePicture) : undefined,
-            rigId: rig?.id ?? undefined,
+            cameraSystemId: cameraSystem?.id ?? undefined,
         }
     })
 
@@ -119,8 +119,8 @@ export default async function UserProfilePage({ params, searchParams }: UserProf
                     </div>
                 </div>
 
-                {/* Camera Rigs */}
-                <CameraRigsSection
+                {/* Camera Systems */}
+                <CameraSystemsSection
                     userId={user.id}
                     isOwnProfile={isOwnProfile}
                     prefillCamera={isOwnProfile ? prefillCamera : undefined}

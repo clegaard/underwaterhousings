@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import type { InstagramMediaItem, InstagramImage, InstagramLocation } from '@/app/api/linked-services/instagram/media/route'
 import { extractMetaFromCaption } from '@/lib/captionMeta'
-import PhotoMetadataEditor, { type PendingPhoto, type UserRig, toDatetimeLocal, EMPTY_FORM } from './PhotoMetadataEditor'
+import PhotoMetadataEditor, { type PendingPhoto, type UserCameraSystem, toDatetimeLocal, EMPTY_FORM } from './PhotoMetadataEditor'
 import { useUploadQueue } from '@/lib/UploadQueueContext'
 
 interface Selection {
@@ -32,7 +32,7 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
     const [importedIds, setImportedIds] = useState<Set<string>>(new Set())
     const [selected, setSelected] = useState<Map<string, Selection>>(new Map())
     const [expandedCarousel, setExpandedCarousel] = useState<InstagramMediaItem | null>(null)
-    const [userRigs, setUserRigs] = useState<UserRig[]>([])
+    const [userCameraSystems, setUserCameraSystems] = useState<UserCameraSystem[]>([])
     const [reviewPhotos, setReviewPhotos] = useState<PendingPhoto[]>([])
     const [error, setError] = useState<string | null>(null)
     // Pagination
@@ -62,12 +62,12 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
 
         async function load() {
             try {
-                const rigsUrl = currentUserId
-                    ? `/api/camera-rigs?userId=${currentUserId}`
-                    : '/api/camera-rigs'
-                const [mediaRes, rigsRes] = await Promise.all([
+                const cameraSystemsUrl = currentUserId
+                    ? `/api/camera-systems?userId=${currentUserId}`
+                    : '/api/camera-systems'
+                const [mediaRes, cameraSystemsRes] = await Promise.all([
                     fetch('/api/linked-services/instagram/media'),
-                    fetch(rigsUrl),
+                    fetch(cameraSystemsUrl),
                 ])
 
                 if (mediaRes.status === 404) { setView('not_connected'); return }
@@ -78,9 +78,9 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
                     return
                 }
 
-                const [mediaData, rigsData] = await Promise.all([
+                const [mediaData, cameraSystemsData] = await Promise.all([
                     mediaRes.json(),
-                    rigsRes.ok ? rigsRes.json() : Promise.resolve(null),
+                    cameraSystemsRes.ok ? cameraSystemsRes.json() : Promise.resolve(null),
                 ])
 
                 setMedia(mediaData.media ?? [])
@@ -88,9 +88,9 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
                 setCursor(mediaData.nextCursor ?? null)
                 setHasMore(!!mediaData.nextCursor)
 
-                if (rigsData?.success && Array.isArray(rigsData.data?.rigs)) {
-                    const rigs: UserRig[] = rigsData.data.rigs.filter((r: UserRig) => r.isActive)
-                    setUserRigs(rigs)
+                if (cameraSystemsData?.success && Array.isArray(cameraSystemsData.data?.cameraSystems)) {
+                    const rigs: UserCameraSystem[] = cameraSystemsData.data.cameraSystems.filter((r: UserCameraSystem) => r.isActive)
+                    setUserCameraSystems(rigs)
                 }
 
                 setView('grid')
@@ -190,7 +190,7 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
                 exifCameraModel: null,
                 exifLensModel: null,
                 exifLoading: false,
-                selectedRigId: '',
+                selectedCameraSystemId: '',
                 captionFields: [
                     ...(meta.iso != null ? ['iso' as const] : []),
                     ...(meta.focalLength != null ? ['focalLength' as const] : []),
@@ -278,7 +278,7 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
                 mediaUrl: p.instagram!.mediaUrl,
                 caption: p.form.caption || undefined,
                 timestamp: p.instagram!.timestamp,
-                rigId: p.selectedRigId ? parseInt(p.selectedRigId) : 0,
+                cameraSystemId: p.selectedCameraSystemId ? parseInt(p.selectedCameraSystemId) : 0,
                 width: p.dimensions?.width ?? 1080,
                 height: p.dimensions?.height ?? 1080,
                 focalLength: p.form.focalLength ? parseFloat(p.form.focalLength) : undefined,
@@ -404,13 +404,13 @@ export default function InstagramImportModal({ isOpen, onClose, currentUserId }:
                             photos={reviewPhotos}
                             onUpdatePhoto={(id, patch) => setReviewPhotos(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p))}
                             onRemovePhoto={id => setReviewPhotos(prev => prev.filter(p => p.id !== id))}
-                            userRigs={userRigs}
-                            rigsLoaded={true}
+                            userCameraSystems={userCameraSystems}
+                            cameraSystemsLoaded={true}
                             userId={currentUserId}
                             onSubmit={() => handleImport(reviewPhotos)}
                             onCancel={() => setView('grid')}
                             submitLabel={`Import ${reviewPhotos.length} ${reviewPhotos.length === 1 ? 'photo' : 'photos'}`}
-                            isSubmittable={reviewPhotos.length > 0 && reviewPhotos.every(p => !!p.selectedRigId)}
+                            isSubmittable={reviewPhotos.length > 0 && reviewPhotos.every(p => !!p.selectedCameraSystemId)}
                         />
                     )}
 

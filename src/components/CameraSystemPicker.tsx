@@ -96,7 +96,7 @@ export interface PickerPort {
     lens: { id: number }[]
 }
 
-export interface RigInitialValues {
+export interface CameraSystemInitialValues {
     id?: number
     name: string
     imagePath?: string | null
@@ -108,7 +108,7 @@ export interface RigInitialValues {
     portId: number | null
 }
 
-export interface RigSavePayload {
+export interface CameraSystemSavePayload {
     name: string
     cameraId: number
     lensId: number | null
@@ -116,7 +116,7 @@ export interface RigSavePayload {
     portAdapterId: number | null
     extensionRingIds: number[]
     portId: number | null
-    rigPhoto: File | null
+    cameraSystemPhoto: File | null
     imagePath: string | null
 }
 
@@ -127,8 +127,8 @@ interface Props {
     portAdapters: PickerPortAdapter[]
     extensionRings: PickerExtensionRing[]
     ports: PickerPort[]
-    initialValues?: RigInitialValues
-    onSave: (payload: RigSavePayload) => void
+    initialValues?: CameraSystemInitialValues
+    onSave: (payload: CameraSystemSavePayload) => void
     onCancel: () => void
     isSaving?: boolean
 }
@@ -183,7 +183,7 @@ function EquipmentCard({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function CameraRigPicker({
+export default function CameraSystemPicker({
     cameras,
     lenses,
     housings,
@@ -195,69 +195,69 @@ export default function CameraRigPicker({
     onCancel,
     isSaving = false,
 }: Props) {
-    const [rigName, setRigName] = useState(initialValues?.name ?? '')
-    const [rigPhotoFile, setRigPhotoFile] = useState<File | null>(null)
-    const [rigPhotoPreview, setRigPhotoPreview] = useState<string | null>(null)
-    const [rigIsDragging, setRigIsDragging] = useState(false)
-    const [rigPhotoError, setRigPhotoError] = useState<string | null>(null)
+    const [cameraSystemName, setCameraSystemName] = useState(initialValues?.name ?? '')
+    const [cameraSystemPhotoFile, setCameraSystemPhotoFile] = useState<File | null>(null)
+    const [cameraSystemPhotoPreview, setCameraSystemPhotoPreview] = useState<string | null>(null)
+    const [cameraSystemIsDragging, setCameraSystemIsDragging] = useState(false)
+    const [cameraSystemPhotoError, setCameraSystemPhotoError] = useState<string | null>(null)
     const [heicStage, setHeicStage] = useState<ConversionStage | null>(null)
-    const [rigPhotoRemoved, setRigPhotoRemoved] = useState(false)
-    const rigFileInputRef = useRef<HTMLInputElement>(null)
-    const rigPreviewUrlRef = useRef<string | null>(null)
+    const [cameraSystemPhotoRemoved, setCameraSystemPhotoRemoved] = useState(false)
+    const cameraSystemFileInputRef = useRef<HTMLInputElement>(null)
+    const cameraSystemPreviewUrlRef = useRef<string | null>(null)
 
     useEffect(() => {
         return () => {
-            if (rigPreviewUrlRef.current) URL.revokeObjectURL(rigPreviewUrlRef.current)
+            if (cameraSystemPreviewUrlRef.current) URL.revokeObjectURL(cameraSystemPreviewUrlRef.current)
         }
     }, [])
 
-    const processRigPhoto = useCallback(async (f: File) => {
+    const processCameraSystemPhoto = useCallback(async (f: File) => {
         const isHeic = isHeicFile(f)
         if (!f.type.startsWith('image/') && !isHeic) {
-            setRigPhotoError('Please select an image file.')
+            setCameraSystemPhotoError('Please select an image file.')
             return
         }
         if (f.size > 20 * 1024 * 1024) {
-            setRigPhotoError('File must be under 20MB.')
+            setCameraSystemPhotoError('File must be under 20MB.')
             return
         }
-        setRigPhotoError(null)
+        setCameraSystemPhotoError(null)
         let processedFile = f
         if (isHeic) {
             try {
                 setHeicStage({ label: 'Starting…', progress: 0 })
                 processedFile = await convertHeicToAvif(f, stage => setHeicStage(stage))
             } catch (err) {
-                setRigPhotoError(err instanceof Error ? err.message : 'HEIC conversion failed')
+                setCameraSystemPhotoError(err instanceof Error ? err.message : 'HEIC conversion failed')
                 setHeicStage(null)
                 return
             }
             setHeicStage(null)
         }
-        setRigPhotoFile(processedFile)
-        if (rigPreviewUrlRef.current) URL.revokeObjectURL(rigPreviewUrlRef.current)
+        setCameraSystemPhotoFile(processedFile)
+        if (cameraSystemPreviewUrlRef.current) URL.revokeObjectURL(cameraSystemPreviewUrlRef.current)
         const url = URL.createObjectURL(processedFile)
-        rigPreviewUrlRef.current = url
-        setRigPhotoPreview(url)
+        cameraSystemPreviewUrlRef.current = url
+        setCameraSystemPhotoPreview(url)
     }, [])
 
-    const handleRigDrop = useCallback((e: React.DragEvent) => {
+    const handleCameraSystemDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault()
-        setRigIsDragging(false)
+        setCameraSystemIsDragging(false)
         const dropped = e.dataTransfer.files[0]
-        if (dropped) processRigPhoto(dropped)
-    }, [processRigPhoto])
+        if (dropped) processCameraSystemPhoto(dropped)
+    }, [processCameraSystemPhoto])
 
-    function removeRigPhoto() {
-        setRigPhotoFile(null)
-        setRigPhotoPreview(null)
-        setRigPhotoError(null)
-        setRigPhotoRemoved(true)
-        if (rigPreviewUrlRef.current) {
-            URL.revokeObjectURL(rigPreviewUrlRef.current)
-            rigPreviewUrlRef.current = null
+    function removeCameraSystemPhoto() {
+        setCameraSystemPhotoFile(null)
+        setCameraSystemPhotoPreview(null)
+        setCameraSystemPhotoError(null)
+        setCameraSystemPhotoRemoved(true)
+        if (cameraSystemPreviewUrlRef.current) {
+            URL.revokeObjectURL(cameraSystemPreviewUrlRef.current)
+            cameraSystemPreviewUrlRef.current = null
         }
-        if (rigFileInputRef.current) rigFileInputRef.current.value = ''
+        if (cameraSystemFileInputRef.current) cameraSystemFileInputRef.current.value = ''
     }
     const [selectedBrandId, setSelectedBrandId] = useState<number | null>(() => {
         if (initialValues?.cameraId) {
@@ -355,7 +355,7 @@ export default function CameraRigPicker({
     const showPortStep = !!selectedHousing && !isFixedPort && effectiveMountId !== null
 
     const canSave =
-        rigName.trim().length > 0 &&
+        cameraSystemName.trim().length > 0 &&
         selectedCameraId !== null &&
         (isFixedLens || !showLensStep || selectedLensId !== null) &&
         (!showHousingStep || selectedHousingId !== null) &&
@@ -414,15 +414,15 @@ export default function CameraRigPicker({
     function handleSave() {
         if (!selectedCameraId) return
         onSave({
-            name: rigName.trim(),
+            name: cameraSystemName.trim(),
             cameraId: selectedCameraId,
             lensId: isFixedLens ? null : selectedLensId,
             housingId: selectedHousingId,
             portAdapterId: selectedAdapterId,
             extensionRingIds: selectedRingIds,
             portId: selectedPortId,
-            rigPhoto: rigPhotoFile,
-            imagePath: rigPhotoFile ? null : (rigPhotoRemoved ? null : (initialValues?.imagePath ?? null)),
+            cameraSystemPhoto: cameraSystemPhotoFile,
+            imagePath: cameraSystemPhotoFile ? null : (cameraSystemPhotoRemoved ? null : (initialValues?.imagePath ?? null)),
         })
     }
 
@@ -435,8 +435,8 @@ export default function CameraRigPicker({
                 <label className="block text-sm font-medium text-gray-700 mb-1">Rig name</label>
                 <input
                     type="text"
-                    value={rigName}
-                    onChange={e => setRigName(e.target.value)}
+                    value={cameraSystemName}
+                    onChange={e => setCameraSystemName(e.target.value)}
                     placeholder="e.g. Wildlife macro setup"
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -447,14 +447,14 @@ export default function CameraRigPicker({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                     Rig photo <span className="text-gray-400 font-normal">(optional)</span>
                 </label>
-                {!rigPhotoFile && (!initialValues?.imagePath || rigPhotoRemoved) ? (
+                {!cameraSystemPhotoFile && (!initialValues?.imagePath || cameraSystemPhotoRemoved) ? (
                     <div
-                        onDragEnter={() => setRigIsDragging(true)}
+                        onDragEnter={() => setCameraSystemIsDragging(true)}
                         onDragOver={e => e.preventDefault()}
-                        onDragLeave={() => setRigIsDragging(false)}
-                        onDrop={handleRigDrop}
-                        onClick={() => rigFileInputRef.current?.click()}
-                        className={`border-2 border-dashed rounded-xl py-8 px-6 text-center cursor-pointer transition-colors ${rigIsDragging
+                        onDragLeave={() => setCameraSystemIsDragging(false)}
+                        onDrop={handleCameraSystemDrop}
+                        onClick={() => cameraSystemFileInputRef.current?.click()}
+                        className={`border-2 border-dashed rounded-xl py-8 px-6 text-center cursor-pointer transition-colors ${cameraSystemIsDragging
                             ? 'border-blue-500 bg-blue-50'
                             : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
                             }`}
@@ -465,11 +465,11 @@ export default function CameraRigPicker({
                         <p className="text-gray-700 font-medium text-sm mb-0.5">Drag &amp; drop a photo of your assembled rig</p>
                         <p className="text-gray-400 text-xs">or tap to browse — JPG, PNG, WebP · max 20MB</p>
                         <input
-                            ref={rigFileInputRef}
+                            ref={cameraSystemFileInputRef}
                             type="file"
                             accept="image/*,.heic,.heif"
                             className="hidden"
-                            onChange={e => { const f = e.target.files?.[0]; if (f) processRigPhoto(f) }}
+                            onChange={e => { const f = e.target.files?.[0]; if (f) processCameraSystemPhoto(f) }}
                         />
                     </div>
                 ) : (
@@ -477,43 +477,43 @@ export default function CameraRigPicker({
                         <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                                src={rigPhotoPreview ?? (initialValues?.imagePath ? `/api/media${initialValues.imagePath}` : '')}
+                                src={cameraSystemPhotoPreview ?? (initialValues?.imagePath ? `/api/media${initialValues.imagePath}` : '')}
                                 alt="Rig preview"
                                 className="w-full h-full object-cover"
                             />
                         </div>
                         <div className="flex flex-col gap-2">
                             <p className="text-xs text-gray-600">
-                                {rigPhotoFile ? rigPhotoFile.name : 'Current photo'}
+                                {cameraSystemPhotoFile ? cameraSystemPhotoFile.name : 'Current photo'}
                             </p>
                             <div className="flex gap-2">
                                 <button
                                     type="button"
-                                    onClick={() => rigFileInputRef.current?.click()}
+                                    onClick={() => cameraSystemFileInputRef.current?.click()}
                                     className="text-xs px-2 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50"
                                 >
                                     Replace
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={removeRigPhoto}
+                                    onClick={removeCameraSystemPhoto}
                                     className="text-xs px-2 py-1 rounded border border-red-200 text-red-500 hover:bg-red-50"
                                 >
                                     Remove
                                 </button>
                             </div>
                             <input
-                                ref={rigFileInputRef}
+                                ref={cameraSystemFileInputRef}
                                 type="file"
                                 accept="image/*,.heic,.heif"
                                 className="hidden"
-                                onChange={e => { const f = e.target.files?.[0]; if (f) processRigPhoto(f) }}
+                                onChange={e => { const f = e.target.files?.[0]; if (f) processCameraSystemPhoto(f) }}
                             />
                         </div>
                     </div>
                 )}
                 <HeicProgressBar stage={heicStage} />
-                {rigPhotoError && <p className="mt-1 text-xs text-red-500">{rigPhotoError}</p>}
+                {cameraSystemPhotoError && <p className="mt-1 text-xs text-red-500">{cameraSystemPhotoError}</p>}
             </div>
 
             {/* Step 1 – Camera brand */}

@@ -15,7 +15,7 @@ export default function Home() {
                     <span className="text-blue-600">underwater setup</span>
                 </h1>
                 <p className="mb-10 text-lg text-gray-500 dark:text-gray-400">
-                    Search cameras, lenses, housings, ports and accessories — then build a compatible rig with optical analysis and depth ratings.
+                    Search cameras, lenses, housings, ports and accessories — then build a compatible camera system with optical analysis and depth ratings.
                 </p>
 
                 {/* Search bar */}
@@ -28,7 +28,7 @@ export default function Home() {
                         href="/builder"
                         className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow hover:bg-blue-700 active:bg-blue-800 transition-colors"
                     >
-                        Build a rig
+                        Build a camera system
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>

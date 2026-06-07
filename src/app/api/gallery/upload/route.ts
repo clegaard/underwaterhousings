@@ -71,9 +71,9 @@ export async function POST(request: NextRequest) {
     const apertureStr = (formData.get('aperture') as string)?.trim()
     const shutterSpeedStr = (formData.get('shutterSpeed') as string)?.trim()
     const isoStr = (formData.get('iso') as string)?.trim()
-    const rigIdStr = (formData.get('rigId') as string)?.trim()
-    if (!rigIdStr) {
-        return NextResponse.json({ error: 'A rig must be selected to upload a photo' }, { status: 400 })
+    const cameraSystemIdStr = (formData.get('cameraSystemId') as string)?.trim()
+    if (!cameraSystemIdStr) {
+        return NextResponse.json({ error: 'A camera system must be selected to upload a photo' }, { status: 400 })
     }
 
     const photo = await prisma.galleryPhoto.create({
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
             aperture: apertureStr ? parseFloat(apertureStr) : null,
             shutterSpeed: shutterSpeedStr ? parseFloat(shutterSpeedStr) : null,
             iso: isoStr ? parseInt(isoStr) : null,
-            rigId: parseInt(rigIdStr),
+            cameraSystemId: parseInt(cameraSystemIdStr),
             userId: dbUser.id,
         },
     })

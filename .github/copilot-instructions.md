@@ -216,6 +216,16 @@ Additionally, some manufacturers like Isotta provide an adapter from their port 
 Product photos should use a 1:1 aspect ratio to maintain consistency across various parts of the site like the product pages and search bar thumbnails.
 Images should have transparant backgrounds to allow for a consistent look across the site and to avoid issues with dark mode.
 
+## Camera Systems
+
+A camera system can be defined as a collection of compatible products that allows the user to take the system underwater safely and to allow the user to take pictures or video with the system. A camera system typically includes a camera body, a housing, and a port, but can also include other accessories such as extension rings, wet optics, flash triggers and strobes.
+
+### Camera System Variations
+For underwater photography it is common to have multiple lenses that must be paired with ports that specifically fit the lens.
+A beginner might start by buying a housing, a wide angle lens and a appopriate dome port.
+
+
+
 ## Gallery and User Submissions
 
 

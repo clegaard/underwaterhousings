@@ -13,18 +13,18 @@ export async function PATCH(request: NextRequest) {
         if (!id) {
             return NextResponse.json({ success: false, error: 'id is required' }, { status: 400 })
         }
-        const rigId = parseInt(id)
-        const rig = await prisma.cameraRig.findUnique({ where: { id: rigId } })
-        if (!rig || rig.userId !== userId) {
+        const cameraSystemId = parseInt(id)
+        const cameraSystem = await prisma.cameraSystem.findUnique({ where: { id: cameraSystemId } })
+        if (!cameraSystem || cameraSystem.userId !== userId) {
             return NextResponse.json({ success: false, error: 'Not found or forbidden' }, { status: 403 })
         }
         await prisma.user.update({
             where: { id: userId },
-            data: { defaultRigId: rigId },
+            data: { defaultCameraSystemId: cameraSystemId },
         })
-        return NextResponse.json({ success: true, defaultRigId: rigId })
+        return NextResponse.json({ success: true, defaultCameraSystemId: cameraSystemId })
     } catch (error) {
-        console.error('Error setting default rig:', error)
-        return NextResponse.json({ success: false, error: 'Failed to set default rig' }, { status: 500 })
+        console.error('Error setting default camera system:', error)
+        return NextResponse.json({ success: false, error: 'Failed to set default camera system' }, { status: 500 })
     }
 }

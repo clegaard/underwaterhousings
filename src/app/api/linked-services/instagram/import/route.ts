@@ -10,7 +10,7 @@ interface ImportSelection {
     /** Original Instagram caption (used as fallback for the gallery caption) */
     caption?: string
     timestamp?: string
-    rigId: number
+    cameraSystemId: number
     width: number
     height: number
     // Optional metadata extracted from caption or manually set
@@ -50,18 +50,18 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'No selections provided' }, { status: 400 })
     }
 
-    // Validate rigId — must belong to this user
-    const rigIds = [...new Set(selections.map(s => s.rigId))]
-    const rigs = await prisma.cameraRig.findMany({ where: { id: { in: rigIds }, userId }, select: { id: true } })
-    const validRigIds = new Set(rigs.map(r => r.id))
+    // Validate cameraSystemId — must belong to this user
+    const cameraSystemIds = [...new Set(selections.map(s => s.cameraSystemId))]
+    const rigs = await prisma.cameraSystem.findMany({ where: { id: { in: cameraSystemIds }, userId }, select: { id: true } })
+    const validCameraSystemIds = new Set(rigs.map(r => r.id))
 
     let imported = 0
     let skipped = 0
     const errors: string[] = []
 
     for (const sel of selections) {
-        if (!validRigIds.has(sel.rigId)) {
-            errors.push(`Rig ${sel.rigId} not found or not owned by user`)
+        if (!validCameraSystemIds.has(sel.cameraSystemId)) {
+            errors.push(`Rig ${sel.cameraSystemId} not found or not owned by user`)
             continue
         }
 
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
                     iso: sel.iso ?? null,
                     shutterSpeed: shutterDecimal,
                     location: sel.location ?? null,
-                    rigId: sel.rigId,
+                    cameraSystemId: sel.cameraSystemId,
                     userId,
                     sourceService: 'instagram',
                     sourceMediaId: sel.mediaId,

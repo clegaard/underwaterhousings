@@ -6,7 +6,7 @@ import Link from 'next/link'
 import UserAvatar from '@/components/UserAvatar'
 import { HousingImage } from '@/components/HousingImage'
 import { useCurrency } from '@/components/CurrencyContext'
-import SmartRigSearchBar from '@/components/SmartRigSearchBar'
+import SmartCameraSystemSearchBar from '@/components/SmartCameraSystemSearchBar'
 
 // ─── FOV Fan Chart ────────────────────────────────────────────────────────────
 const FOV_REF_FL = [
@@ -172,7 +172,7 @@ function FovFanChart({
 }
 // ──────────────────────────────────────────────────────────────────────────────
 
-// Client-side component for building an underwater rig
+// Client-side component for building an underwater camera system
 export default function HousingBuilder({ initialHousings, cameras, manufacturers, lenses, ports }: {
     initialHousings: any[],
     cameras: any[],
@@ -379,19 +379,19 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
         [selectedCamera, selectedLens, selectedHousing, selectedPort, convertAmount])
 
     const relevantReviews = useMemo((): any[] => {
-        if ((selectedHousing as any)?.rigReviews?.length) return (selectedHousing as any).rigReviews
-        if (usingWithoutHousing && (selectedCamera as any)?.rigReviews?.length) return (selectedCamera as any).rigReviews
+        if ((selectedHousing as any)?.cameraSystemReviews?.length) return (selectedHousing as any).cameraSystemReviews
+        if (usingWithoutHousing && (selectedCamera as any)?.cameraSystemReviews?.length) return (selectedCamera as any).cameraSystemReviews
         return []
     }, [selectedHousing, selectedCamera, usingWithoutHousing])
 
-    const rigRating = useMemo(() => {
+    const cameraSystemRating = useMemo(() => {
         if (!relevantReviews.length) return null
         const sum = relevantReviews.reduce((acc, r) =>
             acc + (r.ratingOpticalQuality + r.ratingReliability + r.ratingEaseOfUse) / 3, 0)
         return sum / relevantReviews.length
     }, [relevantReviews])
 
-    const isRigComplete = usingWithoutHousing || (!!housingName && (isFixedPort || !!portName))
+    const isCameraSystemComplete = usingWithoutHousing || (!!housingName && (isFixedPort || !!portName))
 
     // Animated depth counter
     const [displayedDepth, setDisplayedDepth] = useState<number | null>(maxDepth)
@@ -587,7 +587,7 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
                     <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                         <div>
                             <h2 className="text-xl font-semibold text-gray-900">Build Your Setup</h2>
-                            <p className="text-sm text-gray-500 mt-0.5">Select components step by step to find a compatible underwater rig</p>
+                            <p className="text-sm text-gray-500 mt-0.5">Select components step by step to find a compatible underwater camera system</p>
                         </div>
                         {hasActiveFilters && (
                             <button onClick={clearFilters} className="text-sm text-blue-600 hover:text-blue-800">
@@ -598,7 +598,7 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
 
                     {/* Component flow */}
                     <div className="px-6 py-4">
-                        <SmartRigSearchBar cameras={cameras} housings={initialHousings} />
+                        <SmartCameraSystemSearchBar cameras={cameras} housings={initialHousings} />
                     </div>
 
                     {/* ── Summary section (inside card) ────────────────────── */}
@@ -1011,14 +1011,14 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
                             <div className="border-t border-gray-100 px-6 py-5">
                                 <div className="flex items-center justify-between mb-3">
                                     <h3 className="text-sm font-bold text-gray-700">Reviews</h3>
-                                    {isRigComplete && selectedCamera && (
+                                    {isCameraSystemComplete && selectedCamera && (
                                         <Link
                                             href={(() => {
-                                                if (usingWithoutHousing) return `/rigs?camera=${selectedCamera.slug}#reviews`
+                                                if (usingWithoutHousing) return `/camera-systems?camera=${selectedCamera.slug}#reviews`
                                                 const p = new URLSearchParams({ camera: selectedCamera.slug, housing: selectedHousing!.slug })
                                                 if (selectedLens?.slug) p.set('lens', selectedLens.slug)
                                                 if (selectedPort?.slug) p.set('port', selectedPort.slug)
-                                                return `/rigs?${p.toString()}#reviews`
+                                                return `/camera-systems?${p.toString()}#reviews`
                                             })()}
                                             className="text-xs text-blue-500 hover:text-blue-700 transition-colors"
                                         >
@@ -1030,10 +1030,10 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
                                     <>
                                         {/* Aggregate score */}
                                         <div className="flex items-center gap-3 mb-3">
-                                            <span className="text-xl font-bold text-gray-900 tabular-nums">{rigRating?.toFixed(1)}</span>
+                                            <span className="text-xl font-bold text-gray-900 tabular-nums">{cameraSystemRating?.toFixed(1)}</span>
                                             <div className="flex gap-0.5">
                                                 {[1, 2, 3, 4, 5].map(n => (
-                                                    <span key={n} className={`text-base ${n <= Math.round(rigRating ?? 0) ? 'text-yellow-400' : 'text-gray-200'}`}>★</span>
+                                                    <span key={n} className={`text-base ${n <= Math.round(cameraSystemRating ?? 0) ? 'text-yellow-400' : 'text-gray-200'}`}>★</span>
                                                 ))}
                                             </div>
                                             <span className="text-xs text-gray-400">({sortedReviews.length} review{sortedReviews.length !== 1 ? 's' : ''})</span>
@@ -1169,7 +1169,7 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4-4a3 3 0 014.24 0L16 16m-2-2l2-2a3 3 0 014.24 0L22 16M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                         <p className="text-xs text-gray-400">No photos yet for this setup</p>
-                                        {isRigComplete && galleryUrl && (
+                                        {isCameraSystemComplete && galleryUrl && (
                                             <Link href={galleryUrl} className="text-xs text-blue-500 hover:text-blue-700 mt-1 transition-colors">
                                                 Be the first to upload →
                                             </Link>
@@ -1182,21 +1182,21 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
                         </>
                     )}
 
-                    {/* CTA — always visible; active when rig is complete */}
+                    {/* CTA — always visible; active when camera system is complete */}
                     <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
                         {canUseWithoutHousing && usingWithoutHousing && (
                             <p className="text-xs text-gray-400 text-center mb-3">
                                 This camera can be used without a housing. Add a compatible housing above to increase depth rating.
                             </p>
                         )}
-                        {isRigComplete && selectedCamera ? (
+                        {isCameraSystemComplete && selectedCamera ? (
                             <Link
                                 href={(() => {
-                                    if (usingWithoutHousing) return `/rigs?camera=${selectedCamera.slug}`
+                                    if (usingWithoutHousing) return `/camera-systems?camera=${selectedCamera.slug}`
                                     const p = new URLSearchParams({ camera: selectedCamera.slug, housing: selectedHousing!.slug })
                                     if (selectedLens?.slug) p.set('lens', selectedLens.slug)
                                     if (selectedPort?.slug) p.set('port', selectedPort.slug)
-                                    return `/rigs?${p.toString()}`
+                                    return `/camera-systems?${p.toString()}`
                                 })()}
                                 className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold px-6 py-3 rounded-lg transition-colors"
                             >

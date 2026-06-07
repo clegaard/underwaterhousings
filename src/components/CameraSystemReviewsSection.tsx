@@ -13,7 +13,7 @@ interface ReviewUser {
     profilePicture: string | null
 }
 
-export interface RigReviewData {
+export interface CameraSystemReviewData {
     id: number
     comment: string | null
     ratingOpticalQuality: number
@@ -25,7 +25,7 @@ export interface RigReviewData {
 }
 
 interface Props {
-    reviews: RigReviewData[]
+    reviews: CameraSystemReviewData[]
     cameraId: number
     housingId: number
     lensId: number | null
@@ -74,7 +74,7 @@ const defaultForm = {
     comment: '',
 }
 
-export default function RigReviewsSection({
+export default function CameraSystemReviewsSection({
     reviews: initialReviews,
     cameraId,
     housingId,
@@ -84,7 +84,7 @@ export default function RigReviewsSection({
 }: Props) {
     const [reviews, setReviews] = useState(initialReviews)
     const [modal, setModal] = useState<'add' | 'edit' | null>(null)
-    const [editTarget, setEditTarget] = useState<RigReviewData | null>(null)
+    const [editTarget, setEditTarget] = useState<CameraSystemReviewData | null>(null)
     const [form, setForm] = useState({ ...defaultForm })
     const [photos, setPhotos] = useState<PhotoSlot[]>([])
     const [loading, setLoading] = useState(false)
@@ -117,8 +117,8 @@ export default function RigReviewsSection({
         setLoading(true)
         setError(null)
         try {
-            const reviewPhotos = await uploadPhotoSlots(photos, '/api/rig-reviews/photos')
-            const res = await fetch('/api/rig-reviews', {
+            const reviewPhotos = await uploadPhotoSlots(photos, '/api/camera-system-reviews/photos')
+            const res = await fetch('/api/camera-system-reviews', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ cameraId, housingId, lensId, portId, ...form, reviewPhotos }),
@@ -137,7 +137,7 @@ export default function RigReviewsSection({
     async function handleDelete(id: number) {
         if (!confirm('Are you sure you want to delete this review? This cannot be undone.')) return
         try {
-            const res = await fetch(`/api/rig-reviews?id=${id}`, { method: 'DELETE' })
+            const res = await fetch(`/api/camera-system-reviews?id=${id}`, { method: 'DELETE' })
             if (!res.ok) {
                 const data = await res.json()
                 alert(data.error ?? 'Failed to delete review')
@@ -154,8 +154,8 @@ export default function RigReviewsSection({
         setLoading(true)
         setError(null)
         try {
-            const reviewPhotos = await uploadPhotoSlots(photos, '/api/rig-reviews/photos')
-            const res = await fetch(`/api/rig-reviews?id=${editTarget.id}`, {
+            const reviewPhotos = await uploadPhotoSlots(photos, '/api/camera-system-reviews/photos')
+            const res = await fetch(`/api/camera-system-reviews?id=${editTarget.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...form, reviewPhotos }),
@@ -171,7 +171,7 @@ export default function RigReviewsSection({
         }
     }
 
-    function openEdit(r: RigReviewData) {
+    function openEdit(r: CameraSystemReviewData) {
         setEditTarget(r)
         setForm({
             ratingOpticalQuality: r.ratingOpticalQuality,

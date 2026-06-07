@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
                     interchangeableLens: true,
                     canBeUsedWithoutAHousing: true,
                     brand: { select: { name: true, slug: true } },
-                    cameraRigs: { select: { _count: { select: { galleryPhotos: true } } } },
+                    cameraSystems: { select: { _count: { select: { galleryPhotos: true } } } },
                 },
             })
             const result = rows
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
                     interchangeableLens: c.interchangeableLens,
                     canBeUsedWithoutAHousing: c.canBeUsedWithoutAHousing,
                     productPhoto: c.productPhotos[0] ? withBase(c.productPhotos[0]) : null,
-                    photoCount: sumPhotos(c.cameraRigs),
+                    photoCount: sumPhotos(c.cameraSystems),
                 }))
                 .sort((a, b) => b.photoCount - a.photoCount)
             return NextResponse.json(result)
@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
                     focalLengthWide: true,
                     productPhotos: true,
                     manufacturer: { select: { name: true } },
-                    cameraRigs: {
+                    cameraSystems: {
                         where: cameraId !== null ? { cameraId } : undefined,
                         select: { _count: { select: { galleryPhotos: true } } },
                     },
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
                     focalLengthWide: l.focalLengthWide,
                     manufacturerName: l.manufacturer?.name ?? null,
                     productPhoto: l.productPhotos[0] ? withBase(l.productPhotos[0]) : null,
-                    photoCount: sumPhotos(l.cameraRigs),
+                    photoCount: sumPhotos(l.cameraSystems),
                 }))
                 .sort((a, b) => b.photoCount - a.photoCount)
             return NextResponse.json(result)
@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
                     interchangeablePort: true,
                     housingMount: { select: { id: true } },
                     manufacturer: { select: { name: true, slug: true } },
-                    cameraRigs: {
+                    cameraSystems: {
                         where: { cameraId },
                         select: { _count: { select: { galleryPhotos: true } } },
                     },
@@ -106,7 +106,7 @@ export async function GET(req: NextRequest) {
                     productPhoto: h.productPhotos[0] ? withBase(h.productPhotos[0]) : null,
                     priceAmount: h.priceAmount !== null ? Number(h.priceAmount) : null,
                     priceCurrency: h.priceCurrency,
-                    photoCount: sumPhotos(h.cameraRigs),
+                    photoCount: sumPhotos(h.cameraSystems),
                 }))
                 .sort((a, b) => b.photoCount - a.photoCount)
             return NextResponse.json(result)
@@ -124,7 +124,7 @@ export async function GET(req: NextRequest) {
                     priceCurrency: true,
                     isFlatPort: true,
                     manufacturer: { select: { name: true, slug: true } },
-                    cameraRigs: {
+                    cameraSystems: {
                         where: {
                             ...(cameraId !== null && { cameraId }),
                             ...(housingId !== null && { housingId }),
@@ -142,7 +142,7 @@ export async function GET(req: NextRequest) {
                     productPhoto: p.productPhotos[0] ? withBase(p.productPhotos[0]) : null,
                     priceAmount: p.priceAmount !== null ? Number(p.priceAmount) : null,
                     priceCurrency: p.priceCurrency,
-                    photoCount: sumPhotos(p.cameraRigs),
+                    photoCount: sumPhotos(p.cameraSystems),
                 }))
                 .sort((a, b) => b.photoCount - a.photoCount)
             return NextResponse.json(result)
@@ -150,7 +150,7 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json({ error: 'Invalid step or missing parameters' }, { status: 400 })
     } catch (err) {
-        console.error('[rig-suggestions]', err)
+        console.error('[camera-system-suggestions]', err)
         return NextResponse.json({ error: 'Server error' }, { status: 500 })
     }
 }

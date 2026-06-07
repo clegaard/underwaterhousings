@@ -14,32 +14,32 @@ import { HousingImage } from '@/components/HousingImage'
 import GalleryGrid, { GalleryPhotoData } from '@/components/GalleryGrid'
 
 interface PageProps {
-    params: Promise<{ userId: string; cameraRigId: string }>
+    params: Promise<{ userId: string; cameraSystemId: string }>
 }
 
 export async function generateMetadata({ params }: PageProps) {
-    const { userId, cameraRigId } = await params
+    const { userId, cameraSystemId: csIdStr } = await params
     const uid = parseInt(userId, 10)
-    const rigId = parseInt(cameraRigId, 10)
-    if (isNaN(uid) || isNaN(rigId)) return {}
-    const rig = await prisma.cameraRig.findUnique({
-        where: { id: rigId },
+    const csId = parseInt(csIdStr, 10)
+    if (isNaN(uid) || isNaN(csId)) return {}
+    const cameraSystem = await prisma.cameraSystem.findUnique({
+        where: { id: csId },
         select: { name: true, userId: true, user: { select: { name: true } } },
     })
-    if (!rig || rig.userId !== uid) return {}
+    if (!cameraSystem || cameraSystem.userId !== uid) return {}
     return {
-        title: `${rig.name} · ${rig.user.name ?? 'User'} | Underwater Camera Housings`,
+        title: `${cameraSystem.name} · ${cameraSystem.user.name ?? 'User'} | Underwater Camera Housings`,
     }
 }
 
-export default async function CameraRigDetailPage({ params }: PageProps) {
-    const { userId, cameraRigId } = await params
+export default async function CameraSystemDetailPage({ params }: PageProps) {
+    const { userId, cameraSystemId: csIdStr } = await params
     const uid = parseInt(userId, 10)
-    const rigId = parseInt(cameraRigId, 10)
-    if (isNaN(uid) || isNaN(rigId)) notFound()
+    const csId = parseInt(csIdStr, 10)
+    if (isNaN(uid) || isNaN(csId)) notFound()
 
-    const rig = await prisma.cameraRig.findUnique({
-        where: { id: rigId },
+    const cameraSystem = await prisma.cameraSystem.findUnique({
+        where: { id: csId },
         include: {
             camera: { include: { brand: true } },
             lens: { include: { manufacturer: true } },
@@ -65,28 +65,28 @@ export default async function CameraRigDetailPage({ params }: PageProps) {
         },
     })
 
-    // The rig must exist and belong to the user in the URL
-    if (!rig || rig.userId !== uid) notFound()
+    // The camera system must exist and belong to the user in the URL
+    if (!cameraSystem || cameraSystem.userId !== uid) notFound()
 
     // ── Image helpers ─────────────────────────────────────────────────────────
-    const cameraImg = getCameraImagePathWithFallback(rig.camera.productPhotos ?? [])
-    const lensImg = rig.lens ? getLensImagePathWithFallback(rig.lens.productPhotos ?? []) : null
-    const housingImg = rig.housing ? getHousingImagePathWithFallback(rig.housing.productPhotos ?? []) : null
-    const portImg = rig.port ? getPortImagePathWithFallback(rig.port.productPhotos ?? []) : null
+    const cameraImg = getCameraImagePathWithFallback(cameraSystem.camera.productPhotos ?? [])
+    const lensImg = cameraSystem.lens ? getLensImagePathWithFallback(cameraSystem.lens.productPhotos ?? []) : null
+    const housingImg = cameraSystem.housing ? getHousingImagePathWithFallback(cameraSystem.housing.productPhotos ?? []) : null
+    const portImg = cameraSystem.port ? getPortImagePathWithFallback(cameraSystem.port.productPhotos ?? []) : null
 
     // ── Map gallery photos to GalleryPhotoData ────────────────────────────────
-    const photos: GalleryPhotoData[] = rig.galleryPhotos.map(photo => ({
+    const photos: GalleryPhotoData[] = cameraSystem.galleryPhotos.map(photo => ({
         src: withBase(photo.imagePath),
         width: photo.width,
         height: photo.height,
         caption: photo.caption ?? undefined,
         location: photo.location ?? undefined,
         takenAt: photo.takenAt?.toISOString() ?? undefined,
-        rigLabel: rig.name,
-        cameraSlug: rig.camera.slug,
-        housingSlug: rig.housing?.slug ?? undefined,
-        lensSlug: rig.lens?.slug ?? undefined,
-        portSlug: rig.port?.slug ?? undefined,
+        cameraSystemLabel: cameraSystem.name,
+        cameraSlug: cameraSystem.camera.slug,
+        housingSlug: cameraSystem.housing?.slug ?? undefined,
+        lensSlug: cameraSystem.lens?.slug ?? undefined,
+        portSlug: cameraSystem.port?.slug ?? undefined,
         focalLength: photo.focalLength ?? undefined,
         shutterSpeed: photo.shutterSpeed ? Number(photo.shutterSpeed) : undefined,
         aperture: photo.aperture ?? undefined,
@@ -95,10 +95,10 @@ export default async function CameraRigDetailPage({ params }: PageProps) {
         userName: photo.user?.name ?? undefined,
         userId: photo.user?.id ?? undefined,
         userProfilePicture: photo.user?.profilePicture ? withBase(photo.user.profilePicture) : undefined,
-        rigId: rig.id,
+        cameraSystemId: cameraSystem.id,
     }))
 
-    const userName = rig.user.name ?? 'User'
+    const userName = cameraSystem.user.name ?? 'User'
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -110,24 +110,24 @@ export default async function CameraRigDetailPage({ params }: PageProps) {
                     <span>›</span>
                     <Link href={`/users/${uid}`} className="hover:text-blue-600 transition-colors">{userName}</Link>
                     <span>›</span>
-                    <span className="text-gray-900 font-medium">{rig.name}</span>
+                    <span className="text-gray-900 font-medium">{cameraSystem.name}</span>
                 </nav>
 
                 {/* Header card */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    {rig.imagePath && (
+                    {cameraSystem.imagePath && (
                         <div className="relative w-full h-48 bg-gray-100">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                                src={`/api/media${rig.imagePath}`}
-                                alt={`${rig.name} assembled`}
+                                src={`/api/media${cameraSystem.imagePath}`}
+                                alt={`${cameraSystem.name} assembled`}
                                 className="w-full h-full object-cover"
                             />
                         </div>
                     )}
                     <div className="px-6 py-5 flex items-center justify-between gap-4">
                         <div>
-                            <h1 className="text-xl font-semibold text-gray-900">{rig.name}</h1>
+                            <h1 className="text-xl font-semibold text-gray-900">{cameraSystem.name}</h1>
                             <Link
                                 href={`/users/${uid}`}
                                 className="text-sm text-blue-600 hover:underline"
@@ -136,15 +136,15 @@ export default async function CameraRigDetailPage({ params }: PageProps) {
                             </Link>
                         </div>
                         <Link
-                            href={`/rigs?${new URLSearchParams({
-                                camera: rig.camera.slug,
-                                ...(rig.housing ? { housing: rig.housing.slug } : {}),
-                                ...(rig.lens ? { lens: rig.lens.slug } : {}),
-                                ...(rig.port ? { port: rig.port.slug } : {}),
+                            href={`/camera-systems?${new URLSearchParams({
+                                camera: cameraSystem.camera.slug,
+                                ...(cameraSystem.housing ? { housing: cameraSystem.housing.slug } : {}),
+                                ...(cameraSystem.lens ? { lens: cameraSystem.lens.slug } : {}),
+                                ...(cameraSystem.port ? { port: cameraSystem.port.slug } : {}),
                             }).toString()}`}
                             className="shrink-0 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
                         >
-                            View rig specs →
+                            View camera system specs →
                         </Link>
                     </div>
                 </div>
@@ -156,50 +156,50 @@ export default async function CameraRigDetailPage({ params }: PageProps) {
 
                         <ComponentCard
                             label="Camera"
-                            name={`${rig.camera.brand.name} ${rig.camera.name}`}
+                            name={`${cameraSystem.camera.brand.name} ${cameraSystem.camera.name}`}
                             img={cameraImg}
-                            href={`/cameras/${rig.camera.brand.slug}`}
+                            href={`/cameras/${cameraSystem.camera.brand.slug}`}
                         />
 
-                        {rig.lens && lensImg && (
+                        {cameraSystem.lens && lensImg && (
                             <ComponentCard
                                 label="Lens"
-                                name={rig.lens.name}
+                                name={cameraSystem.lens.name}
                                 img={lensImg}
                             />
                         )}
 
-                        {rig.housing && housingImg && (
+                        {cameraSystem.housing && housingImg && (
                             <ComponentCard
                                 label="Housing"
-                                name={`${rig.housing.manufacturer.name} ${rig.housing.name}`}
+                                name={`${cameraSystem.housing.manufacturer.name} ${cameraSystem.housing.name}`}
                                 img={housingImg}
-                                href={`/gear/${rig.housing.manufacturer.slug}/housings/${rig.housing.slug}`}
+                                href={`/gear/${cameraSystem.housing.manufacturer.slug}/housings/${cameraSystem.housing.slug}`}
                             />
                         )}
 
-                        {rig.port && portImg && (
+                        {cameraSystem.port && portImg && (
                             <ComponentCard
                                 label="Port"
-                                name={rig.port.name}
+                                name={cameraSystem.port.name}
                                 img={portImg}
                             />
                         )}
 
-                        {rig.portAdapter && (
+                        {cameraSystem.portAdapter && (
                             <ComponentCard
                                 label="Port Adapter"
-                                name={rig.portAdapter.name}
+                                name={cameraSystem.portAdapter.name}
                                 img={{ src: '/ports/fallback.png', fallback: '/ports/fallback.png' }}
                                 detail={
-                                    rig.portAdapter.inputHousingMount && rig.portAdapter.outputHousingMount
-                                        ? `${rig.portAdapter.inputHousingMount.name} → ${rig.portAdapter.outputHousingMount.name}`
+                                    cameraSystem.portAdapter.inputHousingMount && cameraSystem.portAdapter.outputHousingMount
+                                        ? `${cameraSystem.portAdapter.inputHousingMount.name} → ${cameraSystem.portAdapter.outputHousingMount.name}`
                                         : undefined
                                 }
                             />
                         )}
 
-                        {rig.extensionRings.map(ring => (
+                        {cameraSystem.extensionRings.map(ring => (
                             <ComponentCard
                                 key={ring.id}
                                 label="Extension Ring"
@@ -218,7 +218,7 @@ export default async function CameraRigDetailPage({ params }: PageProps) {
                 {photos.length > 0 && (
                     <section>
                         <h2 className="text-base font-semibold text-gray-900 mb-4">
-                            Photos taken with this rig
+                            Photos taken with this camera system
                             <span className="ml-2 text-sm font-normal text-gray-400">({photos.length})</span>
                         </h2>
                         <Suspense>
@@ -229,7 +229,7 @@ export default async function CameraRigDetailPage({ params }: PageProps) {
 
                 {photos.length === 0 && (
                     <div className="text-center py-12 text-gray-400 text-sm bg-white rounded-2xl border border-gray-100">
-                        No photos uploaded with this rig yet.
+                        No photos uploaded with this camera system yet.
                     </div>
                 )}
             </div>

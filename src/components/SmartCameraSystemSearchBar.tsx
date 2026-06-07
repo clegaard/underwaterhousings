@@ -259,7 +259,7 @@ function SuggestionRow({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function SmartRigSearchBar({ cameras, housings }: { cameras: any[]; housings: any[] }) {
+export default function SmartCameraSystemSearchBar({ cameras, housings }: { cameras: any[]; housings: any[] }) {
     const router = useRouter()
     const searchParams = useSearchParams()
     const { formatMoney } = useCurrency()
@@ -343,7 +343,7 @@ export default function SmartRigSearchBar({ cameras, housings }: { cameras: any[
             if (selectedCamera?.id) params.set('cameraId', String(selectedCamera.id))
         }
 
-        fetch(`/api/rig-suggestions?${params.toString()}`)
+        fetch(`/api/camera-system-suggestions?${params.toString()}`)
             .then(r => r.json())
             .then(data => { if (!cancelled) { setSuggestions(Array.isArray(data) ? data : []); setLoading(false) } })
             .catch(() => { if (!cancelled) setLoading(false) })

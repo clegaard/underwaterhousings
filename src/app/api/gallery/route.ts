@@ -27,11 +27,11 @@ export async function GET(request: NextRequest) {
             housingId = housing?.id
         }
 
-        const rigWhere: Record<string, unknown> = { cameraId: camera.id }
-        if (housingId !== undefined) rigWhere.housingId = housingId
+        const cameraSystemWhere: Record<string, unknown> = { cameraId: camera.id }
+        if (housingId !== undefined) cameraSystemWhere.housingId = housingId
 
         const photos = await prisma.galleryPhoto.findMany({
-            where: { rig: rigWhere },
+            where: { cameraSystem: cameraSystemWhere },
             orderBy: { takenAt: 'desc' },
             take: 8,
             select: {

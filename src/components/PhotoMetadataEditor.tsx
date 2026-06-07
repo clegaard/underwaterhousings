@@ -7,7 +7,7 @@ import { HeicMultiProgressBar } from '@/components/HeicProgressBar'
 
 // ─── Shared Types ─────────────────────────────────────────────────────────────
 
-export interface UserRig {
+export interface UserCameraSystem {
     id: number
     name: string
     isActive: boolean
@@ -53,7 +53,7 @@ export interface PendingPhoto {
     exifCameraModel: string | null
     exifLensModel: string | null
     exifLoading: boolean
-    selectedRigId: string
+    selectedCameraSystemId: string
     /** Form fields populated from the photo's embedded EXIF metadata — locked read-only (Rule G1) */
     exifFields?: ReadonlyArray<keyof UploadForm>
     /** Form fields pre-filled from Instagram caption parsing — editable but badged */
@@ -67,11 +67,11 @@ export interface PendingPhoto {
 
 export function computeAutoMatches(
     photo: Pick<PendingPhoto, 'exifCameraModel' | 'exifLensModel'>,
-    activeRigs: UserRig[]
-): UserRig[] {
+    activeCameraSystems: UserCameraSystem[]
+): UserCameraSystem[] {
     if (!photo.exifCameraModel) return []
     const builtIn = !!(photo.exifLensModel && photo.exifLensModel.startsWith(photo.exifCameraModel))
-    return activeRigs.filter(r => {
+    return activeCameraSystems.filter(r => {
         if (r.camera.exifId !== photo.exifCameraModel) return false
         if (!r.camera.interchangeableLens || builtIn) return true
         if (photo.exifLensModel && r.lens !== null) return r.lens.exifId === photo.exifLensModel
@@ -81,12 +81,12 @@ export function computeAutoMatches(
 
 export type TabStatus = 'loading' | 'matched' | 'ambiguous' | 'warning' | 'none'
 
-export function getPhotoTabStatus(photo: PendingPhoto, userRigs: UserRig[], rigsLoaded: boolean): TabStatus {
+export function getPhotoTabStatus(photo: PendingPhoto, userCameraSystems: UserCameraSystem[], cameraSystemsLoaded: boolean): TabStatus {
     if (photo.exifLoading) return 'loading'
-    if (photo.selectedRigId) return 'matched'
-    if (!rigsLoaded) return 'none'
+    if (photo.selectedCameraSystemId) return 'matched'
+    if (!cameraSystemsLoaded) return 'none'
     if (!photo.exifCameraModel) return 'none'
-    const matches = computeAutoMatches(photo, userRigs.filter(r => r.isActive))
+    const matches = computeAutoMatches(photo, userCameraSystems.filter(r => r.isActive))
     if (matches.length > 1) return 'ambiguous'
     if (matches.length === 0) return 'warning'
     return 'none'
@@ -128,8 +128,8 @@ function TabStatusBadge({ status }: { status: TabStatus }) {
  * Small inline chip with tooltip explaining the data source.
  * Rule G3: display the source of each metadata field.
  */
-function SourceBadge({ source }: { source: 'exif' | 'caption' | 'rig' | 'manual' }) {
-    if (source === 'rig') {
+function SourceBadge({ source }: { source: 'exif' | 'caption' | 'cameraSystem' | 'manual' }) {
+    if (source === 'cameraSystem') {
         return (
             <span className="relative group/src inline-flex items-center">
                 <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded cursor-help select-none bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
@@ -137,11 +137,11 @@ function SourceBadge({ source }: { source: 'exif' | 'caption' | 'rig' | 'manual'
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    Rig
+                    System
                 </span>
                 <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-gray-900 text-white text-[10px] rounded-lg px-2.5 py-2 leading-relaxed text-center
                     opacity-0 group-hover/src:opacity-100 transition-opacity pointer-events-none z-20 shadow-lg">
-                    Populated from the selected camera rig.
+                    Populated from the selected camera system.
                     <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
                 </span>
             </span>
@@ -200,9 +200,9 @@ export interface PhotoMetadataEditorProps {
     photos: PendingPhoto[]
     onUpdatePhoto: (id: string, patch: Partial<PendingPhoto>) => void
     onRemovePhoto: (id: string) => void
-    userRigs: UserRig[]
-    rigsLoaded: boolean
-    /** Used for building the "create rig" link */
+    userCameraSystems: UserCameraSystem[]
+    cameraSystemsLoaded: boolean
+    /** Used for building the "create camera system" link */
     userId: string | number | null | undefined
     /** If provided, an "Add" button is shown at the end of the tab strip */
     onAddFiles?: () => void
@@ -224,8 +224,8 @@ export default function PhotoMetadataEditor({
     photos,
     onUpdatePhoto,
     onRemovePhoto,
-    userRigs,
-    rigsLoaded,
+    userCameraSystems,
+    cameraSystemsLoaded,
     userId,
     onAddFiles,
     batchProgress,
@@ -265,14 +265,14 @@ export default function PhotoMetadataEditor({
         const photo = activePhoto
         if (!photo) return
         const photoId = photo.id
-        const activeRigsList = userRigs.filter(r => r.isActive)
+        const activeCameraSystemsList = userCameraSystems.filter(r => r.isActive)
         const exifDone = !photo.exifLoading
-        const autoMatches = computeAutoMatches(photo, activeRigsList)
+        const autoMatches = computeAutoMatches(photo, activeCameraSystemsList)
         const showNoMatch =
             exifDone &&
-            rigsLoaded &&
+            cameraSystemsLoaded &&
             photo.exifCameraModel !== null &&
-            activeRigsList.length > 0 &&
+            activeCameraSystemsList.length > 0 &&
             autoMatches.length === 0
 
         if (!showNoMatch || !photo.exifCameraModel || photo.exifCheckResult !== null) return
@@ -293,56 +293,56 @@ export default function PhotoMetadataEditor({
         activePhoto?.exifCameraModel,
         activePhoto?.exifLensModel,
         activePhoto?.exifCheckResult,
-        rigsLoaded,
+        cameraSystemsLoaded,
     ])
 
     // ── Derived state for the active photo ───────────────────────────────────
-    const activeRigsForPhoto = userRigs.filter(r => r.isActive)
+    const activeCameraSystemsForPhoto = userCameraSystems.filter(r => r.isActive)
     const exifDone = activePhoto !== null && !activePhoto.exifLoading
     const isBuiltInLensFromExif = !!(
         activePhoto?.exifCameraModel &&
         activePhoto.exifLensModel &&
         activePhoto.exifLensModel.startsWith(activePhoto.exifCameraModel)
     )
-    const exifCameraRig = activePhoto?.exifCameraModel
-        ? activeRigsForPhoto.find(r => r.camera.exifId === activePhoto.exifCameraModel)
+    const exifCameraSystem = activePhoto?.exifCameraModel
+        ? activeCameraSystemsForPhoto.find(r => r.camera.exifId === activePhoto.exifCameraModel)
         : undefined
-    const isFixedLensCamera = exifCameraRig ? !exifCameraRig.camera.interchangeableLens : false
+    const isFixedLensCamera = exifCameraSystem ? !exifCameraSystem.camera.interchangeableLens : false
     const lensIsFixed = isFixedLensCamera || isBuiltInLensFromExif
-    const autoMatches = activePhoto ? computeAutoMatches(activePhoto, activeRigsForPhoto) : []
-    const autoMatchedRig = activePhoto?.selectedRigId
-        ? autoMatches.find(r => String(r.id) === activePhoto.selectedRigId) ?? null
+    const autoMatches = activePhoto ? computeAutoMatches(activePhoto, activeCameraSystemsForPhoto) : []
+    const autoMatchedCameraSystem = activePhoto?.selectedCameraSystemId
+        ? autoMatches.find(r => String(r.id) === activePhoto.selectedCameraSystemId) ?? null
         : null
     const showNoMatch =
         exifDone &&
-        rigsLoaded &&
+        cameraSystemsLoaded &&
         !!activePhoto?.exifCameraModel &&
-        activeRigsForPhoto.length > 0 &&
+        activeCameraSystemsForPhoto.length > 0 &&
         autoMatches.length === 0
-    const showNoRigs = exifDone && rigsLoaded && activeRigsForPhoto.length === 0
+    const showNoCameraSystems = exifDone && cameraSystemsLoaded && activeCameraSystemsForPhoto.length === 0
 
-    // Rule G2: when EXIF camera is known, only show rigs that match it.
-    // When no EXIF camera, show all active rigs.
-    const rigsToShow = activePhoto?.exifCameraModel ? autoMatches : activeRigsForPhoto
+    // Rule G2: when EXIF camera is known, only show camera systems that match it.
+    // When no EXIF camera, show all active camera systems.
+    const cameraSystemsToShow = activePhoto?.exifCameraModel ? autoMatches : activeCameraSystemsForPhoto
 
-    // Rig selected by the user — used to populate camera/lens display when no EXIF data is present
-    const selectedRig = activePhoto?.selectedRigId
-        ? activeRigsForPhoto.find(r => String(r.id) === activePhoto.selectedRigId) ?? null
+    // Camera system selected by the user — used to populate camera/lens display when no EXIF data is present
+    const selectedCameraSystem = activePhoto?.selectedCameraSystemId
+        ? activeCameraSystemsForPhoto.find(r => String(r.id) === activePhoto.selectedCameraSystemId) ?? null
         : null
 
     // Camera & Lens display values (Rule G3) — always shown in Shot Details
-    const cameraSource: 'exif' | 'rig' | null =
-        activePhoto?.exifCameraModel ? 'exif' : (selectedRig ? 'rig' : null)
+    const cameraSource: 'exif' | 'cameraSystem' | null =
+        activePhoto?.exifCameraModel ? 'exif' : (selectedCameraSystem ? 'cameraSystem' : null)
     const cameraValue = activePhoto?.exifCameraModel
-        ?? (selectedRig ? `${selectedRig.camera.brand.name} ${selectedRig.camera.name}` : '')
+        ?? (selectedCameraSystem ? `${selectedCameraSystem.camera.brand.name} ${selectedCameraSystem.camera.name}` : '')
     const showExifLens = !isFixedLensCamera && !isBuiltInLensFromExif && !!activePhoto?.exifLensModel
-    const showRigLens = !activePhoto?.exifCameraModel && !!selectedRig?.lens
-    const lensSource: 'exif' | 'rig' | null = showExifLens ? 'exif' : (showRigLens ? 'rig' : null)
+    const showCameraSystemLens = !activePhoto?.exifCameraModel && !!selectedCameraSystem?.lens
+    const lensSource: 'exif' | 'cameraSystem' | null = showExifLens ? 'exif' : (showCameraSystemLens ? 'cameraSystem' : null)
     const lensValue = showExifLens
         ? (activePhoto?.exifLensModel ?? '')
-        : (showRigLens ? selectedRig!.lens!.name : '')
+        : (showCameraSystemLens ? selectedCameraSystem!.lens!.name : '')
 
-    const createRigUrl = (() => {
+    const createCameraSystemUrl = (() => {
         if (!userId) return '#'
         const params = new URLSearchParams()
         if (activePhoto?.exifCameraModel) params.set('prefillCamera', activePhoto.exifCameraModel)
@@ -350,7 +350,7 @@ export default function PhotoMetadataEditor({
         return `/users/${userId}?${params.toString()}`
     })()
 
-    const unmatched = photos.filter(p => !p.selectedRigId).length
+    const unmatched = photos.filter(p => !p.selectedCameraSystemId).length
     const effectiveLabel =
         submitLabel ??
         (photos.length > 1 ? `Upload ${photos.length} photos` : 'Upload photo')
@@ -435,7 +435,7 @@ export default function PhotoMetadataEditor({
                     style={{ scrollbarWidth: 'none' }}
                 >
                     {photos.map((photo, idx) => {
-                        const status = getPhotoTabStatus(photo, userRigs, rigsLoaded)
+                        const status = getPhotoTabStatus(photo, userCameraSystems, cameraSystemsLoaded)
                         const isActive = photo.id === activePhotoId
                         return (
                             <div
@@ -553,28 +553,28 @@ export default function PhotoMetadataEditor({
                             />
                         </div>
 
-                        {/* Camera Rig — required */}
+                        {/* Camera System — required */}
                         <div className="space-y-3">
-                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Camera Rig</p>
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Camera System</p>
                             <div className="space-y-3">
 
                                 {/* Loading / matching state */}
-                                {(activePhoto.exifLoading || !rigsLoaded) && (
-                                    <p className="text-xs text-gray-400 italic">Looking for matching rig…</p>
+                                {(activePhoto.exifLoading || !cameraSystemsLoaded) && (
+                                    <p className="text-xs text-gray-400 italic">Looking for matching camera system…</p>
                                 )}
 
-                                {/* No rigs warning */}
-                                {showNoRigs && (
+                                {/* No camera systems warning */}
+                                {showNoCameraSystems && (
                                     <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-3 space-y-1.5">
                                         <div className="flex items-start gap-2">
                                             <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                                             </svg>
-                                            <p className="text-xs text-amber-800">You have no camera rigs set up yet.</p>
+                                            <p className="text-xs text-amber-800">You have no camera systems set up yet.</p>
                                         </div>
-                                        <a href={createRigUrl} target="_blank" rel="noopener noreferrer"
+                                        <a href={createCameraSystemUrl} target="_blank" rel="noopener noreferrer"
                                             className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium hover:underline">
-                                            Create a rig on your profile
+                                            Create a camera system on your profile
                                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                             </svg>
@@ -582,7 +582,7 @@ export default function PhotoMetadataEditor({
                                     </div>
                                 )}
 
-                                {/* No matching rig warning (Rule G2: only matching rigs can be selected) */}
+                                {/* No matching camera system warning (Rule G2: only matching camera systems can be selected) */}
                                 {showNoMatch && (
                                     <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-3 space-y-1.5">
                                         <div className="flex items-start gap-2">
@@ -591,12 +591,12 @@ export default function PhotoMetadataEditor({
                                             </svg>
                                             <p className="text-xs text-amber-800">
                                                 {activePhoto.exifCheckResult?.cameraExists === false ? (
-                                                    <>Camera &quot;{activePhoto.exifCameraModel}&quot; is not yet in the database — it needs to be added with its EXIF name set before rigs can be matched.</>
+                                                    <>Camera &quot;{activePhoto.exifCameraModel}&quot; is not yet in the database — it needs to be added with its EXIF name set before camera systems can be matched.</>
                                                 ) : activePhoto.exifCheckResult?.lensExists === false ? (
-                                                    <>Lens &quot;{activePhoto.exifLensModel}&quot; is not yet in the database — it needs to be added with its EXIF name set before rigs can be matched.</>
+                                                    <>Lens &quot;{activePhoto.exifLensModel}&quot; is not yet in the database — it needs to be added with its EXIF name set before camera systems can be matched.</>
                                                 ) : (
                                                     <>
-                                                        No saved rig matched
+                                                        No saved camera system matched
                                                         {activePhoto.exifCameraModel ? ` camera "${activePhoto.exifCameraModel}"` : ''}
                                                         {activePhoto.exifLensModel && !lensIsFixed ? ` with lens "${activePhoto.exifLensModel}"` : ''}.
                                                     </>
@@ -604,9 +604,9 @@ export default function PhotoMetadataEditor({
                                             </p>
                                         </div>
                                         {activePhoto.exifCheckResult?.cameraExists !== false && (
-                                            <a href={createRigUrl} target="_blank" rel="noopener noreferrer"
+                                            <a href={createCameraSystemUrl} target="_blank" rel="noopener noreferrer"
                                                 className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium hover:underline">
-                                                Create a rig for this camera
+                                                Create a camera system for this camera
                                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                                 </svg>
@@ -615,23 +615,23 @@ export default function PhotoMetadataEditor({
                                     </div>
                                 )}
 
-                                {/* Single auto-matched rig — confirmed green box */}
-                                {exifDone && rigsLoaded && autoMatchedRig && autoMatches.length === 1 && (
+                                {/* Single auto-matched camera system — confirmed green box */}
+                                {exifDone && cameraSystemsLoaded && autoMatchedCameraSystem && autoMatches.length === 1 && (
                                     <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
                                         <svg className="w-4 h-4 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                         </svg>
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-xs font-medium text-green-800 truncate">{autoMatchedRig.name}</p>
+                                            <p className="text-xs font-medium text-green-800 truncate">{autoMatchedCameraSystem.name}</p>
                                             <p className="text-[10px] text-green-600 truncate">
-                                                {autoMatchedRig.camera.brand.name} {autoMatchedRig.camera.name}
-                                                {autoMatchedRig.lens ? ` · ${autoMatchedRig.lens.name}` : ''}
-                                                {autoMatchedRig.housing ? ` · ${autoMatchedRig.housing.manufacturer.name} ${autoMatchedRig.housing.name}` : ''}
+                                                {autoMatchedCameraSystem.camera.brand.name} {autoMatchedCameraSystem.camera.name}
+                                                {autoMatchedCameraSystem.lens ? ` · ${autoMatchedCameraSystem.lens.name}` : ''}
+                                                {autoMatchedCameraSystem.housing ? ` · ${autoMatchedCameraSystem.housing.manufacturer.name} ${autoMatchedCameraSystem.housing.name}` : ''}
                                             </p>
                                         </div>
                                         <button
                                             type="button"
-                                            onClick={() => onUpdatePhoto(activePhoto.id, { selectedRigId: '' })}
+                                            onClick={() => onUpdatePhoto(activePhoto.id, { selectedCameraSystemId: '' })}
                                             className="text-[10px] text-blue-600 hover:underline shrink-0"
                                         >
                                             Change
@@ -639,25 +639,25 @@ export default function PhotoMetadataEditor({
                                     </div>
                                 )}
 
-                                {/* Rig dropdown — shown when there are eligible rigs and no single confirmed auto-match */}
-                                {exifDone && rigsLoaded && rigsToShow.length > 0 && !(autoMatches.length === 1 && autoMatchedRig) && (
+                                {/* Camera system dropdown — shown when there are eligible camera systems and no single confirmed auto-match */}
+                                {exifDone && cameraSystemsLoaded && cameraSystemsToShow.length > 0 && !(autoMatches.length === 1 && autoMatchedCameraSystem) && (
                                     <>
-                                        {autoMatches.length > 1 && !activePhoto.selectedRigId && (
+                                        {autoMatches.length > 1 && !activePhoto.selectedCameraSystemId && (
                                             <p className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                                                Multiple rigs match this camera and lens. Please select one:
+                                                Multiple camera systems match this camera and lens. Please select one:
                                             </p>
                                         )}
                                         <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">Camera rig</label>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">Camera system</label>
                                             <select
-                                                value={activePhoto.selectedRigId}
-                                                onChange={e => onUpdatePhoto(activePhoto.id, { selectedRigId: e.target.value })}
+                                                value={activePhoto.selectedCameraSystemId}
+                                                onChange={e => onUpdatePhoto(activePhoto.id, { selectedCameraSystemId: e.target.value })}
                                                 className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
                                             >
                                                 <option value="">
-                                                    {activePhoto.exifCameraModel ? '— select a matching rig —' : '— none —'}
+                                                    {activePhoto.exifCameraModel ? '— select a matching camera system —' : '— none —'}
                                                 </option>
-                                                {rigsToShow.map(r => (
+                                                {cameraSystemsToShow.map(r => (
                                                     <option key={r.id} value={String(r.id)}>
                                                         {r.name}{r.camera ? ` (${r.camera.brand.name} ${r.camera.name}${r.lens ? ` · ${r.lens.name}` : ''})` : ''}
                                                     </option>
@@ -668,7 +668,7 @@ export default function PhotoMetadataEditor({
                                 )}
 
                                 {/* No camera data fallback hint */}
-                                {exifDone && rigsLoaded && !activePhoto.exifCameraModel && rigsToShow.length === 0 && !showNoRigs && (
+                                {exifDone && cameraSystemsLoaded && !activePhoto.exifCameraModel && cameraSystemsToShow.length === 0 && !showNoCameraSystems && (
                                     <p className="text-xs text-gray-400 italic">
                                         {activePhoto.instagram
                                             ? 'No EXIF data available for Instagram photos.'
@@ -750,7 +750,7 @@ export default function PhotoMetadataEditor({
                     <div className="flex items-center gap-3">
                         {unmatched > 0 && (
                             <p className="text-xs text-amber-600 hidden sm:block">
-                                {unmatched} photo{unmatched !== 1 ? 's' : ''} without a rig
+                                {unmatched} photo{unmatched !== 1 ? 's' : ''} without a camera system
                             </p>
                         )}
                         <button
