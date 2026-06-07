@@ -220,6 +220,8 @@ Images should have transparant backgrounds to allow for a consistent look across
 
 A camera system can be defined as a collection of compatible products that allows the user to take the system underwater safely and to allow the user to take pictures or video with the system. A camera system typically includes a camera body, a housing, and a port, but can also include other accessories such as extension rings, wet optics, flash triggers and strobes.
 
+*RULE CS1* : The components of a camera system can not be modified if photos taken with the system have been uploaded to the gallery.
+
 ### Camera System Variations (WIP)
 
 ** The concept of camera system variations is still being drafted and is not integrated into the current version of the application, but it is likely to be implemented in a future version. **
@@ -246,7 +248,46 @@ Camera system variations are a purely client side concept that allows the user t
 
 
 ## Reviews
+One of the main contributions of the website is that it allows for honest user reviews of a wealth of camera systems backed by concrete examples of photos taken with these systems, which is a valuable resource for photographers looking to make informed decisions about which underwater camera system to invest in.
 
+For instance a review of a system consisting of a Sony A7 IV, Sony 24-70mm F2.8 GM II lens, Sea Frogs SF-A7IV housing and Sea Frogs FL100 flat port might have the following structure:
+
+* Camera review: What the user thinks of the A7 IV as a camera for underwater photography.
+* Lens review: What the user thinks of the 24-70mm lens for underwater photography. How is the sharpness, how does the autofocus perform, what size of the subjects does the lens perform best with, etc.
+* Housing review: What the user thinks of the Sea Frogs SF-A7IV housing. Can all the controls of the camera be accessed easily, how is the ergonomics, how is the build quality, any leaks, etc.
+* Port review: What the user thinks of the Sea Frogs FL100 flat port. How is the corner sharpness, how is the built quality.
+* System review: What the user thinks of the overall system as a whole. How do the components work together, any issues with compatibility, how is the image quality of the photos taken with this system, etc.
+
+### Gallery Photo Embedding
+Since we alreay assign photos to a camera system when the user uploads photos, we can use these photos as concrete examples to back up the reviews of the different components and the system as a whole.
+
+Whenever a photo is shown it is possible to trace the image back to the original camera system and the metadata if specified.
+
+### Multi Camera System Reviews
+
+One of the complexities of reviews for underwater photography systems is that the choice in camera, lens, housing and port components allows for a wealth of combinations.
+On top of this is the use of accessories such as extension rings, wet optics, and strobes that further increases the number of possible combinations.
+
+Another complicating factor is that the same user may have multiple variations of a camera system, for instance the user might go on a dive with a wide angle setup consisting of a wide angle lens and a dome port, and then later swap the wide angle lens for a macro lens and swap the dome port for a flat port to go on another dive.
+
+Writing reviews for each of these variations would lead to a lot of fragmentation and make it difficult for users to get a comprehensive understanding of the performance of the different components and combinations.
+
+To address this issue we allow users to write a review for a camera system that covers multiple variations of the system, so that the user can write one review that covers both their wide angle setup and their macro setup, and they can use photos taken with both setups to back up their review.
+
+Based on the example with two different camera setups we get the following structure:
+
+Camera:
+- Sony A7 IV
+Lenses:
+- Sony 24-70mm F2.8 GM II
+- Sony 100mm macro GM OSS
+Housing:
+- Sea Frogs SF-A7IV
+Ports:
+- Sea Frogs FL100 flat port
+- Sea Frogs MP100 macro port
+
+This 
 
 
 ## Gallery and User Submissions

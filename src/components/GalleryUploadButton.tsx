@@ -69,16 +69,16 @@ export default function GalleryUploadButton({ controlledOpen, onControlledClose 
             .then(r => r.json())
             .then(cameraSystemsJson => {
                 if (!cameraSystemsJson?.success) return
-                const { rigs, defaultCameraSystemId } = cameraSystemsJson.data
-                setUserCameraSystems(rigs)
+                const { cameraSystems, defaultCameraSystemId } = cameraSystemsJson.data
+                setUserCameraSystems(cameraSystems)
                 setPhotos(prev => prev.map(p => {
                     if (p.selectedCameraSystemId) return p
                     if (p.exifCameraModel) {
-                        const matches = computeAutoMatches(p, (rigs as UserCameraSystem[]).filter(r => r.isActive))
+                        const matches = computeAutoMatches(p, (cameraSystems as UserCameraSystem[]).filter(r => r.isActive))
                         if (matches.length === 1) return { ...p, selectedCameraSystemId: String(matches[0].id) }
                     }
                     if (!p.exifCameraModel && defaultCameraSystemId) {
-                        const def = (rigs as UserCameraSystem[]).find((r: UserCameraSystem) => r.id === defaultCameraSystemId)
+                        const def = (cameraSystems as UserCameraSystem[]).find((r: UserCameraSystem) => r.id === defaultCameraSystemId)
                         if (def) return { ...p, selectedCameraSystemId: String(def.id) }
                     }
                     return p

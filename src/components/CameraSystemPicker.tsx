@@ -131,6 +131,8 @@ interface Props {
     onSave: (payload: CameraSystemSavePayload) => void
     onCancel: () => void
     isSaving?: boolean
+    /** When true, equipment selection is locked — only name & photo can change. Use for editing existing systems. */
+    readOnly?: boolean
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -194,6 +196,7 @@ export default function CameraSystemPicker({
     onSave,
     onCancel,
     isSaving = false,
+    readOnly = false,
 }: Props) {
     const [cameraSystemName, setCameraSystemName] = useState(initialValues?.name ?? '')
     const [cameraSystemPhotoFile, setCameraSystemPhotoFile] = useState<File | null>(null)
@@ -430,9 +433,19 @@ export default function CameraSystemPicker({
 
     return (
         <div className="flex flex-col gap-5">
-            {/* Rig name */}
+            {/* Read-only banner */}
+            {readOnly && (
+                <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs text-amber-700">
+                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Components are locked after creation. To use different components, clone this camera system instead.
+                </div>
+            )}
+
+            {/* Camera system name */}
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Rig name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Camera system name</label>
                 <input
                     type="text"
                     value={cameraSystemName}
@@ -442,10 +455,10 @@ export default function CameraSystemPicker({
                 />
             </div>
 
-            {/* Rig photo */}
+            {/* Camera system photo */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Rig photo <span className="text-gray-400 font-normal">(optional)</span>
+                    Camera system photo <span className="text-gray-400 font-normal">(optional)</span>
                 </label>
                 {!cameraSystemPhotoFile && (!initialValues?.imagePath || cameraSystemPhotoRemoved) ? (
                     <div
@@ -462,7 +475,7 @@ export default function CameraSystemPicker({
                         <svg className="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <p className="text-gray-700 font-medium text-sm mb-0.5">Drag &amp; drop a photo of your assembled rig</p>
+                        <p className="text-gray-700 font-medium text-sm mb-0.5">Drag &amp; drop a photo of your assembled camera system</p>
                         <p className="text-gray-400 text-xs">or tap to browse — JPG, PNG, WebP · max 20MB</p>
                         <input
                             ref={cameraSystemFileInputRef}
@@ -478,7 +491,7 @@ export default function CameraSystemPicker({
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={cameraSystemPhotoPreview ?? (initialValues?.imagePath ? `/api/media${initialValues.imagePath}` : '')}
-                                alt="Rig preview"
+                                alt="Camera system preview"
                                 className="w-full h-full object-cover"
                             />
                         </div>
@@ -517,220 +530,222 @@ export default function CameraSystemPicker({
             </div>
 
             {/* Step 1 – Camera brand */}
-            <section>
-                <h3 className="text-sm font-semibold text-gray-700 mb-2">Camera brand</h3>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                    {brands.map(brand => (
-                        <button
-                            key={brand.id}
-                            type="button"
-                            onClick={() => handleBrandSelect(brand.id)}
-                            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${selectedBrandId === brand.id
-                                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                : 'border-gray-200 text-gray-600 hover:border-gray-300 bg-white'
-                                }`}
-                        >
-                            {brand.name}
-                        </button>
-                    ))}
-                </div>
-            </section>
-
-            {/* Step 2 – Camera model */}
-            {availableCameras.length > 0 && (
+            <fieldset disabled={readOnly} className={readOnly ? 'opacity-60' : ''}>
                 <section>
-                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Camera</h3>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                        {availableCameras.map(cam => {
-                            const img = getCameraImagePathWithFallback(cam.productPhotos)
-                            return (
-                                <EquipmentCard
-                                    key={cam.id}
-                                    name={cam.name}
-                                    imageSrc={img.src}
-                                    imageFallback={img.fallback}
-                                    selected={selectedCameraId === cam.id}
-                                    onClick={() => handleCameraSelect(cam.id)}
-                                />
-                            )
-                        })}
-                    </div>
-                    {isFixedLens && (
-                        <p className="mt-1.5 text-xs text-gray-500">This camera has a fixed lens — no lens selection needed.</p>
-                    )}
-                    {canSkipHousing && (
-                        <p className="mt-1.5 text-xs text-gray-500">This camera is waterproof — housing is optional.</p>
-                    )}
-                </section>
-            )}
-
-            {/* Step 3 – Lens (only if interchangeable) */}
-            {showLensStep && (
-                <section>
-                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Lens</h3>
-                    {availableLenses.length === 0 ? (
-                        <p className="text-xs text-gray-500">No compatible lenses found for this camera mount.</p>
-                    ) : (
-                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                            {availableLenses.map(lens => {
-                                const img = getLensImagePathWithFallback(lens.productPhotos)
-                                return (
-                                    <EquipmentCard
-                                        key={lens.id}
-                                        name={lens.name}
-                                        imageSrc={img.src}
-                                        imageFallback={img.fallback}
-                                        selected={selectedLensId === lens.id}
-                                        onClick={() => handleLensSelect(lens.id)}
-                                    />
-                                )
-                            })}
-                        </div>
-                    )}
-                </section>
-            )}
-
-            {/* Step 4 – Housing */}
-            {showHousingStep && (
-                <section>
-                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Housing</h3>
-                    {availableHousings.length === 0 ? (
-                        <p className="text-xs text-gray-500">No housings found for this camera.</p>
-                    ) : (
-                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                            {availableHousings.map(housing => {
-                                const img = getHousingImagePathWithFallback(housing.productPhotos)
-                                return (
-                                    <EquipmentCard
-                                        key={housing.id}
-                                        name={housing.name}
-                                        subtitle={housing.manufacturer.name}
-                                        imageSrc={img.src}
-                                        imageFallback={img.fallback}
-                                        selected={selectedHousingId === housing.id}
-                                        onClick={() => handleHousingSelect(housing.id)}
-                                    />
-                                )
-                            })}
-                        </div>
-                    )}
-                    {isFixedPort && selectedHousing && (
-                        <p className="mt-1.5 text-xs text-gray-500">This housing has a fixed port — no port selection needed.</p>
-                    )}
-                </section>
-            )}
-
-            {/* Step 5 – Port adapter (optional) */}
-            {showAdapterStep && (
-                <section>
-                    <h3 className="text-sm font-semibold text-gray-700 mb-1">Port adapter <span className="text-gray-400 font-normal">(optional)</span></h3>
-                    <p className="text-xs text-gray-500 mb-2">
-                        A port adapter lets you use ports from a different mount system on this housing.
-                        {selectedAdapterId && (
+                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Camera brand</h3>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                        {brands.map(brand => (
                             <button
+                                key={brand.id}
                                 type="button"
-                                onClick={() => handleAdapterSelect(selectedAdapterId)}
-                                className="ml-2 text-blue-500 hover:underline"
+                                onClick={() => handleBrandSelect(brand.id)}
+                                className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${selectedBrandId === brand.id
+                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                    : 'border-gray-200 text-gray-600 hover:border-gray-300 bg-white'
+                                    }`}
                             >
-                                Clear
+                                {brand.name}
                             </button>
-                        )}
-                    </p>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                        {availableAdapters.map(adapter => {
-                            const img = getPortImagePathWithFallback(adapter.productPhotos)
-                            return (
-                                <EquipmentCard
-                                    key={adapter.id}
-                                    name={adapter.name}
-                                    subtitle={adapter.manufacturer.name}
-                                    imageSrc={img.src}
-                                    imageFallback={img.fallback}
-                                    selected={selectedAdapterId === adapter.id}
-                                    onClick={() => handleAdapterSelect(adapter.id)}
-                                />
-                            )
-                        })}
+                        ))}
                     </div>
                 </section>
-            )}
 
-            {/* Step 6 – Extension rings (multi-select, optional) */}
-            {showRingsStep && (
-                <section>
-                    <h3 className="text-sm font-semibold text-gray-700 mb-1">
-                        Extension rings <span className="text-gray-400 font-normal">(optional — select all that apply)</span>
-                    </h3>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                        {availableRings.map(ring => {
-                            const img = getPortImagePathWithFallback(ring.productPhotos)
-                            const isSelected = selectedRingIds.includes(ring.id)
-                            return (
-                                <button
-                                    key={ring.id}
-                                    type="button"
-                                    onClick={() => handleRingToggle(ring.id)}
-                                    className={`relative flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all text-left w-full ${isSelected
-                                        ? 'border-blue-500 bg-blue-50'
-                                        : 'border-gray-200 hover:border-gray-300 bg-white'
-                                        }`}
-                                >
-                                    {isSelected && (
-                                        <span className="absolute top-1 right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                                            <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        </span>
-                                    )}
-                                    <div className="relative w-full aspect-square rounded overflow-hidden bg-gray-100">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
-                                            src={img.src}
-                                            alt={ring.name}
-                                            className="w-full h-full object-contain p-1"
-                                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = img.fallback }}
-                                        />
-                                    </div>
-                                    <p className="text-xs font-medium text-gray-800 text-center leading-tight line-clamp-2">{ring.name}</p>
-                                    {ring.lengthMm != null && (
-                                        <p className="text-xs text-amber-600 text-center">{ring.lengthMm} mm</p>
-                                    )}
-                                </button>
-                            )
-                        })}
-                    </div>
-                </section>
-            )}
-
-            {/* Step 7 – Port */}
-            {showPortStep && (
-                <section>
-                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Port</h3>
-                    {availablePorts.length === 0 ? (
-                        <p className="text-xs text-gray-500">
-                            {!isFixedLens && !selectedLens
-                                ? 'Select a lens to see compatible ports.'
-                                : 'No compatible ports found.'}
-                        </p>
-                    ) : (
+                {/* Step 2 – Camera model */}
+                {availableCameras.length > 0 && (
+                    <section>
+                        <h3 className="text-sm font-semibold text-gray-700 mb-2">Camera</h3>
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                            {availablePorts.map(port => {
-                                const img = getPortImagePathWithFallback(port.productPhotos)
+                            {availableCameras.map(cam => {
+                                const img = getCameraImagePathWithFallback(cam.productPhotos)
                                 return (
                                     <EquipmentCard
-                                        key={port.id}
-                                        name={port.name}
+                                        key={cam.id}
+                                        name={cam.name}
                                         imageSrc={img.src}
                                         imageFallback={img.fallback}
-                                        selected={selectedPortId === port.id}
-                                        onClick={() => handlePortSelect(port.id)}
+                                        selected={selectedCameraId === cam.id}
+                                        onClick={() => handleCameraSelect(cam.id)}
                                     />
                                 )
                             })}
                         </div>
-                    )}
-                </section>
-            )}
+                        {isFixedLens && (
+                            <p className="mt-1.5 text-xs text-gray-500">This camera has a fixed lens — no lens selection needed.</p>
+                        )}
+                        {canSkipHousing && (
+                            <p className="mt-1.5 text-xs text-gray-500">This camera is waterproof — housing is optional.</p>
+                        )}
+                    </section>
+                )}
+
+                {/* Step 3 – Lens (only if interchangeable) */}
+                {showLensStep && (
+                    <section>
+                        <h3 className="text-sm font-semibold text-gray-700 mb-2">Lens</h3>
+                        {availableLenses.length === 0 ? (
+                            <p className="text-xs text-gray-500">No compatible lenses found for this camera mount.</p>
+                        ) : (
+                            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                                {availableLenses.map(lens => {
+                                    const img = getLensImagePathWithFallback(lens.productPhotos)
+                                    return (
+                                        <EquipmentCard
+                                            key={lens.id}
+                                            name={lens.name}
+                                            imageSrc={img.src}
+                                            imageFallback={img.fallback}
+                                            selected={selectedLensId === lens.id}
+                                            onClick={() => handleLensSelect(lens.id)}
+                                        />
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </section>
+                )}
+
+                {/* Step 4 – Housing */}
+                {showHousingStep && (
+                    <section>
+                        <h3 className="text-sm font-semibold text-gray-700 mb-2">Housing</h3>
+                        {availableHousings.length === 0 ? (
+                            <p className="text-xs text-gray-500">No housings found for this camera.</p>
+                        ) : (
+                            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                                {availableHousings.map(housing => {
+                                    const img = getHousingImagePathWithFallback(housing.productPhotos)
+                                    return (
+                                        <EquipmentCard
+                                            key={housing.id}
+                                            name={housing.name}
+                                            subtitle={housing.manufacturer.name}
+                                            imageSrc={img.src}
+                                            imageFallback={img.fallback}
+                                            selected={selectedHousingId === housing.id}
+                                            onClick={() => handleHousingSelect(housing.id)}
+                                        />
+                                    )
+                                })}
+                            </div>
+                        )}
+                        {isFixedPort && selectedHousing && (
+                            <p className="mt-1.5 text-xs text-gray-500">This housing has a fixed port — no port selection needed.</p>
+                        )}
+                    </section>
+                )}
+
+                {/* Step 5 – Port adapter (optional) */}
+                {showAdapterStep && (
+                    <section>
+                        <h3 className="text-sm font-semibold text-gray-700 mb-1">Port adapter <span className="text-gray-400 font-normal">(optional)</span></h3>
+                        <p className="text-xs text-gray-500 mb-2">
+                            A port adapter lets you use ports from a different mount system on this housing.
+                            {selectedAdapterId && (
+                                <button
+                                    type="button"
+                                    onClick={() => handleAdapterSelect(selectedAdapterId)}
+                                    className="ml-2 text-blue-500 hover:underline"
+                                >
+                                    Clear
+                                </button>
+                            )}
+                        </p>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                            {availableAdapters.map(adapter => {
+                                const img = getPortImagePathWithFallback(adapter.productPhotos)
+                                return (
+                                    <EquipmentCard
+                                        key={adapter.id}
+                                        name={adapter.name}
+                                        subtitle={adapter.manufacturer.name}
+                                        imageSrc={img.src}
+                                        imageFallback={img.fallback}
+                                        selected={selectedAdapterId === adapter.id}
+                                        onClick={() => handleAdapterSelect(adapter.id)}
+                                    />
+                                )
+                            })}
+                        </div>
+                    </section>
+                )}
+
+                {/* Step 6 – Extension rings (multi-select, optional) */}
+                {showRingsStep && (
+                    <section>
+                        <h3 className="text-sm font-semibold text-gray-700 mb-1">
+                            Extension rings <span className="text-gray-400 font-normal">(optional — select all that apply)</span>
+                        </h3>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                            {availableRings.map(ring => {
+                                const img = getPortImagePathWithFallback(ring.productPhotos)
+                                const isSelected = selectedRingIds.includes(ring.id)
+                                return (
+                                    <button
+                                        key={ring.id}
+                                        type="button"
+                                        onClick={() => handleRingToggle(ring.id)}
+                                        className={`relative flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all text-left w-full ${isSelected
+                                            ? 'border-blue-500 bg-blue-50'
+                                            : 'border-gray-200 hover:border-gray-300 bg-white'
+                                            }`}
+                                    >
+                                        {isSelected && (
+                                            <span className="absolute top-1 right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                                                <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </span>
+                                        )}
+                                        <div className="relative w-full aspect-square rounded overflow-hidden bg-gray-100">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                src={img.src}
+                                                alt={ring.name}
+                                                className="w-full h-full object-contain p-1"
+                                                onError={(e) => { (e.currentTarget as HTMLImageElement).src = img.fallback }}
+                                            />
+                                        </div>
+                                        <p className="text-xs font-medium text-gray-800 text-center leading-tight line-clamp-2">{ring.name}</p>
+                                        {ring.lengthMm != null && (
+                                            <p className="text-xs text-amber-600 text-center">{ring.lengthMm} mm</p>
+                                        )}
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    </section>
+                )}
+
+                {/* Step 7 – Port */}
+                {showPortStep && (
+                    <section>
+                        <h3 className="text-sm font-semibold text-gray-700 mb-2">Port</h3>
+                        {availablePorts.length === 0 ? (
+                            <p className="text-xs text-gray-500">
+                                {!isFixedLens && !selectedLens
+                                    ? 'Select a lens to see compatible ports.'
+                                    : 'No compatible ports found.'}
+                            </p>
+                        ) : (
+                            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                                {availablePorts.map(port => {
+                                    const img = getPortImagePathWithFallback(port.productPhotos)
+                                    return (
+                                        <EquipmentCard
+                                            key={port.id}
+                                            name={port.name}
+                                            imageSrc={img.src}
+                                            imageFallback={img.fallback}
+                                            selected={selectedPortId === port.id}
+                                            onClick={() => handlePortSelect(port.id)}
+                                        />
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </section>
+                )}
+            </fieldset>
 
             {/* Actions */}
             <div className="flex justify-end gap-2 pt-2 border-t">
@@ -747,7 +762,7 @@ export default function CameraSystemPicker({
                     disabled={!canSave || isSaving}
                     className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {isSaving ? 'Saving…' : 'Save rig'}
+                    {isSaving ? 'Saving…' : readOnly ? 'Save changes' : 'Save camera system'}
                 </button>
             </div>
         </div>

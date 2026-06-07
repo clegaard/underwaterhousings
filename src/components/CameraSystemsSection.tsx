@@ -88,6 +88,7 @@ function CameraSystemCard({
     onSetFavorite,
     onToggleActive,
     onEdit,
+    onClone,
     onDelete,
 }: {
     cameraSystem: SavedCameraSystem
@@ -97,6 +98,7 @@ function CameraSystemCard({
     onSetFavorite: () => void
     onToggleActive: () => void
     onEdit: () => void
+    onClone: () => void
     onDelete: () => void
 }) {
     const cameraImg = getCameraImagePathWithFallback(cameraSystem.camera.productPhotos)
@@ -196,6 +198,14 @@ function CameraSystemCard({
                         <div className="flex gap-1 shrink-0">
                             <button
                                 type="button"
+                                onClick={onClone}
+                                className="text-xs px-2 py-1 rounded border border-gray-200 text-gray-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50"
+                                title="Create a copy with the same components"
+                            >
+                                Clone
+                            </button>
+                            <button
+                                type="button"
                                 onClick={onEdit}
                                 className="text-xs px-2 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50"
                             >
@@ -281,6 +291,7 @@ export default function CameraSystemsSection({ userId, isOwnProfile, prefillCame
     const [error, setError] = useState<string | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingCameraSystem, setEditingCameraSystem] = useState<SavedCameraSystem | null>(null)
+    const [cloneSource, setCloneSource] = useState<SavedCameraSystem | null>(null)
     const [isSaving, setIsSaving] = useState(false)
     // Banner shown when prefill params are present and no camera system matched
     const [showPrefillBanner, setShowPrefillBanner] = useState(!!(prefillCamera || prefillLens))
@@ -311,7 +322,7 @@ export default function CameraSystemsSection({ userId, isOwnProfile, prefillCame
                     setCameraSystems(cameraSystemsJson.data.cameraSystems)
                     setDefaultCameraSystemId(cameraSystemsJson.data.defaultCameraSystemId)
                 }
-                // Auto-open the add-rig modal when arriving from the gallery upload "create rig" link
+                // Auto-open the add camera system modal when arriving from the gallery upload "create camera system" link
                 if (isOwnProfile && (prefillCamera || prefillLens)) {
                     setIsModalOpen(true)
                 }
@@ -326,17 +337,26 @@ export default function CameraSystemsSection({ userId, isOwnProfile, prefillCame
 
     function openAdd() {
         setEditingCameraSystem(null)
+        setCloneSource(null)
         setIsModalOpen(true)
     }
 
-    function openEdit(rig: SavedCameraSystem) {
-        setEditingCameraSystem(rig)
+    function openEdit(cameraSystem: SavedCameraSystem) {
+        setEditingCameraSystem(cameraSystem)
+        setCloneSource(null)
+        setIsModalOpen(true)
+    }
+
+    function openClone(source: SavedCameraSystem) {
+        setEditingCameraSystem(null)
+        setCloneSource(source)
         setIsModalOpen(true)
     }
 
     function closeModal() {
         setIsModalOpen(false)
         setEditingCameraSystem(null)
+        setCloneSource(null)
     }
 
     async function handleSave(payload: CameraSystemSavePayload) {
@@ -395,10 +415,10 @@ export default function CameraSystemsSection({ userId, isOwnProfile, prefillCame
                 closeModal()
             } else {
                 const json = await res.json()
-                setError(json.error ?? 'Failed to save rig')
+                setError(json.error ?? 'Failed to save camera system')
             }
         } catch {
-            setError('Failed to save rig')
+            setError('Failed to save camera system')
         } finally {
             setIsSaving(false)
         }
@@ -425,15 +445,15 @@ export default function CameraSystemsSection({ userId, isOwnProfile, prefillCame
                 const json = await res.json()
                 setCameraSystems(prev => prev.map(r => r.id === cameraSystemId ? { ...r, isActive: json.isActive } : r))
             } else {
-                setError('Failed to update rig')
+                setError('Failed to update camera system')
             }
         } catch {
-            setError('Failed to update rig')
+            setError('Failed to update camera system')
         }
     }
 
     async function handleDelete(cameraSystemId: number) {
-        if (!confirm('Delete this rig?')) return
+        if (!confirm('Delete this camera system?')) return
         try {
             const res = await fetch(`/api/camera-systems?id=${cameraSystemId}`, { method: 'DELETE' })
             if (res.ok) {
@@ -441,51 +461,62 @@ export default function CameraSystemsSection({ userId, isOwnProfile, prefillCame
                 if (defaultCameraSystemId === cameraSystemId) setDefaultCameraSystemId(null)
             } else {
                 const json = await res.json().catch(() => ({}))
-                setError((json as { error?: string }).error ?? 'Failed to delete rig')
+                setError((json as { error?: string }).error ?? 'Failed to delete camera system')
             }
         } catch {
-            setError('Failed to delete rig')
+            setError('Failed to delete camera system')
         }
     }
 
-    const editingInitialValues: CameraSystemInitialValues | undefined = editingCameraSystem
+    const editingInitialValues: CameraSystemInitialValues | undefined = cloneSource
         ? {
-            id: editingCameraSystem.id,
-            name: editingCameraSystem.name,
-            imagePath: editingCameraSystem.imagePath,
-            cameraId: editingCameraSystem.camera.id,
-            lensId: editingCameraSystem.lens?.id ?? null,
-            housingId: editingCameraSystem.housing?.id ?? null,
-            portAdapterId: editingCameraSystem.portAdapter?.id ?? null,
-            extensionRingIds: editingCameraSystem.extensionRings.map(r => r.id),
-            portId: editingCameraSystem.port?.id ?? null,
+            name: '',
+            imagePath: null,
+            cameraId: cloneSource.camera.id,
+            lensId: cloneSource.lens?.id ?? null,
+            housingId: cloneSource.housing?.id ?? null,
+            portAdapterId: cloneSource.portAdapter?.id ?? null,
+            extensionRingIds: cloneSource.extensionRings.map(r => r.id),
+            portId: cloneSource.port?.id ?? null,
         }
-        : (() => {
-            // When adding a new rig, pre-select camera/lens by EXIF id if prefill params are present
-            if (!equipment || (!prefillCamera && !prefillLens)) return undefined
-            const matchedCamera = prefillCamera
-                ? equipment.cameras.find((c: { exifId: string | null }) => c.exifId === prefillCamera) ?? null
-                : null
-            const matchedLens = prefillLens
-                ? equipment.lenses.find((l: { exifId: string | null }) => l.exifId === prefillLens) ?? null
-                : null
-            if (!matchedCamera && !matchedLens) return undefined
-            return {
-                name: '',
-                cameraId: matchedCamera?.id ?? null,
-                lensId: matchedLens?.id ?? null,
-                housingId: null,
-                portAdapterId: null,
-                extensionRingIds: [],
-                portId: null,
-            } satisfies CameraSystemInitialValues
-        })()
+        : editingCameraSystem
+            ? {
+                id: editingCameraSystem.id,
+                name: editingCameraSystem.name,
+                imagePath: editingCameraSystem.imagePath,
+                cameraId: editingCameraSystem.camera.id,
+                lensId: editingCameraSystem.lens?.id ?? null,
+                housingId: editingCameraSystem.housing?.id ?? null,
+                portAdapterId: editingCameraSystem.portAdapter?.id ?? null,
+                extensionRingIds: editingCameraSystem.extensionRings.map(r => r.id),
+                portId: editingCameraSystem.port?.id ?? null,
+            }
+            : (() => {
+                // When adding a new camera system, pre-select camera/lens by EXIF id if prefill params are present
+                if (!equipment || (!prefillCamera && !prefillLens)) return undefined
+                const matchedCamera = prefillCamera
+                    ? equipment.cameras.find((c: { exifId: string | null }) => c.exifId === prefillCamera) ?? null
+                    : null
+                const matchedLens = prefillLens
+                    ? equipment.lenses.find((l: { exifId: string | null }) => l.exifId === prefillLens) ?? null
+                    : null
+                if (!matchedCamera && !matchedLens) return undefined
+                return {
+                    name: '',
+                    cameraId: matchedCamera?.id ?? null,
+                    lensId: matchedLens?.id ?? null,
+                    housingId: null,
+                    portAdapterId: null,
+                    extensionRingIds: [],
+                    portId: null,
+                } satisfies CameraSystemInitialValues
+            })()
 
     return (
         <section className="mt-8">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">Camera Systems</h2>
 
-            {/* Prefill banner — shown when arriving from gallery upload "create rig" link */}
+            {/* Prefill banner — shown when arriving from gallery upload "create camera system" link */}
             {showPrefillBanner && isOwnProfile && (
                 <div className="mb-4 flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
                     <svg className="w-4 h-4 mt-0.5 text-blue-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -529,6 +560,7 @@ export default function CameraSystemsSection({ userId, isOwnProfile, prefillCame
                             onSetFavorite={() => handleSetFavorite(cameraSystem.id)}
                             onToggleActive={() => handleToggleActive(cameraSystem.id)}
                             onEdit={() => openEdit(cameraSystem)}
+                            onClone={() => openClone(cameraSystem)}
                             onDelete={() => handleDelete(cameraSystem.id)}
                         />
                     ))}
@@ -541,7 +573,7 @@ export default function CameraSystemsSection({ userId, isOwnProfile, prefillCame
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                             </svg>
-                            <span className="text-xs font-medium">Add rig</span>
+                            <span className="text-xs font-medium">Add camera system</span>
                         </button>
                     )}
                 </div>
@@ -549,7 +581,13 @@ export default function CameraSystemsSection({ userId, isOwnProfile, prefillCame
 
             {isModalOpen && equipment && (
                 <Modal
-                    title={editingCameraSystem ? 'Edit camera system' : 'Add camera system'}
+                    title={
+                        cloneSource
+                            ? 'Clone camera system'
+                            : editingCameraSystem
+                                ? 'Edit camera system'
+                                : 'Add camera system'
+                    }
                     onClose={closeModal}
                 >
                     <CameraSystemPicker
@@ -563,6 +601,7 @@ export default function CameraSystemsSection({ userId, isOwnProfile, prefillCame
                         onSave={handleSave}
                         onCancel={closeModal}
                         isSaving={isSaving}
+                        readOnly={!!editingCameraSystem}
                     />
                 </Modal>
             )}
