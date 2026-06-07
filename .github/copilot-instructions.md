@@ -220,9 +220,32 @@ Images should have transparant backgrounds to allow for a consistent look across
 
 A camera system can be defined as a collection of compatible products that allows the user to take the system underwater safely and to allow the user to take pictures or video with the system. A camera system typically includes a camera body, a housing, and a port, but can also include other accessories such as extension rings, wet optics, flash triggers and strobes.
 
-### Camera System Variations
+### Camera System Variations (WIP)
+
+** The concept of camera system variations is still being drafted and is not integrated into the current version of the application, but it is likely to be implemented in a future version. **
+
 For underwater photography it is common to have multiple lenses that must be paired with ports that specifically fit the lens.
 A beginner might start by buying a housing, a wide angle lens and a appopriate dome port.
+At a later stage they might want to add a macro lens to their setup and a macro port.
+
+Another variation would be the introduction of wet optics such as wide angle lenses or macro diopters that can be added in front of the port to allow for wide angle or macro shooting without the need to change ports.
+
+Yet another consideration is that some users might use the camera for natural light photography but also want to use strobes for other types of photography so they may be using strobes as part of their setup for certain shoots but not for others.
+
+Rather than creating a new camera system for each of these configurations, we allow users to create variations of a camera system where one or more component varies.
+
+For instance the user might specify a base system consisting of a:
+* Sony A7 IV
+* Sony 24-70mm F2.8 GM II lens
+* Sea Frogs SF-A7IV housing
+* Sea Frogs FL100 flat port
+
+Then the user can create a variation of this system where the lens is swapped for a Sony 100mm macro GM OSS lens, and the port is swapped for a Sea Frogs MP100 macro port.
+
+Camera system variations are a purely client side concept that allows the user to group systems that are similar and only differ by one or more components together for easier navigation and comparison, without affecting the underlying data structure of the camera systems in the database.
+
+
+## Reviews
 
 
 

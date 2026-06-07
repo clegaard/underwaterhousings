@@ -8,13 +8,14 @@ import InstagramImportModal from './InstagramImportModal'
 interface Props {
     currentUserId?: number
     variant?: 'fixed' | 'toolbar'
+    onExpandedChange?: (expanded: boolean) => void
 }
 
 // Shared pill style for both option buttons
 const PILL =
     'flex items-center gap-2 pl-3 pr-4 py-2.5 bg-white text-gray-800 rounded-full shadow-lg border border-gray-100 text-sm font-medium whitespace-nowrap select-none transition-all duration-150'
 
-export default function GalleryFAB({ currentUserId, variant = 'fixed' }: Props) {
+export default function GalleryFAB({ currentUserId, variant = 'fixed', onExpandedChange }: Props) {
     const { data: session } = useSession()
     const isLoggedIn = !!session?.user
 
@@ -23,6 +24,11 @@ export default function GalleryFAB({ currentUserId, variant = 'fixed' }: Props) 
     const [instagramOpen, setInstagramOpen] = useState(false)
     const [showLoginTip, setShowLoginTip] = useState(false)
     const containerRef = useRef<HTMLDivElement>(null)
+
+    // ── Notify parent when expanded changes (so sibling FABs can recede) ──
+    useEffect(() => {
+        onExpandedChange?.(expanded)
+    }, [expanded, onExpandedChange])
 
     // Close when clicking outside the FAB
     useEffect(() => {

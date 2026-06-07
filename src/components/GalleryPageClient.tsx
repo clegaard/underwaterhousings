@@ -56,6 +56,7 @@ export default function GalleryPageClient({ photos, pool = EMPTY_POOL }: Gallery
     const [deleteError, setDeleteError] = useState<string | null>(null)
     const [tokens, setTokens] = useState<SearchToken[]>([])
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+    const [fabExpanded, setFabExpanded] = useState(false)
     const lastSelectedIndex = useRef<number | null>(null)
     const filteredRef = useRef<GalleryPhotoData[]>([])
     const urlInitializedRef = useRef(false)
@@ -253,7 +254,7 @@ export default function GalleryPageClient({ photos, pool = EMPTY_POOL }: Gallery
                             </button>
                         )}
                         {!selectionMode && currentUserId && (
-                            <GalleryFAB variant="toolbar" currentUserId={currentUserId} />
+                            <GalleryFAB variant="toolbar" currentUserId={currentUserId} onExpandedChange={setFabExpanded} />
                         )}
                         {!selectionMode && currentUserId && (
                             <button
@@ -277,13 +278,16 @@ export default function GalleryPageClient({ photos, pool = EMPTY_POOL }: Gallery
             </div>
 
             {/* ── Mobile: fixed + FAB (upload) ── */}
-            {currentUserId && <GalleryFAB currentUserId={currentUserId} />}
+            {currentUserId && <GalleryFAB currentUserId={currentUserId} onExpandedChange={setFabExpanded} />}
 
             {/* ── Mobile: search FAB above the + FAB ── */}
             <button
                 onClick={() => setMobileSearchOpen(true)}
                 aria-label="Search photos"
-                className="sm:hidden fixed right-5 z-40 h-14 w-14 rounded-full bg-white/90 backdrop-blur-md border border-gray-200/60 dark:border-white/10 shadow-lg flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all active:scale-95"
+                className={`sm:hidden fixed right-5 z-40 h-14 w-14 rounded-full bg-white/90 backdrop-blur-md border border-gray-200/60 dark:border-white/10 shadow-lg flex items-center justify-center text-gray-500 dark:text-gray-400 transition-all duration-200 ${fabExpanded
+                        ? 'opacity-0 scale-75 pointer-events-none translate-y-2'
+                        : 'opacity-100 scale-100 hover:text-gray-700 dark:hover:text-gray-200 active:scale-95'
+                    }`}
                 style={{ bottom: 'calc(1.5rem + 3.5rem + 0.75rem + env(safe-area-inset-bottom, 0px))' }}
             >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

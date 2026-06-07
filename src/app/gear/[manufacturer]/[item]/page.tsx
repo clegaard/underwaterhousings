@@ -125,7 +125,7 @@ export default async function GearItemPage({ params }: Props) {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div className="grid grid-cols-1 md:grid-cols-2">
                         {/* Image */}
-                        <div className="relative h-72 md:min-h-[20rem] bg-gray-50">
+                        <div className="relative h-72 md:min-h-80 bg-gray-50">
                             <HousingImage
                                 src={imageInfo.src}
                                 fallback={imageInfo.fallback}
