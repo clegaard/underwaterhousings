@@ -25,7 +25,7 @@ function CameraSystemCard({
 }: {
     cameraSystem: PopularCameraSystem
     onUse: () => void
-    formatMoney: (amount: number, currency: string) => string
+    formatMoney: (amount: number | null | undefined, fromCurrency?: string | null) => string | null
 }) {
     const errored = useRef(false)
     const [imgSrc, setImgSrc] = useState(cameraSystem.mainImageSrc)

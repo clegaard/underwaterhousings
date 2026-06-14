@@ -258,10 +258,13 @@ For instance a review of a system consisting of a Sony A7 IV, Sony 24-70mm F2.8 
 * Port review: What the user thinks of the Sea Frogs FL100 flat port. How is the corner sharpness, how is the built quality.
 * System review: What the user thinks of the overall system as a whole. How do the components work together, any issues with compatibility, how is the image quality of the photos taken with this system, etc.
 
-### Gallery Photo Embedding
-Since we alreay assign photos to a camera system when the user uploads photos, we can use these photos as concrete examples to back up the reviews of the different components and the system as a whole.
 
-Whenever a photo is shown it is possible to trace the image back to the original camera system and the metadata if specified.
+### Text Editor
+When writing reviews, users should be able to format their text using a rich text editor that allows for basic formatting options such as bold, italic, lists, and headings. This will allow users to structure their reviews in a clear and organized way, making it easier for other users to read and understand the content of the reviews.
+
+By default there should be headings for each of the main components of the system as well as an intro and a conclusion section, but the user should be able to add additional headings and structure the review as they see fit.
+
+Since a review like this might take up quite a bit of space and require a lot of effort to write it is important to allow the user to save their review as a draft and come back to it later to continue writing it, rather than requiring the user to write the entire review in one sitting.
 
 ### Multi Camera System Reviews
 
@@ -276,18 +279,26 @@ To address this issue we allow users to write a review for a camera system that 
 
 Based on the example with two different camera setups we get the following structure:
 
+System(s): What systems are covered by the review?
+- Wide angle: short description and photos for the wide angle setup (derived from the user's camera systems)
+- Macro: short description and photos for the macro setup (derived from the user's camera systems)
 Camera:
 - Sony A7 IV
 Lenses:
-- Sony 24-70mm F2.8 GM II
-- Sony 100mm macro GM OSS
+- Sony 24-70mm F2.8 GM II (derived from wide angle setup)
+- Sony 100mm macro GM OSS (derived from macro setup)
 Housing:
 - Sea Frogs SF-A7IV
 Ports:
-- Sea Frogs FL100 flat port
-- Sea Frogs MP100 macro port
+- Sea Frogs FL100 flat port (derived from wide angle setup)
+- Sea Frogs MP100 macro port (derived from macro setup)
 
-This 
+The intention of this is that the user can write a review at a given time and later update it as they acquire new equipment and take new photos with different variations of their system, without having to write a new review to cover each new variation.
+
+### Gallery Photo Embedding
+Since we alreay assign photos to a camera system when the user uploads photos, we can use these photos as concrete examples to back up the reviews of the different components and the system as a whole.
+
+Whenever a photo is shown it is possible to trace the image back to the original camera system and the metadata if specified.
 
 
 ## Gallery and User Submissions
@@ -295,12 +306,12 @@ This
 
 ### Rig assignment and exif data
 When a user uploads a photo, they can specify the camera and housing used to take the photo. This information is important for categorizing the photo and providing context for other users who may be interested in the equipment used to capture the image.
-A rig is characterized by it's components, primarily the camera, lens, housing and port.
+A rig is characterized by its components, primarily the camera, lens, housing, and port.
 
-When uploading a photo from the the users device the exif data is a valuable source of information since manipulating these requires a certain level of technical knowledge and is not something that the average user would typically do.
-The exif data only proivides information of the electronic components of the rig like the camera, lens and in some cases teleconverters.
+When uploading a photo from the user's device, the exif data is a valuable source of information since manipulating these requires a certain level of technical knowledge and is not something that the average user would typically do.
+The exif data only provides information about the electronic components of the rig like the camera, lens, and in some cases teleconverters.
 However, exif data does not provide information about the housing, port, wet optics, extension rings, since these are purely mechanical components.
-Further, exif data does not usually provide infomation about the flash trigger or strobes, although in the case of the flash trigger it would be technically feasible to add this information to the exif data since it is connected to the hotshoe.
+Further, exif data does not usually provide information about the flash trigger or strobes, although in the case of the flash trigger it would be technically feasible to add this information to the exif data since it is connected to the hotshoe.
 
 *Rule G1* : If present accept EXIF data as ground truth for camera, lens, shutter speed, aperture, ISO and focal length, do not allow the user to edit these fields.
 

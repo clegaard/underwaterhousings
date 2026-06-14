@@ -64,15 +64,14 @@ model Camera {
     priceAmount    Decimal? @db.Decimal(10, 2)
     productPhotos  String[]
 
-    productId           String? // Manufacturer product ID / SKU (unique within manufacturer)
-    productUrl          String? // Link to the product page on the manufacturer's website
-    exifId              String?              @unique
-    cameraSystemReviews CameraSystemReview[]
-    cameraSystems       CameraSystem[]
-    cameraMount         CameraMount?         @relation(fields: [cameraMountId], references: [id])
-    brand               Manufacturer         @relation(fields: [manufacturerId], references: [id])
-    housings            Housing[]
-    lens                Lens[]
+    productId     String? // Manufacturer product ID / SKU (unique within manufacturer)
+    productUrl    String? // Link to the product page on the manufacturer's website
+    exifId        String?        @unique
+    cameraSystems CameraSystem[]
+    cameraMount   CameraMount?   @relation(fields: [cameraMountId], references: [id])
+    brand         Manufacturer   @relation(fields: [manufacturerId], references: [id])
+    housings      Housing[]
+    lens          Lens[]
 
     sensorWidth  Float? // optional field for sensor width in mm, used for calculating crop factor
     sensorHeight Float? // optional field for sensor height in mm, used for calculating crop factor
@@ -114,7 +113,6 @@ model Housing {
     productPhotos String[]
 
     cameraMountRecession Float? // Distance from the camera body mount to the housing port flange along the optical axis, in mm
-    cameraSystemReviews  CameraSystemReview[]
     cameraSystems        CameraSystem[]
 
     // Compatability
@@ -129,29 +127,28 @@ model Housing {
 }
 
 model Port {
-    id                  Int                  @id @default(autoincrement())
-    name                String
-    slug                String               @unique
-    description         String?
-    manufacturerId      Int
-    housingMountId      Int?
-    productPhotos       String[]
-    priceAmount         Decimal?             @db.Decimal(10, 2)
-    priceCurrency       String?              @default("USD")
-    isFlatPort          Boolean              @default(false) // True if it's a flat port, false if it's a dome port
-    hemisphereWidth     Float? // For dome ports, the width of the hemisphere in mm
-    depthRating         Int? // Maximum depth rating of the port in meters
-    productId           String? // Manufacturer product ID / SKU (unique within manufacturer)
-    productUrl          String? // Link to the product page on the manufacturer's website
+    id                Int            @id @default(autoincrement())
+    name              String
+    slug              String         @unique
+    description       String?
+    manufacturerId    Int
+    housingMountId    Int?
+    productPhotos     String[]
+    priceAmount       Decimal?       @db.Decimal(10, 2)
+    priceCurrency     String?        @default("USD")
+    isFlatPort        Boolean        @default(false) // True if it's a flat port, false if it's a dome port
+    hemisphereWidth   Float? // For dome ports, the width of the hemisphere in mm
+    depthRating       Int? // Maximum depth rating of the port in meters
+    productId         String? // Manufacturer product ID / SKU (unique within manufacturer)
+    productUrl        String? // Link to the product page on the manufacturer's website
     // Optics fields
-    portRadius          Float? // Radius of the port opening (circle) in mm — applies to both flat and dome ports
-    portDepth           Float? // Distance from the flange to the start of the optical element along the optical axis, in mm
-    radiusOfCurvature   Float? // Dome ports only: radius of the spherical dome in mm. Must be >= portRadius
-    cameraSystemReviews CameraSystemReview[]
-    cameraSystems       CameraSystem[]
-    housingMount        HousingMount?        @relation(fields: [housingMountId], references: [id])
-    manufacturer        Manufacturer         @relation(fields: [manufacturerId], references: [id])
-    lens                Lens[]               @relation("LensToPort")
+    portRadius        Float? // Radius of the port opening (circle) in mm — applies to both flat and dome ports
+    portDepth         Float? // Distance from the flange to the start of the optical element along the optical axis, in mm
+    radiusOfCurvature Float? // Dome ports only: radius of the spherical dome in mm. Must be >= portRadius
+    cameraSystems     CameraSystem[]
+    housingMount      HousingMount?  @relation(fields: [housingMountId], references: [id])
+    manufacturer      Manufacturer   @relation(fields: [manufacturerId], references: [id])
+    lens              Lens[]         @relation("LensToPort")
 
     @@map("ports")
 }
@@ -225,16 +222,15 @@ model Lens {
     exifId String? @unique // Optional EXIF identifier for matching photos taken with this lens
 
     // relations
-    cameraMountId       Int
-    manufacturerId      Int
-    cameraId            Int?
-    cameraSystemReviews CameraSystemReview[]
-    cameraSystems       CameraSystem[]
-    camera              Camera?              @relation(fields: [cameraId], references: [id])
-    cameraMount         CameraMount          @relation(fields: [cameraMountId], references: [id])
-    manufacturer        Manufacturer?        @relation(fields: [manufacturerId], references: [id])
-    ports               Port[]               @relation("LensToPort")
-    gears               Gear[]               @relation("GearToLens")
+    cameraMountId  Int
+    manufacturerId Int
+    cameraId       Int?
+    cameraSystems  CameraSystem[]
+    camera         Camera?        @relation(fields: [cameraId], references: [id])
+    cameraMount    CameraMount    @relation(fields: [cameraMountId], references: [id])
+    manufacturer   Manufacturer?  @relation(fields: [manufacturerId], references: [id])
+    ports          Port[]         @relation("LensToPort")
+    gears          Gear[]         @relation("GearToLens")
 
     @@map("lenses")
 }
@@ -283,12 +279,12 @@ model User {
     allowFullResDownload  Boolean  @default(true)
 
     // Relations
-    cameraSystemReviews CameraSystemReview[]
-    galleryPhotos       GalleryPhoto[]
-    cameraSystems       CameraSystem[]
-    galleryComments     GalleryComment[]
-    galleryLikes        GalleryLike[]
-    linkedServices      LinkedService[]
+    reviews         Review[]
+    galleryPhotos   GalleryPhoto[]
+    cameraSystems   CameraSystem[]
+    galleryComments GalleryComment[]
+    galleryLikes    GalleryLike[]
+    linkedServices  LinkedService[]
 
     @@map("users")
 }
@@ -427,27 +423,30 @@ model GalleryLike {
     @@map("gallery_likes")
 }
 
-model CameraSystemReview {
-    id                   Int      @id @default(autoincrement())
-    comment              String?
-    createdAt            DateTime @default(now())
-    updatedAt            DateTime @updatedAt
-    ratingOpticalQuality Int
-    ratingReliability    Int
-    ratingEaseOfUse      Int
-    cameraId             Int?
-    housingId            Int?
-    portId               Int?
-    lensId               Int?
-    userId               Int
-    reviewPhotos         String[]
-    camera               Camera?  @relation(fields: [cameraId], references: [id])
-    housing              Housing? @relation(fields: [housingId], references: [id])
-    lens                 Lens?    @relation(fields: [lensId], references: [id])
-    port                 Port?    @relation(fields: [portId], references: [id])
-    user                 User     @relation(fields: [userId], references: [id])
+model Review {
+    id         Int               @id @default(autoincrement())
+    title      String
+    body       String            @default("") // TipTap HTML content
+    status     String            @default("draft") // draft | published
+    userId     Int
+    user       User              @relation(fields: [userId], references: [id])
+    components ReviewComponent[]
+    createdAt  DateTime          @default(now())
+    updatedAt  DateTime          @updatedAt
 
-    @@map("camera_system_reviews")
+    @@map("reviews")
+}
+
+model ReviewComponent {
+    id            Int     @id @default(autoincrement())
+    reviewId      Int
+    componentType String // "camera" | "lens" | "housing" | "port" | "portAdapter" | "extensionRing"
+    componentId   Int
+    description   String? // short description of this component in context (e.g. "Used for wide angle")
+    review        Review  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+    @@unique([reviewId, componentType, componentId])
+    @@map("review_components")
 }
 
 // model PortChartEntry {

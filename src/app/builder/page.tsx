@@ -22,18 +22,6 @@ async function getBuilderData() {
                         }
                     },
                     housingMount: true,
-                    cameraSystemReviews: {
-                        select: {
-                            id: true,
-                            ratingOpticalQuality: true,
-                            ratingReliability: true,
-                            ratingEaseOfUse: true,
-                            comment: true,
-                            reviewPhotos: true,
-                            createdAt: true,
-                            user: { select: { id: true, name: true, profilePicture: true } },
-                        }
-                    }
                 },
                 orderBy: { name: 'asc' }
             }),
@@ -41,18 +29,6 @@ async function getBuilderData() {
                 include: {
                     brand: true,
                     cameraMount: true,
-                    cameraSystemReviews: {
-                        select: {
-                            id: true,
-                            ratingOpticalQuality: true,
-                            ratingReliability: true,
-                            ratingEaseOfUse: true,
-                            comment: true,
-                            reviewPhotos: true,
-                            createdAt: true,
-                            user: { select: { id: true, name: true, profilePicture: true } },
-                        }
-                    }
                 },
                 orderBy: [
                     { brand: { name: 'asc' } },
@@ -95,22 +71,10 @@ async function getBuilderData() {
                 ...housing,
                 priceAmount: housing.priceAmount ? Number(housing.priceAmount) : null,
                 imageInfo: getHousingImagePathWithFallback(housing.productPhotos),
-                cameraSystemReviews: housing.cameraSystemReviews.map((r: any) => ({
-                    ...r,
-                    createdAt: r.createdAt.toISOString(),
-                    reviewPhotos: r.reviewPhotos.map((p: string) => withBase(p)),
-                    user: { ...r.user, profilePicture: r.user.profilePicture ? withBase(r.user.profilePicture) : null },
-                })),
             })),
             cameras: cameras.map(camera => ({
                 ...camera,
                 imageInfo: getCameraImagePathWithFallback(camera.productPhotos),
-                cameraSystemReviews: camera.cameraSystemReviews.map((r: any) => ({
-                    ...r,
-                    createdAt: r.createdAt.toISOString(),
-                    reviewPhotos: r.reviewPhotos.map((p: string) => withBase(p)),
-                    user: { ...r.user, profilePicture: r.user.profilePicture ? withBase(r.user.profilePicture) : null },
-                })),
             })),
             lenses: lenses.map(lens => ({
                 ...lens,

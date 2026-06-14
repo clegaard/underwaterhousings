@@ -99,7 +99,7 @@ async function main() {
 
     // Clear existing data
     await prisma.galleryPhoto.deleteMany()
-    await prisma.cameraSystemReview.deleteMany()
+    await prisma.review.deleteMany()
     await prisma.cameraSystem.deleteMany()
     await prisma.user.deleteMany()
     await prisma.port.deleteMany()

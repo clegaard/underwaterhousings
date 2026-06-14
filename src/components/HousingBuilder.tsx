@@ -379,8 +379,8 @@ export default function HousingBuilder({ initialHousings, cameras, manufacturers
         [selectedCamera, selectedLens, selectedHousing, selectedPort, convertAmount])
 
     const relevantReviews = useMemo((): any[] => {
-        if ((selectedHousing as any)?.cameraSystemReviews?.length) return (selectedHousing as any).cameraSystemReviews
-        if (usingWithoutHousing && (selectedCamera as any)?.cameraSystemReviews?.length) return (selectedCamera as any).cameraSystemReviews
+        return []
+        return []
         return []
     }, [selectedHousing, selectedCamera, usingWithoutHousing])
 

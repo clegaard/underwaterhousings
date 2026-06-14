@@ -215,6 +215,10 @@ export default function Navigation() {
                                     Gallery
                                 </Link>
 
+                                <Link href="/reviews" className="text-gray-700 dark:text-gray-300 hover:text-blue-900 dark:hover:text-blue-400 transition-colors font-medium whitespace-nowrap">
+                                    Reviews
+                                </Link>
+
                                 <Link href="/about" className="text-gray-700 dark:text-gray-300 hover:text-blue-900 dark:hover:text-blue-400 transition-colors font-medium whitespace-nowrap">
                                     About
                                 </Link>
