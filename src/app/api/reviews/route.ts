@@ -2,76 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-type ComponentType = 'camera' | 'lens' | 'housing' | 'port' | 'portAdapter' | 'extensionRing'
-
-async function fetchComponentDetail(type: ComponentType, id: number) {
-    switch (type) {
-        case 'camera':
-            return prisma.camera.findUnique({
-                where: { id },
-                include: { brand: true },
-            })
-        case 'lens':
-            return prisma.lens.findUnique({
-                where: { id },
-                include: { manufacturer: true },
-            })
-        case 'housing':
-            return prisma.housing.findUnique({
-                where: { id },
-                include: { manufacturer: true },
-            })
-        case 'port':
-            return prisma.port.findUnique({
-                where: { id },
-                include: { manufacturer: true },
-            })
-        case 'portAdapter':
-            return prisma.portAdapter.findUnique({
-                where: { id },
-                include: { manufacturer: true },
-            })
-        case 'extensionRing':
-            return prisma.extensionRing.findUnique({
-                where: { id },
-                include: { manufacturer: true },
-            })
-        default:
-            return null
-    }
-}
-
-async function enrichReview(review: {
-    id: number
-    title: string
-    body: string
-    status: string
-    userId: number
-    createdAt: Date
-    updatedAt: Date
-    components: Array<{
-        id: number
-        reviewId: number
-        componentType: string
-        componentId: number
-        description: string | null
-    }>
-}) {
-    const enrichedComponents = await Promise.all(
-        review.components.map(async (rc) => {
-            const detail = await fetchComponentDetail(rc.componentType as ComponentType, rc.componentId)
-            return {
-                ...rc,
-                detail: detail ?? null,
-            }
-        })
-    )
-    return {
-        ...review,
-        components: enrichedComponents,
-    }
+const systemInclude = {
+    camera: { include: { brand: true } },
+    lens: true,
+    housing: { include: { manufacturer: true } },
+    port: true,
 }
 
 // GET /api/reviews — list published reviews
@@ -82,21 +17,18 @@ export async function GET(request: NextRequest) {
     const status = sp.get('status') ?? 'published'
 
     try {
-        // Single review
         if (id) {
             const review = await prisma.review.findUnique({
                 where: { id: parseInt(id) },
                 include: {
                     user: { select: { id: true, name: true, profilePicture: true } },
-                    components: true,
+                    cameraSystem: { include: systemInclude },
                 },
             })
             if (!review) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 })
-            const enriched = await enrichReview(review)
-            return NextResponse.json({ success: true, data: enriched })
+            return NextResponse.json({ success: true, data: review })
         }
 
-        // List reviews
         const where: Record<string, unknown> = {}
         if (userId) where.userId = parseInt(userId)
         if (status) where.status = status
@@ -107,11 +39,10 @@ export async function GET(request: NextRequest) {
             take: 40,
             include: {
                 user: { select: { id: true, name: true, profilePicture: true } },
-                components: true,
+                cameraSystem: { include: systemInclude },
             },
         })
-        const enriched = await Promise.all(reviews.map(r => enrichReview(r)))
-        return NextResponse.json({ success: true, data: enriched })
+        return NextResponse.json({ success: true, data: reviews })
     } catch (error) {
         console.error('Error fetching reviews:', error)
         return NextResponse.json({ success: false, error: 'Failed to fetch reviews' }, { status: 500 })
@@ -126,53 +57,29 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json()
-        const { title, body: reviewBody, status = 'draft', components } = body
+        const { title, body: reviewBody, status = 'draft', cameraSystemId } = body
 
-        if (!title || !Array.isArray(components) || components.length === 0) {
-            return NextResponse.json({ success: false, error: 'title and components are required' }, { status: 400 })
+        if (!title || !cameraSystemId) {
+            return NextResponse.json({ success: false, error: 'title and cameraSystemId are required' }, { status: 400 })
         }
 
-        // Validate each component has componentType and componentId
-        for (const c of components) {
-            if (!c.componentType || !c.componentId) {
-                return NextResponse.json({ success: false, error: 'Each component must have componentType and componentId' }, { status: 400 })
-            }
-            const validTypes: ComponentType[] = ['camera', 'lens', 'housing', 'port', 'portAdapter', 'extensionRing']
-            if (!validTypes.includes(c.componentType)) {
-                return NextResponse.json({ success: false, error: `Invalid componentType: ${c.componentType}` }, { status: 400 })
-            }
-        }
+        const uid = parseInt(userId)
 
-        // Validate that each component exists in the user's camera systems
-        const userSystems = await prisma.cameraSystem.findMany({
-            where: { userId: parseInt(userId), isActive: true },
-            select: {
-                cameraId: true,
-                lensId: true,
-                housingId: true,
-                portId: true,
-                portAdapterId: true,
-            },
+        // Verify the camera system belongs to the user
+        const system = await prisma.cameraSystem.findUnique({
+            where: { id: cameraSystemId },
+            select: { userId: true },
         })
-
-        // Build a set of valid component references from user's systems
-        const validComponents = new Set<string>()
-        for (const cs of userSystems) {
-            validComponents.add(`camera:${cs.cameraId}`)
-            if (cs.lensId) validComponents.add(`lens:${cs.lensId}`)
-            if (cs.housingId) validComponents.add(`housing:${cs.housingId}`)
-            if (cs.portId) validComponents.add(`port:${cs.portId}`)
-            if (cs.portAdapterId) validComponents.add(`portAdapter:${cs.portAdapterId}`)
+        if (!system || system.userId !== uid) {
+            return NextResponse.json({ success: false, error: 'Camera system not found or not owned by you' }, { status: 403 })
         }
 
-        for (const c of components) {
-            const key = `${c.componentType}:${c.componentId}`
-            if (!validComponents.has(key)) {
-                return NextResponse.json({
-                    success: false,
-                    error: `Component ${key} is not part of any of your camera systems`,
-                }, { status: 403 })
-            }
+        // Check for existing review (one review per user per system)
+        const existing = await prisma.review.findUnique({
+            where: { userId_cameraSystemId: { userId: uid, cameraSystemId } },
+        })
+        if (existing) {
+            return NextResponse.json({ success: false, error: 'You have already reviewed this camera system' }, { status: 409 })
         }
 
         const review = await prisma.review.create({
@@ -180,21 +87,14 @@ export async function POST(request: NextRequest) {
                 title,
                 body: reviewBody ?? '',
                 status,
-                userId: parseInt(userId),
-                components: {
-                    create: components.map((c: { componentType: string; componentId: number; description?: string }) => ({
-                        componentType: c.componentType,
-                        componentId: c.componentId,
-                        description: c.description ?? null,
-                    })),
-                },
+                userId: uid,
+                cameraSystemId,
             },
             include: {
-                components: true,
+                cameraSystem: { include: systemInclude },
             },
         })
-        const enriched = await enrichReview(review)
-        return NextResponse.json({ success: true, data: enriched }, { status: 201 })
+        return NextResponse.json({ success: true, data: review }, { status: 201 })
     } catch (error) {
         console.error('Error creating review:', error)
         return NextResponse.json({ success: false, error: 'Failed to create review' }, { status: 500 })
@@ -217,7 +117,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { title, body: reviewBody, status, components } = body
+        const { title, body: reviewBody, status } = body
 
         const review = await prisma.review.update({
             where: { id: parseInt(id) },
@@ -225,23 +125,12 @@ export async function PUT(request: NextRequest) {
                 title: title ?? existing.title,
                 body: reviewBody ?? existing.body,
                 status: status ?? existing.status,
-                ...(components ? {
-                    components: {
-                        deleteMany: {},
-                        create: components.map((c: { componentType: string; componentId: number; description?: string }) => ({
-                            componentType: c.componentType,
-                            componentId: c.componentId,
-                            description: c.description ?? null,
-                        })),
-                    },
-                } : {}),
             },
             include: {
-                components: true,
+                cameraSystem: { include: systemInclude },
             },
         })
-        const enriched = await enrichReview(review)
-        return NextResponse.json({ success: true, data: enriched })
+        return NextResponse.json({ success: true, data: review })
     } catch (error) {
         console.error('Error updating review:', error)
         return NextResponse.json({ success: false, error: 'Failed to update review' }, { status: 500 })

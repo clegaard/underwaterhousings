@@ -2,11 +2,13 @@ import { Suspense } from 'react'
 import { notFound, redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
-import WriteReviewClient from '@/app/reviews/new/write/WriteReviewClient'
+import WriteReviewClient from './WriteReviewClient'
 
-export const metadata = { title: 'Edit Review | Underwater Camera Housings' }
+export const metadata = {
+    title: 'Write Your Review | Underwater Camera Housings',
+}
 
-async function getReview(id: number, userId: number) {
+async function getDraftReview(id: number, userId: number) {
     const review = await prisma.review.findUnique({
         where: { id },
         include: {
@@ -20,7 +22,9 @@ async function getReview(id: number, userId: number) {
             },
         },
     })
+
     if (!review || review.userId !== userId) return null
+    if (review.status !== 'draft') return null
 
     const cs = review.cameraSystem
     const systemLabel = [
@@ -34,7 +38,6 @@ async function getReview(id: number, userId: number) {
         id: review.id,
         title: review.title,
         body: review.body,
-        status: review.status,
         cameraSystemId: review.cameraSystemId,
         systemLabel,
         systemComponents: {
@@ -46,24 +49,22 @@ async function getReview(id: number, userId: number) {
     }
 }
 
-export default async function EditReviewPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function WriteReviewPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const session = await auth()
     const currentUserId = session?.user?.id ? parseInt(session.user.id) : undefined
     if (!currentUserId) redirect('/auth/login')
 
-    const { id } = await params
-    const review = await getReview(parseInt(id), currentUserId)
+    const { id } = await searchParams
+    if (!id) redirect('/reviews/new')
+
+    const review = await getDraftReview(parseInt(id), currentUserId)
     if (!review) notFound()
 
     return (
         <main className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
             <div className="max-w-4xl mx-auto px-4 py-6">
                 <Suspense>
-                    <WriteReviewClient
-                        review={JSON.parse(JSON.stringify(review))}
-                        userId={currentUserId}
-                        mode="edit"
-                    />
+                    <WriteReviewClient review={JSON.parse(JSON.stringify(review))} userId={currentUserId} />
                 </Suspense>
             </div>
         </main>

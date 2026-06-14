@@ -12,95 +12,36 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     return { title: review ? `${review.title} | Reviews` : 'Review Not Found' }
 }
 
-type ComponentType = 'camera' | 'lens' | 'housing' | 'port' | 'portAdapter' | 'extensionRing'
-
-const COMPONENT_ICON: Record<ComponentType, string> = {
-    camera: '📷',
-    lens: '🔍',
-    housing: '🏠',
-    port: '🔵',
-    portAdapter: '🔧',
-    extensionRing: '⭕',
-}
-
-const COMPONENT_LABEL: Record<ComponentType, string> = {
-    camera: 'Camera',
-    lens: 'Lens',
-    housing: 'Housing',
-    port: 'Port',
-    portAdapter: 'Port Adapter',
-    extensionRing: 'Extension Ring',
-}
-
-interface ComponentDetail {
-    id: number
-    reviewId: number
-    componentType: ComponentType
-    componentId: number
-    description: string | null
-    label: string
-    manufacturerName?: string
-}
-
-async function fetchComponentLabel(type: ComponentType, id: number): Promise<{ label: string; manufacturerName?: string } | null> {
-    switch (type) {
-        case 'camera': {
-            const c = await prisma.camera.findUnique({ where: { id }, include: { brand: true } })
-            return c ? { label: `${c.brand.name} ${c.name}`, manufacturerName: c.brand.name } : null
-        }
-        case 'lens': {
-            const l = await prisma.lens.findUnique({ where: { id }, include: { manufacturer: true } })
-            return l ? { label: l.name, manufacturerName: l.manufacturer?.name ?? undefined } : null
-        }
-        case 'housing': {
-            const h = await prisma.housing.findUnique({ where: { id }, include: { manufacturer: true } })
-            return h ? { label: `${h.manufacturer.name} ${h.name}`, manufacturerName: h.manufacturer.name } : null
-        }
-        case 'port': {
-            const p = await prisma.port.findUnique({ where: { id }, include: { manufacturer: true } })
-            return p ? { label: `${p.manufacturer.name} ${p.name}`, manufacturerName: p.manufacturer.name } : null
-        }
-        case 'portAdapter': {
-            const a = await prisma.portAdapter.findUnique({ where: { id }, include: { manufacturer: true } })
-            return a ? { label: `${a.manufacturer.name} ${a.name}`, manufacturerName: a.manufacturer.name } : null
-        }
-        case 'extensionRing': {
-            const e = await prisma.extensionRing.findUnique({ where: { id }, include: { manufacturer: true } })
-            return e ? { label: `${e.manufacturer.name} ${e.name}`, manufacturerName: e.manufacturer.name } : null
-        }
-        default:
-            return null
-    }
-}
-
 async function getReview(id: number) {
     const review = await prisma.review.findUnique({
         where: { id },
         include: {
             user: { select: { id: true, name: true, profilePicture: true } },
-            components: true,
+            cameraSystem: {
+                include: {
+                    camera: { include: { brand: true } },
+                    lens: true,
+                    housing: { include: { manufacturer: true } },
+                    port: true,
+                },
+            },
         },
     })
     if (!review || (review.status !== 'published' && review.status !== 'draft')) return null
 
-    // Enrich components with labels
-    const components: ComponentDetail[] = []
-    for (const rc of review.components) {
-        const detail = await fetchComponentLabel(rc.componentType as ComponentType, rc.componentId)
-        if (detail) {
-            components.push({
-                ...rc,
-                componentType: rc.componentType as ComponentType,
-                label: detail.label,
-                manufacturerName: detail.manufacturerName,
-            })
-        }
-    }
+    const cs = review.cameraSystem
+    const systemParts = [
+        cs.camera ? `${cs.camera.brand.name} ${cs.camera.name}` : null,
+        cs.lens?.name ?? null,
+        cs.housing ? `${cs.housing.manufacturer.name} ${cs.housing.name}` : null,
+        cs.port?.name ?? null,
+    ].filter(Boolean)
 
     return {
         ...review,
-        components,
         createdAt: review.createdAt.toISOString(),
+        systemLabel: systemParts.join(' · '),
+        systemName: cs.name,
     }
 }
 
@@ -120,7 +61,7 @@ export default async function ReviewDetailPage({ params }: { params: Promise<{ i
                     <div className="space-y-6">
                         {/* Back + meta */}
                         <div className="flex items-center justify-between gap-4 flex-wrap">
-                            <Link href="/reviews" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-blue-600 transition-colors">
+                            <Link href="/reviews" className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                 </svg>
@@ -130,7 +71,7 @@ export default async function ReviewDetailPage({ params }: { params: Promise<{ i
                                 <div className="flex gap-2">
                                     <Link
                                         href={`/reviews/${review.id}/edit`}
-                                        className="text-sm text-blue-600 hover:underline"
+                                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
                                     >
                                         Edit
                                     </Link>
@@ -140,7 +81,7 @@ export default async function ReviewDetailPage({ params }: { params: Promise<{ i
 
                         {/* Title + author */}
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 mb-3">{review.title}</h1>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">{review.title}</h1>
                             <div className="flex items-center gap-3">
                                 <Link href={`/users/${review.user.id}`}>
                                     <UserAvatar
@@ -150,40 +91,32 @@ export default async function ReviewDetailPage({ params }: { params: Promise<{ i
                                     />
                                 </Link>
                                 <div>
-                                    <Link href={`/users/${review.user.id}`} className="text-sm font-semibold text-gray-800 hover:text-blue-600">
+                                    <Link href={`/users/${review.user.id}`} className="text-sm font-semibold text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">
                                         {review.user.name ?? 'Anonymous'}
                                     </Link>
-                                    <p className="text-xs text-gray-400">
+                                    <p className="text-xs text-gray-400 dark:text-gray-500">
                                         {new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Components reviewed */}
-                        {review.components.length > 0 && (
-                            <div className="bg-white rounded-xl border border-gray-100 p-4">
-                                <h2 className="text-sm font-semibold text-gray-700 mb-2">Components Reviewed</h2>
-                                <div className="flex flex-wrap gap-2">
-                                    {review.components.map(rc => (
-                                        <div key={rc.id} className="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm">
-                                            <span className="text-xs">{COMPONENT_ICON[rc.componentType]}</span>
-                                            <span className="text-[10px] font-medium text-gray-400 uppercase">{COMPONENT_LABEL[rc.componentType]}</span>
-                                            <span className="text-gray-800 font-medium">{rc.label}</span>
-                                            {rc.description && (
-                                                <span className="text-gray-400 text-xs">— {rc.description}</span>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                        {/* Camera system reviewed */}
+                        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
+                            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Camera System Reviewed</h2>
+                            <span className="inline-flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-1.5 text-sm">
+                                <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                </svg>
+                                <span className="text-gray-800 dark:text-gray-200 font-medium">{(review as { systemLabel: string }).systemLabel}</span>
+                            </span>
+                        </div>
 
                         {/* Review body */}
-                        <div className="bg-white rounded-xl border border-gray-100 p-6">
+                        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-6">
                             <div
-                                className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-img:rounded-xl prose-img:max-w-full"
-                                dangerouslySetInnerHTML={{ __html: review.body || '<p class="text-gray-400 italic">No content yet.</p>' }}
+                                className="prose prose-sm dark:prose-invert max-w-none prose-img:rounded-xl prose-img:max-w-full"
+                                dangerouslySetInnerHTML={{ __html: review.body || '<p class="text-gray-400 dark:text-gray-500 italic">No content yet.</p>' }}
                             />
                         </div>
                     </div>

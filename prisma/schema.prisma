@@ -356,6 +356,7 @@ model CameraSystem {
     port           Port?           @relation(fields: [portId], references: [id])
     extensionRings ExtensionRing[]
     galleryPhotos  GalleryPhoto[]
+    reviews        Review[]
 
     @@map("camera_systems")
 }
@@ -424,29 +425,19 @@ model GalleryLike {
 }
 
 model Review {
-    id         Int               @id @default(autoincrement())
-    title      String
-    body       String            @default("") // TipTap HTML content
-    status     String            @default("draft") // draft | published
-    userId     Int
-    user       User              @relation(fields: [userId], references: [id])
-    components ReviewComponent[]
-    createdAt  DateTime          @default(now())
-    updatedAt  DateTime          @updatedAt
+    id             Int          @id @default(autoincrement())
+    title          String
+    body           String       @default("") // TipTap HTML content
+    status         String       @default("draft") // draft | published
+    userId         Int
+    cameraSystemId Int
+    user           User         @relation(fields: [userId], references: [id])
+    cameraSystem   CameraSystem @relation(fields: [cameraSystemId], references: [id], onDelete: Restrict)
+    createdAt      DateTime     @default(now())
+    updatedAt      DateTime     @updatedAt
 
+    @@unique([userId, cameraSystemId])
     @@map("reviews")
-}
-
-model ReviewComponent {
-    id            Int     @id @default(autoincrement())
-    reviewId      Int
-    componentType String // "camera" | "lens" | "housing" | "port" | "portAdapter" | "extensionRing"
-    componentId   Int
-    description   String? // short description of this component in context (e.g. "Used for wide angle")
-    review        Review  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-
-    @@unique([reviewId, componentType, componentId])
-    @@map("review_components")
 }
 
 // model PortChartEntry {

@@ -79,6 +79,20 @@ export default function EditReviewClient({ review, userComponents, userId }: { r
         return Object.entries(groups).filter(([, items]) => items.length > 0) as [ComponentType, SelectableComponent[]][]
     }, [userComponents])
 
+    // Compute component filters for the gallery photo picker (from review's components)
+    const componentFilters = useMemo(() => {
+        const filters: { cameraId?: number; lensId?: number; housingId?: number; portId?: number } = {}
+        const firstCamera = review.components.find(c => c.componentType === 'camera')
+        const firstLens = review.components.find(c => c.componentType === 'lens')
+        const firstHousing = review.components.find(c => c.componentType === 'housing')
+        const firstPort = review.components.find(c => c.componentType === 'port')
+        if (firstCamera) filters.cameraId = firstCamera.componentId
+        if (firstLens) filters.lensId = firstLens.componentId
+        if (firstHousing) filters.housingId = firstHousing.componentId
+        if (firstPort) filters.portId = firstPort.componentId
+        return filters
+    }, [review.components])
+
     function isSelected(type: ComponentType, id: number): boolean {
         return selected.some(s => s.type === type && s.id === id)
     }
@@ -210,6 +224,7 @@ export default function EditReviewClient({ review, userComponents, userId }: { r
                     onChange={setBody}
                     placeholder="Continue writing your review…"
                     userId={userId}
+                    componentFilters={componentFilters}
                 />
             </div>
 

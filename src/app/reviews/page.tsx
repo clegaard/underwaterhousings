@@ -7,54 +7,12 @@ import UserAvatar from '@/components/UserAvatar'
 
 export const metadata = {
     title: 'Reviews | Underwater Camera Housings',
-    description: 'In-depth reviews of underwater camera gear by the community',
+    description: 'In-depth reviews of underwater camera systems by the community',
 }
 
-type ComponentType = 'camera' | 'lens' | 'housing' | 'port' | 'portAdapter' | 'extensionRing'
-
-const COMPONENT_LABELS: Record<ComponentType, string> = {
-    camera: 'Camera',
-    lens: 'Lens',
-    housing: 'Housing',
-    port: 'Port',
-    portAdapter: 'Port Adapter',
-    extensionRing: 'Extension Ring',
-}
-
-async function fetchComponentLabel(type: ComponentType, id: number): Promise<string | null> {
-    switch (type) {
-        case 'camera': {
-            const c = await prisma.camera.findUnique({ where: { id }, include: { brand: true } })
-            return c ? `${c.brand.name} ${c.name}` : null
-        }
-        case 'lens': {
-            const l = await prisma.lens.findUnique({ where: { id }, include: { manufacturer: true } })
-            return l ? `${l.manufacturer?.name ?? ''} ${l.name}`.trim() || l.name : null
-        }
-        case 'housing': {
-            const h = await prisma.housing.findUnique({ where: { id }, include: { manufacturer: true } })
-            return h ? `${h.manufacturer.name} ${h.name}` : null
-        }
-        case 'port': {
-            const p = await prisma.port.findUnique({ where: { id }, include: { manufacturer: true } })
-            return p ? `${p.manufacturer.name} ${p.name}` : null
-        }
-        case 'portAdapter': {
-            const a = await prisma.portAdapter.findUnique({ where: { id }, include: { manufacturer: true } })
-            return a ? `${a.manufacturer.name} ${a.name}` : null
-        }
-        case 'extensionRing': {
-            const e = await prisma.extensionRing.findUnique({ where: { id }, include: { manufacturer: true } })
-            return e ? `${e.manufacturer.name} ${e.name}` : null
-        }
-        default:
-            return null
-    }
-}
-
-interface ComponentPill {
-    type: ComponentType
+interface SystemSummary {
     label: string
+    components: string[]
 }
 
 async function getPublishedReviews() {
@@ -64,31 +22,38 @@ async function getPublishedReviews() {
         take: 30,
         include: {
             user: { select: { id: true, name: true, profilePicture: true } },
-            components: { take: 10 },
+            cameraSystem: {
+                include: {
+                    camera: { include: { brand: true } },
+                    lens: true,
+                    housing: { include: { manufacturer: true } },
+                    port: true,
+                },
+            },
         },
     })
 
-    // Resolve component labels
-    const enriched = await Promise.all(
-        reviews.map(async (r) => {
-            const componentPills: ComponentPill[] = []
-            for (const rc of r.components) {
-                const label = await fetchComponentLabel(rc.componentType as ComponentType, rc.componentId)
-                if (label) {
-                    componentPills.push({ type: rc.componentType as ComponentType, label })
-                }
-            }
-            return {
-                ...r,
-                createdAt: r.createdAt.toISOString(),
-                componentPills,
-                bodyExcerpt: r.body
-                    ? r.body.replace(/<[^>]*>/g, '').slice(0, 200) + (r.body.replace(/<[^>]*>/g, '').length > 200 ? '…' : '')
-                    : '',
-            }
-        })
-    )
-    return enriched
+    return reviews.map(r => {
+        const cs = r.cameraSystem
+        const parts = [
+            cs.camera ? `${cs.camera.brand.name} ${cs.camera.name}` : null,
+            cs.lens?.name ?? null,
+            cs.housing ? `${cs.housing.manufacturer.name} ${cs.housing.name}` : null,
+            cs.port?.name ?? null,
+        ].filter(Boolean)
+        return {
+            id: r.id,
+            title: r.title,
+            status: r.status,
+            createdAt: r.createdAt.toISOString(),
+            user: r.user,
+            systemLabel: parts.join(' · '),
+            systemName: cs.name,
+            bodyExcerpt: r.body
+                ? r.body.replace(/<[^>]*>/g, '').slice(0, 200) + (r.body.replace(/<[^>]*>/g, '').length > 200 ? '…' : '')
+                : '',
+        }
+    })
 }
 
 export default async function ReviewsPage() {
@@ -156,18 +121,14 @@ export default async function ReviewsPage() {
                                                     <h3 className="text-base font-semibold text-gray-900 mb-1">
                                                         {r.title}
                                                     </h3>
-                                                    {/* Component pills */}
+                                                    {/* System pill */}
                                                     <div className="flex flex-wrap gap-1.5 mb-2">
-                                                        {(r as { componentPills: ComponentPill[] }).componentPills.map((pill, i) => (
-                                                            <span key={i} className="inline-flex items-center gap-1 text-[10px] font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
-                                                                {pill.type === 'camera' && (
-                                                                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                                                    </svg>
-                                                                )}
-                                                                {pill.label}
-                                                            </span>
-                                                        ))}
+                                                        <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full">
+                                                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                                            </svg>
+                                                            {(r as { systemLabel: string }).systemLabel}
+                                                        </span>
                                                     </div>
                                                     {(r as { bodyExcerpt: string }).bodyExcerpt && (
                                                         <p className="text-sm text-gray-600 line-clamp-2 mb-2">
