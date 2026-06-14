@@ -32,7 +32,6 @@ async function getReview(id: number, userId: number) {
 
     return {
         id: review.id,
-        title: review.title,
         body: review.body,
         status: review.status,
         cameraSystemId: review.cameraSystemId,

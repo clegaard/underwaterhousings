@@ -426,7 +426,6 @@ model GalleryLike {
 
 model Review {
     id             Int          @id @default(autoincrement())
-    title          String
     body           String       @default("") // TipTap HTML content
     status         String       @default("draft") // draft | published
     userId         Int

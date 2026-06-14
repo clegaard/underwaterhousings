@@ -179,8 +179,8 @@ function GalleryPhotoPicker({
                                         type="button"
                                         onClick={() => togglePhoto(p.id)}
                                         className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all group ${isSel
-                                                ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800'
-                                                : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'
+                                            ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800'
+                                            : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'
                                             }`}
                                     >
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -191,8 +191,8 @@ function GalleryPhotoPicker({
                                         />
                                         {/* Selection checkmark */}
                                         <div className={`absolute top-1.5 right-1.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shadow transition-colors ${isSel
-                                                ? 'bg-blue-500 border-blue-500'
-                                                : 'border-white/70 bg-black/30 group-hover:border-white'
+                                            ? 'bg-blue-500 border-blue-500'
+                                            : 'border-white/70 bg-black/30 group-hover:border-white'
                                             }`}>
                                             {isSel && (
                                                 <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
@@ -492,51 +492,4 @@ export default function RichReviewEditor({ content = '', onChange, placeholder =
             />
         </div>
     )
-}
-
-// ─── Helper to generate default review content ───────────────────────────────
-
-export function generateDefaultContent(selectedComponents: {
-    cameras: string[]
-    lenses: string[]
-    housings: string[]
-    ports: string[]
-}): string {
-    const lines: string[] = []
-    lines.push('<h2>Introduction</h2>')
-    lines.push('<p></p>')
-
-    if (selectedComponents.cameras.length > 0) {
-        lines.push('<h2>Camera' + (selectedComponents.cameras.length > 1 ? 's' : '') + '</h2>')
-        for (const c of selectedComponents.cameras) {
-            lines.push(`<h3>${c}</h3>`)
-            lines.push('<p></p>')
-        }
-    }
-
-    if (selectedComponents.lenses.length > 0) {
-        lines.push('<h2>Lens' + (selectedComponents.lenses.length > 1 ? 'es' : '') + '</h2>')
-        for (const l of selectedComponents.lenses) {
-            lines.push(`<h3>${l}</h3>`)
-            lines.push('<p></p>')
-        }
-    }
-
-    if (selectedComponents.housings.length > 0) {
-        lines.push('<h2>Housing' + (selectedComponents.housings.length > 1 ? 's' : '') + '</h2>')
-        for (const h of selectedComponents.housings) {
-            lines.push(`<h3>${h}</h3>`)
-            lines.push('<p></p>')
-        }
-    }
-
-    if (selectedComponents.ports.length > 0) {
-        lines.push('<h2>Port' + (selectedComponents.ports.length > 1 ? 's' : '') + '</h2>')
-        for (const p of selectedComponents.ports) {
-            lines.push(`<h3>${p}</h3>`)
-            lines.push('<p></p>')
-        }
-    }
-
-    return lines.join('\n')
 }

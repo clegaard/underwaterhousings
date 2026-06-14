@@ -57,10 +57,10 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json()
-        const { title, body: reviewBody, status = 'draft', cameraSystemId } = body
+        const { body: reviewBody, status = 'draft', cameraSystemId } = body
 
-        if (!title || !cameraSystemId) {
-            return NextResponse.json({ success: false, error: 'title and cameraSystemId are required' }, { status: 400 })
+        if (!cameraSystemId) {
+            return NextResponse.json({ success: false, error: 'cameraSystemId is required' }, { status: 400 })
         }
 
         const uid = parseInt(userId)
@@ -84,7 +84,6 @@ export async function POST(request: NextRequest) {
 
         const review = await prisma.review.create({
             data: {
-                title,
                 body: reviewBody ?? '',
                 status,
                 userId: uid,
@@ -117,12 +116,11 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { title, body: reviewBody, status } = body
+        const { body: reviewBody, status } = body
 
         const review = await prisma.review.update({
             where: { id: parseInt(id) },
             data: {
-                title: title ?? existing.title,
                 body: reviewBody ?? existing.body,
                 status: status ?? existing.status,
             },

@@ -2,38 +2,59 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
-import { withBase } from '@/lib/images'
-import UserAvatar from '@/components/UserAvatar'
+import { withBase, getCameraSystemImageWithFallback } from '@/lib/images'
+import ReviewCard from '@/components/ReviewCard'
 
 export const metadata = {
     title: 'Reviews | Underwater Camera Housings',
     description: 'In-depth reviews of underwater camera systems by the community',
 }
 
-interface SystemSummary {
-    label: string
-    components: string[]
-}
-
-async function getPublishedReviews() {
-    const reviews = await prisma.review.findMany({
+async function getReviews(currentUserId?: number) {
+    // Fetch published reviews
+    const published = await prisma.review.findMany({
         where: { status: 'published' },
         orderBy: { createdAt: 'desc' },
         take: 30,
         include: {
             user: { select: { id: true, name: true, profilePicture: true } },
             cameraSystem: {
-                include: {
-                    camera: { include: { brand: true } },
-                    lens: true,
-                    housing: { include: { manufacturer: true } },
-                    port: true,
+                select: {
+                    imagePath: true,
+                    camera: { select: { name: true, brand: { select: { name: true } }, productPhotos: true } },
+                    lens: { select: { name: true, productPhotos: true } },
+                    housing: { select: { name: true, manufacturer: { select: { name: true } }, productPhotos: true } },
+                    port: { select: { name: true } },
                 },
             },
         },
     })
 
-    return reviews.map(r => {
+    // Fetch current user's drafts
+    let drafts: typeof published = []
+    if (currentUserId) {
+        drafts = await prisma.review.findMany({
+            where: { userId: currentUserId, status: 'draft' },
+            orderBy: { updatedAt: 'desc' },
+            include: {
+                user: { select: { id: true, name: true, profilePicture: true } },
+                cameraSystem: {
+                    select: {
+                        imagePath: true,
+                        camera: { select: { name: true, brand: { select: { name: true } }, productPhotos: true } },
+                        lens: { select: { name: true, productPhotos: true } },
+                        housing: { select: { name: true, manufacturer: { select: { name: true } }, productPhotos: true } },
+                        port: { select: { name: true } },
+                    },
+                },
+            },
+        })
+    }
+
+    // Combine: drafts first, then published
+    const all = [...drafts, ...published]
+
+    return all.map(r => {
         const cs = r.cameraSystem
         const parts = [
             cs.camera ? `${cs.camera.brand.name} ${cs.camera.name}` : null,
@@ -41,17 +62,39 @@ async function getPublishedReviews() {
             cs.housing ? `${cs.housing.manufacturer.name} ${cs.housing.name}` : null,
             cs.port?.name ?? null,
         ].filter(Boolean)
+
+        const systemImage = getCameraSystemImageWithFallback({
+            imagePath: cs.imagePath,
+            housing: cs.housing ? { productPhotos: cs.housing.productPhotos } : null,
+            camera: cs.camera ? { productPhotos: cs.camera.productPhotos } : null,
+            lens: cs.lens ? { productPhotos: cs.lens.productPhotos } : null,
+        })
+
+        let excerpt = ''
+        if (r.body) {
+            try {
+                const sections = JSON.parse(r.body)
+                if (sections?.introduction) {
+                    excerpt = sections.introduction.replace(/<[^>]*>/g, '').slice(0, 200)
+                }
+            } catch {
+                excerpt = r.body.replace(/<[^>]*>/g, '').slice(0, 200)
+            }
+        }
+
         return {
             id: r.id,
-            title: r.title,
             status: r.status,
             createdAt: r.createdAt.toISOString(),
-            user: r.user,
+            user: {
+                id: r.user.id,
+                name: r.user.name,
+                profilePicture: r.user.profilePicture ? withBase(r.user.profilePicture) : null,
+            },
             systemLabel: parts.join(' · '),
-            systemName: cs.name,
-            bodyExcerpt: r.body
-                ? r.body.replace(/<[^>]*>/g, '').slice(0, 200) + (r.body.replace(/<[^>]*>/g, '').length > 200 ? '…' : '')
-                : '',
+            systemImageSrc: systemImage.src,
+            systemImageFallback: systemImage.fallback,
+            bodyExcerpt: excerpt ? excerpt + (excerpt.length >= 200 ? '…' : '') : '',
         }
     })
 }
@@ -60,7 +103,7 @@ export default async function ReviewsPage() {
     const session = await auth()
     const currentUserId = session?.user?.id ? parseInt(session.user.id) : undefined
 
-    const reviews = await getPublishedReviews()
+    const reviews = await getReviews(currentUserId)
 
     return (
         <main className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
@@ -105,45 +148,7 @@ export default async function ReviewsPage() {
                         ) : (
                             <div className="space-y-4">
                                 {reviews.map(r => (
-                                    <Link
-                                        key={r.id}
-                                        href={`/reviews/${r.id}`}
-                                        className="block bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all overflow-hidden"
-                                    >
-                                        <div className="px-5 py-4">
-                                            <div className="flex items-start gap-3">
-                                                <UserAvatar
-                                                    picture={r.user.profilePicture ? withBase(r.user.profilePicture) : null}
-                                                    name={r.user.name ?? '?'}
-                                                    size="base"
-                                                />
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="text-base font-semibold text-gray-900 mb-1">
-                                                        {r.title}
-                                                    </h3>
-                                                    {/* System pill */}
-                                                    <div className="flex flex-wrap gap-1.5 mb-2">
-                                                        <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full">
-                                                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                                            </svg>
-                                                            {(r as { systemLabel: string }).systemLabel}
-                                                        </span>
-                                                    </div>
-                                                    {(r as { bodyExcerpt: string }).bodyExcerpt && (
-                                                        <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                                                            {(r as { bodyExcerpt: string }).bodyExcerpt}
-                                                        </p>
-                                                    )}
-                                                    <div className="flex items-center gap-3 text-xs text-gray-400">
-                                                        <span>{r.user.name ?? 'Anonymous'}</span>
-                                                        <span>·</span>
-                                                        <span>{new Date(r.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Link>
+                                    <ReviewCard key={r.id} review={r} />
                                 ))}
                             </div>
                         )}

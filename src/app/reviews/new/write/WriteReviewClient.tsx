@@ -3,11 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import RichReviewEditor, { generateDefaultContent } from '@/components/RichReviewEditor'
+import ReviewSectionEditor from '@/components/ReviewSectionEditor'
 
 interface ReviewData {
     id: number
-    title: string
     body: string
     cameraSystemId: number
     systemLabel: string
@@ -21,9 +20,6 @@ interface ReviewData {
 
 export default function WriteReviewClient({ review, userId, mode = 'write' }: { review: ReviewData; userId: number; mode?: 'write' | 'edit' }) {
     const router = useRouter()
-    const [title, setTitle] = useState(
-        mode === 'write' && review.title === 'Untitled Review' ? '' : review.title
-    )
     const [body, setBody] = useState(review.body)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -33,12 +29,7 @@ export default function WriteReviewClient({ review, userId, mode = 'write' }: { 
     // Gallery filtering: show only photos taken with this specific camera system
     const componentFilters = { cameraSystemId: review.cameraSystemId }
 
-    function generateContent() {
-        setBody(generateDefaultContent(review.systemComponents))
-    }
-
     async function handleSave(status: 'draft' | 'published') {
-        if (!title.trim()) { setError('Please enter a title.'); return }
         setSaving(true)
         setError(null)
         try {
@@ -46,7 +37,6 @@ export default function WriteReviewClient({ review, userId, mode = 'write' }: { 
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    title: title.trim(),
                     body,
                     status,
                 }),
@@ -60,8 +50,6 @@ export default function WriteReviewClient({ review, userId, mode = 'write' }: { 
             setSaving(false)
         }
     }
-
-    const hasContent = !!body
 
     return (
         <div className="space-y-6">
@@ -99,40 +87,15 @@ export default function WriteReviewClient({ review, userId, mode = 'write' }: { 
                 </span>
             </div>
 
-            {/* Title */}
-            <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Review title</label>
-                <input
-                    type="text"
-                    value={title}
-                    onChange={e => setTitle(e.target.value)}
-                    placeholder="e.g. My experience with this setup"
-                    className="w-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-            </div>
-
-            {/* Generate content button */}
-            {!hasContent && (
-                <button
-                    onClick={generateContent}
-                    className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h8m-8 6h16" />
-                    </svg>
-                    Generate section headings from system components
-                </button>
-            )}
-
-            {/* Editor */}
+            {/* Section Editors */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your review</label>
-                <RichReviewEditor
-                    content={body}
+                <ReviewSectionEditor
+                    value={body}
                     onChange={setBody}
-                    placeholder="Write about your experience with each component…"
                     userId={userId}
                     componentFilters={componentFilters}
+                    systemComponents={review.systemComponents}
                 />
             </div>
 
@@ -151,7 +114,7 @@ export default function WriteReviewClient({ review, userId, mode = 'write' }: { 
                 </button>
                 <button
                     onClick={() => handleSave('published')}
-                    disabled={saving || !body}
+                    disabled={saving}
                     className="px-5 py-2 text-sm rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 font-semibold"
                 >
                     {saving ? 'Publishing…' : isEdit ? 'Save changes' : 'Publish review'}

@@ -47,3 +47,30 @@ export function getPortImagePathWithFallback(productPhotos: string[]): { src: st
     const fallback = '/ports/fallback.png'
     return { src: productPhotos[0] ? withBase(productPhotos[0]) : fallback, fallback }
 }
+
+/**
+ * Returns the best available image for a camera system.
+ * Priority: system's own imagePath > housing photo > camera photo > lens photo > generic fallback.
+ */
+export function getCameraSystemImageWithFallback(system: {
+    imagePath?: string | null
+    housing?: { productPhotos: string[] } | null
+    camera?: { productPhotos: string[] } | null
+    lens?: { productPhotos: string[] } | null
+}): { src: string; fallback: string } {
+    const fallback = '/camera-systems/fallback-camera-system-smartphone.avif'
+
+    if (system.imagePath) {
+        return { src: withBase(system.imagePath), fallback }
+    }
+    if (system.housing?.productPhotos?.[0]) {
+        return { src: withBase(system.housing.productPhotos[0]), fallback }
+    }
+    if (system.camera?.productPhotos?.[0]) {
+        return { src: withBase(system.camera.productPhotos[0]), fallback }
+    }
+    if (system.lens?.productPhotos?.[0]) {
+        return { src: withBase(system.lens.productPhotos[0]), fallback }
+    }
+    return { src: fallback, fallback }
+}

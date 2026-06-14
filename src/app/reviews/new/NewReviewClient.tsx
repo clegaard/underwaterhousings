@@ -29,7 +29,6 @@ export default function NewReviewClient({ userSystems, userId }: { userSystems: 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    title: 'Untitled Review',
                     body: '',
                     status: 'draft',
                     cameraSystemId: selectedId,
