@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { HousingImage } from '@/components/HousingImage'
 import { getLensImagePathWithFallback, withBase } from '@/lib/images'
 import PriceTag from '@/components/PriceTag'
+import ProductReviewsSection from '@/components/ProductReviewsSection'
 
 interface LensDetailPageProps {
     params: Promise<{
@@ -283,6 +284,9 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                         </div>
                     </div>
                 )}
+
+                {/* Reviews */}
+                <ProductReviewsSection productType="lens" productId={lens.id} />
 
                 {/* Gallery */}
                 {galleryPhotos.length > 0 && (

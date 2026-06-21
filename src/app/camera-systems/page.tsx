@@ -156,7 +156,7 @@ export default async function CameraSystemBuilderPage({ searchParams }: CameraSy
 
     const { camera, housing, lens, port, galleryPhotos } = components
 
-    
+
     const userId = (session?.user as { id?: string } | undefined)?.id ?? null
 
     const cameraImageInfo = getCameraImagePathWithFallback(camera.productPhotos ?? [])

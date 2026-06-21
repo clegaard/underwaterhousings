@@ -12,12 +12,16 @@ async function getDraftReview(id: number, userId: number) {
     const review = await prisma.review.findUnique({
         where: { id },
         include: {
-            cameraSystem: {
+            systems: {
                 include: {
-                    camera: { include: { brand: true } },
-                    lens: true,
-                    housing: { include: { manufacturer: true } },
-                    port: true,
+                    cameraSystem: {
+                        include: {
+                            camera: { include: { brand: true } },
+                            lens: true,
+                            housing: { include: { manufacturer: true } },
+                            port: true,
+                        },
+                    },
                 },
             },
         },
@@ -26,23 +30,24 @@ async function getDraftReview(id: number, userId: number) {
     if (!review || review.userId !== userId) return null
     if (review.status !== 'draft') return null
 
-    const cs = review.cameraSystem
-    const systemLabel = [
+    const firstSystem = review.systems[0]
+    const cs = firstSystem?.cameraSystem
+    const systemLabel = cs ? [
         cs.camera ? `${cs.camera.brand.name} ${cs.camera.name}` : null,
         cs.lens?.name ?? null,
         cs.housing ? `${cs.housing.manufacturer.name} ${cs.housing.name}` : null,
         cs.port?.name ?? null,
-    ].filter(Boolean).join(' · ')
+    ].filter(Boolean).join(' · ') : ''
 
     return {
         id: review.id,
         body: review.body,
-        cameraSystemId: review.cameraSystemId,
+        cameraSystemId: firstSystem?.cameraSystemId ?? null,
         systemLabel,
         systemComponents: {
-            cameras: [cs.camera ? `${cs.camera.brand.name} ${cs.camera.name}` : null].filter(Boolean) as string[],
-            lenses: [cs.lens?.name].filter(Boolean) as string[],
-            housings: [cs.housing ? `${cs.housing.manufacturer.name} ${cs.housing.name}` : null].filter(Boolean) as string[],
+            cameras: cs ? [cs.camera ? `${cs.camera.brand.name} ${cs.camera.name}` : null].filter(Boolean) as string[] : [],
+            lenses: cs ? [cs.lens?.name].filter(Boolean) as string[] : [],
+            housings: cs ? [cs.housing ? `${cs.housing.manufacturer.name} ${cs.housing.name}` : null].filter(Boolean) as string[] : [],
             ports: [cs.port?.name].filter(Boolean) as string[],
         },
     }

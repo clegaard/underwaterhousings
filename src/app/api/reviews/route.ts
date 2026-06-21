@@ -22,7 +22,11 @@ export async function GET(request: NextRequest) {
                 where: { id: parseInt(id) },
                 include: {
                     user: { select: { id: true, name: true, profilePicture: true } },
-                    cameraSystem: { include: systemInclude },
+                    systems: {
+                        include: {
+                            cameraSystem: { include: systemInclude },
+                        },
+                    },
                 },
             })
             if (!review) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 })
@@ -39,7 +43,11 @@ export async function GET(request: NextRequest) {
             take: 40,
             include: {
                 user: { select: { id: true, name: true, profilePicture: true } },
-                cameraSystem: { include: systemInclude },
+                systems: {
+                    include: {
+                        cameraSystem: { include: systemInclude },
+                    },
+                },
             },
         })
         return NextResponse.json({ success: true, data: reviews })
@@ -75,8 +83,15 @@ export async function POST(request: NextRequest) {
         }
 
         // Check for existing review (one review per user per system)
-        const existing = await prisma.review.findUnique({
-            where: { userId_cameraSystemId: { userId: uid, cameraSystemId } },
+        const existing = await prisma.review.findFirst({
+            where: {
+                userId: uid,
+                systems: {
+                    some: {
+                        cameraSystemId,
+                    },
+                },
+            },
         })
         if (existing) {
             return NextResponse.json({ success: false, error: 'You have already reviewed this camera system' }, { status: 409 })
@@ -84,13 +99,22 @@ export async function POST(request: NextRequest) {
 
         const review = await prisma.review.create({
             data: {
+                title: '',
                 body: reviewBody ?? '',
                 status,
                 userId: uid,
-                cameraSystemId,
+                systems: {
+                    create: {
+                        cameraSystem: { connect: { id: cameraSystemId } },
+                    },
+                },
             },
             include: {
-                cameraSystem: { include: systemInclude },
+                systems: {
+                    include: {
+                        cameraSystem: { include: systemInclude },
+                    },
+                },
             },
         })
         return NextResponse.json({ success: true, data: review }, { status: 201 })
@@ -121,11 +145,15 @@ export async function PUT(request: NextRequest) {
         const review = await prisma.review.update({
             where: { id: parseInt(id) },
             data: {
-                body: reviewBody ?? existing.body,
-                status: status ?? existing.status,
+                ...(reviewBody !== undefined ? { body: reviewBody } : {}),
+                ...(status !== undefined ? { status } : {}),
             },
             include: {
-                cameraSystem: { include: systemInclude },
+                systems: {
+                    include: {
+                        cameraSystem: { include: systemInclude },
+                    },
+                },
             },
         })
         return NextResponse.json({ success: true, data: review })
@@ -135,7 +163,7 @@ export async function PUT(request: NextRequest) {
     }
 }
 
-// DELETE /api/reviews?id=x
+// DELETE /api/reviews?id=x — delete a review
 export async function DELETE(request: NextRequest) {
     const session = await auth()
     const userId = (session?.user as { id?: string } | undefined)?.id
@@ -149,6 +177,7 @@ export async function DELETE(request: NextRequest) {
         if (!existing || existing.userId !== parseInt(userId)) {
             return NextResponse.json({ success: false, error: 'Not found or forbidden' }, { status: 403 })
         }
+
         await prisma.review.delete({ where: { id: parseInt(id) } })
         return NextResponse.json({ success: true })
     } catch (error) {

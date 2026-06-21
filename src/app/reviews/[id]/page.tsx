@@ -47,19 +47,24 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const review = await prisma.review.findUnique({
         where: { id: parseInt(id) },
         select: {
-            cameraSystem: {
+            systems: {
                 select: {
-                    camera: { select: { name: true, brand: { select: { name: true } } } },
-                    lens: { select: { name: true } },
-                    housing: { select: { name: true, manufacturer: { select: { name: true } } } },
-                    port: { select: { name: true } },
+                    cameraSystem: {
+                        select: {
+                            camera: { select: { name: true, brand: { select: { name: true } } } },
+                            lens: { select: { name: true } },
+                            housing: { select: { name: true, manufacturer: { select: { name: true } } } },
+                            port: { select: { name: true } },
+                        },
+                    },
                 },
             },
         },
     })
     if (!review) return { title: 'Review Not Found' }
-    const cs = review.cameraSystem
-    const label = [cs.camera ? `${cs.camera.brand.name} ${cs.camera.name}` : null, cs.lens?.name, cs.housing ? `${cs.housing.manufacturer.name} ${cs.housing.name}` : null, cs.port?.name].filter(Boolean).join(' · ')
+    const firstSystem = review.systems[0]
+    const cs = firstSystem?.cameraSystem
+    const label = cs ? [cs.camera ? `${cs.camera.brand.name} ${cs.camera.name}` : null, cs.lens?.name, cs.housing ? `${cs.housing.manufacturer.name} ${cs.housing.name}` : null, cs.port?.name].filter(Boolean).join(' · ') : 'Review'
     return { title: `${label} | Reviews` }
 }
 
@@ -68,33 +73,39 @@ async function getReview(id: number) {
         where: { id },
         include: {
             user: { select: { id: true, name: true, profilePicture: true } },
-            cameraSystem: {
+            systems: {
                 select: {
-                    imagePath: true,
-                    camera: { select: { name: true, brand: { select: { name: true } }, productPhotos: true } },
-                    lens: { select: { name: true, productPhotos: true } },
-                    housing: { select: { name: true, manufacturer: { select: { name: true } }, productPhotos: true } },
-                    port: { select: { name: true } },
+                    description: true,
+                    cameraSystem: {
+                        select: {
+                            imagePath: true,
+                            camera: { select: { name: true, brand: { select: { name: true } }, productPhotos: true } },
+                            lens: { select: { name: true, productPhotos: true } },
+                            housing: { select: { name: true, manufacturer: { select: { name: true } }, productPhotos: true } },
+                            port: { select: { name: true } },
+                        },
+                    },
                 },
             },
         },
     })
     if (!review || (review.status !== 'published' && review.status !== 'draft')) return null
 
-    const cs = review.cameraSystem
-    const systemParts = [
+    const firstSystem = review.systems[0]
+    const cs = firstSystem?.cameraSystem
+    const systemParts = cs ? [
         cs.camera ? `${cs.camera.brand.name} ${cs.camera.name}` : null,
         cs.lens?.name ?? null,
         cs.housing ? `${cs.housing.manufacturer.name} ${cs.housing.name}` : null,
         cs.port?.name ?? null,
-    ].filter(Boolean)
+    ].filter(Boolean) : []
 
-    const systemImage = getCameraSystemImageWithFallback({
+    const systemImage = cs ? getCameraSystemImageWithFallback({
         imagePath: cs.imagePath,
         housing: cs.housing ? { productPhotos: cs.housing.productPhotos } : null,
         camera: cs.camera ? { productPhotos: cs.camera.productPhotos } : null,
         lens: cs.lens ? { productPhotos: cs.lens.productPhotos } : null,
-    })
+    }) : { src: '/camera-systems/fallback-camera-system-smartphone.avif', fallback: '/camera-systems/fallback-camera-system-smartphone.avif' }
 
     return {
         ...review,
@@ -128,7 +139,7 @@ function ReviewBodyHtml({ body }: { body: string }) {
                     <div id="section-introduction">
                         <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">Introduction</h2>
                         <div
-                            className="prose prose-sm dark:prose-invert max-w-none prose-img:rounded-xl prose-img:max-w-full"
+                            className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed max-w-none [&_img]:rounded-xl [&_img]:max-w-full"
                             dangerouslySetInnerHTML={{ __html: sections.introduction }}
                         />
                     </div>
@@ -138,7 +149,7 @@ function ReviewBodyHtml({ body }: { body: string }) {
                         <div key={i} id={`section-component-${i}`}>
                             <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">{comp.label}</h2>
                             <div
-                                className="prose prose-sm dark:prose-invert max-w-none prose-img:rounded-xl prose-img:max-w-full"
+                                className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed max-w-none [&_img]:rounded-xl [&_img]:max-w-full"
                                 dangerouslySetInnerHTML={{ __html: comp.content }}
                             />
                         </div>
@@ -148,7 +159,7 @@ function ReviewBodyHtml({ body }: { body: string }) {
                     <div id="section-conclusion">
                         <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">Conclusion</h2>
                         <div
-                            className="prose prose-sm dark:prose-invert max-w-none prose-img:rounded-xl prose-img:max-w-full"
+                            className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed max-w-none [&_img]:rounded-xl [&_img]:max-w-full"
                             dangerouslySetInnerHTML={{ __html: sections.conclusion }}
                         />
                     </div>
@@ -160,7 +171,7 @@ function ReviewBodyHtml({ body }: { body: string }) {
     // Legacy HTML body
     return (
         <div
-            className="prose prose-sm dark:prose-invert max-w-none prose-img:rounded-xl prose-img:max-w-full"
+            className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed max-w-none [&_img]:rounded-xl [&_img]:max-w-full"
             dangerouslySetInnerHTML={{ __html: body }}
         />
     )

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import ReviewSectionEditor from '@/components/ReviewSectionEditor'
+import ReviewSectionTextEditor from '@/components/ReviewSectionTextEditor'
 
 interface ReviewData {
     id: number
@@ -26,9 +26,6 @@ export default function WriteReviewClient({ review, userId, mode = 'write' }: { 
 
     const isEdit = mode === 'edit'
 
-    // Gallery filtering: show only photos taken with this specific camera system
-    const componentFilters = { cameraSystemId: review.cameraSystemId }
-
     async function handleSave(status: 'draft' | 'published') {
         setSaving(true)
         setError(null)
@@ -36,10 +33,7 @@ export default function WriteReviewClient({ review, userId, mode = 'write' }: { 
             const res = await fetch(`/api/reviews?id=${review.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    body,
-                    status,
-                }),
+                body: JSON.stringify({ body, status }),
             })
             const data = await res.json()
             if (!res.ok) throw new Error(data.error ?? 'Failed to save review')
@@ -89,12 +83,9 @@ export default function WriteReviewClient({ review, userId, mode = 'write' }: { 
 
             {/* Section Editors */}
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your review</label>
-                <ReviewSectionEditor
+                <ReviewSectionTextEditor
                     value={body}
                     onChange={setBody}
-                    userId={userId}
-                    componentFilters={componentFilters}
                     systemComponents={review.systemComponents}
                 />
             </div>

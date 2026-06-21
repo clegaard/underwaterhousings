@@ -14,7 +14,7 @@ export default function About() {
             {/* Content */}
             <div className="max-w-4xl mx-auto px-4 py-8">
                 <div className="bg-white rounded-lg shadow-sm p-8">
-                    <div className="prose prose-lg max-w-none">
+                    <div className="text-base text-gray-700 dark:text-gray-300 leading-relaxed max-w-none space-y-6 [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:text-gray-900 dark:[&_h1]:text-gray-100 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-gray-900 dark:[&_h2]:text-gray-100 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
                         <h2 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h2>
                         <p className="text-gray-700 mb-6">
                             UW Housings is dedicated to helping underwater photographers and videographers find the perfect camera housing for their needs.

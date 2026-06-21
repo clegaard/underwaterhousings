@@ -11,7 +11,7 @@ interface UserSystem {
     lens: { name: string } | null
     housing: { name: string; manufacturer: { name: string } } | null
     port: { name: string } | null
-    _count: { reviews: number }
+    _count: { reviewLinks: number }
 }
 
 export default function NewReviewClient({ userSystems, userId }: { userSystems: UserSystem[]; userId: number }) {

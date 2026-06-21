@@ -14,7 +14,7 @@ interface UserSystem {
     lens: { name: string } | null
     housing: { name: string; manufacturer: { name: string } } | null
     port: { name: string } | null
-    _count: { reviews: number }
+    _count: { reviewLinks: number }
 }
 
 async function getUserSystems(userId: number): Promise<UserSystem[]> {
@@ -29,12 +29,12 @@ async function getUserSystems(userId: number): Promise<UserSystem[]> {
             lens: true,
             housing: { include: { manufacturer: true } },
             port: true,
-            _count: { select: { reviews: true } },
+            _count: { select: { reviewLinks: true } },
         },
         orderBy: { createdAt: 'desc' },
     })
 
-    return systems.filter(s => s._count.reviews === 0)
+    return systems.filter(s => s._count.reviewLinks === 0)
 }
 
 export default async function NewReviewPage() {

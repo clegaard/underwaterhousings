@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import SystemImage from '@/components/SystemImage'
 import UserAvatar from '@/components/UserAvatar'
 
@@ -17,14 +17,28 @@ interface ReviewCardData {
     bodyExcerpt: string
     systemImageSrc?: string
     systemImageFallback?: string
-    userProfilePicture?: string
 }
 
 export default function ReviewCard({ review }: { review: ReviewCardData }) {
+    const router = useRouter()
+
+    function goToUser(e: React.MouseEvent) {
+        e.stopPropagation()
+        e.preventDefault()
+        router.push(`/users/${review.user.id}`)
+    }
+
+    function goToReview() {
+        router.push(`/reviews/${review.id}`)
+    }
+
     return (
-        <Link
-            href={`/reviews/${review.id}`}
-            className="block bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-700 hover:scale-[1.01] transition-all duration-200 overflow-hidden group"
+        <div
+            onClick={goToReview}
+            role="link"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter') goToReview() }}
+            className="block bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-700 hover:scale-[1.01] transition-all duration-200 overflow-hidden group cursor-pointer"
         >
             <div className="px-5 py-4">
                 <div className="flex items-start gap-4">
@@ -54,31 +68,35 @@ export default function ReviewCard({ review }: { review: ReviewCardData }) {
                             </p>
                         )}
                         <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
-                            <Link
-                                href={`/users/${review.user.id}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="shrink-0 hover:scale-110 transition-transform duration-200"
+                            <span
+                                onClick={goToUser}
+                                className="shrink-0 hover:scale-110 transition-transform duration-200 cursor-pointer"
                                 title={review.user.name ?? 'Anonymous'}
+                                role="link"
+                                tabIndex={0}
+                                onKeyDown={(e) => { if (e.key === 'Enter') goToUser(e as unknown as React.MouseEvent) }}
                             >
                                 <UserAvatar
                                     picture={review.user.profilePicture ?? null}
                                     name={review.user.name ?? '?'}
                                     size="sm"
                                 />
-                            </Link>
-                            <Link
-                                href={`/users/${review.user.id}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors duration-200"
+                            </span>
+                            <span
+                                onClick={goToUser}
+                                className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors duration-200 cursor-pointer"
+                                role="link"
+                                tabIndex={0}
+                                onKeyDown={(e) => { if (e.key === 'Enter') goToUser(e as unknown as React.MouseEvent) }}
                             >
                                 {review.user.name ?? 'Anonymous'}
-                            </Link>
+                            </span>
                             <span>·</span>
                             <span>{new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                         </div>
                     </div>
                 </div>
             </div>
-        </Link>
+        </div>
     )
 }

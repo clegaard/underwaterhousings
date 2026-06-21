@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { HousingImage } from '@/components/HousingImage'
 import { getCameraImagePathWithFallback, withBase } from '@/lib/images'
 import PriceTag from '@/components/PriceTag'
+import ProductReviewsSection from '@/components/ProductReviewsSection'
 
 interface CameraDetailPageProps {
     params: Promise<{
@@ -76,7 +77,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
         <div className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
             {/* Header */}
             <div className="bg-white shadow-sm border-b">
-                <div className="max-w-5xl mx-auto px-4 py-6">
+                <div className="max-w-4xl mx-auto px-4 py-6">
                     <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
                         <Link href="/products" className="hover:text-blue-600 transition-colors">
                             Products
@@ -126,7 +127,7 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
                 </div>
             </div>
 
-            <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+            <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
                 {/* Image + Specs */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Image */}
@@ -365,6 +366,9 @@ export default async function CameraDetailPage({ params }: CameraDetailPageProps
                         </div>
                     </div>
                 )}
+
+                {/* Reviews */}
+                <ProductReviewsSection productType="camera" productId={camera.id} />
 
                 {/* Gallery */}
                 {galleryPhotos.length > 0 && (

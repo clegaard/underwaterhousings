@@ -356,7 +356,7 @@ model CameraSystem {
     port           Port?           @relation(fields: [portId], references: [id])
     extensionRings ExtensionRing[]
     galleryPhotos  GalleryPhoto[]
-    reviews        Review[]
+    reviewLinks    ReviewSystem[]
 
     @@map("camera_systems")
 }
@@ -425,18 +425,28 @@ model GalleryLike {
 }
 
 model Review {
-    id             Int          @id @default(autoincrement())
-    body           String       @default("") // TipTap HTML content
-    status         String       @default("draft") // draft | published
-    userId         Int
-    cameraSystemId Int
-    user           User         @relation(fields: [userId], references: [id])
-    cameraSystem   CameraSystem @relation(fields: [cameraSystemId], references: [id], onDelete: Restrict)
-    createdAt      DateTime     @default(now())
-    updatedAt      DateTime     @updatedAt
+    id        Int            @id @default(autoincrement())
+    title     String         @default("")
+    body      String         @default("")
+    status    String         @default("draft") // draft | published
+    userId    Int
+    user      User           @relation(fields: [userId], references: [id])
+    systems   ReviewSystem[]
+    createdAt DateTime       @default(now())
+    updatedAt DateTime       @updatedAt
 
-    @@unique([userId, cameraSystemId])
     @@map("reviews")
+}
+
+model ReviewSystem {
+    reviewId       Int
+    cameraSystemId Int
+    review         Review       @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+    cameraSystem   CameraSystem @relation(fields: [cameraSystemId], references: [id], onDelete: Restrict)
+    description    String? // short description of this variation (e.g. "Wide angle setup")
+
+    @@id([reviewId, cameraSystemId])
+    @@map("review_systems")
 }
 
 // model PortChartEntry {

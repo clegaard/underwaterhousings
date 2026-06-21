@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { HousingImage } from '@/components/HousingImage'
 import { getPortImagePathWithFallback } from '@/lib/images'
 import PriceTag from '@/components/PriceTag'
+import ProductReviewsSection from '@/components/ProductReviewsSection'
 import { Metadata } from 'next'
 
 interface Props {
@@ -58,7 +59,7 @@ export default async function PortDetailPage({ params }: Props) {
     return (
         <div className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
             <div className="bg-white shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 py-6">
+                <div className="max-w-4xl mx-auto px-4 py-6">
                     <nav className="text-sm text-gray-500 mb-2 flex gap-1 items-center flex-wrap">
                         <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
                         <span>/</span>
@@ -146,6 +147,9 @@ export default async function PortDetailPage({ params }: Props) {
                     </div>
                 </div>
             </div>
+
+            {/* Reviews */}
+            <ProductReviewsSection productType="port" productId={port.id} />
         </div>
     )
 }
