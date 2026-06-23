@@ -4,14 +4,14 @@ import { useRouter } from 'next/navigation'
 import CameraSystemCard, { type CameraSystemCardData } from '@/components/CameraSystemCard'
 import { withBase } from '@/lib/images'
 import UserAvatar from '@/components/UserAvatar'
-import StarRating from '@/components/StarRating'
 
 interface ReviewCardData {
     id: number
     status: string
     createdAt: string
     bodyExcerpt: string
-    overallRating: number | null
+    /** Component-level ratings in the same order as the card's component list. */
+    componentRatings: Array<number | null>
     user: {
         id: number
         name: string | null
@@ -76,14 +76,6 @@ export default function ReviewCard({ review }: { review: ReviewCardData }) {
                             </span>
                         )}
                         <span className="text-xs text-gray-400 dark:text-gray-500">{dateStr}</span>
-                        {review.overallRating != null && (
-                            <span className="inline-flex items-center gap-1 ml-auto">
-                                <StarRating value={review.overallRating} readonly size="sm" label="Overall rating" />
-                                <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 tabular-nums">
-                                    {review.overallRating.toFixed(1)}
-                                </span>
-                            </span>
-                        )}
                     </div>
                     {review.bodyExcerpt && (
                         <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">
@@ -99,6 +91,7 @@ export default function ReviewCard({ review }: { review: ReviewCardData }) {
                     <CameraSystemCard
                         cameraSystem={review.cameraSystem}
                         mode="display"
+                        ratings={review.componentRatings}
                     />
                 </div>
             )}

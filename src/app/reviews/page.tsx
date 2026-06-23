@@ -14,7 +14,7 @@ interface ReviewWithSystem {
     status: string
     createdAt: string
     bodyExcerpt: string
-    overallRating: number | null
+    componentRatings: Array<number | null>
     user: {
         id: number
         name: string | null
@@ -85,29 +85,30 @@ async function getPublishedReviews(): Promise<ReviewWithSystem[]> {
         },
     })
     return reviews.map(r => {
-        // Compute overall rating from component ratings in the JSON body
-        let overallRating: number | null = null
+        // Parse JSON body for component ratings (in order) and overall impression excerpt
+        const componentRatings: Array<number | null> = []
+        let bodyExcerpt = ''
         if (r.body) {
             try {
                 const sections = JSON.parse(r.body)
                 if (sections?.components && Array.isArray(sections.components)) {
-                    const rated = sections.components.filter((c: { rating?: number | null }) => c.rating != null)
-                    if (rated.length > 0) {
-                        const sum = rated.reduce((s: number, c: { rating: number }) => s + c.rating, 0)
-                        overallRating = Math.round((sum / rated.length) * 10) / 10
+                    for (const c of sections.components) {
+                        componentRatings.push(c.rating ?? null)
                     }
                 }
-            } catch { /* body is HTML, not JSON */ }
+                if (typeof sections?.overallImpression === 'string' && sections.overallImpression) {
+                    const plain = sections.overallImpression.replace(/<[^>]*>/g, '')
+                    bodyExcerpt = plain.length > 200 ? plain.slice(0, 200) + '…' : plain
+                }
+            } catch { /* body is legacy HTML, not JSON */ }
         }
 
         return {
             id: r.id,
             status: r.status,
             createdAt: r.createdAt.toISOString(),
-            bodyExcerpt: r.body
-                ? r.body.replace(/<[^>]*>/g, '').slice(0, 200) + (r.body.replace(/<[^>]*>/g, '').length > 200 ? '…' : '')
-                : '',
-            overallRating,
+            bodyExcerpt,
+            componentRatings,
             user: r.user,
             cameraSystem: r.systems[0]?.cameraSystem ?? null,
         }

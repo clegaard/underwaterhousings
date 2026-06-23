@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import StarRating from '@/components/StarRating'
 import {
     getCameraImagePathWithFallback,
     getLensImagePathWithFallback,
@@ -86,6 +87,10 @@ interface CameraSystemCardProps {
 
     // ── Select mode callbacks ──
     onSelect?: () => void
+
+    /** Component-level ratings from a review, in the same order as the card's component list
+     *  (cameras → lenses → housings → ports → adapters → rings). */
+    ratings?: Array<number | null>
 }
 
 export default function CameraSystemCard({
@@ -95,6 +100,7 @@ export default function CameraSystemCard({
     isOwnProfile = false,
     isFavorite = false,
     isSelected = false,
+    ratings,
     onSetFavorite,
     onToggleActive,
     onEdit,
@@ -301,25 +307,31 @@ export default function CameraSystemCard({
                 <div className="mt-3 pt-3 border-t border-gray-100">
                     <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Components</span>
                     <div className="mt-1.5 space-y-1">
-                        {items.map(item => (
-                            <div key={item.label} className="flex items-center gap-1.5 text-xs">
-                                <div className="relative w-5 h-5 rounded overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
-                                    <Image
-                                        src={item.img.src}
-                                        alt={item.name}
-                                        fill
-                                        className="object-contain p-0.5"
-                                        onError={(e) => {
-                                            const img = e.currentTarget as HTMLImageElement
-                                            if (img.src !== item.img.fallback) img.src = item.img.fallback
-                                        }}
-                                        sizes="20px"
-                                    />
+                        {items.map((item, idx) => {
+                            const itemRating = ratings?.[idx] ?? null
+                            return (
+                                <div key={item.label} className="flex items-center gap-1.5 text-xs">
+                                    <div className="relative w-5 h-5 rounded overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
+                                        <Image
+                                            src={item.img.src}
+                                            alt={item.name}
+                                            fill
+                                            className="object-contain p-0.5"
+                                            onError={(e) => {
+                                                const img = e.currentTarget as HTMLImageElement
+                                                if (img.src !== item.img.fallback) img.src = item.img.fallback
+                                            }}
+                                            sizes="20px"
+                                        />
+                                    </div>
+                                    <span className="text-[10px] text-gray-400 uppercase tracking-wide w-12 shrink-0">{item.label}</span>
+                                    <span className="text-gray-700 truncate">{item.name}</span>
+                                    {itemRating != null && (
+                                        <StarRating value={itemRating} readonly size="sm" label={`${item.name} rating`} />
+                                    )}
                                 </div>
-                                <span className="text-[10px] text-gray-400 uppercase tracking-wide w-12 shrink-0">{item.label}</span>
-                                <span className="text-gray-700 truncate">{item.name}</span>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 </div>
             </div>
