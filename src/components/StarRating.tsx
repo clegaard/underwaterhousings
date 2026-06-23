@@ -70,17 +70,15 @@ export default function StarRating({ value, onChange, readonly = false, size = '
                             onMouseLeave={() => interactive && setHoverValue(null)}
                             onFocus={() => interactive && setHoverValue(star)}
                             onBlur={() => interactive && setHoverValue(null)}
-                            className={`${starSize} transition-all duration-150 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-1 ${
-                                readonly ? 'cursor-default' : 'cursor-pointer hover:scale-110'
-                            } ${active ? 'scale-110' : ''}`}
+                            className={`${starSize} transition-all duration-150 rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-1 ${readonly ? 'cursor-default' : 'cursor-pointer hover:scale-110'
+                                } ${active ? 'scale-110' : ''}`}
                         >
                             <svg
                                 viewBox="0 0 24 24"
-                                className={`w-full h-full transition-colors duration-150 ${
-                                    filled
+                                className={`w-full h-full transition-colors duration-150 ${filled
                                         ? 'text-amber-400 drop-shadow-sm'
                                         : 'text-gray-300 dark:text-gray-600'
-                                }`}
+                                    }`}
                                 fill="currentColor"
                                 stroke="none"
                             >
@@ -90,10 +88,12 @@ export default function StarRating({ value, onChange, readonly = false, size = '
                     )
                 })}
             </div>
-            {value != null && (
-                <span className={`${textSize} font-medium text-amber-600 dark:text-amber-400 min-w-[4ch]`}>
+            {value != null ? (
+                <span className={`${textSize} font-medium text-amber-600 dark:text-amber-400 w-[8ch] text-left`}>
                     {RATING_LABELS[value] ?? `${value}/5`}
                 </span>
+            ) : (
+                <span className={`${textSize} font-medium w-[8ch]`} aria-hidden="true" />
             )}
         </div>
     )

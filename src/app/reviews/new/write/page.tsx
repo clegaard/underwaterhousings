@@ -20,6 +20,8 @@ async function getDraftReview(id: number, userId: number) {
                             lens: true,
                             housing: { include: { manufacturer: true } },
                             port: true,
+                            portAdapter: { include: { manufacturer: true } },
+                            extensionRings: true,
                         },
                     },
                 },
@@ -32,18 +34,11 @@ async function getDraftReview(id: number, userId: number) {
 
     const firstSystem = review.systems[0]
     const cs = firstSystem?.cameraSystem
-    const systemLabel = cs ? [
-        cs.camera ? `${cs.camera.brand.name} ${cs.camera.name}` : null,
-        cs.lens?.name ?? null,
-        cs.housing ? `${cs.housing.manufacturer.name} ${cs.housing.name}` : null,
-        cs.port?.name ?? null,
-    ].filter(Boolean).join(' · ') : ''
 
     return {
         id: review.id,
         body: review.body,
-        cameraSystemId: firstSystem?.cameraSystemId ?? null,
-        systemLabel,
+        cameraSystem: cs ?? null,
         systemComponents: {
             cameras: cs ? [cs.camera ? `${cs.camera.brand.name} ${cs.camera.name}` : null].filter(Boolean) as string[] : [],
             lenses: cs ? [cs.lens?.name].filter(Boolean) as string[] : [],

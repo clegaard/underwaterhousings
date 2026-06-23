@@ -10,15 +10,17 @@ export const metadata = {
 interface UserSystem {
     id: number
     name: string
-    camera: { name: string; brand: { name: string } }
-    lens: { name: string } | null
-    housing: { name: string; manufacturer: { name: string } } | null
-    port: { name: string } | null
-    _count: { reviewLinks: number }
+    imagePath: string | null
+    camera: { id: number; name: string; brand: { name: string }; productPhotos: string[] }
+    lens: { id: number; name: string; productPhotos: string[] } | null
+    housing: { id: number; name: string; manufacturer: { name: string }; productPhotos: string[] } | null
+    port: { id: number; name: string; productPhotos: string[] } | null
+    portAdapter: { id: number; name: string; manufacturer: { name: string }; productPhotos: string[] } | null
+    extensionRings: { id: number; name: string; productPhotos: string[] }[]
+    reviewLinks: { reviewId: number; review: { id: number; status: string } }[]
 }
 
 async function getUserSystems(userId: number): Promise<UserSystem[]> {
-    // Get user's camera systems that don't already have reviews
     const systems = await prisma.cameraSystem.findMany({
         where: {
             userId,
@@ -29,12 +31,19 @@ async function getUserSystems(userId: number): Promise<UserSystem[]> {
             lens: true,
             housing: { include: { manufacturer: true } },
             port: true,
-            _count: { select: { reviewLinks: true } },
+            portAdapter: { include: { manufacturer: true } },
+            extensionRings: true,
+            reviewLinks: {
+                select: {
+                    reviewId: true,
+                    review: { select: { id: true, status: true } },
+                },
+            },
         },
         orderBy: { createdAt: 'desc' },
     })
 
-    return systems.filter(s => s._count.reviewLinks === 0)
+    return systems as unknown as UserSystem[]
 }
 
 export default async function NewReviewPage() {

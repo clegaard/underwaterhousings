@@ -4,10 +4,9 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import { withBase } from '@/lib/images'
-import { getCameraSystemImageWithFallback } from '@/lib/images'
 import UserAvatar from '@/components/UserAvatar'
 import DeleteReviewButton from '@/components/DeleteReviewButton'
-import SystemImage from '@/components/SystemImage'
+import CameraSystemCard from '@/components/CameraSystemCard'
 import ReviewOutline, { type OutlineSection } from '@/components/ReviewOutline'
 import StarRating from '@/components/StarRating'
 
@@ -15,7 +14,7 @@ import StarRating from '@/components/StarRating'
 
 interface ParsedSections {
     introduction: string
-    components: Array<{ type: string; label: string; content: string; rating?: number | null }>
+    components: Array<{ type: string; label: string; content: string; rating?: number | null; likes?: string[]; dislikes?: string[] }>
     conclusion: string
 }
 
@@ -24,7 +23,14 @@ function parseSections(body: string): ParsedSections | null {
     try {
         const parsed = JSON.parse(body)
         if (parsed && typeof parsed.introduction === 'string' && Array.isArray(parsed.components)) {
-            return parsed
+            return {
+                ...parsed,
+                components: parsed.components.map((c: Partial<ParsedSections['components'][number]>) => ({
+                    ...c,
+                    likes: Array.isArray(c.likes) ? c.likes : [],
+                    dislikes: Array.isArray(c.dislikes) ? c.dislikes : [],
+                })),
+            }
         }
     } catch { /* legacy HTML */ }
     return null
@@ -38,7 +44,7 @@ function getOutlineSections(body: string): OutlineSection[] {
     const componentItems: OutlineSection[] = sections.components.map((c, i) => ({
         id: `section-component-${i}`,
         label: c.label,
-        hasContent: !!c.content,
+        hasContent: !!c.content || !!(c.likes && c.likes.length > 0) || !!(c.dislikes && c.dislikes.length > 0),
     }))
     result.push({
         id: 'section-components',
@@ -86,11 +92,15 @@ async function getReview(id: number) {
                     description: true,
                     cameraSystem: {
                         select: {
+                            id: true,
+                            name: true,
                             imagePath: true,
-                            camera: { select: { name: true, brand: { select: { name: true } }, productPhotos: true } },
-                            lens: { select: { name: true, productPhotos: true } },
-                            housing: { select: { name: true, manufacturer: { select: { name: true } }, productPhotos: true } },
-                            port: { select: { name: true } },
+                            camera: { select: { id: true, name: true, brand: { select: { name: true } }, productPhotos: true } },
+                            lens: { select: { id: true, name: true, productPhotos: true } },
+                            housing: { select: { id: true, name: true, manufacturer: { select: { name: true } }, productPhotos: true } },
+                            portAdapter: { select: { id: true, name: true, manufacturer: { select: { name: true } }, productPhotos: true } },
+                            extensionRings: { select: { id: true, name: true, productPhotos: true } },
+                            port: { select: { id: true, name: true, productPhotos: true } },
                         },
                     },
                 },
@@ -100,27 +110,12 @@ async function getReview(id: number) {
     if (!review || (review.status !== 'published' && review.status !== 'draft')) return null
 
     const firstSystem = review.systems[0]
-    const cs = firstSystem?.cameraSystem
-    const systemParts = cs ? [
-        cs.camera ? `${cs.camera.brand.name} ${cs.camera.name}` : null,
-        cs.lens?.name ?? null,
-        cs.housing ? `${cs.housing.manufacturer.name} ${cs.housing.name}` : null,
-        cs.port?.name ?? null,
-    ].filter(Boolean) : []
-
-    const systemImage = cs ? getCameraSystemImageWithFallback({
-        imagePath: cs.imagePath,
-        housing: cs.housing ? { productPhotos: cs.housing.productPhotos } : null,
-        camera: cs.camera ? { productPhotos: cs.camera.productPhotos } : null,
-        lens: cs.lens ? { productPhotos: cs.lens.productPhotos } : null,
-    }) : { src: '/camera-systems/fallback-camera-system-smartphone.avif', fallback: '/camera-systems/fallback-camera-system-smartphone.avif' }
+    const cameraSystem = firstSystem?.cameraSystem ?? null
 
     return {
         ...review,
         createdAt: review.createdAt.toISOString(),
-        systemLabel: systemParts.join(' · '),
-        systemImageSrc: systemImage.src,
-        systemImageFallback: systemImage.fallback,
+        cameraSystem,
     }
 }
 
@@ -173,7 +168,7 @@ function ReviewBodyHtml({ body }: { body: string }) {
                         <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Components</h2>
                         <div className="space-y-8 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
                             {sections.components.map((comp, i) => (
-                                comp.content ? (
+                                (comp.content || (comp.likes && comp.likes.length > 0) || (comp.dislikes && comp.dislikes.length > 0)) ? (
                                     <div key={i} id={`section-component-${i}`}>
                                         <div className="flex items-center gap-3 mb-2">
                                             <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">{comp.label}</h3>
@@ -181,10 +176,45 @@ function ReviewBodyHtml({ body }: { body: string }) {
                                                 <StarRating value={comp.rating} readonly size="sm" label={`${comp.label} rating`} />
                                             )}
                                         </div>
-                                        <div
-                                            className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed max-w-none [&_img]:rounded-xl [&_img]:max-w-full"
-                                            dangerouslySetInnerHTML={{ __html: comp.content }}
-                                        />
+
+                                        {/* Likes & Dislikes bullet lists */}
+                                        {(comp.likes && comp.likes.length > 0 || comp.dislikes && comp.dislikes.length > 0) && (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+                                                {comp.likes && comp.likes.length > 0 && (
+                                                    <div className="bg-green-50 dark:bg-green-900/10 rounded-lg px-3 py-2.5">
+                                                        <p className="text-xs font-semibold text-green-700 dark:text-green-400 mb-1.5">👍 Liked</p>
+                                                        <ul className="space-y-1">
+                                                            {comp.likes.map((item, j) => (
+                                                                <li key={j} className="flex items-start gap-1.5 text-sm text-gray-700 dark:text-gray-300">
+                                                                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
+                                                                    <span>{item}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                                {comp.dislikes && comp.dislikes.length > 0 && (
+                                                    <div className="bg-red-50 dark:bg-red-900/10 rounded-lg px-3 py-2.5">
+                                                        <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-1.5">👎 Could improve</p>
+                                                        <ul className="space-y-1">
+                                                            {comp.dislikes.map((item, j) => (
+                                                                <li key={j} className="flex items-start gap-1.5 text-sm text-gray-700 dark:text-gray-300">
+                                                                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+                                                                    <span>{item}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {comp.content && (
+                                            <div
+                                                className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed max-w-none [&_img]:rounded-xl [&_img]:max-w-full"
+                                                dangerouslySetInnerHTML={{ __html: comp.content }}
+                                            />
+                                        )}
                                     </div>
                                 ) : null
                             ))}
@@ -275,25 +305,14 @@ export default async function ReviewDetailPage({ params }: { params: Promise<{ i
                                 </div>
 
                                 {/* Camera system reviewed */}
-                                <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
-                                    <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Camera System Reviewed</h2>
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 border border-gray-200 dark:border-gray-700">
-                                            <SystemImage
-                                                src={(review as { systemImageSrc: string }).systemImageSrc}
-                                                fallback={(review as { systemImageFallback: string }).systemImageFallback}
-                                                alt={(review as { systemLabel: string }).systemLabel}
-                                                className="w-full h-full object-contain p-1"
-                                            />
-                                        </div>
-                                        <span className="inline-flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-1.5 text-sm">
-                                            <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                            </svg>
-                                            <span className="text-gray-800 dark:text-gray-200 font-medium">{(review as { systemLabel: string }).systemLabel}</span>
-                                        </span>
+                                {review.cameraSystem && (
+                                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                                        <CameraSystemCard
+                                            cameraSystem={review.cameraSystem}
+                                            mode="display"
+                                        />
                                     </div>
-                                </div>
+                                )}
 
                                 {/* Review body */}
                                 <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-6">

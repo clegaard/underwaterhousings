@@ -4,12 +4,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import ReviewSectionTextEditor from '@/components/ReviewSectionTextEditor'
+import CameraSystemCard, { type CameraSystemCardData } from '@/components/CameraSystemCard'
 
 interface ReviewData {
     id: number
     body: string
-    cameraSystemId: number
-    systemLabel: string
+    cameraSystem: CameraSystemCardData | null
     systemComponents: {
         cameras: string[]
         lenses: string[]
@@ -70,16 +70,15 @@ export default function WriteReviewClient({ review, userId, mode = 'write' }: { 
                 </p>
             </div>
 
-            {/* Camera system (read-only) */}
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
-                <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Camera System</h2>
-                <span className="inline-flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-1.5 text-sm">
-                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                    </svg>
-                    <span className="text-gray-800 dark:text-gray-200 font-medium">{review.systemLabel}</span>
-                </span>
-            </div>
+            {/* Camera system (read-only, displayed with full card) */}
+            {review.cameraSystem && (
+                <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                    <CameraSystemCard
+                        cameraSystem={review.cameraSystem}
+                        mode="display"
+                    />
+                </div>
+            )}
 
             {/* Section Editors */}
             <div>

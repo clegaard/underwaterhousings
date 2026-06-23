@@ -2,22 +2,65 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
-import { withBase } from '@/lib/images'
-import UserAvatar from '@/components/UserAvatar'
+import ReviewCard from '@/components/ReviewCard'
 
 export const metadata = {
     title: 'Reviews | Underwater Camera Housings',
     description: 'In-depth reviews of underwater camera systems by the community',
 }
 
-interface SystemSummary {
-    camera: string
-    lens?: string | null
-    housing?: string | null
-    port?: string | null
+interface ReviewWithSystem {
+    id: number
+    status: string
+    createdAt: string
+    bodyExcerpt: string
+    overallRating: number | null
+    user: {
+        id: number
+        name: string | null
+        profilePicture: string | null
+    }
+    cameraSystem: {
+        id: number
+        name: string
+        imagePath: string | null
+        camera: {
+            id: number
+            name: string
+            productPhotos: string[]
+            brand: { name: string }
+        }
+        lens: {
+            id: number
+            name: string
+            productPhotos: string[]
+        } | null
+        housing: {
+            id: number
+            name: string
+            productPhotos: string[]
+            manufacturer: { name: string }
+        } | null
+        portAdapter: {
+            id: number
+            name: string
+            productPhotos: string[]
+            manufacturer: { name: string }
+        } | null
+        extensionRings: {
+            id: number
+            name: string
+            productPhotos: string[]
+        }[]
+        port: {
+            id: number
+            name: string
+            productPhotos: string[]
+        } | null
+    } | null
 }
 
-async function getPublishedReviews() {
+async function getPublishedReviews(): Promise<ReviewWithSystem[]> {
     const reviews = await prisma.review.findMany({
         where: { status: 'published' },
         orderBy: { createdAt: 'desc' },
@@ -25,6 +68,7 @@ async function getPublishedReviews() {
         include: {
             user: { select: { id: true, name: true, profilePicture: true } },
             systems: {
+                take: 1,
                 include: {
                     cameraSystem: {
                         include: {
@@ -32,28 +76,42 @@ async function getPublishedReviews() {
                             lens: true,
                             housing: { include: { manufacturer: true } },
                             port: true,
+                            portAdapter: { include: { manufacturer: true } },
+                            extensionRings: true,
                         },
                     },
                 },
             },
         },
     })
-    return reviews.map(r => ({
-        ...r,
-        createdAt: r.createdAt.toISOString(),
-        systemSummary: r.systems.map(s => {
-            const cs = s.cameraSystem
-            return {
-                camera: cs.camera ? `${cs.camera.brand.name} ${cs.camera.name}` : null,
-                lens: cs.lens?.name ?? null,
-                housing: cs.housing ? `${cs.housing.manufacturer.name} ${cs.housing.name}` : null,
-                port: cs.port?.name ?? null,
-            }
-        }),
-        bodyExcerpt: r.body
-            ? r.body.replace(/<[^>]*>/g, '').slice(0, 200) + (r.body.replace(/<[^>]*>/g, '').length > 200 ? '…' : '')
-            : '',
-    }))
+    return reviews.map(r => {
+        // Compute overall rating from component ratings in the JSON body
+        let overallRating: number | null = null
+        if (r.body) {
+            try {
+                const sections = JSON.parse(r.body)
+                if (sections?.components && Array.isArray(sections.components)) {
+                    const rated = sections.components.filter((c: { rating?: number | null }) => c.rating != null)
+                    if (rated.length > 0) {
+                        const sum = rated.reduce((s: number, c: { rating: number }) => s + c.rating, 0)
+                        overallRating = Math.round((sum / rated.length) * 10) / 10
+                    }
+                }
+            } catch { /* body is HTML, not JSON */ }
+        }
+
+        return {
+            id: r.id,
+            status: r.status,
+            createdAt: r.createdAt.toISOString(),
+            bodyExcerpt: r.body
+                ? r.body.replace(/<[^>]*>/g, '').slice(0, 200) + (r.body.replace(/<[^>]*>/g, '').length > 200 ? '…' : '')
+                : '',
+            overallRating,
+            user: r.user,
+            cameraSystem: r.systems[0]?.cameraSystem ?? null,
+        }
+    })
 }
 
 export default async function ReviewsPage() {
@@ -105,47 +163,7 @@ export default async function ReviewsPage() {
                         ) : (
                             <div className="space-y-4">
                                 {reviews.map(r => (
-                                    <Link
-                                        key={r.id}
-                                        href={`/reviews/${r.id}`}
-                                        className="block bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all overflow-hidden"
-                                    >
-                                        <div className="px-5 py-4">
-                                            <div className="flex items-start gap-3">
-                                                <UserAvatar
-                                                    picture={r.user.profilePicture ? withBase(r.user.profilePicture) : null}
-                                                    name={r.user.name ?? '?'}
-                                                    size="base"
-                                                />
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="text-base font-semibold text-gray-900 mb-1">
-                                                        {r.title}
-                                                    </h3>
-                                                    {/* System pills */}
-                                                    <div className="flex flex-wrap gap-1.5 mb-2">
-                                                        {(r.systemSummary as SystemSummary[]).map((s, i) => (
-                                                            <span key={i} className="inline-flex items-center gap-1 text-[10px] font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
-                                                                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                                                </svg>
-                                                                {[s.camera, s.lens, s.housing, s.port].filter(Boolean).join(' · ')}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                    {(r as { bodyExcerpt: string }).bodyExcerpt && (
-                                                        <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                                                            {(r as { bodyExcerpt: string }).bodyExcerpt}
-                                                        </p>
-                                                    )}
-                                                    <div className="flex items-center gap-3 text-xs text-gray-400">
-                                                        <span>{r.user.name ?? 'Anonymous'}</span>
-                                                        <span>·</span>
-                                                        <span>{new Date(r.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Link>
+                                    <ReviewCard key={r.id} review={r} />
                                 ))}
                             </div>
                         )}
