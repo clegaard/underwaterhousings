@@ -9,12 +9,13 @@ import UserAvatar from '@/components/UserAvatar'
 import DeleteReviewButton from '@/components/DeleteReviewButton'
 import SystemImage from '@/components/SystemImage'
 import ReviewOutline, { type OutlineSection } from '@/components/ReviewOutline'
+import StarRating from '@/components/StarRating'
 
 // ─── Section Parsing ──────────────────────────────────────────────────────
 
 interface ParsedSections {
     introduction: string
-    components: Array<{ type: string; label: string; content: string }>
+    components: Array<{ type: string; label: string; content: string; rating?: number | null }>
     conclusion: string
 }
 
@@ -34,10 +35,17 @@ function getOutlineSections(body: string): OutlineSection[] {
     if (!sections) return []
     const result: OutlineSection[] = []
     result.push({ id: 'section-introduction', label: 'Introduction', hasContent: !!sections.introduction })
-    for (let i = 0; i < sections.components.length; i++) {
-        const c = sections.components[i]
-        result.push({ id: `section-component-${i}`, label: c.label, hasContent: !!c.content })
-    }
+    const componentItems: OutlineSection[] = sections.components.map((c, i) => ({
+        id: `section-component-${i}`,
+        label: c.label,
+        hasContent: !!c.content,
+    }))
+    result.push({
+        id: 'section-components',
+        label: 'Components',
+        hasContent: componentItems.some(c => c.hasContent),
+        children: componentItems,
+    })
     result.push({ id: 'section-conclusion', label: 'Conclusion', hasContent: !!sections.conclusion })
     return result
 }
@@ -133,8 +141,24 @@ function ReviewBodyHtml({ body }: { body: string }) {
             return <p className="text-gray-400 dark:text-gray-500 italic">No content yet.</p>
         }
 
+        // Compute overall rating from component ratings
+        const ratedComponents = sections.components.filter(c => c.rating != null)
+        const overallRating = ratedComponents.length > 0
+            ? Math.round((ratedComponents.reduce((sum, c) => sum + (c.rating ?? 0), 0) / ratedComponents.length) * 10) / 10
+            : null
+
         return (
             <div className="space-y-8">
+                {/* Overall rating */}
+                {overallRating != null && (
+                    <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                        <StarRating value={Math.round(overallRating)} readonly size="md" label="Overall rating" />
+                        <span className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                            {overallRating.toFixed(1)} / 5 overall
+                        </span>
+                    </div>
+                )}
+
                 {sections.introduction && (
                     <div id="section-introduction">
                         <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">Introduction</h2>
@@ -144,17 +168,29 @@ function ReviewBodyHtml({ body }: { body: string }) {
                         />
                     </div>
                 )}
-                {sections.components.map((comp, i) => (
-                    comp.content ? (
-                        <div key={i} id={`section-component-${i}`}>
-                            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">{comp.label}</h2>
-                            <div
-                                className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed max-w-none [&_img]:rounded-xl [&_img]:max-w-full"
-                                dangerouslySetInnerHTML={{ __html: comp.content }}
-                            />
+                {sections.components.some(c => c.content) && (
+                    <div id="section-components">
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Components</h2>
+                        <div className="space-y-8 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                            {sections.components.map((comp, i) => (
+                                comp.content ? (
+                                    <div key={i} id={`section-component-${i}`}>
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">{comp.label}</h3>
+                                            {comp.rating != null && (
+                                                <StarRating value={comp.rating} readonly size="sm" label={`${comp.label} rating`} />
+                                            )}
+                                        </div>
+                                        <div
+                                            className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed max-w-none [&_img]:rounded-xl [&_img]:max-w-full"
+                                            dangerouslySetInnerHTML={{ __html: comp.content }}
+                                        />
+                                    </div>
+                                ) : null
+                            ))}
                         </div>
-                    ) : null
-                ))}
+                    </div>
+                )}
                 {sections.conclusion && (
                     <div id="section-conclusion">
                         <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3">Conclusion</h2>
@@ -188,10 +224,12 @@ export default async function ReviewDetailPage({ params }: { params: Promise<{ i
 
     return (
         <main className="min-h-screen bg-linear-to-b from-blue-50 to-blue-100">
-            <div className="max-w-6xl mx-auto px-4 py-6">
-                <div className="flex gap-8">
+            <div className="max-w-7xl mx-auto px-4 py-6">
+                <div className="flex justify-center gap-8">
+                    {/* Left spacer — balances the sidebar width */}
+                    <div className="hidden lg:block w-40 shrink-0" />
                     {/* Main content */}
-                    <div className="flex-1 min-w-0">
+                    <div className="w-full max-w-4xl min-w-0">
                         <Suspense>
                             <div className="space-y-6">
                                 {/* Back + meta */}
@@ -266,7 +304,7 @@ export default async function ReviewDetailPage({ params }: { params: Promise<{ i
                     </div>
 
                     {/* Sidebar outline — hidden on mobile */}
-                    <aside className="hidden lg:block w-56 shrink-0">
+                    <aside className="hidden lg:block w-40 shrink-0">
                         <div className="sticky top-24">
                             <ReviewOutline sections={getOutlineSections(review.body)} />
                         </div>

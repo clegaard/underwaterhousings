@@ -73,14 +73,32 @@ export async function GET(request: NextRequest) {
                 }
             })
 
+            // Compute which component index in the review body corresponds to the queried product type.
+            // Components are ordered: all cameras, then all lenses, then housings, then ports.
+            const cameraCount = r.systems.filter(s => s.cameraSystem.cameraId != null).length
+            const lensCount = r.systems.filter(s => s.cameraSystem.lensId != null).length
+            const housingCount = r.systems.filter(s => s.cameraSystem.housingId != null).length
+
+            let targetComponentIndex: number | null = null
+            if (type === 'camera' && cameraCount > 0) targetComponentIndex = 0
+            else if (type === 'lens' && lensCount > 0) targetComponentIndex = cameraCount
+            else if (type === 'housing' && housingCount > 0) targetComponentIndex = cameraCount + lensCount
+            else if (type === 'port') targetComponentIndex = cameraCount + lensCount + housingCount
+
             let excerpt = ''
-            if (r.body) {
+            let targetComponentRating: number | null = null
+            if (r.body && targetComponentIndex != null) {
                 try {
                     const sections = JSON.parse(r.body)
-                    if (sections?.introduction) {
-                        excerpt = sections.introduction.replace(/<[^>]*>/g, '').slice(0, 200)
+                    const comp = sections?.components?.[targetComponentIndex]
+                    if (comp?.content) {
+                        excerpt = comp.content.replace(/<[^>]*>/g, '').slice(0, 200)
+                    }
+                    if (comp?.rating != null) {
+                        targetComponentRating = comp.rating
                     }
                 } catch {
+                    // fallback: strip raw body
                     excerpt = r.body.replace(/<[^>]*>/g, '').slice(0, 200)
                 }
             }
@@ -88,6 +106,8 @@ export async function GET(request: NextRequest) {
             return {
                 id: r.id,
                 systemSummaries,
+                targetComponentIndex,
+                targetComponentRating,
                 createdAt: r.createdAt.toISOString(),
                 user: r.user,
                 bodyExcerpt: excerpt ? excerpt + (excerpt.length >= 200 ? '…' : '') : '',

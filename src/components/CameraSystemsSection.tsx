@@ -121,31 +121,29 @@ function CameraSystemCard({
 
     return (
         <div className={`relative border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm transition-opacity ${cameraSystem.isActive ? '' : 'opacity-60'}`}>
-            {/* Active toggle + favorite buttons */}
+            {/* Unified toolbar — all controls consistent w-8 h-8 */}
             {isOwnProfile && (
-                <div className="absolute top-2 right-2 z-10 flex gap-1">
+                <div className="absolute top-2 right-2 z-10 flex gap-0.5">
                     {/* Activate / deactivate toggle */}
-                    <div className="group relative flex items-center h-7">
+                    <div className="group relative">
                         <button
                             type="button"
-                            role="switch"
-                            aria-checked={cameraSystem.isActive}
                             onClick={onToggleActive}
                             aria-label={cameraSystem.isActive ? 'Deactivate camera system' : 'Activate camera system'}
-                            className={`relative inline-flex h-6 w-20 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-1 ${cameraSystem.isActive ? 'bg-green-500' : 'bg-gray-400'}`}
+                            className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 hover:scale-110 ${cameraSystem.isActive
+                                ? 'bg-green-100 text-green-600 hover:bg-green-200'
+                                : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
+                                }`}
                         >
-                            {/* Sliding thumb */}
-                            <span
-                                className={`pointer-events-none absolute top-0 h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${cameraSystem.isActive ? 'translate-x-14' : 'translate-x-0'}`}
-                            />
-                            {/* Label */}
-                            <span
-                                className={`pointer-events-none absolute inset-0 flex items-center text-[8px] font-semibold uppercase tracking-wide text-white transition-all duration-200 ${cameraSystem.isActive ? 'justify-start pl-2' : 'justify-end pr-2'}`}
-                            >
-                                {cameraSystem.isActive ? 'active' : 'inactive'}
-                            </span>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                {cameraSystem.isActive ? (
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                ) : (
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 010 12.728M5.636 18.364a9 9 0 010-12.728" />
+                                )}
+                            </svg>
                         </button>
-                        <div className="pointer-events-none absolute right-0 top-full mt-1.5 w-52 rounded-lg bg-gray-800 px-3 py-2 text-xs text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="pointer-events-none absolute right-0 top-full mt-1.5 w-52 max-w-[80vw] rounded-lg bg-gray-800 px-3 py-2 text-xs text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
                             {cameraSystem.isActive
                                 ? 'Camera system is active. It will be matched automatically when uploading photos. Click to deactivate.'
                                 : 'Camera system is inactive and will not be matched when uploading photos. Click to activate.'}
@@ -153,15 +151,15 @@ function CameraSystemCard({
                         </div>
                     </div>
 
-                    {/* Star / favorite button */}
+                    {/* Favorite button */}
                     <div className="group relative">
                         <button
                             type="button"
                             onClick={onSetFavorite}
                             aria-label={isFavorite ? 'Default camera system' : 'Set as default camera system'}
-                            className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${isFavorite
+                            className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-150 hover:scale-110 ${isFavorite
                                 ? 'bg-amber-100 text-amber-500 hover:bg-amber-200'
-                                : 'bg-white/80 text-gray-300 hover:text-amber-400 hover:bg-white shadow-sm'
+                                : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-amber-400'
                                 }`}
                         >
                             <svg
@@ -174,84 +172,124 @@ function CameraSystemCard({
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                             </svg>
                         </button>
-                        <div className="pointer-events-none absolute right-0 top-full mt-1.5 w-56 rounded-lg bg-gray-800 px-3 py-2 text-xs text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="pointer-events-none absolute right-0 top-full mt-1.5 w-56 max-w-[80vw] rounded-lg bg-gray-800 px-3 py-2 text-xs text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
                             {isFavorite
                                 ? 'This is your default camera system. It is pre-selected when uploading photos to the gallery.'
                                 : 'Set as default camera system. Your default camera system is pre-selected when uploading photos to the gallery.'}
                             <div className="absolute right-2 -top-1.5 border-4 border-transparent border-b-gray-800" />
                         </div>
                     </div>
-                </div>
-            )}            {/* Rig cover photo */}
-            <div className="relative w-full h-40 bg-blue-50">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                    src={cameraSystem.imagePath ? `/api/media${cameraSystem.imagePath}` : '/housings/camera-system-placeholder.png'}
-                    alt={`${cameraSystem.name} assembled`}
-                    className={`w-full h-full ${cameraSystem.imagePath ? 'object-cover' : 'object-contain p-2'}`}
-                />
-            </div>
-            <div className="p-4">
-                <div className="flex items-start justify-between gap-2 mb-3">
-                    <h4 className="font-semibold text-gray-800 text-sm">{cameraSystem.name}</h4>
-                    {isOwnProfile && (
-                        <div className="flex gap-1 shrink-0">
-                            <button
-                                type="button"
-                                onClick={onClone}
-                                className="text-xs px-2 py-1 rounded border border-gray-200 text-gray-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50"
-                                title="Create a copy with the same components"
-                            >
-                                Clone
-                            </button>
-                            <button
-                                type="button"
-                                onClick={onEdit}
-                                className="text-xs px-2 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50"
-                            >
-                                Edit
-                            </button>
-                            <button
-                                type="button"
-                                onClick={onDelete}
-                                className="text-xs px-2 py-1 rounded border border-red-200 text-red-500 hover:bg-red-50"
-                            >
-                                Delete
-                            </button>
+
+                    {/* Clone button */}
+                    <div className="group relative">
+                        <button
+                            type="button"
+                            onClick={onClone}
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-400 hover:text-blue-600 hover:bg-blue-100 hover:scale-110 transition-all duration-150"
+                            aria-label="Clone camera system"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                            </svg>
+                        </button>
+                        <div className="pointer-events-none absolute right-0 top-full mt-1.5 w-44 max-w-[80vw] rounded-lg bg-gray-800 px-3 py-2 text-xs text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-20">
+                            Clone camera system
+                            <div className="absolute right-2 -top-1.5 border-4 border-transparent border-b-gray-800" />
                         </div>
-                    )}
+                    </div>
+
+                    {/* Edit button */}
+                    <div className="group relative">
+                        <button
+                            type="button"
+                            onClick={onEdit}
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-400 hover:text-gray-700 hover:bg-gray-200 hover:scale-110 transition-all duration-150"
+                            aria-label="Edit camera system"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </button>
+                        <div className="pointer-events-none absolute right-0 top-full mt-1.5 w-36 max-w-[80vw] rounded-lg bg-gray-800 px-3 py-2 text-xs text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-20">
+                            Edit camera system
+                            <div className="absolute right-2 -top-1.5 border-4 border-transparent border-b-gray-800" />
+                        </div>
+                    </div>
+
+                    {/* Delete button */}
+                    <div className="group relative">
+                        <button
+                            type="button"
+                            onClick={onDelete}
+                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-400 hover:text-red-500 hover:bg-red-100 hover:scale-110 transition-all duration-150"
+                            aria-label="Delete camera system"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                        <div className="pointer-events-none absolute right-0 top-full mt-1.5 w-40 max-w-[80vw] rounded-lg bg-gray-800 px-3 py-2 text-xs text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-20">
+                            Delete camera system
+                            <div className="absolute right-2 -top-1.5 border-4 border-transparent border-b-gray-800" />
+                        </div>
+                    </div>
                 </div>
-                {cameraSystem._count.galleryPhotos > 0 && (
-                    <a
-                        href={`/users/${userId}/camera-systems/${cameraSystem.id}`}
-                        className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mb-3"
-                    >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        {cameraSystem._count.galleryPhotos} {cameraSystem._count.galleryPhotos === 1 ? 'photo' : 'photos'}
-                    </a>
-                )}
-                <div className="flex gap-3 flex-wrap">
-                    {items.map(item => (
-                        <div key={item.label} className="flex flex-col items-center gap-1 w-16">
-                            <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-                                <Image
-                                    src={item.img.src}
-                                    alt={item.name}
-                                    fill
-                                    className="object-contain p-1"
-                                    onError={(e) => {
-                                        const img = e.currentTarget as HTMLImageElement
-                                        if (img.src !== item.img.fallback) img.src = item.img.fallback
-                                    }}
-                                    sizes="56px"
-                                />
+            )}
+
+            {/* Layout: photo left, name right, components below */}
+            <div className="p-3">
+                <div className="flex items-start gap-3">
+                    {/* System cover photo — 1:1, left-aligned */}
+                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-blue-50 border border-gray-100 shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={cameraSystem.imagePath ? `/api/media${cameraSystem.imagePath}` : '/housings/camera-system-placeholder.png'}
+                            alt={`${cameraSystem.name} assembled`}
+                            className={`w-full h-full ${cameraSystem.imagePath ? 'object-cover' : 'object-contain p-2'}`}
+                        />
+                    </div>
+
+                    {/* Name + photo link */}
+                    <div className="min-w-0 pr-16 sm:pr-8 pt-1">
+                        <h3 className="font-bold text-gray-900 text-base sm:text-lg leading-snug">{cameraSystem.name}</h3>
+                        {cameraSystem._count.galleryPhotos > 0 && (
+                            <a
+                                href={`/users/${userId}/camera-systems/${cameraSystem.id}`}
+                                className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline mt-1"
+                            >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                {cameraSystem._count.galleryPhotos} {cameraSystem._count.galleryPhotos === 1 ? 'photo' : 'photos'}
+                            </a>
+                        )}
+                    </div>
+                </div>
+
+                {/* Components section — dedicated divider + vertical list */}
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                    <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Components</span>
+                    <div className="mt-1.5 space-y-1">
+                        {items.map(item => (
+                            <div key={item.label} className="flex items-center gap-1.5 text-xs">
+                                <div className="relative w-5 h-5 rounded overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
+                                    <Image
+                                        src={item.img.src}
+                                        alt={item.name}
+                                        fill
+                                        className="object-contain p-0.5"
+                                        onError={(e) => {
+                                            const img = e.currentTarget as HTMLImageElement
+                                            if (img.src !== item.img.fallback) img.src = item.img.fallback
+                                        }}
+                                        sizes="20px"
+                                    />
+                                </div>
+                                <span className="text-[10px] text-gray-400 uppercase tracking-wide w-12 shrink-0">{item.label}</span>
+                                <span className="text-gray-700 truncate">{item.name}</span>
                             </div>
-                            <span className="text-[10px] text-gray-400 uppercase tracking-wide">{item.label}</span>
-                            <span className="text-xs text-gray-700 text-center leading-tight line-clamp-2">{item.name}</span>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
@@ -568,7 +606,7 @@ export default function CameraSystemsSection({ userId, isOwnProfile, prefillCame
                         <button
                             type="button"
                             onClick={openAdd}
-                            className="min-h-36 flex flex-col items-center justify-center gap-2 bg-white rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all text-gray-400 hover:text-blue-500"
+                            className="min-h-24 flex flex-col items-center justify-center gap-2 bg-white rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all text-gray-400 hover:text-blue-500"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

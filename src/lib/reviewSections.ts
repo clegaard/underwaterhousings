@@ -12,9 +12,12 @@ export function sectionsToHtml(sections: {
     parts.push('<h2 class="review-section-heading">Introduction</h2>')
     parts.push(sections.introduction || '<p></p>')
 
-    for (const comp of sections.components) {
-        parts.push(`<h2 class="review-section-heading">${escapeHtml(comp.label)}</h2>`)
-        parts.push(comp.content || '<p></p>')
+    if (sections.components.length > 0) {
+        parts.push('<h2 class="review-section-heading">Components</h2>')
+        for (const comp of sections.components) {
+            parts.push(`<h3 class="review-section-heading">${escapeHtml(comp.label)}</h3>`)
+            parts.push(comp.content || '<p></p>')
+        }
     }
 
     parts.push('<h2 class="review-section-heading">Conclusion</h2>')

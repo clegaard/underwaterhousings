@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { withBase } from '@/lib/images'
 import UserAvatar from '@/components/UserAvatar'
+import StarRating from '@/components/StarRating'
 
 interface SystemSummary {
     camera: string | null
@@ -17,6 +18,8 @@ interface SystemSummary {
 interface ReviewData {
     id: number
     systemSummaries: SystemSummary[]
+    targetComponentIndex: number | null
+    targetComponentRating: number | null
     createdAt: string
     bodyExcerpt: string
     user: {
@@ -92,7 +95,7 @@ export default function ProductReviewsSection({ productType, productId }: Props)
                     {reviews.map(r => (
                         <Link
                             key={r.id}
-                            href={`/reviews/${r.id}`}
+                            href={`/reviews/${r.id}${r.targetComponentIndex != null ? `#section-component-${r.targetComponentIndex}` : ''}`}
                             className="block p-4 bg-gray-50 dark:bg-gray-800 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group"
                         >
                             <div className="flex items-start gap-3">
@@ -120,9 +123,14 @@ export default function ProductReviewsSection({ productType, productId }: Props)
                                     />
                                 </span>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
-                                        {formatSystemLabel(r.systemSummaries)}
-                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
+                                            {formatSystemLabel(r.systemSummaries)}
+                                        </p>
+                                        {r.targetComponentRating != null && (
+                                            <StarRating value={r.targetComponentRating} readonly size="sm" />
+                                        )}
+                                    </div>
                                     {r.bodyExcerpt && (
                                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
                                             {r.bodyExcerpt}

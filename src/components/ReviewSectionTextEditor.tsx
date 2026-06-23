@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
+import StarRating from './StarRating'
 
 interface ComponentSection {
     type: string
     label: string
     content: string
+    rating: number | null  // 1-5 or null (unrated)
 }
 
 interface Props {
@@ -32,10 +34,10 @@ function parseSections(body: string, systemComponents: Props['systemComponents']
     } catch { /* not JSON */ }
 
     const components: ComponentSection[] = []
-    for (const c of systemComponents.cameras) components.push({ type: 'camera', label: c, content: '' })
-    for (const l of systemComponents.lenses) components.push({ type: 'lens', label: l, content: '' })
-    for (const h of systemComponents.housings) components.push({ type: 'housing', label: h, content: '' })
-    for (const p of systemComponents.ports) components.push({ type: 'port', label: p, content: '' })
+    for (const c of systemComponents.cameras) components.push({ type: 'camera', label: c, content: '', rating: null })
+    for (const l of systemComponents.lenses) components.push({ type: 'lens', label: l, content: '', rating: null })
+    for (const h of systemComponents.housings) components.push({ type: 'housing', label: h, content: '', rating: null })
+    for (const p of systemComponents.ports) components.push({ type: 'port', label: p, content: '', rating: null })
     return { introduction: '', components, conclusion: '' }
 }
 
@@ -60,6 +62,12 @@ export default function ReviewSectionTextEditor({ value, onChange, systemCompone
                 onChange={(v) => updateAndSerialize({ ...sections, introduction: v })}
             />
 
+            {/* Components heading */}
+            <div className="flex items-center gap-3 pt-2">
+                <span className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Components</span>
+                <div className="flex-1 border-t border-gray-200 dark:border-gray-700" />
+            </div>
+
             {/* Component sections */}
             {sections.components.map((comp, i) => (
                 <SectionTextarea
@@ -67,6 +75,11 @@ export default function ReviewSectionTextEditor({ value, onChange, systemCompone
                     label={comp.label}
                     placeholder={`Write about your experience with the ${comp.label}…`}
                     value={comp.content}
+                    rating={comp.rating}
+                    onRatingChange={(rating) => {
+                        const updated = { ...sections, components: sections.components.map((c, idx) => idx === i ? { ...c, rating } : c) }
+                        updateAndSerialize(updated)
+                    }}
                     onChange={(v) => {
                         const updated = { ...sections, components: sections.components.map((c, idx) => idx === i ? { ...c, content: v } : c) }
                         updateAndSerialize(updated)
@@ -92,11 +105,15 @@ function SectionTextarea({
     value,
     onChange,
     placeholder,
+    rating,
+    onRatingChange,
 }: {
     label: string
     value: string
     onChange: (v: string) => void
     placeholder: string
+    rating?: number | null
+    onRatingChange?: (rating: number | null) => void
 }) {
     const [collapsed, setCollapsed] = useState(false)
 
@@ -119,6 +136,16 @@ function SectionTextarea({
             </button>
             {!collapsed && (
                 <div className="px-4 pb-4">
+                    {onRatingChange && (
+                        <div className="mb-3">
+                            <StarRating
+                                value={rating ?? null}
+                                onChange={onRatingChange}
+                                size="sm"
+                                label={`${label} rating`}
+                            />
+                        </div>
+                    )}
                     <textarea
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
