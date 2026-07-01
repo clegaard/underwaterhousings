@@ -17,6 +17,7 @@ interface GalleryFilters {
     housing?: string
     port?: string
     user?: string
+    cameraSystem?: string
 }
 
 interface FilterIds {
@@ -25,6 +26,7 @@ interface FilterIds {
     housingId?: number
     portId?: number
     userId?: number
+    cameraSystemId?: number
 }
 
 /** Lightweight query — only fetches slug/name data to populate the search bar autocomplete. */
@@ -82,6 +84,7 @@ async function resolveFilterIds(filters: GalleryFilters): Promise<FilterIds> {
         housingId: housing?.id,
         portId: port?.id,
         userId: filters.user ? parseInt(filters.user) : undefined,
+        cameraSystemId: filters.cameraSystem ? parseInt(filters.cameraSystem) : undefined,
     }
 }
 
@@ -91,6 +94,7 @@ async function getGalleryPhotos(currentUserId: number | undefined, filterIds: Fi
             orderBy: { takenAt: 'desc' },
             where: {
                 userId: filterIds.userId,
+                cameraSystemId: filterIds.cameraSystemId,
                 cameraSystem: {
                     cameraId: filterIds.cameraId,
                     lensId: filterIds.lensId,
@@ -170,7 +174,7 @@ async function getGalleryPhotos(currentUserId: number | undefined, filterIds: Fi
 export default async function GalleryPage({
     searchParams,
 }: {
-    searchParams: Promise<{ camera?: string; lens?: string; housing?: string; port?: string; user?: string }>
+    searchParams: Promise<{ camera?: string; lens?: string; housing?: string; port?: string; user?: string; cameraSystem?: string }>
 }) {
     const session = await auth()
     const currentUserId = session?.user?.id ? parseInt(session.user.id) : undefined

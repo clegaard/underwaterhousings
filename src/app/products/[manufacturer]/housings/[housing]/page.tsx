@@ -1,9 +1,9 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import { HousingImage } from '@/components/HousingImage'
 import ImageGallery from '@/components/ImageGallery'
+import GalleryPhotoGrid from '@/components/GalleryPhotoGrid'
 import { getAllHousingImages, withBase } from '@/lib/images'
 import PriceTag from '@/components/PriceTag'
 import ProductReviewsSection from '@/components/ProductReviewsSection'
@@ -135,44 +135,17 @@ export default async function HousingDetailPage({ params }: Props) {
                 )}
             </div>
 
-        {/* Reviews */}
-        <ProductReviewsSection productType="housing" productId={housing.id} />
+            {/* Reviews */}
+            <ProductReviewsSection productType="housing" productId={housing.id} />
 
-            {galleryPhotos.length > 0 && (
-                <div className="max-w-4xl mx-auto px-4 pb-8">
-                    <div className="bg-white rounded-lg shadow-sm p-8">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Photos taken with this housing</h2>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {galleryPhotos.map((photo) => (
-                                <div key={photo.id} className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                                    <Image
-                                        src={withBase(photo.imagePath)}
-                                        alt={photo.caption ?? 'Gallery photo'}
-                                        fill
-                                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                    />
-                                    {(photo.caption || photo.location) && (
-                                        <div className="absolute inset-x-0 bottom-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-2 py-1.5">
-                                            {photo.caption && (
-                                                <p className="text-white text-xs font-medium truncate">{photo.caption}</p>
-                                            )}
-                                            {photo.location && (
-                                                <p className="text-gray-300 text-xs">📍 {photo.location}</p>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                        <div className="mt-4 text-right">
-                            <Link href={`/gallery?housing=${housing.slug}`} className="text-sm text-blue-600 hover:text-blue-800">
-                                View all photos in gallery →
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <div className="max-w-4xl mx-auto px-4 pb-8">
+                <GalleryPhotoGrid
+                    photos={galleryPhotos}
+                    heading="Photos taken with this housing"
+                    viewAllHref={`/gallery?housing=${housing.slug}`}
+                    viewAllLabel="View all photos in gallery →"
+                />
+            </div>
         </div>
     )
 }

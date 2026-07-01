@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import { HousingImage } from '@/components/HousingImage'
-import { getLensImagePathWithFallback, withBase } from '@/lib/images'
+import { getLensImagePathWithFallback } from '@/lib/images'
 import PriceTag from '@/components/PriceTag'
 import ProductReviewsSection from '@/components/ProductReviewsSection'
+import GalleryPhotoGrid from '@/components/GalleryPhotoGrid'
 
 interface LensDetailPageProps {
     params: Promise<{
@@ -289,38 +289,11 @@ export default async function LensDetailPage({ params }: LensDetailPageProps) {
                 <ProductReviewsSection productType="lens" productId={lens.id} />
 
                 {/* Gallery */}
-                {galleryPhotos.length > 0 && (
-                    <div className="bg-white rounded-xl shadow-sm p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-lg font-semibold text-gray-900">Photos taken with this lens</h2>
-                            <Link
-                                href={`/gallery?lens=${lens.slug}`}
-                                className="text-sm text-blue-500 hover:text-blue-700 transition-colors"
-                            >
-                                View all →
-                            </Link>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                            {galleryPhotos.map(photo => (
-                                <div key={photo.id} className="group relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                                    <Image
-                                        src={withBase(photo.imagePath)}
-                                        alt={photo.caption ?? 'Gallery photo'}
-                                        fill
-                                        sizes="(max-width: 768px) 50vw, 25vw"
-                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                    />
-                                    {(photo.caption || photo.location) && (
-                                        <div className="absolute inset-x-0 bottom-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-2 py-1.5">
-                                            {photo.caption && <p className="text-white text-xs font-medium truncate">{photo.caption}</p>}
-                                            {photo.location && <p className="text-gray-300 text-xs">📍 {photo.location}</p>}
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                <GalleryPhotoGrid
+                    photos={galleryPhotos}
+                    heading="Photos taken with this lens"
+                    viewAllHref={`/gallery?lens=${lens.slug}`}
+                />
             </div>
         </div>
     )

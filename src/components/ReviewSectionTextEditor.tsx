@@ -61,12 +61,6 @@ export default function ReviewSectionTextEditor({ value, onChange, systemCompone
 
     return (
         <div className="space-y-6">
-            {/* Components heading */}
-            <div className="flex items-center gap-3">
-                <span className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Components</span>
-                <div className="flex-1 border-t border-gray-200 dark:border-gray-700" />
-            </div>
-
             {/* Component sections */}
             {sections.components.map((comp, i) => (
                 <SectionTextarea

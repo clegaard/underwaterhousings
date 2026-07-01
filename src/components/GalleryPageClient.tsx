@@ -145,7 +145,8 @@ export default function GalleryPageClient({ photos, pool = EMPTY_POOL }: Gallery
         }
     }, [pool, searchParams])
 
-    // Sync token changes back to the URL (skip the initialisation render)
+    // Sync token changes back to the URL (skip the initialisation render).
+    // Preserve the cameraSystem param since it's server-side only (no search chip).
     useEffect(() => {
         if (!urlInitializedRef.current) return
 
@@ -154,6 +155,10 @@ export default function GalleryPageClient({ photos, pool = EMPTY_POOL }: Gallery
             const param = TYPE_TO_PARAM[token.type]
             if (param) params.set(param, token.slug)
         }
+
+        // Preserve cameraSystem filter from the current URL
+        const cameraSystem = searchParams.get('cameraSystem')
+        if (cameraSystem) params.set('cameraSystem', cameraSystem)
 
         const newQuery = params.toString()
         const currentQuery = searchParams.toString()
@@ -285,8 +290,8 @@ export default function GalleryPageClient({ photos, pool = EMPTY_POOL }: Gallery
                 onClick={() => setMobileSearchOpen(true)}
                 aria-label="Search photos"
                 className={`sm:hidden fixed right-5 z-40 h-14 w-14 rounded-full bg-white/90 backdrop-blur-md border border-gray-200/60 dark:border-white/10 shadow-lg flex items-center justify-center text-gray-500 dark:text-gray-400 transition-all duration-200 ${fabExpanded
-                        ? 'opacity-0 scale-75 pointer-events-none translate-y-2'
-                        : 'opacity-100 scale-100 hover:text-gray-700 dark:hover:text-gray-200 active:scale-95'
+                    ? 'opacity-0 scale-75 pointer-events-none translate-y-2'
+                    : 'opacity-100 scale-100 hover:text-gray-700 dark:hover:text-gray-200 active:scale-95'
                     }`}
                 style={{ bottom: 'calc(1.5rem + 3.5rem + 0.75rem + env(safe-area-inset-bottom, 0px))' }}
             >

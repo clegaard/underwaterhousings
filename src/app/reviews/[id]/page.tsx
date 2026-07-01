@@ -6,9 +6,9 @@ import { auth } from '@/auth'
 import { withBase } from '@/lib/images'
 import UserAvatar from '@/components/UserAvatar'
 import DeleteReviewButton from '@/components/DeleteReviewButton'
-import CameraSystemCard from '@/components/CameraSystemCard'
 import ReviewOutline, { type OutlineSection } from '@/components/ReviewOutline'
 import StarRating from '@/components/StarRating'
+import GalleryPhotoGrid from '@/components/GalleryPhotoGrid'
 
 // ─── Section Parsing ──────────────────────────────────────────────────────
 
@@ -90,12 +90,16 @@ async function getReview(id: number) {
                             id: true,
                             name: true,
                             imagePath: true,
-                            camera: { select: { id: true, name: true, brand: { select: { name: true } }, productPhotos: true } },
-                            lens: { select: { id: true, name: true, productPhotos: true } },
-                            housing: { select: { id: true, name: true, manufacturer: { select: { name: true } }, productPhotos: true } },
+                            camera: { select: { id: true, name: true, slug: true, brand: { select: { name: true } }, productPhotos: true } },
+                            lens: { select: { id: true, name: true, slug: true, productPhotos: true } },
+                            housing: { select: { id: true, name: true, slug: true, manufacturer: { select: { name: true } }, productPhotos: true } },
                             portAdapter: { select: { id: true, name: true, manufacturer: { select: { name: true } }, productPhotos: true } },
                             extensionRings: { select: { id: true, name: true, productPhotos: true } },
-                            port: { select: { id: true, name: true, productPhotos: true } },
+                            port: { select: { id: true, name: true, slug: true, productPhotos: true } },
+                            galleryPhotos: {
+                                orderBy: { takenAt: 'desc' },
+                                take: 12,
+                            },
                         },
                     },
                 },
@@ -135,11 +139,13 @@ function ReviewBodyHtml({ body }: { body: string }) {
                 {sections.components.map((comp, i) => (
                     comp.content ? (
                         <div key={i} id={`section-component-${i}`}>
-                            <div className="flex items-center gap-3 mb-2">
+                            <div className="flex items-center justify-between mb-2">
                                 <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">{comp.label}</h3>
-                                {comp.rating != null && (
-                                    <StarRating value={comp.rating} readonly size="sm" label={`${comp.label} rating`} />
-                                )}
+                                <span className="inline-flex shrink-0 w-[160px]">
+                                    {comp.rating != null && (
+                                        <StarRating value={comp.rating} readonly size="sm" label={`${comp.label} rating`} />
+                                    )}
+                                </span>
                             </div>
                             <div
                                 className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed max-w-none [&_img]:rounded-xl [&_img]:max-w-full"
@@ -210,41 +216,57 @@ export default async function ReviewDetailPage({ params }: { params: Promise<{ i
                                     )}
                                 </div>
 
-                                {/* Author + date */}
-                                <div>
-                                    <div className="flex items-center gap-3">
+                                {/* Blog-style author header */}
+                                <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-6">
+                                    <div className="flex items-center gap-4">
                                         <Link href={`/users/${review.user.id}`}>
                                             <UserAvatar
                                                 picture={review.user.profilePicture ? withBase(review.user.profilePicture) : null}
                                                 name={review.user.name ?? '?'}
-                                                size="md"
+                                                size="lg"
                                             />
                                         </Link>
                                         <div>
-                                            <Link href={`/users/${review.user.id}`} className="text-sm font-semibold text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">
+                                            <Link href={`/users/${review.user.id}`} className="text-lg font-bold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                                                 {review.user.name ?? 'Anonymous'}
                                             </Link>
-                                            <p className="text-xs text-gray-400 dark:text-gray-500">
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
                                                 {new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                                             </p>
+                                            {review.cameraSystem && (
+                                                <p className="text-sm text-blue-600 dark:text-blue-400 mt-1 font-medium">
+                                                    {[review.cameraSystem.camera.brand.name, review.cameraSystem.camera.name].join(' ')}
+                                                    {review.cameraSystem.lens ? ` · ${review.cameraSystem.lens.name}` : ''}
+                                                    {review.cameraSystem.housing ? ` · ${review.cameraSystem.housing.manufacturer.name} ${review.cameraSystem.housing.name}` : ''}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Camera system reviewed */}
-                                {review.cameraSystem && (
-                                    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
-                                        <CameraSystemCard
-                                            cameraSystem={review.cameraSystem}
-                                            mode="display"
-                                        />
-                                    </div>
-                                )}
 
                                 {/* Review body */}
                                 <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-6">
                                     <ReviewBodyHtml body={review.body} />
                                 </div>
+
+                                {/* Gallery — photos taken with this camera system */}
+                                {review.cameraSystem && (() => {
+                                    const cs = review.cameraSystem
+                                    const params = new URLSearchParams()
+                                    if (cs.camera?.slug) params.set('camera', cs.camera.slug)
+                                    if (cs.lens?.slug) params.set('lens', cs.lens.slug)
+                                    if (cs.housing?.slug) params.set('housing', cs.housing.slug)
+                                    if (cs.port?.slug) params.set('port', cs.port.slug)
+                                    params.set('user', String(review.user.id))
+                                    return (
+                                        <GalleryPhotoGrid
+                                            photos={(cs as { galleryPhotos: Array<{ id: number; imagePath: string; caption: string | null; location: string | null }> }).galleryPhotos}
+                                            heading="Photos taken with this system"
+                                            viewAllHref={`/gallery?${params.toString()}`}
+                                            viewAllLabel="View all photos →"
+                                        />
+                                    )
+                                })()}
                             </div>
                         </Suspense>
                     </div>

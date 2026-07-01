@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Suspense } from 'react'
 import { prisma } from '@/lib/prisma'
 import {
     getCameraImagePathWithFallback,
@@ -11,7 +10,7 @@ import {
     withBase,
 } from '@/lib/images'
 import { HousingImage } from '@/components/HousingImage'
-import GalleryGrid, { GalleryPhotoData } from '@/components/GalleryGrid'
+import GalleryPhotoGrid from '@/components/GalleryPhotoGrid'
 
 interface PageProps {
     params: Promise<{ userId: string; cameraSystemId: string }>
@@ -67,36 +66,10 @@ export default async function CameraSystemDetailPage({ params }: PageProps) {
 
     // The camera system must exist and belong to the user in the URL
     if (!cameraSystem || cameraSystem.userId !== uid) notFound()
-
-    // ── Image helpers ─────────────────────────────────────────────────────────
     const cameraImg = getCameraImagePathWithFallback(cameraSystem.camera.productPhotos ?? [])
     const lensImg = cameraSystem.lens ? getLensImagePathWithFallback(cameraSystem.lens.productPhotos ?? []) : null
     const housingImg = cameraSystem.housing ? getHousingImagePathWithFallback(cameraSystem.housing.productPhotos ?? []) : null
     const portImg = cameraSystem.port ? getPortImagePathWithFallback(cameraSystem.port.productPhotos ?? []) : null
-
-    // ── Map gallery photos to GalleryPhotoData ────────────────────────────────
-    const photos: GalleryPhotoData[] = cameraSystem.galleryPhotos.map(photo => ({
-        src: withBase(photo.imagePath),
-        width: photo.width,
-        height: photo.height,
-        caption: photo.caption ?? undefined,
-        location: photo.location ?? undefined,
-        takenAt: photo.takenAt?.toISOString() ?? undefined,
-        cameraSystemLabel: cameraSystem.name,
-        cameraSlug: cameraSystem.camera.slug,
-        housingSlug: cameraSystem.housing?.slug ?? undefined,
-        lensSlug: cameraSystem.lens?.slug ?? undefined,
-        portSlug: cameraSystem.port?.slug ?? undefined,
-        focalLength: photo.focalLength ?? undefined,
-        shutterSpeed: photo.shutterSpeed ? Number(photo.shutterSpeed) : undefined,
-        aperture: photo.aperture ?? undefined,
-        iso: photo.iso ?? undefined,
-        photoId: photo.id,
-        userName: photo.user?.name ?? undefined,
-        userId: photo.user?.id ?? undefined,
-        userProfilePicture: photo.user?.profilePicture ? withBase(photo.user.profilePicture) : undefined,
-        cameraSystemId: cameraSystem.id,
-    }))
 
     const userName = cameraSystem.user.name ?? 'User'
 
@@ -215,23 +188,19 @@ export default async function CameraSystemDetailPage({ params }: PageProps) {
                 </section>
 
                 {/* Gallery */}
-                {photos.length > 0 && (
-                    <section>
-                        <h2 className="text-base font-semibold text-gray-900 mb-4">
-                            Photos taken with this camera system
-                            <span className="ml-2 text-sm font-normal text-gray-400">({photos.length})</span>
-                        </h2>
-                        <Suspense>
-                            <GalleryGrid photos={photos} />
-                        </Suspense>
-                    </section>
-                )}
-
-                {photos.length === 0 && (
-                    <div className="text-center py-12 text-gray-400 text-sm bg-white rounded-2xl border border-gray-100">
-                        No photos uploaded with this camera system yet.
-                    </div>
-                )}
+                <section>
+                    <GalleryPhotoGrid
+                        photos={cameraSystem.galleryPhotos}
+                        heading="Photos taken with this camera system"
+                        viewAllHref={`/gallery?${new URLSearchParams({
+                            user: String(cameraSystem.userId),
+                            ...(cameraSystem.camera?.slug ? { camera: cameraSystem.camera.slug } : {}),
+                            ...(cameraSystem.lens?.slug ? { lens: cameraSystem.lens.slug } : {}),
+                            ...(cameraSystem.housing?.slug ? { housing: cameraSystem.housing.slug } : {}),
+                            ...(cameraSystem.port?.slug ? { port: cameraSystem.port.slug } : {}),
+                        }).toString()}`}
+                    />
+                </section>
             </div>
         </div>
     )
